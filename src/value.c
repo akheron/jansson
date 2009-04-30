@@ -104,6 +104,17 @@ json_t *json_object_get(const json_t *json, const char *key)
     return hashtable_get(object->hashtable, key);
 }
 
+int json_object_set(json_t *json, const char *key, json_t *value)
+{
+    json_object_t *object;
+
+    if(!json_is_object(json))
+        return -1;
+
+    object = json_to_object(json);
+    return hashtable_set(object->hashtable, strdup(key), json_incref(value));
+}
+
 int json_object_del(json_t *json, const char *key)
 {
     json_object_t *object;
@@ -115,15 +126,42 @@ int json_object_del(json_t *json, const char *key)
     return hashtable_del(object->hashtable, key);
 }
 
-int json_object_set(json_t *json, const char *key, json_t *value)
+void *json_object_iter(json_t *json)
 {
     json_object_t *object;
 
     if(!json_is_object(json))
-        return -1;
+        return NULL;
 
     object = json_to_object(json);
-    return hashtable_set(object->hashtable, strdup(key), json_incref(value));
+    return hashtable_iter(object->hashtable);
+}
+
+void *json_object_iter_next(json_t *json, void *iter)
+{
+    json_object_t *object;
+
+    if(!json_is_object(json) || iter == NULL)
+        return NULL;
+
+    object = json_to_object(json);
+    return hashtable_iter_next(object->hashtable, iter);
+}
+
+const char *json_object_iter_key(void *iter)
+{
+    if(!iter)
+        return NULL;
+
+    return (const char *)hashtable_iter_key(iter);
+}
+
+json_t *json_object_iter_value(void *iter)
+{
+    if(!iter)
+        return NULL;
+
+    return (json_t *)hashtable_iter_value(iter);
 }
 
 

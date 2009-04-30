@@ -64,6 +64,10 @@ static inline void json_decref(json_t *json)
 json_t *json_object_get(const json_t *object, const char *key);
 int json_object_set(json_t *object, const char *key, json_t *value);
 int json_object_del(json_t *object, const char *key);
+void *json_object_iter(json_t *object);
+void *json_object_iter_next(json_t *object, void *iter);
+const char *json_object_iter_key(void *iter);
+json_t *json_object_iter_value(void *iter);
 
 unsigned int json_array_size(const json_t *array);
 json_t *json_array_get(const json_t *array, unsigned int index);
