@@ -8,14 +8,41 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 
-typedef struct hashtable hashtable_t;
-
 typedef unsigned int (*key_hash_fn)(const void *key);
 typedef int (*key_cmp_fn)(const void *key1, const void *key2);
 typedef void (*free_fn)(void *key);
 
+struct hashtable_list {
+  struct hashtable_list *prev;
+  struct hashtable_list *next;
+};
+
+struct hashtable_pair {
+    void *key;
+    void *value;
+    unsigned int hash;
+    struct hashtable_list list;
+};
+
+struct hashtable_bucket {
+    struct hashtable_list *first;
+    struct hashtable_list *last;
+};
+
+typedef struct hashtable {
+    unsigned int size;
+    struct hashtable_bucket *buckets;
+    unsigned int num_buckets;  /* index to primes[] */
+    struct hashtable_list list;
+
+    key_hash_fn hash_key;
+    key_cmp_fn cmp_keys;  /* returns non-zero for equal keys */
+    free_fn free_key;
+    free_fn free_value;
+} hashtable_t;
+
 /**
- * hashtable_new - Create a hashtable object
+ * hashtable_create - Create a hashtable object
  *
  * @hash_key: The key hashing function
  * @cmp_keys: The key compare function. Returns non-zero for equal and
@@ -24,17 +51,48 @@ typedef void (*free_fn)(void *key);
  * @free_value: If non-NULL, called for a value that is no longer referenced.
  *
  * Returns a new hashtable object that should be freed with
- * hashtable_free when it's no longer used.
+ * hashtable_destroy when it's no longer used, or NULL on failure (out
+ * of memory).
  */
-hashtable_t *hashtable_new(key_hash_fn hash_key, key_cmp_fn cmp_keys,
-                           free_fn free_key, free_fn free_value);
+hashtable_t *hashtable_create(key_hash_fn hash_key, key_cmp_fn cmp_keys,
+                              free_fn free_key, free_fn free_value);
 
 /**
- * hashtable_free - Destroy a hashtable object
+ * hashtable_destroy - Destroy a hashtable object
  *
  * @hashtable: The hashtable
+ *
+ * Destroys a hashtable created with hashtable_create().
  */
-void hashtable_free(hashtable_t *hashtable);
+void hashtable_destroy(hashtable_t *hashtable);
+
+/**
+ * hashtable_init - Initialize a hashtable object
+ *
+ * @hashtable: The (statically allocated) hashtable object
+ * @hash_key: The key hashing function
+ * @cmp_keys: The key compare function. Returns non-zero for equal and
+ *     zero for unequal unequal keys
+ * @free_key: If non-NULL, called for a key that is no longer referenced.
+ * @free_value: If non-NULL, called for a value that is no longer referenced.
+ *
+ * Initializes a statically allocated hashtable object. The object
+ * should be cleared with hashtable_close when it's no longer used.
+ *
+ * Returns 0 on success, -1 on error (out of memory).
+ */
+int hashtable_init(hashtable_t *hashtable,
+                   key_hash_fn hash_key, key_cmp_fn cmp_keys,
+                   free_fn free_key, free_fn free_value);
+
+/**
+ * hashtable_close - Release all resources used by a hashtable object
+ *
+ * @hashtable: The hashtable
+ *
+ * Destroys a statically allocated hashtable object.
+ */
+void hashtable_close(hashtable_t *hashtable);
 
 /**
  * hashtable_set - Add/modify value in hashtable

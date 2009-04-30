@@ -12,7 +12,7 @@
 
 typedef struct {
     json_t json;
-    hashtable_t *hashtable;
+    hashtable_t hashtable;
 } json_object_t;
 
 typedef struct {
@@ -78,9 +78,8 @@ json_t *json_object(void)
         return NULL;
     json_init(&object->json, JSON_OBJECT);
 
-    object->hashtable =
-      hashtable_new(hash_string, string_equal, free, value_decref);
-    if(!object->hashtable)
+    if(hashtable_init(&object->hashtable, hash_string, string_equal,
+                      free, value_decref))
     {
         free(object);
         return NULL;
@@ -90,7 +89,7 @@ json_t *json_object(void)
 
 static void json_delete_object(json_object_t *object)
 {
-    hashtable_free(object->hashtable);
+    hashtable_close(&object->hashtable);
     free(object);
 }
 
@@ -101,7 +100,7 @@ json_t *json_object_get(const json_t *json, const char *key)
     if(!json_is_object(json))
         return NULL;
 
-    return hashtable_get(object->hashtable, key);
+    return hashtable_get(&object->hashtable, key);
 }
 
 int json_object_set(json_t *json, const char *key, json_t *value)
@@ -112,7 +111,7 @@ int json_object_set(json_t *json, const char *key, json_t *value)
         return -1;
 
     object = json_to_object(json);
-    return hashtable_set(object->hashtable, strdup(key), json_incref(value));
+    return hashtable_set(&object->hashtable, strdup(key), json_incref(value));
 }
 
 int json_object_del(json_t *json, const char *key)
@@ -123,7 +122,7 @@ int json_object_del(json_t *json, const char *key)
         return -1;
 
     object = json_to_object(json);
-    return hashtable_del(object->hashtable, key);
+    return hashtable_del(&object->hashtable, key);
 }
 
 void *json_object_iter(json_t *json)
@@ -134,7 +133,7 @@ void *json_object_iter(json_t *json)
         return NULL;
 
     object = json_to_object(json);
-    return hashtable_iter(object->hashtable);
+    return hashtable_iter(&object->hashtable);
 }
 
 void *json_object_iter_next(json_t *json, void *iter)
@@ -145,7 +144,7 @@ void *json_object_iter_next(json_t *json, void *iter)
         return NULL;
 
     object = json_to_object(json);
-    return hashtable_iter_next(object->hashtable, iter);
+    return hashtable_iter_next(&object->hashtable, iter);
 }
 
 const char *json_object_iter_key(void *iter)

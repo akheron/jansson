@@ -8,39 +8,14 @@
 #include <stdlib.h>
 #include "hashtable.h"
 
+typedef struct hashtable_list list_t;
+typedef struct hashtable_pair pair_t;
+typedef struct hashtable_bucket bucket_t;
+
 #define container_of(ptr_, type_, member_)                      \
     ((type_ *)((char *)ptr_ - (size_t)&((type_ *)0)->member_))
 
-typedef struct list_t {
-  struct list_t *prev;
-  struct list_t *next;
-} list_t;
-
-typedef struct {
-    void *key;
-    void *value;
-    unsigned int hash;
-    list_t list;
-} pair_t;
-
 #define list_to_pair(list_)  container_of(list_, pair_t, list)
-
-typedef struct {
-    list_t *first;
-    list_t *last;
-} bucket_t;
-
-struct hashtable {
-    unsigned int size;
-    bucket_t *buckets;
-    unsigned int num_buckets;  /* index to primes[] */
-    list_t list;
-
-    key_hash_fn hash_key;
-    key_cmp_fn cmp_keys;  /* returns non-zero for equal keys */
-    free_fn free_key;
-    free_fn free_value;
-};
 
 static inline void list_init(list_t *list)
 {
@@ -193,22 +168,40 @@ static int hashtable_do_rehash(hashtable_t *hashtable)
 }
 
 
-hashtable_t *hashtable_new(key_hash_fn hash_key, key_cmp_fn cmp_keys,
-                           free_fn free_key, free_fn free_value)
+hashtable_t *hashtable_create(key_hash_fn hash_key, key_cmp_fn cmp_keys,
+                              free_fn free_key, free_fn free_value)
 {
-    unsigned int i;
     hashtable_t *hashtable = malloc(sizeof(hashtable_t));
     if(!hashtable)
         return NULL;
+
+    if(hashtable_init(hashtable, hash_key, cmp_keys, free_key, free_value))
+    {
+        free(hashtable);
+        return NULL;
+    }
+
+    return hashtable;
+}
+
+void hashtable_destroy(hashtable_t *hashtable)
+{
+    hashtable_close(hashtable);
+    free(hashtable);
+}
+
+int hashtable_init(hashtable_t *hashtable,
+                   key_hash_fn hash_key, key_cmp_fn cmp_keys,
+                   free_fn free_key, free_fn free_value)
+{
+    unsigned int i;
 
     hashtable->size = 0;
     hashtable->num_buckets = 0;  /* index to primes[] */
     hashtable->buckets = malloc(num_buckets(hashtable) * sizeof(bucket_t));
     if(!hashtable->buckets)
-    {
-        free(hashtable);
-        return NULL;
-    }
+        return -1;
+
     list_init(&hashtable->list);
 
     hashtable->hash_key = hash_key;
@@ -222,10 +215,10 @@ hashtable_t *hashtable_new(key_hash_fn hash_key, key_cmp_fn cmp_keys,
             &hashtable->list;
     }
 
-    return hashtable;
+    return 0;
 }
 
-void hashtable_free(hashtable_t *hashtable)
+void hashtable_close(hashtable_t *hashtable)
 {
     list_t *list, *next;
     pair_t *pair;
@@ -241,7 +234,6 @@ void hashtable_free(hashtable_t *hashtable)
     }
 
     free(hashtable->buckets);
-    free(hashtable);
 }
 
 int hashtable_set(hashtable_t *hashtable, void *key, void *value)
@@ -267,11 +259,11 @@ int hashtable_set(hashtable_t *hashtable, void *key, void *value)
     pair->key = key;
     pair->value = value;
     pair->hash = hash;
+    list_init(&pair->list);
 
     index = hash % num_buckets(hashtable);
     bucket = &hashtable->buckets[index];
 
-    list_init(&pair->list);
     insert_to_bucket(hashtable, bucket, &pair->list);
 
     hashtable->size++;
