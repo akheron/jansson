@@ -274,7 +274,10 @@ static json_t *json_parse_object(json_lex *lex)
         return NULL;
 
     json_lex_scan(lex);
-    while(1) {
+    if(lex->token == '}')
+        return object;
+
+    while(lex->token) {
         char *key;
         json_t *value;
 
