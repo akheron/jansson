@@ -30,23 +30,24 @@ typedef struct {
 
 /*** error reporting ***/
 
-static __thread char *json_error_msg = NULL;
-
-static void json_set_error(const json_lex *lex, const char *msg)
+static void json_set_error(json_error_t *error, const json_lex *lex,
+                           const char *msg)
 {
-    free(json_error_msg);
+    if(!error)
+        return;
+
     if(*lex->start)
-        asprintf(&json_error_msg, "%s near '%.*s' on line %d", msg,
-                 (int)(lex->input - lex->start), lex->start, lex->line);
+    {
+        int n = (int)(lex->input - lex->start);
+        error->line = lex->line;
+        snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
+                 "%s near '%.*s'", msg, n, lex->start);
+    }
     else
-        asprintf(&json_error_msg, "%s near end of file", msg);
-}
-
-const char *json_get_error(void)
-{
-    if(!json_error_msg)
-        json_error_msg = strdup("success");
-    return json_error_msg;
+    {
+        snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
+                 "%s near end of file", msg);
+    }
 }
 
 
@@ -265,9 +266,9 @@ static void json_lex_close(json_lex *lex)
 
 /*** parser ***/
 
-static json_t *json_parse(json_lex *lex);
+static json_t *json_parse(json_lex *lex, json_error_t *error);
 
-static json_t *json_parse_object(json_lex *lex)
+static json_t *json_parse_object(json_lex *lex, json_error_t *error)
 {
     json_t *object = json_object();
     if(!object)
@@ -282,7 +283,7 @@ static json_t *json_parse_object(json_lex *lex)
         json_t *value;
 
         if(lex->token != JSON_TOKEN_STRING) {
-            json_set_error(lex, "string expected");
+            json_set_error(error, lex, "string expected");
             goto error;
         }
 
@@ -292,13 +293,13 @@ static json_t *json_parse_object(json_lex *lex)
 
         json_lex_scan(lex);
         if(lex->token != ':') {
-            json_set_error(lex, "':' expected");
+            json_set_error(error, lex, "':' expected");
             goto error;
         }
 
         json_lex_scan(lex);
 
-        value = json_parse(lex);
+        value = json_parse(lex, error);
         if(!value)
             goto error;
 
@@ -317,7 +318,7 @@ static json_t *json_parse_object(json_lex *lex)
     }
 
     if(lex->token != '}') {
-        json_set_error(lex, "'}' expected");
+        json_set_error(error, lex, "'}' expected");
         goto error;
     }
 
@@ -328,7 +329,7 @@ error:
     return NULL;
 }
 
-static json_t *json_parse_array(json_lex *lex)
+static json_t *json_parse_array(json_lex *lex, json_error_t *error)
 {
     json_t *array = json_array();
     if(!array)
@@ -337,7 +338,7 @@ static json_t *json_parse_array(json_lex *lex)
     json_lex_scan(lex);
     if(lex->token != ']') {
         while(1) {
-            json_t *elem = json_parse(lex);
+            json_t *elem = json_parse(lex, error);
             if(!elem)
                 goto error;
 
@@ -355,7 +356,7 @@ static json_t *json_parse_array(json_lex *lex)
     }
 
     if(lex->token != ']') {
-        json_set_error(lex, "']' expected");
+        json_set_error(error, lex, "']' expected");
         goto error;
     }
 
@@ -366,7 +367,7 @@ error:
     return NULL;
 }
 
-static json_t *json_parse(json_lex *lex)
+static json_t *json_parse(json_lex *lex, json_error_t *error)
 {
     json_t *json;
 
@@ -394,19 +395,19 @@ static json_t *json_parse(json_lex *lex)
             break;
 
         case '{':
-            json = json_parse_object(lex);
+          json = json_parse_object(lex, error);
             break;
 
         case '[':
-            json = json_parse_array(lex);
+            json = json_parse_array(lex, error);
             break;
 
         case JSON_TOKEN_INVALID:
-            json_set_error(lex, "invalid token");
+            json_set_error(error, lex, "invalid token");
             return NULL;
 
         default:
-            json_set_error(lex, "unexpected token");
+            json_set_error(error, lex, "unexpected token");
             return NULL;
     }
 
@@ -417,7 +418,7 @@ static json_t *json_parse(json_lex *lex)
     return json;
 }
 
-json_t *json_loads(const char *string)
+json_t *json_loads(const char *string, json_error_t *error)
 {
     json_lex lex;
     json_t *result = NULL;
@@ -426,16 +427,16 @@ json_t *json_loads(const char *string)
         return NULL;
 
     if(lex.token != '[' && lex.token != '{') {
-        json_set_error(&lex, "'[' or '{' expected");
+        json_set_error(error, &lex, "'[' or '{' expected");
         goto out;
     }
 
-    result = json_parse(&lex);
+    result = json_parse(&lex, error);
     if(!result)
         goto out;
 
     if(lex.token != JSON_TOKEN_EOF) {
-        json_set_error(&lex, "end of file expected");
+        json_set_error(error, &lex, "end of file expected");
         json_decref(result);
         result = NULL;
     }

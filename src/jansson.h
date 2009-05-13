@@ -80,11 +80,16 @@ double json_number_value(const json_t *json);
 
 /* loading, printing */
 
-const char *json_get_error(void);
+#define JSON_ERROR_TEXT_LENGTH  160
 
-json_t *json_load(const char *path);
-json_t *json_loads(const char *input);
-json_t *json_loadf(FILE *input);
+typedef struct {
+    char text[JSON_ERROR_TEXT_LENGTH];
+    int line;
+} json_error_t;
+
+json_t *json_load(const char *path, json_error_t *error);
+json_t *json_loads(const char *input, json_error_t *error);
+json_t *json_loadf(FILE *input, json_error_t *error);
 
 #define JSON_INDENT(n)   (n & 0xFF)
 #define JSON_SORT_KEYS   0x100
