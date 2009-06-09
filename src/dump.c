@@ -8,6 +8,37 @@
 
 typedef int (*dump_func)(const char *buffer, int size, void *data);
 
+struct string
+{
+    char *buffer;
+    int length;
+    int size;
+};
+
+static int dump_to_string(const char *buffer, int size, void *data)
+{
+    struct string *string = (struct string *)data;
+    if(string->length + size > string->size)
+    {
+        if(string->length == 0)
+            string->size = 16;
+        else
+            string->size *= 2;
+
+        string->buffer = realloc(string->buffer, string->size);
+        if(!string->buffer)
+            return -1;
+
+        memset(string->buffer + string->length, 0,
+               string->size - string->length);
+    }
+
+    memcpy(string->buffer + string->length, buffer, size);
+    string->length += size;
+
+    return 0;
+}
+
 static int dump_to_file(const char *buffer, int size, void *data)
 {
     FILE *dest = (FILE *)data;
@@ -186,6 +217,34 @@ static int do_dump(const json_t *json, uint32_t flags, int depth,
     }
 }
 
+
+int json_dump(const json_t *json, const char *path, uint32_t flags)
+{
+    FILE *output = fopen(path, "w");
+    if(!output)
+        return -1;
+
+    return json_dumpf(json, output, flags);
+}
+
+char *json_dumps(const json_t *json, uint32_t flags)
+{
+    struct string string;
+    char *result;
+    memset(&string, 0, sizeof(struct string));
+
+    if(do_dump(json, flags, 0, dump_to_string, (void *)&string))
+        return NULL;
+
+    if(dump_to_string("\n", 1, (void *)&string))
+        return NULL;
+
+    /* consume just the right amount of memory */
+    result = strdup(string.buffer);
+    free(string.buffer);
+
+    return result;
+}
 
 int json_dumpf(const json_t *json, FILE *output, uint32_t flags)
 {
