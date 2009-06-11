@@ -6,6 +6,8 @@ libjansson_la_SOURCES = \
 	hashtable.c \
 	hashtable.h \
 	load.c \
+	strbuffer.c \
+	strbuffer.h \
 	util.h \
 	value.c
 libjansson_la_LDFLAGS = -version-info 0:0:0

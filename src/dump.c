@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include <jansson.h>
+#include "strbuffer.h"
 
 typedef int (*dump_func)(const char *buffer, int size, void *data);
 
@@ -15,28 +16,9 @@ struct string
     int size;
 };
 
-static int dump_to_string(const char *buffer, int size, void *data)
+static int dump_to_strbuffer(const char *buffer, int size, void *data)
 {
-    struct string *string = (struct string *)data;
-    if(string->length + size > string->size)
-    {
-        if(string->length == 0)
-            string->size = 16;
-        else
-            string->size *= 2;
-
-        string->buffer = realloc(string->buffer, string->size);
-        if(!string->buffer)
-            return -1;
-
-        memset(string->buffer + string->length, 0,
-               string->size - string->length);
-    }
-
-    memcpy(string->buffer + string->length, buffer, size);
-    string->length += size;
-
-    return 0;
+    return strbuffer_append_bytes((strbuffer_t *)data, buffer, size);
 }
 
 static int dump_to_file(const char *buffer, int size, void *data)
@@ -229,19 +211,19 @@ int json_dump(const json_t *json, const char *path, uint32_t flags)
 
 char *json_dumps(const json_t *json, uint32_t flags)
 {
-    struct string string;
+    strbuffer_t strbuff;
     char *result;
-    memset(&string, 0, sizeof(struct string));
 
-    if(do_dump(json, flags, 0, dump_to_string, (void *)&string))
+    strbuffer_init(&strbuff);
+
+    if(do_dump(json, flags, 0, dump_to_strbuffer, (void *)&strbuff))
         return NULL;
 
-    if(dump_to_string("\n", 1, (void *)&string))
+    if(dump_to_strbuffer("\n", 1, (void *)&strbuff))
         return NULL;
 
-    /* consume just the right amount of memory */
-    result = strdup(string.buffer);
-    free(string.buffer);
+    result = strbuffer_value(&strbuff);
+    strbuffer_close(&strbuff);
 
     return result;
 }
