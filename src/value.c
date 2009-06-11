@@ -4,8 +4,7 @@
 
 #include <jansson.h>
 #include "hashtable.h"
-
-#define max(a, b)  ((a) > (b) ? (a) : (b))
+#include "util.h"
 
 #define container_of(ptr_, type_, member_)  \
     ((type_ *)((char *)ptr_ - (size_t)&((type_ *)0)->member_))
