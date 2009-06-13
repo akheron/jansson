@@ -309,6 +309,7 @@ static json_t *json_parse_object(json_lex *lex, json_error_t *error)
 
         json_lex_scan(lex);
         if(lex->token != ':') {
+            free(key);
             json_set_error(error, lex, "':' expected");
             goto error;
         }
@@ -316,10 +317,13 @@ static json_t *json_parse_object(json_lex *lex, json_error_t *error)
         json_lex_scan(lex);
 
         value = json_parse(lex, error);
-        if(!value)
+        if(!value) {
+            free(key);
             goto error;
+        }
 
         if(json_object_set(object, key, value)) {
+            free(key);
             json_decref(value);
             goto error;
         }
