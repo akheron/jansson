@@ -42,7 +42,7 @@ int strbuffer_append_bytes(strbuffer_t *strbuff, const char *data, int size)
     if(strbuff->length + size > strbuff->size)
     {
         if(strbuff->length == 0)
-            strbuff->size = STRBUFFER_MIN_SIZE;
+            strbuff->size = max(size + 1, STRBUFFER_MIN_SIZE);
         else
             strbuff->size = max(strbuff->size * STRBUFFER_FACTOR,
                                 strbuff->length + size + 1);
