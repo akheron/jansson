@@ -1,11 +1,15 @@
 #define _GNU_SOURCE
+#include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <stdarg.h>
+#include <unistd.h>
 #include <assert.h>
 
 #include <jansson.h>
+#include "strbuffer.h"
 
 
 #define JSON_TOKEN_INVALID         -1
@@ -31,23 +35,35 @@ typedef struct {
 /*** error reporting ***/
 
 static void json_set_error(json_error_t *error, const json_lex *lex,
-                           const char *msg)
+                           const char *msg, ...)
 {
+    va_list ap;
+    char text[JSON_ERROR_TEXT_LENGTH];
+
     if(!error)
         return;
 
-    if(*lex->start)
+    va_start(ap, msg);
+    vsnprintf(text, JSON_ERROR_TEXT_LENGTH, msg, ap);
+    va_end(ap);
+
+    if(lex)
     {
-        int n = (int)(lex->input - lex->start);
         error->line = lex->line;
-        snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
-                 "%s near '%.*s'", msg, n, lex->start);
+        if(*lex->start)
+        {
+            int n = (int)(lex->input - lex->start);
+            snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
+                     "%s near '%.*s'", text, n, lex->start);
+        }
+        else
+        {
+            snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
+                     "%s near end of file", text);
+        }
     }
     else
-    {
-        snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
-                 "%s near end of file", msg);
-    }
+        snprintf(error->text, JSON_ERROR_TEXT_LENGTH, "%s", msg);
 }
 
 
@@ -418,6 +434,25 @@ static json_t *json_parse(json_lex *lex, json_error_t *error)
     return json;
 }
 
+json_t *json_load(const char *path, json_error_t *error)
+{
+    json_t *result;
+    FILE *fp;
+
+    fp = fopen(path, "r");
+    if(!fp)
+    {
+        json_set_error(error, NULL, "unable to open %s: %s",
+                       path, strerror(errno));
+        return NULL;
+    }
+
+    result = json_loadf(fp, error);
+
+    fclose(fp);
+    return result;
+}
+
 json_t *json_loads(const char *string, json_error_t *error)
 {
     json_lex lex;
@@ -443,5 +478,73 @@ json_t *json_loads(const char *string, json_error_t *error)
 
 out:
     json_lex_close(&lex);
+    return result;
+}
+
+#define BUFFER_SIZE 4096
+
+json_t *json_loadf(FILE *input, json_error_t *error)
+{
+    strbuffer_t strbuff;
+    char buffer[BUFFER_SIZE];
+    size_t length;
+    json_t *result = NULL;
+
+    strbuffer_init(&strbuff);
+
+    while(1)
+    {
+        length = fread(buffer, 1, BUFFER_SIZE, input);
+        if(length == 0)
+        {
+            if(ferror(input))
+            {
+                json_set_error(error, NULL, "read error");
+                goto out;
+            }
+            break;
+        }
+        if(strbuffer_append_bytes(&strbuff, buffer, length))
+            goto out;
+    }
+
+    result = json_loads(strbuffer_value(&strbuff), error);
+
+out:
+    strbuffer_close(&strbuff);
+    return result;
+}
+
+json_t *json_loadfd(int fd, json_error_t *error)
+{
+    strbuffer_t strbuff;
+    char buffer[BUFFER_SIZE];
+    ssize_t length;
+    json_t *result = NULL;
+
+    strbuffer_init(&strbuff);
+
+    while(1)
+    {
+        length = read(fd, buffer, BUFFER_SIZE);
+        if(length == -1)
+        {
+            json_set_error(error, NULL, "read error: %s", strerror(errno));
+            goto out;
+        }
+        else if(length == 0)
+            break;
+
+        if(strbuffer_append_bytes(&strbuff, buffer, length))
+        {
+            json_set_error(error, NULL, "error allocating memory");
+            goto out;
+        }
+    }
+
+    result = json_loads(strbuffer_value(&strbuff), error);
+
+out:
+    strbuffer_close(&strbuff);
     return result;
 }
