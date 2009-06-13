@@ -222,7 +222,7 @@ char *json_dumps(const json_t *json, uint32_t flags)
     if(dump_to_strbuffer("\n", 1, (void *)&strbuff))
         return NULL;
 
-    result = strbuffer_value(&strbuff);
+    result = strdup(strbuffer_value(&strbuff));
     strbuffer_close(&strbuff);
 
     return result;

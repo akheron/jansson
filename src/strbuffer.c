@@ -20,9 +20,9 @@ void strbuffer_close(strbuffer_t *strbuff)
     strbuffer_init(strbuff);
 }
 
-char *strbuffer_value(strbuffer_t *strbuff)
+const char *strbuffer_value(strbuffer_t *strbuff)
 {
-    return strdup(strbuff->value);
+    return strbuff->value;
 }
 
 char *strbuffer_steal_value(strbuffer_t *strbuff)
