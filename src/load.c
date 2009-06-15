@@ -63,7 +63,10 @@ static void json_set_error(json_error_t *error, const json_lex *lex,
         }
     }
     else
-        snprintf(error->text, JSON_ERROR_TEXT_LENGTH, "%s", msg);
+    {
+        error->line = -1;
+        snprintf(error->text, JSON_ERROR_TEXT_LENGTH, "%s", text);
+    }
 }
 
 
