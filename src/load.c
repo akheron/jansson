@@ -359,24 +359,26 @@ static json_t *json_parse_array(json_lex *lex, json_error_t *error)
         return NULL;
 
     json_lex_scan(lex);
-    if(lex->token != ']') {
-        while(1) {
-            json_t *elem = json_parse(lex, error);
-            if(!elem)
-                goto error;
+    if(lex->token == ']')
+        return array;
 
-            if(json_array_append(array, elem)) {
-                json_decref(elem);
-                goto error;
-            }
+    while(lex->token) {
+        json_t *elem = json_parse(lex, error);
+        if(!elem)
+            goto error;
+
+        if(json_array_append(array, elem)) {
             json_decref(elem);
-
-            if(lex->token != ',')
-                break;
-
-            json_lex_scan(lex);
+            goto error;
         }
+        json_decref(elem);
+
+        if(lex->token != ',')
+            break;
+
+        json_lex_scan(lex);
     }
+
 
     if(lex->token != ']') {
         json_set_error(error, lex, "']' expected");
