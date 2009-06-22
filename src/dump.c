@@ -214,7 +214,8 @@ char *json_dumps(const json_t *json, uint32_t flags)
     strbuffer_t strbuff;
     char *result;
 
-    strbuffer_init(&strbuff);
+    if(strbuffer_init(&strbuff))
+      return NULL;
 
     if(do_dump(json, flags, 0, dump_to_strbuffer, (void *)&strbuff))
         return NULL;

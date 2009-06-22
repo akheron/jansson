@@ -7,7 +7,7 @@ typedef struct {
     int size;
 } strbuffer_t;
 
-void strbuffer_init(strbuffer_t *strbuff);
+int strbuffer_init(strbuffer_t *strbuff);
 void strbuffer_close(strbuffer_t *strbuff);
 
 const char *strbuffer_value(strbuffer_t *strbuff);

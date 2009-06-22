@@ -499,7 +499,8 @@ json_t *json_loadf(FILE *input, json_error_t *error)
     size_t length;
     json_t *result = NULL;
 
-    strbuffer_init(&strbuff);
+    if(strbuffer_init(&strbuff))
+      return NULL;
 
     while(1)
     {
@@ -531,7 +532,8 @@ json_t *json_loadfd(int fd, json_error_t *error)
     ssize_t length;
     json_t *result = NULL;
 
-    strbuffer_init(&strbuff);
+    if(strbuffer_init(&strbuff))
+      return NULL;
 
     while(1)
     {
