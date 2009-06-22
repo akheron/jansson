@@ -15,10 +15,11 @@
 #define JSON_TOKEN_INVALID         -1
 #define JSON_TOKEN_EOF              0
 #define JSON_TOKEN_STRING         256
-#define JSON_TOKEN_NUMBER         257
-#define JSON_TOKEN_TRUE           258
-#define JSON_TOKEN_FALSE          259
-#define JSON_TOKEN_NULL           260
+#define JSON_TOKEN_INTEGER        257
+#define JSON_TOKEN_REAL           258
+#define JSON_TOKEN_TRUE           259
+#define JSON_TOKEN_FALSE          260
+#define JSON_TOKEN_NULL           261
 
 typedef struct {
     const char *input;
@@ -27,7 +28,8 @@ typedef struct {
     int line, column;
     union {
         char *string;
-        double number;
+        int integer;
+        double real;
     } value;
 } json_lex;
 
@@ -176,7 +178,16 @@ static void json_scan_number(json_lex *lex)
             p++;
     }
 
-    if(*p == '.') {
+    if(*p != '.') {
+        lex->token = JSON_TOKEN_INTEGER;
+
+        lex->value.integer = strtol(lex->start, &end, 10);
+        assert(end == p);
+
+        lex->input = p;
+        return;
+    }
+    else /* *p == '.' */ {
         p++;
         if(!isdigit(*(p++)))
             goto out;
@@ -197,9 +208,9 @@ static void json_scan_number(json_lex *lex)
             p++;
     }
 
-    lex->token = JSON_TOKEN_NUMBER;
+    lex->token = JSON_TOKEN_REAL;
 
-    lex->value.number = strtod(lex->start, &end);
+    lex->value.real = strtod(lex->start, &end);
     assert(end == p);
 
 out:
@@ -402,8 +413,13 @@ static json_t *json_parse(json_lex *lex, json_error_t *error)
             break;
         }
 
-        case JSON_TOKEN_NUMBER: {
-            json = json_number(lex->value.number);
+        case JSON_TOKEN_INTEGER: {
+            json = json_integer(lex->value.integer);
+            break;
+        }
+
+        case JSON_TOKEN_REAL: {
+            json = json_real(lex->value.real);
             break;
         }
 

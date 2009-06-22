@@ -29,12 +29,18 @@ typedef struct {
 typedef struct {
     json_t json;
     double value;
-} json_number_t;
+} json_real_t;
+
+typedef struct {
+    json_t json;
+    int value;
+} json_integer_t;
 
 #define json_to_object(json_)  container_of(json_, json_object_t, json)
 #define json_to_array(json_)   container_of(json_, json_array_t, json)
 #define json_to_string(json_)  container_of(json_, json_string_t, json)
-#define json_to_number(json_)  container_of(json_, json_number_t, json)
+#define json_to_real(json_)   container_of(json_, json_real_t, json)
+#define json_to_integer(json_) container_of(json_, json_integer_t, json)
 
 static inline void json_init(json_t *json, json_type type)
 {
@@ -274,15 +280,58 @@ static void json_delete_string(json_string_t *string)
     free(string);
 }
 
-json_t *json_number(double value)
-{
-    json_number_t *number = malloc(sizeof(json_number_t));
-    if(!number)
-       return NULL;
-    json_init(&number->json, JSON_NUMBER);
 
-    number->value = value;
-    return &number->json;
+/*** integer ***/
+
+json_t *json_integer(int value)
+{
+    json_integer_t *integer = malloc(sizeof(json_integer_t));
+    if(!integer)
+       return NULL;
+    json_init(&integer->json, JSON_INTEGER);
+
+    integer->value = value;
+    return &integer->json;
+}
+
+int json_integer_value(const json_t *json)
+{
+    if(!json_is_integer(json))
+        return 0;
+
+    return json_to_integer(json)->value;
+}
+
+static void json_delete_integer(json_integer_t *integer)
+{
+    free(integer);
+}
+
+
+/*** real ***/
+
+json_t *json_real(double value)
+{
+    json_real_t *real = malloc(sizeof(json_real_t));
+    if(!real)
+       return NULL;
+    json_init(&real->json, JSON_REAL);
+
+    real->value = value;
+    return &real->json;
+}
+
+double json_real_value(const json_t *json)
+{
+    if(!json_is_real(json))
+        return 0;
+
+    return json_to_real(json)->value;
+}
+
+static void json_delete_real (json_real_t *real)
+{
+    free(real);
 }
 
 
@@ -290,15 +339,12 @@ json_t *json_number(double value)
 
 double json_number_value(const json_t *json)
 {
-    if(!json_is_number(json))
+    if(json_is_integer(json))
+        return json_integer_value(json);
+    else if(json_is_real(json))
+        return json_real_value(json);
+    else
         return 0.0;
-
-    return json_to_number(json)->value;
-}
-
-static void json_delete_number(json_number_t *number)
-{
-    free(number);
 }
 
 
@@ -347,8 +393,11 @@ void json_delete(json_t *json)
     else if(json_is_string(json))
         json_delete_string(json_to_string(json));
 
-    else if(json_is_number(json))
-        json_delete_number(json_to_number(json));
+    else if(json_is_integer(json))
+        json_delete_integer(json_to_integer(json));
+
+    else if(json_is_real(json))
+        json_delete_real(json_to_real(json));
 
     /* json_delete is not called for true, false or null */
 }

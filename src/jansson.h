@@ -10,7 +10,8 @@ typedef enum {
     JSON_OBJECT,
     JSON_ARRAY,
     JSON_STRING,
-    JSON_NUMBER,
+    JSON_INTEGER,
+    JSON_REAL,
     JSON_TRUE,
     JSON_FALSE,
     JSON_NULL
@@ -25,7 +26,9 @@ typedef struct {
 #define json_is_object(json)   (json && json_typeof(json) == JSON_OBJECT)
 #define json_is_array(json)    (json && json_typeof(json) == JSON_ARRAY)
 #define json_is_string(json)   (json && json_typeof(json) == JSON_STRING)
-#define json_is_number(json)   (json && json_typeof(json) == JSON_NUMBER)
+#define json_is_integer(json)  (json && json_typeof(json) == JSON_INTEGER)
+#define json_is_real(json)     (json && json_typeof(json) == JSON_REAL)
+#define json_is_number(json)   (json_is_integer(json) || json_is_real(json))
 #define json_is_true(json)     (json && json_typeof(json) == JSON_TRUE)
 #define json_is_false(json)    (json && json_typeof(json) == JSON_FALSE)
 #define json_is_null(json)     (json && json_typeof(json) == JSON_NULL)
@@ -35,7 +38,8 @@ typedef struct {
 json_t *json_object(void);
 json_t *json_array(void);
 json_t *json_string(const char *value);
-json_t *json_number(double value);
+json_t *json_integer(int value);
+json_t *json_real(double value);
 json_t *json_true(void);
 json_t *json_false(void);
 json_t *json_null(void);
@@ -75,6 +79,8 @@ int json_array_set(json_t *array, unsigned int index, json_t *value);
 int json_array_append(json_t *array, json_t *value);
 
 const char *json_string_value(const json_t *json);
+int json_integer_value(const json_t *json);
+double json_real_value(const json_t *json);
 double json_number_value(const json_t *json);
 
 

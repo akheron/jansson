@@ -106,12 +106,26 @@ static int do_dump(const json_t *json, uint32_t flags, int depth,
         case JSON_FALSE:
             return dump("false", 5, data);
 
-        case JSON_NUMBER:
+        case JSON_INTEGER:
         {
             char *buffer;
             int size, ret;
 
-            size = asprintf(&buffer, "%.17f", json_number_value(json));
+            size = asprintf(&buffer, "%d", json_integer_value(json));
+            if(size == -1)
+                return -1;
+
+            ret = dump(buffer, size, data);
+            free(buffer);
+            return ret;
+        }
+
+        case JSON_REAL:
+        {
+            char *buffer;
+            int size, ret;
+
+            size = asprintf(&buffer, "%.17f", json_real_value(json));
             if(size == -1)
                 return -1;
 
