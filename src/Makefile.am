@@ -12,4 +12,4 @@ libjansson_la_SOURCES = \
 	value.c
 libjansson_la_LDFLAGS = -version-info 0:0:0
 
-AM_CFLAGS = -Wall -Wextra -std=c99
+AM_CFLAGS = -Wall -Wextra -Werror -std=c99
