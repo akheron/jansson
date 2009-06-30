@@ -3,8 +3,8 @@
 
 typedef struct {
     char *value;
-    int length;
-    int size;
+    int length;   /* bytes used */
+    int size;     /* bytes allocated */
 } strbuffer_t;
 
 int strbuffer_init(strbuffer_t *strbuff);

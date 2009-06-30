@@ -16,7 +16,8 @@ int strbuffer_init(strbuffer_t *strbuff)
     if(!strbuff->value)
         return -1;
 
-    memset(strbuff->value, 0, strbuff->size);
+    /* initialize to empty */
+    strbuff->value[0] = '\0';
     return 0;
 }
 
@@ -55,13 +56,11 @@ int strbuffer_append_bytes(strbuffer_t *strbuff, const char *data, int size)
         strbuff->value = realloc(strbuff->value, strbuff->size);
         if(!strbuff->value)
             return -1;
-
-        memset(strbuff->value + strbuff->length + size, 0,
-               strbuff->size - strbuff->length - size);
     }
 
     memcpy(strbuff->value + strbuff->length, data, size);
     strbuff->length += size;
+    strbuff->value[strbuff->length] = '\0';
 
     return 0;
 }
