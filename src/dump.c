@@ -145,7 +145,7 @@ static int do_dump(const json_t *json, uint32_t flags, int depth,
             if(dump("[", 1, data))
                 return -1;
             if(n == 0)
-                dump("]", 1, data);
+                return dump("]", 1, data);
             if(dump_indent(flags, depth + 1, dump, data))
                 return -1;
 
