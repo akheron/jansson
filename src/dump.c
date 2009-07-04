@@ -66,27 +66,47 @@ static int dump_string(const char *str, dump_func dump, void *data)
         return -1;
 
     end = str;
-    while(*end)
+    while(1)
     {
-        while(*end && *end != '\\' && *end != '"')
+        const char *text;
+        char seq[7];
+        int length;
+
+        while(*end && *end != '\\' && *end != '"' && (*end < 0 || *end > 0x1F))
             end++;
 
-        if(end != str)
+        if(end != str) {
             if(dump(str, end - str, data))
                 return -1;
+        }
 
-        if(*end == '\\')
+        if(!*end)
+            break;
+
+        /* handle \, ", and control codes */
+        length = 2;
+        switch(*end)
         {
-            if(dump("\\\\", 2, data))
-                return -1;
-            end++;
+            case '\\': text = "\\\\"; break;
+            case '\"': text = "\\\""; break;
+            case '\b': text = "\\b"; break;
+            case '\f': text = "\\f"; break;
+            case '\n': text = "\\n"; break;
+            case '\r': text = "\\r"; break;
+            case '\t': text = "\\t"; break;
+            default:
+            {
+                sprintf(seq, "\\u00%02x", *end);
+                text = seq;
+                length = 6;
+                break;
+            }
         }
-        else if(*end == '"')
-        {
-            if(dump("\\\"", 2, data))
-                return -1;
-            end++;
-        }
+
+        if(dump(text, length, data))
+            return -1;
+
+        end++;
         str = end;
     }
 
