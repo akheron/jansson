@@ -170,28 +170,32 @@ static void json_scan_number(json_lex *lex)
     if(*p == '-')
         p++;
 
-    if(*p == '0')
+    if(*p == '0') {
         p++;
+        if(isdigit(*p))
+          goto out;
+    }
     else /* *p != '0' */ {
         p++;
         while(isdigit(*p))
             p++;
     }
 
-    if(*p != '.') {
+    if(*p != '.' && *p != 'E' && *p != 'e') {
         lex->token = JSON_TOKEN_INTEGER;
 
         lex->value.integer = strtol(lex->start, &end, 10);
         assert(end == p);
 
-        lex->input = p;
-        return;
+        goto out;
     }
-    else /* *p == '.' */ {
+
+    if(*p == '.') {
         p++;
-        if(!isdigit(*(p++)))
+        if(!isdigit(*p))
             goto out;
 
+        p++;
         while(isdigit(*p))
             p++;
     }
@@ -201,9 +205,10 @@ static void json_scan_number(json_lex *lex)
         if(*p == '+' || *p == '-')
             p++;
 
-        if(!isdigit(*(p++)))
+        if(!isdigit(*p))
             goto out;
 
+        p++;
         while(isdigit(*p))
             p++;
     }
