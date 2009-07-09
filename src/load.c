@@ -88,7 +88,7 @@ static void json_scan_string(json_lex *lex)
             goto out;
         }
 
-        if(0 <= *p && *p <= 31) {
+        if(0 <= *p && *p <= 0x1F) {
             /* control character */
             goto out;
         }
@@ -101,8 +101,8 @@ static void json_scan_string(json_lex *lex)
                         goto out;
                 }
             }
-            if(*p == '"' || *p == '\\' || *p == '/' || *p == 'b' ||
-               *p == 'f' || *p == 'n' || *p == 'r' || *p == 't')
+            else if(*p == '"' || *p == '\\' || *p == '/' || *p == 'b' ||
+                    *p == 'f' || *p == 'n' || *p == 'r' || *p == 't')
                 p++;
             else
                 goto out;
@@ -231,11 +231,14 @@ static int json_lex_scan(json_lex *lex)
       lex->value.string = NULL;
     }
 
-    while(isspace(*lex->input)) {
-        if(*lex->input == '\n')
+    c = *lex->input;
+    while(c == ' ' || c == '\t' || c == '\n' || c == '\r')
+    {
+        if(c == '\n')
             lex->line++;
 
         lex->input++;
+        c = *lex->input;
     }
 
     lex->start = lex->input;
@@ -245,7 +248,8 @@ static int json_lex_scan(json_lex *lex)
         lex->token = JSON_TOKEN_EOF;
 
     else if(c == '{' || c == '}' || c == '[' || c == ']' ||
-            c == ':' || c == ',') {
+            c == ':' || c == ',')
+    {
         lex->token = c;
         lex->input++;
     }
@@ -256,11 +260,11 @@ static int json_lex_scan(json_lex *lex)
     else if(isdigit(c) || c == '-')
         json_scan_number(lex);
 
-    else if(isalpha(c)) {
+    else if(isupper(c) || islower(c)) {
         /* eat up the whole identifier for clearer error messages */
         int len;
 
-        while(isalpha(*lex->input))
+        while(isupper(*lex->input) || islower(*lex->input))
             lex->input++;
         len = lex->input - lex->start;
 
