@@ -1,0 +1,138 @@
+====
+1
+'[' or '{' expected near end of file
+========
+null
+====
+1
+'[' or '{' expected near 'null'
+========
+{
+====
+2
+'}' expected near end of file
+========
+[
+====
+2
+']' expected near end of file
+========
+[,
+====
+1
+unexpected token near ','
+========
+[1,
+====
+2
+']' expected near end of file
+========
+["a
+====
+1
+invalid token near '"a'
+========
+["a"
+====
+2
+']' expected near end of file
+========
+['
+====
+1
+invalid token near '''
+========
+{,
+====
+1
+string expected near ','
+========
+{"
+====
+1
+string expected near '"'
+========
+{"a
+====
+1
+string expected near '"a'
+========
+{"a"
+====
+2
+':' expected near end of file
+========
+{'a'
+====
+1
+string expected near '''
+========
+{"a":
+====
+2
+unexpected token near end of file
+========
+{"a":"a
+====
+1
+invalid token near '"a'
+========
+{[
+====
+1
+string expected near '['
+========
+[{
+====
+2
+'}' expected near end of file
+========
+[{}
+====
+2
+']' expected near end of file
+========
+[1,]
+====
+1
+unexpected token near ']'
+========
+[1,
+2,
+3,
+4,
+5,
+]
+====
+6
+unexpected token near ']'
+========
+[1.]
+====
+1
+invalid token near '1.'
+========
+[1e]
+====
+1
+invalid token near '1e'
+========
+[1ea]
+====
+1
+invalid token near '1e'
+========
+[012]
+====
+1
+invalid token near '0'
+========
+[-012]
+====
+1
+invalid token near '-0'
+========
+["	 <-- tab character"]
+====
+1
+invalid token near '"'

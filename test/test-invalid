@@ -1,0 +1,22 @@
+#!/bin/sh
+
+TESTFILE="${srcdir}/testdata/invalid"
+TMPDIR="tmp"
+
+run_test() {
+    local prog=$1
+    local input=$2
+    local output=$3
+    run_testprog $prog $TMPDIR/$input
+    if ! cmp $TMPDIR/$output $TMPDIR/error >/dev/null; then
+        echo "### $input ($prog) failed:" >&2
+        cat $TMPDIR/$input >&2
+        echo "### expected output:" >&2
+        cat $TMPDIR/$output >&2
+        echo "### actual output:" >&2
+        cat $TMPDIR/error >&2
+        exit 1
+    fi
+}
+
+. ${srcdir}/run-test

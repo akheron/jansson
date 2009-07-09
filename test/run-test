@@ -1,0 +1,31 @@
+cleanup() {
+    rm -rf $TMPDIR
+}
+trap cleanup 0
+
+run_testprog() {
+    local prog=$1
+    local input=$2
+    case "$prog" in
+        load_dump)
+            ./$prog $input $TMPDIR/output 2>$TMPDIR/error
+            ;;
+        *)
+            ./$prog <$input >$TMPDIR/output 2>$TMPDIR/error
+            ;;
+    esac
+}
+
+if [ ! -f $TESTFILE ]; then
+    echo "$TESTFILE cannot be found" >&2
+    exit 1
+fi
+
+mkdir -p $TMPDIR
+${srcdir}/split-testfile.py $TESTFILE $TMPDIR | \
+while read input output; do
+    run_test load_dump $input $output
+    run_test loadf_dumpf $input $output
+    run_test loadfd_dumpfd $input $output
+    run_test loads_dumps $input $output
+done
