@@ -54,8 +54,7 @@ static int dump_indent(uint32_t flags, int depth, dump_func dump, void *data)
         memset(ws_buffer, ' ', ws_count);
         return dump(ws_buffer, ws_count, data);
     }
-    else
-        return dump(" ", 1, data);
+    return 0;
 }
 
 static int dump_string(const char *str, dump_func dump, void *data)
