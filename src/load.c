@@ -304,7 +304,7 @@ static void lex_close(lex_t *lex)
 
 /*** parser ***/
 
-static json_t *parse(lex_t *lex, json_error_t *error);
+static json_t *parse_value(lex_t *lex, json_error_t *error);
 
 static json_t *parse_object(lex_t *lex, json_error_t *error)
 {
@@ -338,7 +338,7 @@ static json_t *parse_object(lex_t *lex, json_error_t *error)
 
         lex_scan(lex);
 
-        value = parse(lex, error);
+        value = parse_value(lex, error);
         if(!value) {
             free(key);
             goto error;
@@ -382,7 +382,7 @@ static json_t *parse_array(lex_t *lex, json_error_t *error)
         return array;
 
     while(lex->token) {
-        json_t *elem = parse(lex, error);
+        json_t *elem = parse_value(lex, error);
         if(!elem)
             goto error;
 
@@ -411,7 +411,7 @@ error:
     return NULL;
 }
 
-static json_t *parse(lex_t *lex, json_error_t *error)
+static json_t *parse_value(lex_t *lex, json_error_t *error)
 {
     json_t *json;
 
@@ -467,6 +467,16 @@ static json_t *parse(lex_t *lex, json_error_t *error)
     return json;
 }
 
+json_t *parse_json(lex_t *lex, json_error_t *error)
+{
+    if(lex->token != '[' && lex->token != '{') {
+        error_set(error, lex, "'[' or '{' expected");
+        return NULL;
+    }
+
+    return parse_value(lex, error);
+}
+
 json_t *json_load(const char *path, json_error_t *error)
 {
     json_t *result;
@@ -494,12 +504,7 @@ json_t *json_loads(const char *string, json_error_t *error)
     if(lex_init(&lex, string))
         return NULL;
 
-    if(lex.token != '[' && lex.token != '{') {
-        error_set(error, &lex, "'[' or '{' expected");
-        goto out;
-    }
-
-    result = parse(&lex, error);
+    result = parse_json(&lex, error);
     if(!result)
         goto out;
 
