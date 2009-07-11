@@ -11,15 +11,14 @@
 #include <jansson.h>
 #include "strbuffer.h"
 
-
-#define JSON_TOKEN_INVALID         -1
-#define JSON_TOKEN_EOF              0
-#define JSON_TOKEN_STRING         256
-#define JSON_TOKEN_INTEGER        257
-#define JSON_TOKEN_REAL           258
-#define JSON_TOKEN_TRUE           259
-#define JSON_TOKEN_FALSE          260
-#define JSON_TOKEN_NULL           261
+#define TOKEN_INVALID         -1
+#define TOKEN_EOF              0
+#define TOKEN_STRING         256
+#define TOKEN_INTEGER        257
+#define TOKEN_REAL           258
+#define TOKEN_TRUE           259
+#define TOKEN_FALSE          260
+#define TOKEN_NULL           261
 
 typedef struct {
     const char *input;
@@ -31,13 +30,13 @@ typedef struct {
         int integer;
         double real;
     } value;
-} json_lex;
+} lex_t;
 
 
 /*** error reporting ***/
 
-static void json_set_error(json_error_t *error, const json_lex *lex,
-                           const char *msg, ...)
+static void error_set(json_error_t *error, const lex_t *lex,
+                      const char *msg, ...)
 {
     va_list ap;
     char text[JSON_ERROR_TEXT_LENGTH];
@@ -74,13 +73,13 @@ static void json_set_error(json_error_t *error, const json_lex *lex,
 
 /*** lexical analyzer ***/
 
-static void json_scan_string(json_lex *lex)
+static void lex_scan_string(lex_t *lex)
 {
     /* skip the " */
     const char *p = lex->input + 1;
     char *t;
 
-    lex->token = JSON_TOKEN_INVALID;
+    lex->token = TOKEN_INVALID;
 
     while(*p != '"') {
         if(*p == '\0') {
@@ -154,18 +153,18 @@ static void json_scan_string(json_lex *lex)
     p++;
 
     *t = '\0';
-    lex->token = JSON_TOKEN_STRING;
+    lex->token = TOKEN_STRING;
 
 out:
     lex->input = p;
 }
 
-static void json_scan_number(json_lex *lex)
+static void lex_scan_number(lex_t *lex)
 {
     const char *p = lex->input;
     char *end;
 
-    lex->token = JSON_TOKEN_INVALID;
+    lex->token = TOKEN_INVALID;
 
     if(*p == '-')
         p++;
@@ -182,7 +181,7 @@ static void json_scan_number(json_lex *lex)
     }
 
     if(*p != '.' && *p != 'E' && *p != 'e') {
-        lex->token = JSON_TOKEN_INTEGER;
+        lex->token = TOKEN_INTEGER;
 
         lex->value.integer = strtol(lex->start, &end, 10);
         assert(end == p);
@@ -213,7 +212,7 @@ static void json_scan_number(json_lex *lex)
             p++;
     }
 
-    lex->token = JSON_TOKEN_REAL;
+    lex->token = TOKEN_REAL;
 
     lex->value.real = strtod(lex->start, &end);
     assert(end == p);
@@ -222,11 +221,11 @@ out:
     lex->input = p;
 }
 
-static int json_lex_scan(json_lex *lex)
+static int lex_scan(lex_t *lex)
 {
     char c;
 
-    if(lex->token == JSON_TOKEN_STRING) {
+    if(lex->token == TOKEN_STRING) {
       free(lex->value.string);
       lex->value.string = NULL;
     }
@@ -245,7 +244,7 @@ static int json_lex_scan(json_lex *lex)
     c = *lex->input;
 
     if(c == '\0')
-        lex->token = JSON_TOKEN_EOF;
+        lex->token = TOKEN_EOF;
 
     else if(c == '{' || c == '}' || c == '[' || c == ']' ||
             c == ':' || c == ',')
@@ -255,10 +254,10 @@ static int json_lex_scan(json_lex *lex)
     }
 
     else if(c == '"')
-        json_scan_string(lex);
+        lex_scan_string(lex);
 
     else if(isdigit(c) || c == '-')
-        json_scan_number(lex);
+        lex_scan_number(lex);
 
     else if(isupper(c) || islower(c)) {
         /* eat up the whole identifier for clearer error messages */
@@ -269,51 +268,51 @@ static int json_lex_scan(json_lex *lex)
         len = lex->input - lex->start;
 
         if(strncmp(lex->start, "true", len) == 0)
-            lex->token = JSON_TOKEN_TRUE;
+            lex->token = TOKEN_TRUE;
         else if(strncmp(lex->start, "false", len) == 0)
-            lex->token = JSON_TOKEN_FALSE;
+            lex->token = TOKEN_FALSE;
         else if(strncmp(lex->start, "null", len) == 0)
-            lex->token = JSON_TOKEN_NULL;
+            lex->token = TOKEN_NULL;
         else
-            lex->token = JSON_TOKEN_INVALID;
+            lex->token = TOKEN_INVALID;
     }
 
     else {
-        lex->token = JSON_TOKEN_INVALID;
+        lex->token = TOKEN_INVALID;
         lex->input++;
     }
 
     return lex->token;
 }
 
-static int json_lex_init(json_lex *lex, const char *input)
+static int lex_init(lex_t *lex, const char *input)
 {
     lex->input = input;
-    lex->token = JSON_TOKEN_INVALID;
+    lex->token = TOKEN_INVALID;
     lex->line = 1;
 
-    json_lex_scan(lex);
+    lex_scan(lex);
     return 0;
 }
 
-static void json_lex_close(json_lex *lex)
+static void lex_close(lex_t *lex)
 {
-    if(lex->token == JSON_TOKEN_STRING)
+    if(lex->token == TOKEN_STRING)
         free(lex->value.string);
 }
 
 
 /*** parser ***/
 
-static json_t *json_parse(json_lex *lex, json_error_t *error);
+static json_t *parse(lex_t *lex, json_error_t *error);
 
-static json_t *json_parse_object(json_lex *lex, json_error_t *error)
+static json_t *parse_object(lex_t *lex, json_error_t *error)
 {
     json_t *object = json_object();
     if(!object)
         return NULL;
 
-    json_lex_scan(lex);
+    lex_scan(lex);
     if(lex->token == '}')
         return object;
 
@@ -321,8 +320,8 @@ static json_t *json_parse_object(json_lex *lex, json_error_t *error)
         char *key;
         json_t *value;
 
-        if(lex->token != JSON_TOKEN_STRING) {
-            json_set_error(error, lex, "string expected");
+        if(lex->token != TOKEN_STRING) {
+            error_set(error, lex, "string expected");
             goto error;
         }
 
@@ -330,16 +329,16 @@ static json_t *json_parse_object(json_lex *lex, json_error_t *error)
         if(!key)
             return NULL;
 
-        json_lex_scan(lex);
+        lex_scan(lex);
         if(lex->token != ':') {
             free(key);
-            json_set_error(error, lex, "':' expected");
+            error_set(error, lex, "':' expected");
             goto error;
         }
 
-        json_lex_scan(lex);
+        lex_scan(lex);
 
-        value = json_parse(lex, error);
+        value = parse(lex, error);
         if(!value) {
             free(key);
             goto error;
@@ -357,11 +356,11 @@ static json_t *json_parse_object(json_lex *lex, json_error_t *error)
         if(lex->token != ',')
             break;
 
-        json_lex_scan(lex);
+        lex_scan(lex);
     }
 
     if(lex->token != '}') {
-        json_set_error(error, lex, "'}' expected");
+        error_set(error, lex, "'}' expected");
         goto error;
     }
 
@@ -372,18 +371,18 @@ error:
     return NULL;
 }
 
-static json_t *json_parse_array(json_lex *lex, json_error_t *error)
+static json_t *parse_array(lex_t *lex, json_error_t *error)
 {
     json_t *array = json_array();
     if(!array)
         return NULL;
 
-    json_lex_scan(lex);
+    lex_scan(lex);
     if(lex->token == ']')
         return array;
 
     while(lex->token) {
-        json_t *elem = json_parse(lex, error);
+        json_t *elem = parse(lex, error);
         if(!elem)
             goto error;
 
@@ -396,12 +395,12 @@ static json_t *json_parse_array(json_lex *lex, json_error_t *error)
         if(lex->token != ',')
             break;
 
-        json_lex_scan(lex);
+        lex_scan(lex);
     }
 
 
     if(lex->token != ']') {
-        json_set_error(error, lex, "']' expected");
+        error_set(error, lex, "']' expected");
         goto error;
     }
 
@@ -412,59 +411,59 @@ error:
     return NULL;
 }
 
-static json_t *json_parse(json_lex *lex, json_error_t *error)
+static json_t *parse(lex_t *lex, json_error_t *error)
 {
     json_t *json;
 
     switch(lex->token) {
-        case JSON_TOKEN_STRING: {
+        case TOKEN_STRING: {
             json = json_string(lex->value.string);
             break;
         }
 
-        case JSON_TOKEN_INTEGER: {
+        case TOKEN_INTEGER: {
             json = json_integer(lex->value.integer);
             break;
         }
 
-        case JSON_TOKEN_REAL: {
+        case TOKEN_REAL: {
             json = json_real(lex->value.real);
             break;
         }
 
-        case JSON_TOKEN_TRUE:
+        case TOKEN_TRUE:
             json = json_true();
             break;
 
-        case JSON_TOKEN_FALSE:
+        case TOKEN_FALSE:
             json = json_false();
             break;
 
-        case JSON_TOKEN_NULL:
+        case TOKEN_NULL:
             json = json_null();
             break;
 
         case '{':
-          json = json_parse_object(lex, error);
+          json = parse_object(lex, error);
             break;
 
         case '[':
-            json = json_parse_array(lex, error);
+            json = parse_array(lex, error);
             break;
 
-        case JSON_TOKEN_INVALID:
-            json_set_error(error, lex, "invalid token");
+        case TOKEN_INVALID:
+            error_set(error, lex, "invalid token");
             return NULL;
 
         default:
-            json_set_error(error, lex, "unexpected token");
+            error_set(error, lex, "unexpected token");
             return NULL;
     }
 
     if(!json)
         return NULL;
 
-    json_lex_scan(lex);
+    lex_scan(lex);
     return json;
 }
 
@@ -476,7 +475,7 @@ json_t *json_load(const char *path, json_error_t *error)
     fp = fopen(path, "r");
     if(!fp)
     {
-        json_set_error(error, NULL, "unable to open %s: %s",
+        error_set(error, NULL, "unable to open %s: %s",
                        path, strerror(errno));
         return NULL;
     }
@@ -489,29 +488,29 @@ json_t *json_load(const char *path, json_error_t *error)
 
 json_t *json_loads(const char *string, json_error_t *error)
 {
-    json_lex lex;
+    lex_t lex;
     json_t *result = NULL;
 
-    if(json_lex_init(&lex, string))
+    if(lex_init(&lex, string))
         return NULL;
 
     if(lex.token != '[' && lex.token != '{') {
-        json_set_error(error, &lex, "'[' or '{' expected");
+        error_set(error, &lex, "'[' or '{' expected");
         goto out;
     }
 
-    result = json_parse(&lex, error);
+    result = parse(&lex, error);
     if(!result)
         goto out;
 
-    if(lex.token != JSON_TOKEN_EOF) {
-        json_set_error(error, &lex, "end of file expected");
+    if(lex.token != TOKEN_EOF) {
+        error_set(error, &lex, "end of file expected");
         json_decref(result);
         result = NULL;
     }
 
 out:
-    json_lex_close(&lex);
+    lex_close(&lex);
     return result;
 }
 
@@ -534,7 +533,7 @@ json_t *json_loadf(FILE *input, json_error_t *error)
         {
             if(ferror(input))
             {
-                json_set_error(error, NULL, "read error");
+                error_set(error, NULL, "read error");
                 goto out;
             }
             break;
@@ -565,7 +564,7 @@ json_t *json_loadfd(int fd, json_error_t *error)
         length = read(fd, buffer, BUFFER_SIZE);
         if(length == -1)
         {
-            json_set_error(error, NULL, "read error: %s", strerror(errno));
+            error_set(error, NULL, "read error: %s", strerror(errno));
             goto out;
         }
         else if(length == 0)
@@ -573,7 +572,7 @@ json_t *json_loadfd(int fd, json_error_t *error)
 
         if(strbuffer_append_bytes(&strbuff, buffer, length))
         {
-            json_set_error(error, NULL, "error allocating memory");
+            error_set(error, NULL, "error allocating memory");
             goto out;
         }
     }
