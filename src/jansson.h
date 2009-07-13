@@ -96,7 +96,6 @@ typedef struct {
 json_t *json_load(const char *path, json_error_t *error);
 json_t *json_loads(const char *input, json_error_t *error);
 json_t *json_loadf(FILE *input, json_error_t *error);
-json_t *json_loadfd(int fd, json_error_t *error);
 
 #define JSON_INDENT(n)   (n & 0xFF)
 #define JSON_SORT_KEYS   0x100
@@ -104,6 +103,5 @@ json_t *json_loadfd(int fd, json_error_t *error);
 int json_dump(const json_t *json, const char *path, uint32_t flags);
 char *json_dumps(const json_t *json, uint32_t flags);
 int json_dumpf(const json_t *json, FILE *output, uint32_t flags);
-int json_dumpfd(const json_t *json, int fd, uint32_t flags);
 
 #endif

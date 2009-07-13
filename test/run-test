@@ -26,6 +26,5 @@ ${srcdir}/split-testfile.py $TESTFILE $TMPDIR | \
 while read input output; do
     run_test load_dump $input $output
     run_test loadf_dumpf $input $output
-    run_test loadfd_dumpfd $input $output
     run_test loads_dumps $input $output
 done

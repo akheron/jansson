@@ -29,14 +29,6 @@ static int dump_to_file(const char *buffer, int size, void *data)
     return 0;
 }
 
-static int dump_to_fd(const char *buffer, int size, void *data)
-{
-    int *fd = (int *)data;
-    if(write(*fd, buffer, size) != size)
-        return -1;
-    return 0;
-}
-
 static int dump_indent(uint32_t flags, int depth, dump_func dump, void *data)
 {
     if(JSON_INDENT(flags) > 0)
@@ -267,11 +259,4 @@ int json_dumpf(const json_t *json, FILE *output, uint32_t flags)
     if(do_dump(json, flags, 0, dump_to_file, (void *)output))
         return -1;
     return dump_to_file("\n", 1, (void *)output);
-}
-
-int json_dumpfd(const json_t *json, int fd, uint32_t flags)
-{
-    if(do_dump(json, flags, 0, dump_to_fd, (void *)&fd))
-        return -1;
-    return dump_to_fd("\n", 1, (void *)&fd);
 }

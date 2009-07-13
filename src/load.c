@@ -553,38 +553,3 @@ out:
     strbuffer_close(&strbuff);
     return result;
 }
-
-json_t *json_loadfd(int fd, json_error_t *error)
-{
-    strbuffer_t strbuff;
-    char buffer[BUFFER_SIZE];
-    ssize_t length;
-    json_t *result = NULL;
-
-    if(strbuffer_init(&strbuff))
-      return NULL;
-
-    while(1)
-    {
-        length = read(fd, buffer, BUFFER_SIZE);
-        if(length == -1)
-        {
-            error_set(error, NULL, "read error: %s", strerror(errno));
-            goto out;
-        }
-        else if(length == 0)
-            break;
-
-        if(strbuffer_append_bytes(&strbuff, buffer, length))
-        {
-            error_set(error, NULL, "error allocating memory");
-            goto out;
-        }
-    }
-
-    result = json_loads(strbuffer_value(&strbuff), error);
-
-out:
-    strbuffer_close(&strbuff);
-    return result;
-}
