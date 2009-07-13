@@ -29,7 +29,13 @@ void strbuffer_close(strbuffer_t *strbuff)
     strbuff->value = NULL;
 }
 
-const char *strbuffer_value(strbuffer_t *strbuff)
+void strbuffer_clear(strbuffer_t *strbuff)
+{
+    strbuff->length = 0;
+    strbuff->value[0] = '\0';
+}
+
+const char *strbuffer_value(const strbuffer_t *strbuff)
 {
     return strbuff->value;
 }
@@ -44,6 +50,11 @@ char *strbuffer_steal_value(strbuffer_t *strbuff)
 int strbuffer_append(strbuffer_t *strbuff, const char *string)
 {
     return strbuffer_append_bytes(strbuff, string, strlen(string));
+}
+
+int strbuffer_append_byte(strbuffer_t *strbuff, char byte)
+{
+    return strbuffer_append_bytes(strbuff, &byte, 1);
 }
 
 int strbuffer_append_bytes(strbuffer_t *strbuff, const char *data, int size)
@@ -63,4 +74,15 @@ int strbuffer_append_bytes(strbuffer_t *strbuff, const char *data, int size)
     strbuff->value[strbuff->length] = '\0';
 
     return 0;
+}
+
+char strbuffer_pop(strbuffer_t *strbuff)
+{
+    if(strbuff->length > 0) {
+        char c = strbuff->value[--strbuff->length];
+        strbuff->value[strbuff->length] = '\0';
+        return c;
+    }
+    else
+        return '\0';
 }

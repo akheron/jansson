@@ -20,9 +20,24 @@
 #define TOKEN_FALSE          260
 #define TOKEN_NULL           261
 
+/* read one byte from stream, return EOF on end of file */
+typedef int (*get_func)(void *data);
+
+/* return non-zero if end of file has been reached */
+typedef int (*eof_func)(void *data);
+
 typedef struct {
-    const char *input;
-    const char *start;
+    get_func get;
+    eof_func eof;
+    void *data;
+    char buffer[5];
+    int buffer_pos;
+} stream_t;
+
+
+typedef struct {
+    stream_t stream;
+    strbuffer_t saved_text;
     int token;
     int line, column;
     union {
@@ -50,12 +65,12 @@ static void error_set(json_error_t *error, const lex_t *lex,
 
     if(lex)
     {
+        const char *saved_text = strbuffer_value(&lex->saved_text);
         error->line = lex->line;
-        if(*lex->start)
+        if(saved_text && saved_text[0])
         {
-            int n = (int)(lex->input - lex->start);
             snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
-                     "%s near '%.*s'", text, n, lex->start);
+                     "%s near '%s'", text, saved_text);
         }
         else
         {
@@ -73,46 +88,117 @@ static void error_set(json_error_t *error, const lex_t *lex,
 
 /*** lexical analyzer ***/
 
+void stream_init(stream_t *stream, get_func get, eof_func eof, void *data)
+{
+    stream->get = get;
+    stream->eof = eof;
+    stream->data = data;
+    stream->buffer[0] = '\0';
+    stream->buffer_pos = 0;
+}
+
+static char stream_get(stream_t *stream)
+{
+    if(!stream->buffer[stream->buffer_pos])
+    {
+        stream->buffer[0] = stream->get(stream->data);
+        stream->buffer_pos = 0;
+    }
+
+    return (char)stream->buffer[stream->buffer_pos++];
+}
+
+static void stream_unget(stream_t *stream, char c)
+{
+    assert(stream->buffer_pos > 0);
+    stream->buffer_pos--;
+    assert(stream->buffer[stream->buffer_pos] == (unsigned char)c);
+}
+
+
+static int lex_get(lex_t *lex)
+{
+    return stream_get(&lex->stream);
+}
+
+static int lex_eof(lex_t *lex)
+{
+    return lex->stream.eof(lex->stream.data);
+}
+
+static void lex_save(lex_t *lex, char c)
+{
+    strbuffer_append_byte(&lex->saved_text, c);
+}
+
+static int lex_get_save(lex_t *lex)
+{
+    char c = stream_get(&lex->stream);
+    lex_save(lex, c);
+    return c;
+}
+
+static void lex_unget_unsave(lex_t *lex, char c)
+{
+    char d;
+    stream_unget(&lex->stream, c);
+    d = strbuffer_pop(&lex->saved_text);
+    assert(c == d);
+}
+
 static void lex_scan_string(lex_t *lex)
 {
-    /* skip the " */
-    const char *p = lex->input + 1;
+    char c;
+    const char *p;
     char *t;
 
     lex->token = TOKEN_INVALID;
 
-    while(*p != '"') {
-        if(*p == '\0') {
-            /* unterminated string literal */
+    /* skip the " */
+    c = lex_get_save(lex);
+
+    while(c != '"') {
+        if(c == EOF && lex_eof(lex))
+            goto out;
+
+        else if(0 <= c && c <= 0x1F) {
+            /* control character */
+            lex_unget_unsave(lex, c);
             goto out;
         }
 
-        if(0 <= *p && *p <= 0x1F) {
-            /* control character */
-            goto out;
-        }
-        else if(*p == '\\') {
-            p++;
-            if(*p == 'u') {
-                p++;
-                for(int i = 0; i < 4; i++, p++) {
-                    if(!isxdigit(*p))
+        else if(c == '\\') {
+            c = lex_get_save(lex);
+            if(c == 'u') {
+                c = lex_get_save(lex);
+                for(int i = 0; i < 4; i++) {
+                    if(!isxdigit(c)) {
+                        lex_unget_unsave(lex, c);
                         goto out;
+                    }
+                    c = lex_get_save(lex);
                 }
             }
-            else if(*p == '"' || *p == '\\' || *p == '/' || *p == 'b' ||
-                    *p == 'f' || *p == 'n' || *p == 'r' || *p == 't')
-                p++;
-            else
+            else if(c == '"' || c == '\\' || c == '/' || c == 'b' ||
+                    c == 'f' || c == 'n' || c == 'r' || c == 't')
+                c = lex_get_save(lex);
+            else {
+                lex_unget_unsave(lex, c);
                 goto out;
+            }
         }
         else
-            p++;
+            c = lex_get_save(lex);
     }
 
     /* the actual value is at most of the same length as the source
-       string */
-    lex->value.string = malloc(p - lex->start);
+       string, because:
+         - shortcut escapes (e.g. "\t") (length 2) are converted to 1 byte
+         - a single \uXXXX escape (length 6) is converted to at most 3 bytes
+         - two \uXXXX escapes (length 12) forming an UTF-16 surrogate pair
+           are converted to 4 bytes
+    */
+    lex->value.string = malloc(lex->saved_text.length + 1);
     if(!lex->value.string) {
         /* this is not very nice, since TOKEN_INVALID is returned */
         goto out;
@@ -121,7 +207,9 @@ static void lex_scan_string(lex_t *lex)
     /* the target */
     t = lex->value.string;
 
-    p = lex->input + 1;
+    /* + 1 to skip the " */
+    p = strbuffer_value(&lex->saved_text) + 1;
+
     while(*p != '"') {
         if(*p == '\\') {
             p++;
@@ -149,149 +237,157 @@ static void lex_scan_string(lex_t *lex)
         t++;
         p++;
     }
-    /* skip the " */
-    p++;
-
     *t = '\0';
     lex->token = TOKEN_STRING;
 
 out:
-    lex->input = p;
+    return;
 }
 
-static void lex_scan_number(lex_t *lex)
+static void lex_scan_number(lex_t *lex, char c)
 {
-    const char *p = lex->input;
+    const char *saved_text;
     char *end;
 
     lex->token = TOKEN_INVALID;
 
-    if(*p == '-')
-        p++;
+    if(c == '-')
+        c = lex_get_save(lex);
 
-    if(*p == '0') {
-        p++;
-        if(isdigit(*p))
-          goto out;
+    if(c == '0') {
+        c = lex_get_save(lex);
+        if(isdigit(c)) {
+            lex_unget_unsave(lex, c);
+            goto out;
+        }
     }
-    else /* *p != '0' */ {
-        p++;
-        while(isdigit(*p))
-            p++;
+    else /* c != '0' */ {
+        c = lex_get_save(lex);
+        while(isdigit(c))
+            c = lex_get_save(lex);
     }
 
-    if(*p != '.' && *p != 'E' && *p != 'e') {
+    if(c != '.' && c != 'E' && c != 'e') {
+        lex_unget_unsave(lex, c);
         lex->token = TOKEN_INTEGER;
 
-        lex->value.integer = strtol(lex->start, &end, 10);
-        assert(end == p);
+        saved_text = strbuffer_value(&lex->saved_text);
+        lex->value.integer = strtol(saved_text, &end, 10);
+        assert(end == saved_text + lex->saved_text.length);
 
-        goto out;
+        return;
     }
 
-    if(*p == '.') {
-        p++;
-        if(!isdigit(*p))
+    if(c == '.') {
+        c = lex_get(lex);
+        if(!isdigit(c))
             goto out;
+        lex_save(lex, c);
 
-        p++;
-        while(isdigit(*p))
-            p++;
+        c = lex_get_save(lex);
+        while(isdigit(c))
+            c = lex_get_save(lex);
     }
 
-    if(*p == 'E' || *p == 'e') {
-        p++;
-        if(*p == '+' || *p == '-')
-            p++;
+    if(c == 'E' || c == 'e') {
+        c = lex_get_save(lex);
+        if(c == '+' || c == '-')
+            c = lex_get_save(lex);
 
-        if(!isdigit(*p))
+        if(!isdigit(c)) {
+            lex_unget_unsave(lex, c);
             goto out;
+        }
 
-        p++;
-        while(isdigit(*p))
-            p++;
+        c = lex_get_save(lex);
+        while(isdigit(c))
+            c = lex_get_save(lex);
     }
 
+    lex_unget_unsave(lex, c);
     lex->token = TOKEN_REAL;
 
-    lex->value.real = strtod(lex->start, &end);
-    assert(end == p);
+    saved_text = strbuffer_value(&lex->saved_text);
+    lex->value.real = strtod(saved_text, &end);
+    assert(end == saved_text + lex->saved_text.length);
 
 out:
-    lex->input = p;
+    return;
 }
 
 static int lex_scan(lex_t *lex)
 {
     char c;
 
+    strbuffer_clear(&lex->saved_text);
+
     if(lex->token == TOKEN_STRING) {
       free(lex->value.string);
       lex->value.string = NULL;
     }
 
-    c = *lex->input;
+    c = lex_get(lex);
     while(c == ' ' || c == '\t' || c == '\n' || c == '\r')
     {
         if(c == '\n')
             lex->line++;
 
-        lex->input++;
-        c = *lex->input;
+        c = lex_get(lex);
     }
 
-    lex->start = lex->input;
-    c = *lex->input;
-
-    if(c == '\0')
+    if(c == EOF && lex_eof(lex)) {
         lex->token = TOKEN_EOF;
-
-    else if(c == '{' || c == '}' || c == '[' || c == ']' ||
-            c == ':' || c == ',')
-    {
-        lex->token = c;
-        lex->input++;
+        goto out;
     }
+
+    lex_save(lex, c);
+
+    if(c == '{' || c == '}' || c == '[' || c == ']' || c == ':' || c == ',')
+        lex->token = c;
 
     else if(c == '"')
         lex_scan_string(lex);
 
     else if(isdigit(c) || c == '-')
-        lex_scan_number(lex);
+        lex_scan_number(lex, c);
 
     else if(isupper(c) || islower(c)) {
         /* eat up the whole identifier for clearer error messages */
-        int len;
+        const char *saved_text;
 
-        while(isupper(*lex->input) || islower(*lex->input))
-            lex->input++;
-        len = lex->input - lex->start;
+        c = lex_get_save(lex);
+        while(isupper(c) || islower(c))
+            c = lex_get_save(lex);
+        lex_unget_unsave(lex, c);
 
-        if(strncmp(lex->start, "true", len) == 0)
+        saved_text = strbuffer_value(&lex->saved_text);
+
+        if(strcmp(saved_text, "true") == 0)
             lex->token = TOKEN_TRUE;
-        else if(strncmp(lex->start, "false", len) == 0)
+        else if(strcmp(saved_text, "false") == 0)
             lex->token = TOKEN_FALSE;
-        else if(strncmp(lex->start, "null", len) == 0)
+        else if(strcmp(saved_text, "null") == 0)
             lex->token = TOKEN_NULL;
         else
             lex->token = TOKEN_INVALID;
     }
 
-    else {
+    else
         lex->token = TOKEN_INVALID;
-        lex->input++;
-    }
 
+out:
     return lex->token;
 }
 
-static int lex_init(lex_t *lex, const char *input)
+static int lex_init(lex_t *lex, get_func get, eof_func eof, void *data)
 {
-    lex->input = input;
+    stream_init(&lex->stream, get, eof, data);
+    if(strbuffer_init(&lex->saved_text))
+        return -1;
+
     lex->token = TOKEN_INVALID;
     lex->line = 1;
 
-    lex_scan(lex);
     return 0;
 }
 
@@ -316,12 +412,12 @@ static json_t *parse_object(lex_t *lex, json_error_t *error)
     if(lex->token == '}')
         return object;
 
-    while(lex->token) {
+    while(1) {
         char *key;
         json_t *value;
 
         if(lex->token != TOKEN_STRING) {
-            error_set(error, lex, "string expected");
+            error_set(error, lex, "string or '}' expected");
             goto error;
         }
 
@@ -337,7 +433,6 @@ static json_t *parse_object(lex_t *lex, json_error_t *error)
         }
 
         lex_scan(lex);
-
         value = parse_value(lex, error);
         if(!value) {
             free(key);
@@ -353,6 +448,7 @@ static json_t *parse_object(lex_t *lex, json_error_t *error)
         json_decref(value);
         free(key);
 
+        lex_scan(lex);
         if(lex->token != ',')
             break;
 
@@ -392,12 +488,12 @@ static json_t *parse_array(lex_t *lex, json_error_t *error)
         }
         json_decref(elem);
 
+        lex_scan(lex);
         if(lex->token != ',')
             break;
 
         lex_scan(lex);
     }
-
 
     if(lex->token != ']') {
         error_set(error, lex, "']' expected");
@@ -463,12 +559,13 @@ static json_t *parse_value(lex_t *lex, json_error_t *error)
     if(!json)
         return NULL;
 
-    lex_scan(lex);
     return json;
 }
 
 json_t *parse_json(lex_t *lex, json_error_t *error)
 {
+    lex_scan(lex);
+
     if(lex->token != '[' && lex->token != '{') {
         error_set(error, lex, "'[' or '{' expected");
         return NULL;
@@ -486,7 +583,7 @@ json_t *json_load(const char *path, json_error_t *error)
     if(!fp)
     {
         error_set(error, NULL, "unable to open %s: %s",
-                       path, strerror(errno));
+                  path, strerror(errno));
         return NULL;
     }
 
@@ -496,18 +593,47 @@ json_t *json_load(const char *path, json_error_t *error)
     return result;
 }
 
+typedef struct
+{
+    const char *data;
+    int pos;
+} string_data_t;
+
+static int string_get(void *data)
+{
+    char c;
+    string_data_t *stream = (string_data_t *)data;
+    c = stream->data[stream->pos++];
+    if(c == '\0')
+        return EOF;
+    else
+        return c;
+}
+
+static int string_eof(void *data)
+{
+    string_data_t *stream = (string_data_t *)data;
+    return (stream->data[stream->pos] == '\0');
+}
+
 json_t *json_loads(const char *string, json_error_t *error)
 {
     lex_t lex;
-    json_t *result = NULL;
+    json_t *result;
 
-    if(lex_init(&lex, string))
+    string_data_t stream_data = {
+        .data = string,
+        .pos = 0
+    };
+
+    if(lex_init(&lex, string_get, string_eof, (void *)&stream_data))
         return NULL;
 
     result = parse_json(&lex, error);
     if(!result)
         goto out;
 
+    lex_scan(&lex);
     if(lex.token != TOKEN_EOF) {
         error_set(error, &lex, "end of file expected");
         json_decref(result);
@@ -519,37 +645,16 @@ out:
     return result;
 }
 
-#define BUFFER_SIZE 4096
-
 json_t *json_loadf(FILE *input, json_error_t *error)
 {
-    strbuffer_t strbuff;
-    char buffer[BUFFER_SIZE];
-    size_t length;
-    json_t *result = NULL;
+    lex_t lex;
+    json_t *result;
 
-    if(strbuffer_init(&strbuff))
-      return NULL;
+    if(lex_init(&lex, (get_func)fgetc, (eof_func)feof, input))
+        return NULL;
 
-    while(1)
-    {
-        length = fread(buffer, 1, BUFFER_SIZE, input);
-        if(length == 0)
-        {
-            if(ferror(input))
-            {
-                error_set(error, NULL, "read error");
-                goto out;
-            }
-            break;
-        }
-        if(strbuffer_append_bytes(&strbuff, buffer, length))
-            goto out;
-    }
+    result = parse_json(&lex, error);
 
-    result = json_loads(strbuffer_value(&strbuff), error);
-
-out:
-    strbuffer_close(&strbuff);
+    lex_close(&lex);
     return result;
 }

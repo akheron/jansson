@@ -10,7 +10,7 @@ null
 {
 ====
 2
-'}' expected near end of file
+string or '}' expected near end of file
 ========
 [
 ====
@@ -45,17 +45,17 @@ invalid token near '''
 {,
 ====
 1
-string expected near ','
+string or '}' expected near ','
 ========
 {"
 ====
 1
-string expected near '"'
+string or '}' expected near '"'
 ========
 {"a
 ====
 1
-string expected near '"a'
+string or '}' expected near '"a'
 ========
 {"a"
 ====
@@ -65,7 +65,7 @@ string expected near '"a'
 {'a'
 ====
 1
-string expected near '''
+string or '}' expected near '''
 ========
 {"a":
 ====
@@ -80,12 +80,12 @@ invalid token near '"a'
 {[
 ====
 1
-string expected near '['
+string or '}' expected near '['
 ========
 [{
 ====
 2
-'}' expected near end of file
+string or '}' expected near end of file
 ========
 [{}
 ====
