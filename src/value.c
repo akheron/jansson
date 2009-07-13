@@ -4,6 +4,8 @@
 
 #include <jansson.h>
 #include "hashtable.h"
+#include "jansson_private.h"
+#include "utf.h"
 #include "util.h"
 
 #define container_of(ptr_, type_, member_)  \
@@ -109,7 +111,7 @@ json_t *json_object_get(const json_t *json, const char *key)
     return hashtable_get(&object->hashtable, key);
 }
 
-int json_object_set(json_t *json, const char *key, json_t *value)
+int json_object_set_nocheck(json_t *json, const char *key, json_t *value)
 {
     json_object_t *object;
 
@@ -118,6 +120,14 @@ int json_object_set(json_t *json, const char *key, json_t *value)
 
     object = json_to_object(json);
     return hashtable_set(&object->hashtable, strdup(key), json_incref(value));
+}
+
+int json_object_set(json_t *json, const char *key, json_t *value)
+{
+    if(!utf8_check_string(key, -1))
+        return -1;
+
+    return json_object_set_nocheck(json, key, value);
 }
 
 int json_object_del(json_t *json, const char *key)
@@ -255,7 +265,7 @@ int json_array_append(json_t *json, json_t *value)
 
 /*** string ***/
 
-json_t *json_string(const char *value)
+json_t *json_string_nocheck(const char *value)
 {
     json_string_t *string = malloc(sizeof(json_string_t));
     if(!string)
@@ -264,6 +274,14 @@ json_t *json_string(const char *value)
 
     string->value = strdup(value);
     return &string->json;
+}
+
+json_t *json_string(const char *value)
+{
+    if(!utf8_check_string(value, -1))
+        return NULL;
+
+    return json_string_nocheck(value);
 }
 
 const char *json_string_value(const json_t *json)

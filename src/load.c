@@ -9,7 +9,9 @@
 #include <assert.h>
 
 #include <jansson.h>
+#include "jansson_private.h"
 #include "strbuffer.h"
+#include "utf.h"
 
 #define TOKEN_INVALID         -1
 #define TOKEN_EOF              0
@@ -101,8 +103,37 @@ static char stream_get(stream_t *stream)
 {
     if(!stream->buffer[stream->buffer_pos])
     {
+        char c;
+
         stream->buffer[0] = stream->get(stream->data);
         stream->buffer_pos = 0;
+
+        c = stream->buffer[0];
+
+        if(c == EOF && stream->eof(stream->data))
+            return EOF;
+
+        if(c < 0)
+        {
+            /* multi-byte UTF-8 sequence */
+            int i, count;
+
+            count = utf8_check_first(c);
+            if(!count)
+                return 0;
+
+            assert(count >= 2);
+
+            for(i = 1; i < count; i++)
+                stream->buffer[i] = stream->get(stream->data);
+
+            if(!utf8_check_full(stream->buffer, count))
+                return 0;
+
+            stream->buffer[count] = '\0';
+        }
+        else
+            stream->buffer[1] = '\0';
     }
 
     return (char)stream->buffer[stream->buffer_pos++];
@@ -439,7 +470,7 @@ static json_t *parse_object(lex_t *lex, json_error_t *error)
             goto error;
         }
 
-        if(json_object_set(object, key, value)) {
+        if(json_object_set_nocheck(object, key, value)) {
             free(key);
             json_decref(value);
             goto error;
@@ -513,7 +544,7 @@ static json_t *parse_value(lex_t *lex, json_error_t *error)
 
     switch(lex->token) {
         case TOKEN_STRING: {
-            json = json_string(lex->value.string);
+            json = json_string_nocheck(lex->value.string);
             break;
         }
 
