@@ -8,6 +8,14 @@
 ========
 ["\"\\\/\b\f\n\r\t"]
 ========
+["\u002c one-byte UTF-8"]
+========
+["\u0123 two-byte UTF-8"]
+========
+["\u0821 three-byte UTF-8"]
+========
+["\uD834\uDD1E surrogate, four-byte UTF-8"]
+========
 [0]
 ========
 [1]

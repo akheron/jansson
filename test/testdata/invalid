@@ -136,3 +136,23 @@ invalid token near '-0'
 ====
 1
 control character 0x9 near '"'
+========
+["\u0000 (null byte not allowed)"]
+====
+1
+\u0000 is not allowed
+========
+["\uDADA (first surrogate without the second)"]
+====
+1
+invalid Unicode '\uDADA'
+========
+["\uD888\u3210 (first surrogate and invalid second surrogate)"]
+====
+1
+invalid Unicode '\uD888\u3210'
+========
+["\uDFAA (second surrogate on it's own)"]
+====
+1
+invalid Unicode '\uDFAA'

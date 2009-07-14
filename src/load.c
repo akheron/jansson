@@ -83,8 +83,12 @@ static void error_set(json_error_t *error, const lex_t *lex,
         error->line = lex->line;
         if(saved_text && saved_text[0])
         {
-            snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
-                     "%s near '%s'", text, saved_text);
+            if(lex->saved_text.length <= 20) {
+                snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
+                         "%s near '%s'", text, saved_text);
+            }
+            else
+                snprintf(error->text, JSON_ERROR_TEXT_LENGTH, "%s", text);
         }
         else
         {
@@ -208,11 +212,36 @@ static void lex_save_cached(lex_t *lex)
     }
 }
 
+/* assumes that str points to 'u' plus at least 4 valid hex digits */
+static int decode_unicode_escape(const char *str)
+{
+    int i;
+    int value = 0;
+
+    assert(str[0] == 'u');
+
+    for(i = 1; i <= 4; i++) {
+        char c = str[i];
+        value <<= 4;
+        if(isdigit(c))
+            value += c - '0';
+        else if(islower(c))
+            value += c - 'a' + 10;
+        else if(isupper(c))
+            value += c - 'A' + 10;
+        else
+            assert(0);
+    }
+
+    return value;
+}
+
 static void lex_scan_string(lex_t *lex, json_error_t *error)
 {
     char c;
     const char *p;
     char *t;
+    int i;
 
     lex->token = TOKEN_INVALID;
 
@@ -240,7 +269,7 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
             c = lex_get_save(lex, error);
             if(c == 'u') {
                 c = lex_get_save(lex, error);
-                for(int i = 0; i < 4; i++) {
+                for(i = 0; i < 4; i++) {
                     if(!isxdigit(c)) {
                         lex_unget_unsave(lex, c);
                         error_set(error, lex, "invalid escape");
@@ -285,12 +314,57 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
         if(*p == '\\') {
             p++;
             if(*p == 'u') {
-                /* TODO */
-                error_set(error, lex, "\\u escapes are not yet supported");
-                free(lex->value.string);
-                lex->value.string = NULL;
-                goto out;
-            } else {
+                char buffer[4];
+                int length;
+                int value;
+
+                value = decode_unicode_escape(p);
+                p += 5;
+
+                if(0xD800 <= value && value <= 0xDBFF) {
+                    /* surrogate pair */
+                    if(*p == '\\' && *(p + 1) == 'u') {
+                        int value2 = decode_unicode_escape(++p);
+                        p += 5;
+
+                        if(0xDC00 <= value2 && value2 <= 0xDFFF) {
+                            /* valid second surrogate */
+                            value = ((value - 0xD800) << 10) +
+                                    (value2 - 0xDC00) +
+                                    0x10000;
+                        }
+                        else {
+                            /* invalid second surrogate */
+                            error_set(error, lex,
+                                      "invalid Unicode '\\u%04X\\u%04X'",
+                                      value, value2);
+                            goto out;
+                        }
+                    }
+                    else {
+                        /* no second surrogate */
+                        error_set(error, lex, "invalid Unicode '\\u%04X'",
+                                  value);
+                        goto out;
+                    }
+                }
+                else if(0xDC00 <= value && value <= 0xDFFF) {
+                    error_set(error, lex, "invalid Unicode '\\u%04X'", value);
+                    goto out;
+                }
+                else if(value == 0)
+                {
+                    error_set(error, lex, "\\u0000 is not allowed");
+                    goto out;
+                }
+
+                if(utf8_encode(value, buffer, &length))
+                    assert(0);
+
+                memcpy(t, buffer, length);
+                t += length;
+            }
+            else {
                 switch(*p) {
                     case '"': case '\\': case '/':
                         *t = *p; break;
@@ -301,13 +375,12 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
                     case 't': *t = '\t'; break;
                     default: assert(0);
                 }
+                t++;
+                p++;
             }
         }
         else
-            *t = *p;
-
-        t++;
-        p++;
+            *(t++) = *(p++);
     }
     *t = '\0';
     lex->token = TOKEN_STRING;
