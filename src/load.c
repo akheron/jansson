@@ -199,6 +199,15 @@ static void lex_unget_unsave(lex_t *lex, char c)
     assert(c == d);
 }
 
+static void lex_save_cached(lex_t *lex)
+{
+    while(lex->stream.buffer[lex->stream.buffer_pos] != '\0')
+    {
+        lex_save(lex, lex->stream.buffer[lex->stream.buffer_pos]);
+        lex->stream.buffer_pos++;
+    }
+}
+
 static void lex_scan_string(lex_t *lex, json_error_t *error)
 {
     char c;
@@ -438,8 +447,12 @@ static int lex_scan(lex_t *lex, json_error_t *error)
             lex->token = TOKEN_INVALID;
     }
 
-    else
+    else {
+        /* save the rest of the input UTF-8 sequence to get an error
+           message of valid UTF-8 */
+        lex_save_cached(lex);
         lex->token = TOKEN_INVALID;
+    }
 
 out:
     return lex->token;
