@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TESTFILE="${srcdir}/testdata/valid"
+TESTFILES="${srcdir}/testdata/valid"
 TMPDIR="tmp"
 
 run_test() {

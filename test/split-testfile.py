@@ -17,8 +17,8 @@ def main():
         print 'usage: %s input-file output-directory' % sys.argv[0]
         return 2
 
-    infile = sys.argv[1]
-    outdir = sys.argv[2]
+    infile = os.path.normpath(sys.argv[1])
+    outdir = os.path.normpath(sys.argv[2])
 
     if not os.path.exists(outdir):
         print >>sys.stderr, 'output directory %r does not exist!' % outdir
@@ -40,7 +40,7 @@ def main():
             current.write(line)
 
     close_files(input, output)
-    print >>sys.stderr, "%d test cases" % (i + 1)
+    print >>sys.stderr, "%s: %d test cases" % (infile, i + 1)
 
 if __name__ == '__main__':
     sys.exit(main() or 0)

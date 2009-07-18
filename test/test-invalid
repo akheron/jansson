@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TESTFILE="${srcdir}/testdata/invalid"
+TESTFILES="${srcdir}/testdata/invalid ${srcdir}/testdata/invalid-unicode"
 TMPDIR="tmp"
 
 run_test() {

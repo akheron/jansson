@@ -77,6 +77,11 @@ unexpected token near end of file
 1
 unexpected newline near '"a'
 ========
+{"a":"a" 123}
+====
+1
+'}' expected near '123'
+========
 {[
 ====
 1
@@ -132,6 +137,16 @@ invalid token near '0'
 1
 invalid token near '-0'
 ========
+[troo
+====
+1
+invalid token near 'troo'
+========
+["\a <-- invalid escape"]
+====
+1
+invalid escape near '"\'
+========
 ["	 <-- tab character"]
 ====
 1
@@ -156,3 +171,8 @@ invalid Unicode '\uD888\u3210'
 ====
 1
 invalid Unicode '\uDFAA'
+========
+å
+====
+1
+'[' or '{' expected near 'å'

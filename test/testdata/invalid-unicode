@@ -1,0 +1,89 @@
+å
+====
+-1
+unable to decode byte 0xe5 at position 0
+========
+["å <-- invalid UTF-8"]
+====
+-1
+unable to decode byte 0xe5 at position 2
+========
+[å]
+====
+-1
+unable to decode byte 0xe5 at position 1
+========
+[aå]
+====
+-1
+unable to decode byte 0xe5 at position 2
+========
+["\uå"]
+====
+-1
+unable to decode byte 0xe5 at position 4
+========
+["\å"]
+====
+-1
+unable to decode byte 0xe5 at position 3
+========
+[0å]
+====
+-1
+unable to decode byte 0xe5 at position 2
+========
+[123å]
+====
+-1
+unable to decode byte 0xe5 at position 4
+========
+[1eå]
+====
+-1
+unable to decode byte 0xe5 at position 3
+========
+[1e1å]
+====
+-1
+unable to decode byte 0xe5 at position 4
+========
+[""]
+====
+-1
+unable to decode byte 0x81 at position 2
+========
+["Á"]
+====
+-1
+unable to decode byte 0xc1 at position 2
+========
+["ý"]
+====
+-1
+unable to decode byte 0xfd at position 2
+========
+["ô¿¿¿"]
+====
+-1
+unable to decode byte 0xf4 at position 2
+========
+["à€¢ <-- overlong encoding"]
+====
+-1
+unable to decode byte 0xe0 at position 2
+========
+["ð€€¢ <-- overlong encoding"]
+====
+-1
+unable to decode byte 0xf0 at position 2
+========
+["àÿ <-- truncated UTF-8"]
+====
+-1
+unable to decode byte 0xe0 at position 2
+========
+["í¢« <-- encoded surrogate half"]
+====
+-1
+unable to decode byte 0xed at position 2

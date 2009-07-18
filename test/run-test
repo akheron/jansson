@@ -16,15 +16,12 @@ run_testprog() {
     esac
 }
 
-if [ ! -f $TESTFILE ]; then
-    echo "$TESTFILE cannot be found" >&2
-    exit 1
-fi
-
-mkdir -p $TMPDIR
-${srcdir}/split-testfile.py $TESTFILE $TMPDIR | \
-while read input output; do
-    run_test load_dump $input $output
-    run_test loadf_dumpf $input $output
-    run_test loads_dumps $input $output
+for testfile in $TESTFILES; do
+    mkdir -p $TMPDIR
+    ${srcdir}/split-testfile.py $testfile $TMPDIR | while read input output; do
+        run_test load_dump $input $output
+        run_test loadf_dumpf $input $output
+        run_test loads_dumps $input $output
+    done || exit 1
+    rm -rf $TMPDIR
 done
