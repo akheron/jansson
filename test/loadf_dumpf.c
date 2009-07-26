@@ -17,7 +17,9 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    json_dumpf(json, stdout, 0);
+    /* loadf_dumpf indents, others don't, so dumping with and without
+       indenting is tested */
+    json_dumpf(json, stdout, JSON_INDENT(4));
     json_decref(json);
 
     return 0;
