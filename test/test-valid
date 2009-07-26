@@ -1,30 +1,29 @@
 #!/bin/sh
 
 TESTFILES="${srcdir}/testdata/valid"
-TMPDIR="tmp"
 
 run_test() {
     local prog=$1
-    local input=$2
-    local output=$3
-    run_testprog $prog $TMPDIR/$input
-    if ! ${srcdir}/json-compare.py $TMPDIR/$input $TMPDIR/output \
-        >$TMPDIR/cmp-output
+    local prefix=$2
+
+    run_testprog $prog $prefix
+
+    if ! ${srcdir}/json-compare.py $prefix.in $prefix.$prog.stdout \
+        >$prefix.$prog.cmp-stdout
     then
-        echo "### $input ($prog) failed:" >&2
-        cat $TMPDIR/$input >&2
-        if [ -f $TMPDIR/output ]; then
+        echo >&2
+        echo "### $prefix ($prog) failed:" >&2
+        cat $prefix.in >&2
+        if [ -f $prefix.$prog.stdout ]; then
             echo "### output:" >&2
-            cat $TMPDIR/output >&2
+            cat $prefix.$prog.stdout >&2
         fi
-        if [ -s $TMPDIR/cmp-output ]; then
+        if [ -s $prefix.$prog.stdout ]; then
             echo "### compare output:" >&2
-            cat $TMPDIR/cmp-output >&2
+            cat $prefix.$prog.cmp-stdout >&2
         fi
         exit 1
     fi
-    rm -f $TMPDIR/output
-    rm -f $TMPDIR/cmp-output
 }
 
 . ${srcdir}/run-test

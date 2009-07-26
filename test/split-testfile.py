@@ -3,14 +3,12 @@
 import os
 import sys
 
-def open_files(outdir, i):
-    return (open(os.path.join(outdir, 'test%02d.in' % i), 'w'),
-            open(os.path.join(outdir, 'test%02d.out' % i), 'w'))
-
-def close_files(input, output):
-    print os.path.basename(input.name), os.path.basename(output.name)
-    input.close()
-    output.close()
+def open_files(outdir, i, name):
+    basename = '%02d_%s' % (i, name)
+    print basename
+    input_path = os.path.join(outdir, basename + '.in')
+    output_path = os.path.join(outdir, basename + '.out')
+    return open(input_path, 'w'), open(output_path, 'w')
 
 def main():
     if len(sys.argv) != 3:
@@ -24,23 +22,28 @@ def main():
         print >>sys.stderr, 'output directory %r does not exist!' % outdir
         return 1
 
-    i = 0
-    input, output = open_files(outdir, i)
-    current = input
+    n = 0
+    current = None
+    input, output = None, None
 
     for line in open(infile):
-        if line == '====\n':
-            current = output
-        elif line == '========\n':
-            close_files(input, output)
-            i += 1
-            input, output = open_files(outdir, i)
+        if line.startswith('==== '):
+            n += 1
+            if input is not None and output is not None:
+                input.close()
+                output.close()
+            input, output = open_files(outdir, n, line[5:line.find(' ====\n')])
             current = input
+        elif line == '====\n':
+            current = output
         else:
             current.write(line)
 
-    close_files(input, output)
-    print >>sys.stderr, "%s: %d test cases" % (infile, i + 1)
+    if input is not None and output is not None:
+        input.close()
+        output.close()
+
+    print >>sys.stderr, "%s: %d test cases" % (infile, n)
 
 if __name__ == '__main__':
     sys.exit(main() or 0)

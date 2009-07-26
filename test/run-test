@@ -1,27 +1,50 @@
-cleanup() {
-    rm -rf $TMPDIR
-}
-trap cleanup 0
+VALGRIND_CMDLINE="valgrind --leak-check=full --show-reachable=yes --track-origins=yes -q"
 
 run_testprog() {
     local prog=$1
-    local input=$2
+    local prefix=$2
+    if [ -n "$VALGRIND" ]; then
+        local runner="$VALGRIND_CMDLINE "
+    fi
+
     case "$prog" in
         load_dump)
-            ./$prog $input $TMPDIR/output 2>$TMPDIR/error
+            $runner./$prog \
+                $prefix.in \
+                $prefix.$prog.stdout \
+                2>$prefix.$prog.stderr
             ;;
         *)
-            ./$prog <$input >$TMPDIR/output 2>$TMPDIR/error
+            $runner./$prog \
+                <$prefix.in \
+                >$prefix.$prog.stdout \
+                2>$prefix.$prog.stderr
             ;;
     esac
+
+    if [ -n "$VALGRIND" ]; then
+        # Check for Valgrind error output. The valgrind option
+        # --error-exitcode is not enough because Valgrind doesn't
+        # think unfreed allocs are errors.
+        if grep -E -q '^==[0-9]+== ' $prefix.$prog.stderr; then
+            echo "### $prefix ($prog) failed:" >&2
+            echo "valgrind detected an error" >&2
+            echo "for details, see test/$prefix.$prog.stderr" >&2
+            exit 1
+        fi
+    fi
 }
 
+rm -rf testlogs
+
 for testfile in $TESTFILES; do
-    mkdir -p $TMPDIR
-    ${srcdir}/split-testfile.py $testfile $TMPDIR | while read input output; do
-        run_test load_dump $input $output
-        run_test loadf_dumpf $input $output
-        run_test loads_dumps $input $output
+    tmpdir="testlogs/`basename $testfile`"
+    mkdir -p $tmpdir
+    ${srcdir}/split-testfile.py $testfile $tmpdir | while read name; do
+        run_test load_dump $tmpdir/$name
+        run_test loadf_dumpf $tmpdir/$name
+        run_test loads_dumps $tmpdir/$name
+        echo -n '.'
     done || exit 1
-    rm -rf $TMPDIR
+    echo
 done
