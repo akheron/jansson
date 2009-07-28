@@ -227,11 +227,16 @@ static int do_dump(const json_t *json, uint32_t flags, int depth,
 
 int json_dump(const json_t *json, const char *path, uint32_t flags)
 {
+    int result;
+
     FILE *output = fopen(path, "w");
     if(!output)
         return -1;
 
-    return json_dumpf(json, output, flags);
+    result = json_dumpf(json, output, flags);
+
+    fclose(output);
+    return result;
 }
 
 char *json_dumps(const json_t *json, uint32_t flags)

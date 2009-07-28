@@ -177,3 +177,8 @@ invalid Unicode '\uDFAA'
 ====
 1
 '[' or '{' expected near 'å'
+==== ascii-unicode-identifier ====
+aå
+====
+1
+'[' or '{' expected near 'a'

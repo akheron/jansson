@@ -156,11 +156,16 @@ static char stream_get(stream_t *stream, json_error_t *error)
         }
     }
 
-    return (char)stream->buffer[stream->buffer_pos++];
+    return stream->buffer[stream->buffer_pos++];
 
 out:
     error_set(error, NULL, "unable to decode byte 0x%x at position %d",
               (unsigned char)c, stream->stream_pos);
+
+    stream->buffer[0] = EOF;
+    stream->buffer[1] = '\0';
+    stream->buffer_pos = 1;
+
     return EOF;
 }
 
@@ -168,7 +173,7 @@ static void stream_unget(stream_t *stream, char c)
 {
     assert(stream->buffer_pos > 0);
     stream->buffer_pos--;
-    assert(stream->buffer[stream->buffer_pos] == (unsigned char)c);
+    assert(stream->buffer[stream->buffer_pos] == c);
 }
 
 
@@ -197,8 +202,7 @@ static int lex_get_save(lex_t *lex, json_error_t *error)
 static void lex_unget_unsave(lex_t *lex, char c)
 {
     char d;
-    if(c != EOF)
-        stream_unget(&lex->stream, c);
+    stream_unget(&lex->stream, c);
     d = strbuffer_pop(&lex->saved_text);
     assert(c == d);
 }
@@ -243,6 +247,7 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
     char *t;
     int i;
 
+    lex->value.string = NULL;
     lex->token = TOKEN_INVALID;
 
     /* skip the " */
@@ -384,9 +389,10 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
     }
     *t = '\0';
     lex->token = TOKEN_STRING;
+    return;
 
 out:
-    return;
+    free(lex->value.string);
 }
 
 static void lex_scan_number(lex_t *lex, char c, json_error_t *error)
@@ -547,6 +553,7 @@ static void lex_close(lex_t *lex)
 {
     if(lex->token == TOKEN_STRING)
         free(lex->value.string);
+    strbuffer_close(&lex->saved_text);
 }
 
 
@@ -756,11 +763,14 @@ static int string_get(void *data)
 {
     char c;
     string_data_t *stream = (string_data_t *)data;
-    c = stream->data[stream->pos++];
+    c = stream->data[stream->pos];
     if(c == '\0')
         return EOF;
     else
+    {
+        stream->pos++;
         return c;
+    }
 }
 
 static int string_eof(void *data)
