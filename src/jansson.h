@@ -52,8 +52,6 @@ json_t *json_true(void);
 json_t *json_false(void);
 json_t *json_null(void);
 
-json_t *json_clone(json_t *json);
-
 static inline json_t *json_incref(json_t *json)
 {
     if(json)
