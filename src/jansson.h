@@ -93,14 +93,14 @@ typedef struct {
     int line;
 } json_error_t;
 
-json_t *json_load(const char *path, json_error_t *error);
 json_t *json_loads(const char *input, json_error_t *error);
 json_t *json_loadf(FILE *input, json_error_t *error);
+json_t *json_load_file(const char *path, json_error_t *error);
 
 #define JSON_INDENT(n)   (n & 0xFF)
 
-int json_dump(const json_t *json, const char *path, uint32_t flags);
 char *json_dumps(const json_t *json, uint32_t flags);
 int json_dumpf(const json_t *json, FILE *output, uint32_t flags);
+int json_dump_file(const json_t *json, const char *path, uint32_t flags);
 
 #endif

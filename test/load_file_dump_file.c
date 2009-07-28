@@ -11,13 +11,13 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    json = json_load(argv[1], &error);
+    json = json_load_file(argv[1], &error);
     if(!json) {
         fprintf(stderr, "%d\n%s\n", error.line, error.text);
         return 1;
     }
 
-    json_dump(json, argv[2], 0);
+    json_dump_file(json, argv[2], 0);
     json_decref(json);
 
     return 0;

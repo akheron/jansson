@@ -225,20 +225,6 @@ static int do_dump(const json_t *json, uint32_t flags, int depth,
 }
 
 
-int json_dump(const json_t *json, const char *path, uint32_t flags)
-{
-    int result;
-
-    FILE *output = fopen(path, "w");
-    if(!output)
-        return -1;
-
-    result = json_dumpf(json, output, flags);
-
-    fclose(output);
-    return result;
-}
-
 char *json_dumps(const json_t *json, uint32_t flags)
 {
     strbuffer_t strbuff;
@@ -264,4 +250,18 @@ int json_dumpf(const json_t *json, FILE *output, uint32_t flags)
     if(do_dump(json, flags, 0, dump_to_file, (void *)output))
         return -1;
     return dump_to_file("\n", 1, (void *)output);
+}
+
+int json_dump_file(const json_t *json, const char *path, uint32_t flags)
+{
+    int result;
+
+    FILE *output = fopen(path, "w");
+    if(!output)
+        return -1;
+
+    result = json_dumpf(json, output, flags);
+
+    fclose(output);
+    return result;
 }

@@ -8,7 +8,7 @@ run_testprog() {
     fi
 
     case "$prog" in
-        load_dump)
+        load_file_dump_file)
             $runner./$prog \
                 $prefix.in \
                 $prefix.$prog.stdout \
@@ -41,9 +41,9 @@ for testfile in $TESTFILES; do
     tmpdir="testlogs/`basename $testfile`"
     mkdir -p $tmpdir
     ${srcdir}/split-testfile.py $testfile $tmpdir | while read name; do
-        run_test load_dump $tmpdir/$name
         run_test loadf_dumpf $tmpdir/$name
         run_test loads_dumps $tmpdir/$name
+        run_test load_file_dump_file $tmpdir/$name
         echo -n '.'
     done || exit 1
     echo

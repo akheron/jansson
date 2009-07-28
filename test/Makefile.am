@@ -1,4 +1,4 @@
-check_PROGRAMS = load_dump loadf_dumpf loads_dumps
+check_PROGRAMS = loadf_dumpf loads_dumps load_file_dump_file
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_CFLAGS = -Wall -Werror

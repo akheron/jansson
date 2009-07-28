@@ -734,25 +734,6 @@ json_t *parse_json(lex_t *lex, json_error_t *error)
     return parse_value(lex, error);
 }
 
-json_t *json_load(const char *path, json_error_t *error)
-{
-    json_t *result;
-    FILE *fp;
-
-    fp = fopen(path, "r");
-    if(!fp)
-    {
-        error_set(error, NULL, "unable to open %s: %s",
-                  path, strerror(errno));
-        return NULL;
-    }
-
-    result = json_loadf(fp, error);
-
-    fclose(fp);
-    return result;
-}
-
 typedef struct
 {
     const char *data;
@@ -819,5 +800,24 @@ json_t *json_loadf(FILE *input, json_error_t *error)
     result = parse_json(&lex, error);
 
     lex_close(&lex);
+    return result;
+}
+
+json_t *json_load_file(const char *path, json_error_t *error)
+{
+    json_t *result;
+    FILE *fp;
+
+    fp = fopen(path, "r");
+    if(!fp)
+    {
+        error_set(error, NULL, "unable to open %s: %s",
+                  path, strerror(errno));
+        return NULL;
+    }
+
+    result = json_loadf(fp, error);
+
+    fclose(fp);
     return result;
 }
