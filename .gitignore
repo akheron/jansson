@@ -20,3 +20,4 @@ missing
 *.lo
 *.la
 stamp-h1
+*.pyc

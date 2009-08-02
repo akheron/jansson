@@ -1,0 +1,5 @@
+To build the documentation, invoke
+
+    sphinx-build . .build/html
+
+in this directory. Then point your browser to .build/html/index.html.
