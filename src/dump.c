@@ -237,6 +237,9 @@ char *json_dumps(const json_t *json, uint32_t flags)
     strbuffer_t strbuff;
     char *result;
 
+    if(!json_is_array(json) && !json_is_object(json))
+        return NULL;
+
     if(strbuffer_init(&strbuff))
       return NULL;
 
@@ -254,6 +257,9 @@ char *json_dumps(const json_t *json, uint32_t flags)
 
 int json_dumpf(const json_t *json, FILE *output, uint32_t flags)
 {
+    if(!json_is_array(json) && !json_is_object(json))
+        return -1;
+
     if(do_dump(json, flags, 0, dump_to_file, (void *)output))
         return -1;
     return dump_to_file("\n", 1, (void *)output);
