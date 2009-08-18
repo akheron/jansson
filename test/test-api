@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# Copyright (c) 2009 Petri Lehtinen <petri@digip.org>
+#
+# Jansson is free software; you can redistribute it and/or modify
+# it under the terms of the MIT license. See LICENSE for details.
+
+VALGRIND_CMDLINE="valgrind --leak-check=full --show-reachable=yes --track-origins=yes -q"
+LOGDIR="testlogs/api"
+N=`find testprogs -type f -executable | wc -l`
+
+echo "testprogs: $N tests"
+
+rm -rf $LOGDIR
+mkdir -p $LOGDIR
+
+if [ -n "$VALGRIND" ]; then
+    runner="$VALGRIND_CMDLINE "
+fi
+
+i=1
+failed=
+for prog in testprogs/*; do
+    [ -x $prog ] || continue
+    t=`basename $prog`
+    logbase="testlogs/api/`printf '%02d-%s' $i $t`"
+    if ! $runner./$prog >$logbase.stdout 2>$logbase.stderr; then
+        echo >&2
+        echo "### $prog failed:" >&2
+        cat $logbase.stderr
+        exit 1
+    fi
+    if [ -n "$VALGRIND" ]; then
+        # Check for Valgrind error output. The valgrind option
+        # --error-exitcode is not enough because Valgrind doesn't
+        # think unfreed allocs are errors.
+        if grep -E -q '^==[0-9]+== ' $logbase.stderr; then
+            echo "### $prog failed:" >&2
+            echo "valgrind detected an error" >&2
+            echo "for details, see test/$logbase.stderr" >&2
+            exit 1
+        fi
+    fi
+    echo -n '.'
+done
+echo

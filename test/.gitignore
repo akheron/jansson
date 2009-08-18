@@ -2,3 +2,5 @@ loadf_dumpf
 loads_dumps
 load_file_dump_file
 testlogs
+testprogs/test_array
+testprogs/test_object
