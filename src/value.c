@@ -229,7 +229,7 @@ json_t *json_array_get(const json_t *json, unsigned int index)
         return NULL;
     array = json_to_array(json);
 
-    if(index >= array->size)
+    if(index >= array->entries)
         return NULL;
 
     return array->table[index];
@@ -242,10 +242,12 @@ int json_array_set(json_t *json, unsigned int index, json_t *value)
         return -1;
     array = json_to_array(json);
 
-    if(index >= array->size)
+    if(index >= array->entries)
         return -1;
 
+    json_decref(array->table[index]);
     array->table[index] = json_incref(value);
+
     return 0;
 }
 
