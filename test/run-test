@@ -40,10 +40,9 @@ run_testprog() {
     fi
 }
 
-rm -rf testlogs
-
 for testfile in $TESTFILES; do
     tmpdir="testlogs/`basename $testfile`"
+    rm -rf $tmpdir
     mkdir -p $tmpdir
     ${srcdir}/split-testfile.py $testfile $tmpdir | while read name; do
         run_test loadf_dumpf $tmpdir/$name
