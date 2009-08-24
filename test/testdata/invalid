@@ -182,3 +182,14 @@ aå
 ====
 1
 '[' or '{' expected near 'a'
+==== garbage-at-the-end ====
+[1,2,3]foo
+====
+1
+end of file expected near 'foo'
+==== garbage-after-newline ====
+[1,2,3]
+foo
+====
+2
+end of file expected near 'foo'

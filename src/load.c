@@ -805,7 +805,17 @@ json_t *json_loadf(FILE *input, json_error_t *error)
         return NULL;
 
     result = parse_json(&lex, error);
+    if(!result)
+        goto out;
 
+    lex_scan(&lex, error);
+    if(lex.token != TOKEN_EOF) {
+        error_set(error, &lex, "end of file expected");
+        json_decref(result);
+        result = NULL;
+    }
+
+out:
     lex_close(&lex);
     return result;
 }
