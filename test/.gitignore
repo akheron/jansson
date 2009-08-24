@@ -3,4 +3,5 @@ loads_dumps
 load_file_dump_file
 testlogs
 testprogs/test_array
+testprogs/test_number
 testprogs/test_object
