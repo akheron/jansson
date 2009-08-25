@@ -1,1 +1,2 @@
+EXTRA_DIST = LICENSE README.rst
 SUBDIRS = doc src test
