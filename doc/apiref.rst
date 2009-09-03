@@ -304,9 +304,9 @@ Unicode string and the value is any JSON value.
 .. cfunction:: int json_object_set(json_t *object, const char *key, json_t *value)
 
    Set the value of *key* to *value* in *object*. *key* must be a
-   valid terminated UTF-8 encoded Unicode string. If there already is
-   a value for *key*, it is replaced by the new value. Returns 0 on
-   success and -1 on error.
+   valid null terminated UTF-8 encoded Unicode string. If there
+   already is a value for *key*, it is replaced by the new value.
+   Returns 0 on success and -1 on error.
 
 .. cfunction:: int json_object_set_new(json_t *object, const char *key, json_t *value)
 
