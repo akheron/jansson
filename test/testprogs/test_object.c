@@ -73,7 +73,7 @@ int main()
         fail("unable to delete an existing key");
 
 
-    /* add many keys to  rehashing */
+    /* add many keys to initiate rehashing */
 
     if(json_object_set(object, "a", string))
         fail("unable to set value");
@@ -92,6 +92,12 @@ int main()
 
     if(json_object_set(object, "e", string))
         fail("unable to set value");
+
+
+    json_object_set_new(object, "foo", json_integer(123));
+    value = json_object_get(object, "foo");
+    if(!json_is_integer(value) || json_integer_value(value) != 123)
+      fail("json_object_set_new works incorrectly");
 
     json_decref(string);
     json_decref(other_string);

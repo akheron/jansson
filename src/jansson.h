@@ -72,17 +72,36 @@ static inline void json_decref(json_t *json)
 /* getters, setters, manipulation */
 
 json_t *json_object_get(const json_t *object, const char *key);
-int json_object_set(json_t *object, const char *key, json_t *value);
+int json_object_set_new(json_t *object, const char *key, json_t *value);
 int json_object_del(json_t *object, const char *key);
 void *json_object_iter(json_t *object);
 void *json_object_iter_next(json_t *object, void *iter);
 const char *json_object_iter_key(void *iter);
 json_t *json_object_iter_value(void *iter);
 
+static inline
+int json_object_set(json_t *object, const char *key, json_t *value)
+{
+    return json_object_set_new(object, key, json_incref(value));
+}
+
 unsigned int json_array_size(const json_t *array);
 json_t *json_array_get(const json_t *array, unsigned int index);
-int json_array_set(json_t *array, unsigned int index, json_t *value);
-int json_array_append(json_t *array, json_t *value);
+int json_array_set_new(json_t *array, unsigned int index, json_t *value);
+int json_array_append_new(json_t *array, json_t *value);
+
+static inline
+int json_array_set(json_t *array, unsigned int index, json_t *value)
+{
+    return json_array_set_new(array, index, json_incref(value));
+}
+
+static inline
+int json_array_append(json_t *array, json_t *value)
+{
+    return json_array_append_new(array, json_incref(value));
+}
+
 
 const char *json_string_value(const json_t *json);
 int json_integer_value(const json_t *json);

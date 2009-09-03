@@ -118,23 +118,40 @@ json_t *json_object_get(const json_t *json, const char *key)
     return hashtable_get(&object->hashtable, key);
 }
 
-int json_object_set_nocheck(json_t *json, const char *key, json_t *value)
+int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value)
 {
     json_object_t *object;
 
     if(!json_is_object(json))
+    {
+        json_decref(value);
         return -1;
-
+    }
     object = json_to_object(json);
-    return hashtable_set(&object->hashtable, strdup(key), json_incref(value));
+
+    if(hashtable_set(&object->hashtable, strdup(key), value))
+    {
+        json_decref(value);
+        return -1;
+    }
+
+    return 0;
 }
 
-int json_object_set(json_t *json, const char *key, json_t *value)
+int json_object_set_nocheck(json_t *json, const char *key, json_t *value)
+{
+    return json_object_set_new_nocheck(json, key, json_incref(value));
+}
+
+int json_object_set_new(json_t *json, const char *key, json_t *value)
 {
     if(!utf8_check_string(key, -1))
+    {
+        json_decref(value);
         return -1;
+    }
 
-    return json_object_set_nocheck(json, key, value);
+    return json_object_set_new_nocheck(json, key, value);
 }
 
 int json_object_del(json_t *json, const char *key)
@@ -235,37 +252,49 @@ json_t *json_array_get(const json_t *json, unsigned int index)
     return array->table[index];
 }
 
-int json_array_set(json_t *json, unsigned int index, json_t *value)
+int json_array_set_new(json_t *json, unsigned int index, json_t *value)
 {
     json_array_t *array;
     if(!json_is_array(json))
+    {
+        json_decref(value);
         return -1;
+    }
     array = json_to_array(json);
 
     if(index >= array->entries)
+    {
+        json_decref(value);
         return -1;
+    }
 
     json_decref(array->table[index]);
-    array->table[index] = json_incref(value);
+    array->table[index] = value;
 
     return 0;
 }
 
-int json_array_append(json_t *json, json_t *value)
+int json_array_append_new(json_t *json, json_t *value)
 {
     json_array_t *array;
     if(!json_is_array(json))
+    {
+        json_decref(value);
         return -1;
+    }
     array = json_to_array(json);
 
     if(array->entries == array->size) {
         array->size = max(8, array->size * 2);
         array->table = realloc(array->table, array->size * sizeof(json_t *));
         if(!array->table)
+        {
+            json_decref(value);
             return -1;
+        }
     }
 
-    array->table[array->entries] = json_incref(value);
+    array->table[array->entries] = value;
     array->entries++;
 
     return 0;

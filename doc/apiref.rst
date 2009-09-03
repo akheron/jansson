@@ -259,10 +259,26 @@ A JSON array is an ordered collection of other JSON values.
    range for *index* is from 0 to the return value of
    :cfunc:`json_array_size()` minus 1.
 
+.. cfunction:: int json_array_set_new(json_t *array, unsigned int index, json_t *value)
+
+   Like :cfunc:`json_array_set()` but steals the reference to *value*.
+   This is useful when *value* is newly created and not used after
+   the call.
+
+   .. versionadded:: 1.1
+
 .. cfunction:: int json_array_append(json_t *array, json_t *value)
 
    Appends *value* to the end of *array*, growing the size of *array*
    by 1. Returns 0 on success and -1 on error.
+
+.. cfunction:: int json_array_append_new(json_t *array, json_t *value)
+
+   Like :cfunc:`json_array_append()` but steals the reference to
+   *value*. This is useful when *value* is newly created and not used
+   after the call.
+
+   .. versionadded:: 1.1
 
 
 Object
@@ -291,6 +307,14 @@ Unicode string and the value is any JSON value.
    valid terminated UTF-8 encoded Unicode string. If there already is
    a value for *key*, it is replaced by the new value. Returns 0 on
    success and -1 on error.
+
+.. cfunction:: int json_object_set_new(json_t *object, const char *key, json_t *value)
+
+   Like :cfunc:`json_object_set()` but steals the reference to
+   *value*. This is useful when *value* is newly created and not used
+   after the call.
+
+   .. versionadded:: 1.1
 
 .. cfunction:: int json_object_del(json_t *object, const char *key)
 

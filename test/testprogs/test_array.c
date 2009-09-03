@@ -85,6 +85,16 @@ int main()
             fail("got wrong value");
     }
 
+    json_array_set_new(array, 15, json_integer(123));
+    value = json_array_get(array, 15);
+    if(!json_is_integer(value) || json_integer_value(value) != 123)
+      fail("json_array_set_new works incorrectly");
+
+    json_array_append_new(array, json_integer(321));
+    value = json_array_get(array, json_array_size(array) - 1);
+    if(!json_is_integer(value) || json_integer_value(value) != 321)
+      fail("json_array_append_new works incorrectly");
+
     json_decref(five);
     json_decref(seven);
     json_decref(array);
