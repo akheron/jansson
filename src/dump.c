@@ -36,22 +36,23 @@ static int dump_to_file(const char *buffer, int size, void *data)
     return 0;
 }
 
+/* 256 spaces (the maximum indentation size) */
+static char whitespace[] = "                                                                                                                                                                                                                                                                ";
+
 static int dump_indent(uint32_t flags, int depth, dump_func dump, void *data)
 {
     if(JSON_INDENT(flags) > 0)
     {
-        char *ws_buffer;
-        int ws_count = JSON_INDENT(flags) * depth;
+        int i, ws_count = JSON_INDENT(flags);
 
         if(dump("\n", 1, data))
             return -1;
 
-        if(ws_count == 0)
-            return 0;
-
-        ws_buffer = alloca(ws_count);
-        memset(ws_buffer, ' ', ws_count);
-        return dump(ws_buffer, ws_count, data);
+        for(i = 0; i < depth; i++)
+        {
+            if(dump(whitespace, ws_count, data))
+                return -1;
+        }
     }
     return 0;
 }
