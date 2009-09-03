@@ -544,6 +544,17 @@ out:
     return lex->token;
 }
 
+static char *lex_steal_string(lex_t *lex)
+{
+    char *result = NULL;
+    if(lex->token == TOKEN_STRING)
+    {
+        result = lex->value.string;
+        lex->value.string = NULL;
+    }
+    return result;
+}
+
 static int lex_init(lex_t *lex, get_func get, eof_func eof, void *data)
 {
     stream_init(&lex->stream, get, eof, data);
@@ -587,7 +598,7 @@ static json_t *parse_object(lex_t *lex, json_error_t *error)
             goto error;
         }
 
-        key = strdup(lex->value.string);
+        key = lex_steal_string(lex);
         if(!key)
             return NULL;
 
