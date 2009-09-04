@@ -38,7 +38,7 @@ typedef struct {
 #define json_is_number(json)   (json_is_integer(json) || json_is_real(json))
 #define json_is_true(json)     (json && json_typeof(json) == JSON_TRUE)
 #define json_is_false(json)    (json && json_typeof(json) == JSON_FALSE)
-#define json_is_boolean(json)  (jsin_is_true(json) || json_is_false(json))
+#define json_is_boolean(json)  (json_is_true(json) || json_is_false(json))
 #define json_is_null(json)     (json && json_typeof(json) == JSON_NULL)
 
 /* construction, destruction, reference counting */
