@@ -121,7 +121,7 @@ The following functions are used to manipulate the reference count.
 
 .. cfunction:: json_t *json_incref(json_t *json)
 
-   Increment the reference count of *json*.
+   Increment the reference count of *json*. Returns *json*.
 
 .. cfunction:: void json_decref(json_t *json)
 
