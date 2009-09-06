@@ -58,6 +58,10 @@ int main()
         fail("invalid string value");
     json_decref(value);
 
+    value = json_string(NULL);
+    if(value)
+        fail("json_string(NULL) failed");
+
     value = json_integer(123);
     if(!value)
         fail("json_integer failed");

@@ -41,6 +41,12 @@ Objects of :ctype:`json_t` are always used through a pointer. There
 are APIs for querying the type, manipulating the reference count, and
 for constructing and manipulating values of different types.
 
+Unless noted otherwise, all API functions return an error value if an
+error occurs. Depending on the function's signature, the error value
+is either *NULL* or -1. Invalid arguments or invalid input are
+apparent sources for errors. Memory allocation and I/O operations may
+also cause errors.
+
 
 Type
 ----
@@ -80,8 +86,8 @@ functions:
 .. cfunction:: int json_typeof(const json_t *json)
 
    Return the type of the JSON value (a :ctype:`json_type` cast to
-   :ctype:`int`). This function is actually implemented as a macro for
-   speed.
+   :ctype:`int`). *json* MUST NOT be *NULL*. This function is actually
+   implemented as a macro for speed.
 
 .. cfunction:: json_is_object(const json_t *json)
                json_is_array(const json_t *json)

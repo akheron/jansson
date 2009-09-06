@@ -122,6 +122,9 @@ int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value)
 {
     json_object_t *object;
 
+    if(!key || !value)
+        return -1;
+
     if(!json_is_object(json))
     {
         json_decref(value);
@@ -255,6 +258,10 @@ json_t *json_array_get(const json_t *json, unsigned int index)
 int json_array_set_new(json_t *json, unsigned int index, json_t *value)
 {
     json_array_t *array;
+
+    if(!value)
+        return -1;
+
     if(!json_is_array(json))
     {
         json_decref(value);
@@ -277,6 +284,10 @@ int json_array_set_new(json_t *json, unsigned int index, json_t *value)
 int json_array_append_new(json_t *json, json_t *value)
 {
     json_array_t *array;
+
+    if(!value)
+        return -1;
+
     if(!json_is_array(json))
     {
         json_decref(value);
@@ -305,18 +316,28 @@ int json_array_append_new(json_t *json, json_t *value)
 
 json_t *json_string_nocheck(const char *value)
 {
-    json_string_t *string = malloc(sizeof(json_string_t));
+    json_string_t *string;
+
+    if(!value)
+        return NULL;
+
+    string = malloc(sizeof(json_string_t));
     if(!string)
        return NULL;
     json_init(&string->json, JSON_STRING);
 
     string->value = strdup(value);
+    if(!string->value) {
+        free(string);
+        return NULL;
+    }
+
     return &string->json;
 }
 
 json_t *json_string(const char *value)
 {
-    if(!utf8_check_string(value, -1))
+    if(!value || !utf8_check_string(value, -1))
         return NULL;
 
     return json_string_nocheck(value);

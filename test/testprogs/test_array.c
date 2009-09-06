@@ -27,6 +27,9 @@ int main()
     if(json_array_size(array) != 0)
         fail("empty array has nonzero size");
 
+    if(!json_array_append(array, NULL))
+        fail("able to append NULL");
+
     if(json_array_append(array, five))
         fail("unable to append");
 
@@ -53,6 +56,9 @@ int main()
 
     if(json_array_set(array, 0, seven))
         fail("unable to set value");
+
+    if(!json_array_set(array, 0, NULL))
+        fail("able to set NULL");
 
     if(json_array_size(array) != 2)
         fail("wrong array size");
@@ -85,15 +91,25 @@ int main()
             fail("got wrong value");
     }
 
-    json_array_set_new(array, 15, json_integer(123));
+    if(json_array_set_new(array, 15, json_integer(123)))
+        fail("unable to set new value");
+
     value = json_array_get(array, 15);
     if(!json_is_integer(value) || json_integer_value(value) != 123)
       fail("json_array_set_new works incorrectly");
 
-    json_array_append_new(array, json_integer(321));
+    if(!json_array_set_new(array, 15, NULL))
+        fail("able to set_new NULL value");
+
+    if(json_array_append_new(array, json_integer(321)))
+        fail("unable to append new value");
+
     value = json_array_get(array, json_array_size(array) - 1);
     if(!json_is_integer(value) || json_integer_value(value) != 321)
       fail("json_array_append_new works incorrectly");
+
+    if(!json_array_append_new(array, NULL))
+        fail("able to append_new NULL value");
 
     json_decref(five);
     json_decref(seven);

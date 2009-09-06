@@ -29,6 +29,12 @@ int main()
     if(json_object_set(object, "a", string))
         fail("unable to set value");
 
+    if(!json_object_set(object, NULL, string))
+        fail("able to set NULL key");
+
+    if(!json_object_set(object, "a", NULL))
+        fail("able to set NULL value");
+
     iter = json_object_iter(object);
     if(!iter)
         fail("unable to get iterator");
@@ -105,10 +111,18 @@ int main()
         fail("unable to set value");
 
 
-    json_object_set_new(object, "foo", json_integer(123));
+    if(json_object_set_new(object, "foo", json_integer(123)))
+        fail("unable to set new value");
+
     value = json_object_get(object, "foo");
     if(!json_is_integer(value) || json_integer_value(value) != 123)
       fail("json_object_set_new works incorrectly");
+
+    if(!json_object_set_new(object, NULL, json_integer(432)))
+        fail("able to set_new NULL key");
+
+    if(!json_object_set_new(object, "foo", NULL))
+        fail("able to set_new NULL value");
 
     json_decref(string);
     json_decref(other_string);
