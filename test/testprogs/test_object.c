@@ -29,6 +29,17 @@ int main()
     if(json_object_set(object, "a", string))
         fail("unable to set value");
 
+    iter = json_object_iter(object);
+    if(!iter)
+        fail("unable to get iterator");
+
+    if(strcmp(json_object_iter_key(iter), "a"))
+        fail("iterating failed: wrong key");
+    if(json_object_iter_value(iter) != string)
+        fail("iterating failed: wrong value");
+    if(json_object_iter_next(object, iter) != NULL)
+        fail("able to iterate over the end");
+
     /* invalid UTF-8 in key */
     if(!json_object_set(object, "a\xefz", string))
         fail("able to set invalid unicode key");
@@ -39,7 +50,7 @@ int main()
     if(value != string)
         fail("got different value than what was added");
 
-    /* "a", "lp" and "px" collide with a five-bucket hashtable */
+    /* "a", "lp" and "px" collide in a five-bucket hashtable */
     if(json_object_set(object, "b", string) ||
        json_object_set(object, "lp", string) ||
        json_object_set(object, "px", string))
