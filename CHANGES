@@ -1,0 +1,7 @@
+Version 1.0.1, released 2009-09-04
+
+* Fixed broken json_is_boolean()
+
+Version 1.0, released 2009-08-25
+
+* Initial release
