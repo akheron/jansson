@@ -54,7 +54,7 @@ json_t *json_null(void);
 
 static inline json_t *json_incref(json_t *json)
 {
-    if(json)
+    if(json && json->refcount != (unsigned int)-1)
         ++json->refcount;
     return json;
 }
@@ -64,7 +64,7 @@ void json_delete(json_t *json);
 
 static inline void json_decref(json_t *json)
 {
-    if(json && --json->refcount == 0)
+    if(json && json->refcount != (unsigned int)-1 && --json->refcount == 0)
         json_delete(json);
 }
 
