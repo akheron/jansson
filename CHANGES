@@ -1,3 +1,7 @@
+Version 1.0.2, released 2009-09-08
+
+* Handle EOF correctly in decoder
+
 Version 1.0.1, released 2009-09-04
 
 * Fixed broken json_is_boolean()
