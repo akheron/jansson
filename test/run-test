@@ -44,7 +44,10 @@ for testfile in $TESTFILES; do
     tmpdir="testlogs/`basename $testfile`"
     rm -rf $tmpdir
     mkdir -p $tmpdir
-    ${srcdir}/split-testfile.py $testfile $tmpdir | while read name; do
+    if echo "$testfile" | grep -q -E -e '-strip$'; then
+        opts="--strip"
+    fi
+    ${srcdir}/split-testfile.py $opts $testfile $tmpdir | while read name; do
         run_test loadf_dumpf $tmpdir/$name
         run_test loads_dumps $tmpdir/$name
         run_test load_file_dump_file $tmpdir/$name

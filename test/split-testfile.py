@@ -7,6 +7,13 @@
 
 import os
 import sys
+from optparse import OptionParser
+
+def strip_file(filename):
+    with open(filename) as fobj:
+        data = fobj.read()
+    with open(filename, 'w') as fobj:
+        fobj.write(data.strip())
 
 def open_files(outdir, i, name):
     basename = '%02d_%s' % (i, name)
@@ -16,12 +23,17 @@ def open_files(outdir, i, name):
     return open(input_path, 'w'), open(output_path, 'w')
 
 def main():
-    if len(sys.argv) != 3:
-        print 'usage: %s input-file output-directory' % sys.argv[0]
+    parser = OptionParser('usage: %prog [options] inputfile outputdir')
+    parser.add_option('--strip', help='strip whitespace from input',
+                      action='store_true', default=False)
+    options, args = parser.parse_args()
+
+    if len(args) != 2:
+        parser.print_help()
         return 2
 
-    infile = os.path.normpath(sys.argv[1])
-    outdir = os.path.normpath(sys.argv[2])
+    infile = os.path.normpath(args[0])
+    outdir = os.path.normpath(args[1])
 
     if not os.path.exists(outdir):
         print >>sys.stderr, 'output directory %r does not exist!' % outdir
@@ -37,6 +49,8 @@ def main():
             if input is not None and output is not None:
                 input.close()
                 output.close()
+                if options.strip:
+                    strip_file(input.name)
             input, output = open_files(outdir, n, line[5:line.find(' ====\n')])
             current = input
         elif line == '====\n':
