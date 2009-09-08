@@ -134,10 +134,7 @@ static char stream_get(stream_t *stream, json_error_t *error)
 
         c = stream->buffer[0];
 
-        if(c == EOF && stream->eof(stream->data))
-            return EOF;
-
-        if(c < 0)
+        if(c < 0 && c != EOF)
         {
             /* multi-byte UTF-8 sequence */
             int i, count;
@@ -257,11 +254,11 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
     lex->value.string = NULL;
     lex->token = TOKEN_INVALID;
 
-    /* skip the " */
     c = lex_get_save(lex, error);
 
     while(c != '"') {
         if(c == EOF) {
+            lex_unget_unsave(lex, c);
             if(lex_eof(lex))
                 error_set(error, lex, "premature end of input");
             goto out;
