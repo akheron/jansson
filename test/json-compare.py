@@ -5,8 +5,11 @@
 # Jansson is free software; you can redistribute it and/or modify
 # it under the terms of the MIT license. See LICENSE for details.
 
-import simplejson
 import sys
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 def load(filename):
     try:
@@ -17,14 +20,14 @@ def load(filename):
         sys.exit(1)
 
     try:
-        json = simplejson.load(jsonfile)
+        jsondata = json.load(jsonfile)
     except ValueError, err:
         print "%s is malformed: %s" % (filename, err)
         sys.exit(1)
     finally:
         jsonfile.close()
 
-    return json
+    return jsondata
 
 def main():
     if len(sys.argv) != 3:
