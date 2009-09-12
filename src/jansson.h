@@ -124,8 +124,8 @@ json_t *json_load_file(const char *path, json_error_t *error);
 
 #define JSON_INDENT(n)   (n & 0xFF)
 
-char *json_dumps(const json_t *json, uint32_t flags);
-int json_dumpf(const json_t *json, FILE *output, uint32_t flags);
-int json_dump_file(const json_t *json, const char *path, uint32_t flags);
+char *json_dumps(const json_t *json, unsigned long flags);
+int json_dumpf(const json_t *json, FILE *output, unsigned long flags);
+int json_dump_file(const json_t *json, const char *path, unsigned long flags);
 
 #endif

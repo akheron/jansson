@@ -38,7 +38,7 @@ static int dump_to_file(const char *buffer, int size, void *data)
 /* 256 spaces (the maximum indentation size) */
 static char whitespace[] = "                                                                                                                                                                                                                                                                ";
 
-static int dump_indent(uint32_t flags, int depth, dump_func dump, void *data)
+static int dump_indent(unsigned long flags, int depth, dump_func dump, void *data)
 {
     if(JSON_INDENT(flags) > 0)
     {
@@ -111,7 +111,7 @@ static int dump_string(const char *str, dump_func dump, void *data)
     return dump("\"", 1, data);
 }
 
-static int do_dump(const json_t *json, uint32_t flags, int depth,
+static int do_dump(const json_t *json, unsigned long flags, int depth,
                    dump_func dump, void *data)
 {
     switch(json_typeof(json)) {
@@ -232,7 +232,7 @@ static int do_dump(const json_t *json, uint32_t flags, int depth,
 }
 
 
-char *json_dumps(const json_t *json, uint32_t flags)
+char *json_dumps(const json_t *json, unsigned long flags)
 {
     strbuffer_t strbuff;
     char *result;
@@ -255,7 +255,7 @@ char *json_dumps(const json_t *json, uint32_t flags)
     return result;
 }
 
-int json_dumpf(const json_t *json, FILE *output, uint32_t flags)
+int json_dumpf(const json_t *json, FILE *output, unsigned long flags)
 {
     if(!json_is_array(json) && !json_is_object(json))
         return -1;
@@ -265,7 +265,7 @@ int json_dumpf(const json_t *json, FILE *output, uint32_t flags)
     return dump_to_file("\n", 1, (void *)output);
 }
 
-int json_dump_file(const json_t *json, const char *path, uint32_t flags)
+int json_dump_file(const json_t *json, const char *path, unsigned long flags)
 {
     int result;
 

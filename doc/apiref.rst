@@ -392,18 +392,18 @@ can be ORed together to obtain *flags*.
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
 
-.. cfunction:: char *json_dumps(const json_t *root, uint32_t flags)
+.. cfunction:: char *json_dumps(const json_t *root, unsigned long flags)
 
    Returns the JSON representation of *root* as a string, or *NULL* on
    error. *flags* is described above. The return value must be freed
    by the caller using :cfunc:`free()`.
 
-.. cfunction:: int json_dumpf(const json_t *root, FILE *output, uint32_t flags)
+.. cfunction:: int json_dumpf(const json_t *root, FILE *output, unsigned long flags)
 
    Write the JSON representation of *root* to the stream *output*.
    *flags* is described above. Returns 0 on success and -1 on error.
 
-.. cfunction:: int json_dump_file(const json_t *json, const char *path, uint32_t flags)
+.. cfunction:: int json_dump_file(const json_t *json, const char *path, unsigned long flags)
 
    Write the JSON representation of *root* to the file *path*. If
    *path* already exists, it is overwritten. *flags* is described
