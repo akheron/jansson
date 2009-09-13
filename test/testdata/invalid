@@ -127,6 +127,21 @@ invalid token near '1e'
 ====
 1
 invalid token near '1e'
+==== real-positive-overflow ====
+[123123e100000]
+====
+1
+real number overflow near '123123e100000'
+==== real-negative-overflow ====
+[-123123e100000]
+====
+1
+real number overflow near '-123123e100000'
+==== real-underflow ====
+[123e-10000000]
+====
+1
+real number underflow near '123e-10000000'
 ==== integer-starting-with-zero ====
 [012]
 ====
@@ -137,6 +152,16 @@ invalid token near '0'
 ====
 1
 invalid token near '-0'
+==== too-big-positive-integer ====
+[123123123123123]
+====
+1
+too big integer near '123123123123123'
+==== too-big-negative-integer ====
+[-123123123123123]
+====
+1
+too big negative integer near '-123123123123123'
 ==== invalid-identifier ====
 [troo
 ====
