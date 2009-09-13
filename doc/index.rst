@@ -10,6 +10,7 @@ This is the documentation for Jansson_ |release|, last updated |today|.
 .. toctree::
    :maxdepth: 2
 
+   gettingstarted
    apiref
 
 
