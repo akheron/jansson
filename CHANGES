@@ -1,10 +1,20 @@
+Version 1.0.3, released 2009-09-14
+
+* Check for integer and real overflows and underflows in decoder
+* Use the Python json module for tests, or simplejson if the json
+  module is not found
+* Distribute changelog (this file)
+
+
 Version 1.0.2, released 2009-09-08
 
 * Handle EOF correctly in decoder
 
+
 Version 1.0.1, released 2009-09-04
 
 * Fixed broken json_is_boolean()
+
 
 Version 1.0, released 2009-08-25
 
