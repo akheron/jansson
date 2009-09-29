@@ -89,6 +89,10 @@ unsigned int json_array_size(const json_t *array);
 json_t *json_array_get(const json_t *array, unsigned int index);
 int json_array_set_new(json_t *array, unsigned int index, json_t *value);
 int json_array_append_new(json_t *array, json_t *value);
+int json_array_insert_new(json_t *array, unsigned int index, json_t *value);
+int json_array_remove(json_t *array, unsigned int index);
+int json_array_clear(json_t *array);
+int json_array_extend(json_t *array, json_t *other);
 
 static inline
 int json_array_set(json_t *array, unsigned int index, json_t *value)
@@ -102,6 +106,11 @@ int json_array_append(json_t *array, json_t *value)
     return json_array_append_new(array, json_incref(value));
 }
 
+static inline
+int json_array_insert(json_t *array, unsigned int index, json_t *value)
+{
+    return json_array_insert_new(array, index, json_incref(value));
+}
 
 const char *json_string_value(const json_t *json);
 int json_integer_value(const json_t *json);

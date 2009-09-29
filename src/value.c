@@ -217,8 +217,13 @@ json_t *json_array(void)
     json_init(&array->json, JSON_ARRAY);
 
     array->entries = 0;
-    array->size = 0;
-    array->table = NULL;
+    array->size = 8;
+
+    array->table = malloc(array->size * sizeof(json_t *));
+    if(!array->table) {
+        free(array);
+        return NULL;
+    }
 
     return &array->json;
 }
@@ -281,6 +286,48 @@ int json_array_set_new(json_t *json, unsigned int index, json_t *value)
     return 0;
 }
 
+static void array_move(json_array_t *array, unsigned int dest,
+                       unsigned int src, unsigned int count)
+{
+    memmove(&array->table[dest], &array->table[src], count * sizeof(json_t *));
+}
+
+static void array_copy(json_t **dest, unsigned int dpos,
+                       json_t **src, unsigned int spos,
+                       unsigned int count)
+{
+    memcpy(&dest[dpos], &src[spos], count * sizeof(json_t *));
+}
+
+static json_t **json_array_grow(json_array_t *array,
+                                unsigned int amount,
+                                int copy)
+{
+    unsigned int new_size;
+    json_t **old_table, **new_table;
+
+    if(array->entries + amount <= array->size)
+        return array->table;
+
+    old_table = array->table;
+
+    new_size = max(array->size + amount, array->size * 2);
+    new_table = malloc(new_size * sizeof(json_t *));
+    if(!new_table)
+        return NULL;
+
+    array->size = new_size;
+    array->table = new_table;
+
+    if(copy) {
+        array_copy(array->table, 0, old_table, 0, array->entries);
+        free(old_table);
+        return array->table;
+    }
+
+    return old_table;
+}
+
 int json_array_append_new(json_t *json, json_t *value)
 {
     json_array_t *array;
@@ -295,19 +342,111 @@ int json_array_append_new(json_t *json, json_t *value)
     }
     array = json_to_array(json);
 
-    if(array->entries == array->size) {
-        array->size = max(8, array->size * 2);
-        array->table = realloc(array->table, array->size * sizeof(json_t *));
-        if(!array->table)
-        {
-            json_decref(value);
-            return -1;
-        }
+    if(!json_array_grow(array, 1, 1)) {
+        json_decref(value);
+        return -1;
     }
 
     array->table[array->entries] = value;
     array->entries++;
 
+    return 0;
+}
+
+int json_array_insert_new(json_t *json, unsigned int index, json_t *value)
+{
+    json_array_t *array;
+    json_t **old_table;
+
+    if(!value)
+        return -1;
+
+    if(!json_is_array(json)) {
+        json_decref(value);
+        return -1;
+    }
+    array = json_to_array(json);
+
+    if(index > array->entries) {
+        json_decref(value);
+        return -1;
+    }
+
+    old_table = json_array_grow(array, 1, 0);
+    if(!old_table) {
+        json_decref(value);
+        return -1;
+    }
+
+    if(old_table != array->table) {
+        array_copy(array->table, 0, old_table, 0, index);
+        array_copy(array->table, index + 1, old_table, index,
+                   array->entries - index);
+        free(old_table);
+    }
+    else
+        array_move(array, index + 1, index, array->entries - index);
+
+    array->table[index] = value;
+    array->entries++;
+
+    return 0;
+}
+
+int json_array_remove(json_t *json, unsigned int index)
+{
+    json_array_t *array;
+
+    if(!json_is_array(json))
+        return -1;
+    array = json_to_array(json);
+
+    if(index >= array->entries)
+        return -1;
+
+    json_decref(array->table[index]);
+
+    array_move(array, index, index + 1, array->entries - index);
+    array->entries--;
+
+    return 0;
+}
+
+int json_array_clear(json_t *json)
+{
+    json_array_t *array;
+    unsigned int i;
+
+    if(!json_is_array(json))
+        return -1;
+    array = json_to_array(json);
+
+    for(i = 0; i < array->entries; i++)
+        json_decref(array->table[i]);
+
+    array->entries = 0;
+    return 0;
+}
+
+int json_array_extend(json_t *json, json_t *other_json)
+{
+    json_array_t *array, *other;
+    unsigned int i;
+
+    if(!json_is_array(json) || !json_is_array(other_json))
+        return -1;
+    array = json_to_array(json);
+    other = json_to_array(other_json);
+
+    if(!json_array_grow(array, other->entries, 1))
+        return -1;
+
+    for(i = 0; i < other->entries; i++)
+        json_incref(other->table[i]);
+
+    array_copy(array->table, array->entries, other->table, 0, other->entries);
+
+    array->entries += other->entries;
     return 0;
 }
 

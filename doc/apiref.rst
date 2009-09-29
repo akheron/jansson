@@ -291,6 +291,44 @@ A JSON array is an ordered collection of other JSON values.
 
    .. versionadded:: 1.1
 
+.. cfunction:: int json_array_insert(json_t *array, unsigned int index, json_t *value)
+
+   Inserts *value* to *array* at position *index*, shifting the
+   elements at *index* and after it one position towards the end of
+   the array. Returns 0 on success and -1 on error.
+
+   .. versionadded:: 1.1
+
+.. cfunction:: int json_array_insert_new(json_t *array, unsigned int index, json_t *value)
+
+   Like :cfunc:`json_array_insert()` but steals the reference to
+   *value*. This is useful when *value* is newly created and not used
+   after the call.
+
+   .. versionadded:: 1.1
+
+.. cfunction:: int json_array_remove(json_t *array, unsigned int index)
+
+   Removes the element in *array* at position *index*, shifting the
+   elements after *index* one position towards the start of the array.
+   Returns 0 on success and -1 on error.
+
+   .. versionadded:: 1.1
+
+.. cfunction:: int json_array_clear(json_t *array)
+
+   Removes all elements from *array*. Returns 0 on sucess and -1 on
+   error.
+
+   .. versionadded:: 1.1
+
+.. cfunction:: int json_array_extend(json_t *array, json_t *other_array)
+
+   Appends all elements in *other_array* to the end of *array*.
+   Returns 0 on success and -1 on error.
+
+   .. versionadded:: 1.1
+
 
 Object
 ======
