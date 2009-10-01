@@ -70,7 +70,7 @@ static int dump_string(const char *str, dump_func dump, void *data)
         char seq[7];
         int length;
 
-        while(*end && *end != '\\' && *end != '"' && (*end < 0 || *end > 0x1F))
+        while(*end && *end != '\\' && *end != '"' && (unsigned char)*end > 0x1F)
             end++;
 
         if(end != str) {

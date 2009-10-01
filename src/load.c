@@ -135,7 +135,7 @@ static char stream_get(stream_t *stream, json_error_t *error)
 
         c = stream->buffer[0];
 
-        if(c < 0 && c != EOF)
+        if((unsigned char)c >= 0x80 && c != (char)EOF)
         {
             /* multi-byte UTF-8 sequence */
             int i, count;
@@ -519,7 +519,7 @@ static int lex_scan(lex_t *lex, json_error_t *error)
         c = lex_get(lex, error);
     }
 
-    if(c == EOF) {
+    if(c == (char)EOF) {
         if(lex_eof(lex))
             lex->token = TOKEN_EOF;
         else
