@@ -258,14 +258,14 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
     c = lex_get_save(lex, error);
 
     while(c != '"') {
-        if(c == EOF) {
+        if(c == (char)EOF) {
             lex_unget_unsave(lex, c);
             if(lex_eof(lex))
                 error_set(error, lex, "premature end of input");
             goto out;
         }
 
-        else if(0 <= c && c <= 0x1F) {
+        else if((unsigned char)c <= 0x1F) {
             /* control character */
             lex_unget_unsave(lex, c);
             if(c == '\n')
