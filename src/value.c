@@ -148,7 +148,7 @@ int json_object_set_nocheck(json_t *json, const char *key, json_t *value)
 
 int json_object_set_new(json_t *json, const char *key, json_t *value)
 {
-    if(!utf8_check_string(key, -1))
+    if(!key || !utf8_check_string(key, -1))
     {
         json_decref(value);
         return -1;
