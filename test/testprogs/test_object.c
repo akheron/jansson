@@ -6,11 +6,13 @@
  */
 
 #include <jansson.h>
+#include <string.h>
 #include "util.h"
 
 int main()
 {
     json_t *object, *string, *other_string, *value;
+    void *iter;
 
     object = json_object();
     string = json_string("test");
