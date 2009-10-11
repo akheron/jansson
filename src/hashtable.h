@@ -135,6 +135,15 @@ void *hashtable_get(hashtable_t *hashtable, const void *key);
 int hashtable_del(hashtable_t *hashtable, const void *key);
 
 /**
+ * hashtable_clear - Clear hashtable
+ *
+ * @hashtable: The hashtable object
+ *
+ * Removes all items from the hashtable.
+ */
+void hashtable_clear(hashtable_t *hashtable);
+
+/**
  * hashtable_iter - Iterate over hashtable
  *
  * @hashtable: The hashtable object

@@ -133,6 +133,23 @@ static int hashtable_do_del(hashtable_t *hashtable,
     return 0;
 }
 
+static void hashtable_do_clear(hashtable_t *hashtable)
+{
+    list_t *list, *next;
+    pair_t *pair;
+
+    for(list = hashtable->list.next; list != &hashtable->list; list = next)
+    {
+        next = list->next;
+        pair = list_to_pair(list);
+        if(hashtable->free_key)
+            hashtable->free_key(pair->key);
+        if(hashtable->free_value)
+            hashtable->free_value(pair->value);
+        free(pair);
+    }
+}
+
 static int hashtable_do_rehash(hashtable_t *hashtable)
 {
     list_t *list, *next;
@@ -220,19 +237,7 @@ int hashtable_init(hashtable_t *hashtable,
 
 void hashtable_close(hashtable_t *hashtable)
 {
-    list_t *list, *next;
-    pair_t *pair;
-    for(list = hashtable->list.next; list != &hashtable->list; list = next)
-    {
-        next = list->next;
-        pair = list_to_pair(list);
-        if(hashtable->free_key)
-            hashtable->free_key(pair->key);
-        if(hashtable->free_value)
-            hashtable->free_value(pair->value);
-        free(pair);
-    }
-
+    hashtable_do_clear(hashtable);
     free(hashtable->buckets);
 }
 
@@ -290,6 +295,22 @@ int hashtable_del(hashtable_t *hashtable, const void *key)
 {
     unsigned int hash = hashtable->hash_key(key);
     return hashtable_do_del(hashtable, key, hash);
+}
+
+void hashtable_clear(hashtable_t *hashtable)
+{
+    unsigned int i;
+
+    hashtable_do_clear(hashtable);
+
+    for(i = 0; i < num_buckets(hashtable); i++)
+    {
+        hashtable->buckets[i].first = hashtable->buckets[i].last =
+            &hashtable->list;
+    }
+
+    list_init(&hashtable->list);
+    hashtable->size = 0;
 }
 
 void *hashtable_iter(hashtable_t *hashtable)

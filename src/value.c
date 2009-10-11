@@ -107,6 +107,17 @@ static void json_delete_object(json_object_t *object)
     free(object);
 }
 
+unsigned int json_object_size(const json_t *json)
+{
+    json_object_t *object;
+
+    if(!json_is_object(json))
+        return -1;
+
+    object = json_to_object(json);
+    return object->hashtable.size;
+}
+
 json_t *json_object_get(const json_t *json, const char *key)
 {
     json_object_t *object;
@@ -166,6 +177,43 @@ int json_object_del(json_t *json, const char *key)
 
     object = json_to_object(json);
     return hashtable_del(&object->hashtable, key);
+}
+
+int json_object_clear(json_t *json)
+{
+    json_object_t *object;
+
+    if(!json_is_object(json))
+        return -1;
+
+    object = json_to_object(json);
+    hashtable_clear(&object->hashtable);
+
+    return 0;
+}
+
+int json_object_update(json_t *object, json_t *other)
+{
+    void *iter;
+
+    if(!json_is_object(object) || !json_is_object(other))
+        return -1;
+
+    iter = json_object_iter(other);
+    while(iter) {
+        const char *key;
+        json_t *value;
+
+        key = json_object_iter_key(iter);
+        value = json_object_iter_value(iter);
+
+        if(json_object_set(object, key, value))
+            return -1;
+
+        iter = json_object_iter_next(other, iter);
+    }
+
+    return 0;
 }
 
 void *json_object_iter(json_t *json)

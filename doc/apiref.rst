@@ -343,6 +343,13 @@ Unicode string and the value is any JSON value.
    Returns a new JSON object, or *NULL* on error. Initially, the
    object is empty.
 
+.. cfunction:: unsigned int json_object_size(const json_t *object)
+
+   Returns the number of elements in *object*, or 0 if *object* is not
+   a JSON object.
+
+   .. versionadded:: 1.1
+
 .. cfunction:: json_t *json_object_get(const json_t *object, const char *key)
 
    .. refcounting:: borrow
@@ -369,6 +376,21 @@ Unicode string and the value is any JSON value.
 
    Delete *key* from *object* if it exists. Returns 0 on success, or
    -1 if *key* was not found.
+
+
+.. cfunction:: int json_object_clear(json_t *object)
+
+   Remove all elements from *object*. Returns 0 on success and -1 if
+   *object* is not a JSON object.
+
+   .. versionadded:: 1.1
+
+.. cfunction:: int json_object_update(json_t *object, json_t *other)
+
+   Update *object* with the key-value pairs from *other*, overwriting
+   existing keys. Returns 0 on success or -1 on error.
+
+   .. versionadded:: 1.1
 
 
 The following functions implement an iteration protocol for objects:
