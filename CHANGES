@@ -1,3 +1,10 @@
+Version 1.0.4, released 2009-10-11
+
+* Relax Autoconf version requirement to 2.59
+* Make Jansson compile on platforms where plain char is unsigned
+* Fix API tests for object
+
+
 Version 1.0.3, released 2009-09-14
 
 * Check for integer and real overflows and underflows in decoder

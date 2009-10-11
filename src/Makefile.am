@@ -13,6 +13,6 @@ libjansson_la_SOURCES = \
 	utf.h \
 	util.h \
 	value.c
-libjansson_la_LDFLAGS = -version-info 0:3:0
+libjansson_la_LDFLAGS = -version-info 0:4:0
 
 AM_CFLAGS = -Wall -Wextra -Werror -std=c99
