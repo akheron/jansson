@@ -13,6 +13,9 @@
 #include <jansson.h>
 #include "strbuffer.h"
 
+#define MAX_INTEGER_STR_LENGTH  100
+#define MAX_REAL_STR_LENGTH     100
+
 typedef int (*dump_func)(const char *buffer, int size, void *data);
 
 struct string
@@ -126,30 +129,26 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
 
         case JSON_INTEGER:
         {
-            char *buffer;
-            int size, ret;
+            char buffer[MAX_INTEGER_STR_LENGTH];
+            int size;
 
-            size = asprintf(&buffer, "%d", json_integer_value(json));
-            if(size == -1)
+            size = snprintf(buffer, MAX_INTEGER_STR_LENGTH, "%d", json_integer_value(json));
+            if(size >= MAX_INTEGER_STR_LENGTH)
                 return -1;
 
-            ret = dump(buffer, size, data);
-            free(buffer);
-            return ret;
+            return dump(buffer, size, data);
         }
 
         case JSON_REAL:
         {
-            char *buffer;
-            int size, ret;
+            char buffer[MAX_REAL_STR_LENGTH];
+            int size;
 
-            size = asprintf(&buffer, "%.17f", json_real_value(json));
-            if(size == -1)
+            size = snprintf(buffer, MAX_REAL_STR_LENGTH, "%0.17f", json_real_value(json));
+            if(size >= MAX_REAL_STR_LENGTH)
                 return -1;
 
-            ret = dump(buffer, size, data);
-            free(buffer);
-            return ret;
+            return dump(buffer, size, data);
         }
 
         case JSON_STRING:
