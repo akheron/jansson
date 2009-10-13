@@ -194,11 +194,18 @@ String
    Returns a new JSON string, or *NULL* on error. *value* must be a
    valid UTF-8 encoded Unicode string.
 
-.. cfunction:: const char *json_string_value(const json_t *json)
+.. cfunction:: const char *json_string_value(const json_t *string)
 
-   Returns the associated value of the JSON string *json* as a null
-   terminated UTF-8 encoded string, or *NULL* if *json* is not a JSON
-   string.
+   Returns the associated value of *string* as a null terminated UTF-8
+   encoded string, or *NULL* if *string* is not a JSON string.
+
+.. cfunction:: int json_string_set(const json_t *string, const char *value)
+
+   Sets the associated value of *string* to *value*. *value* must be a
+   valid UTF-8 encoded Unicode string. Returns 0 on success and -1 on
+   error.
+
+   .. versionadded:: 1.1
 
 
 Number
@@ -210,10 +217,17 @@ Number
 
    Returns a new JSON integer, or *NULL* on error.
 
-.. cfunction:: int json_integer_value(const json_t *json)
+.. cfunction:: int json_integer_value(const json_t *integer)
 
-   Returns the associated value the JSON integer *json*. If *json* is
-   *NULL* or not a JSON integer, 0 is returned.
+   Returns the associated value of *integer*, or 0 if *json* is not a
+   JSON integer.
+
+.. cfunction:: int json_integer_set(const json_t *integer, int value)
+
+   Sets the associated value of *integer* to *value*. Returns 0 on
+   success and -1 if *integer* is not a JSON integer.
+
+   .. versionadded:: 1.1
 
 .. cfunction:: json_t *json_real(double value)
 
@@ -221,10 +235,17 @@ Number
 
    Returns a new JSON real, or *NULL* on error.
 
-.. cfunction:: double json_real_value(const json_t *json)
+.. cfunction:: double json_real_value(const json_t *real)
 
-   Returns the associated value of the JSON real *json*. If *json* is
-   *NULL* or not a JSON real, 0.0 is returned.
+   Returns the associated value of *real*, or 0.0 if *real* is not a
+   JSON real.
+
+.. cfunction:: int json_real_set(const json_t *real, double value)
+
+   Sets the associated value of *real* to *value*. Returns 0 on
+   success and -1 if *real* is not a JSON real.
+
+   .. versionadded:: 1.1
 
 In addition to the functions above, there's a common query function
 for integers and reals:

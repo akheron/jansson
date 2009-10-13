@@ -115,10 +115,14 @@ int json_array_insert(json_t *array, unsigned int index, json_t *value)
     return json_array_insert_new(array, index, json_incref(value));
 }
 
-const char *json_string_value(const json_t *json);
-int json_integer_value(const json_t *json);
-double json_real_value(const json_t *json);
+const char *json_string_value(const json_t *string);
+int json_integer_value(const json_t *integer);
+double json_real_value(const json_t *real);
 double json_number_value(const json_t *json);
+
+int json_string_set(const json_t *string, const char *value);
+int json_integer_set(const json_t *integer, int value);
+int json_real_set(const json_t *real, double value);
 
 
 /* loading, printing */

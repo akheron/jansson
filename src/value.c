@@ -538,6 +538,25 @@ const char *json_string_value(const json_t *json)
     return json_to_string(json)->value;
 }
 
+int json_string_set(const json_t *json, const char *value)
+{
+    char *dup;
+    json_string_t *string;
+
+    if(!json_is_string(json) || !value || !utf8_check_string(value, -1))
+        return -1;
+
+    dup = strdup(value);
+    if(!dup)
+        return -1;
+
+    string = json_to_string(json);
+    free(string->value);
+    string->value = dup;
+
+    return 0;
+}
+
 static void json_delete_string(json_string_t *string)
 {
     free(string->value);
@@ -564,6 +583,16 @@ int json_integer_value(const json_t *json)
         return 0;
 
     return json_to_integer(json)->value;
+}
+
+int json_integer_set(const json_t *json, int value)
+{
+    if(!json_is_integer(json))
+        return -1;
+
+    json_to_integer(json)->value = value;
+
+    return 0;
 }
 
 static void json_delete_integer(json_integer_t *integer)
@@ -593,7 +622,17 @@ double json_real_value(const json_t *json)
     return json_to_real(json)->value;
 }
 
-static void json_delete_real (json_real_t *real)
+int json_real_set(const json_t *json, double value)
+{
+    if(!json_is_real(json))
+        return 0;
+
+    json_to_real(json)->value = value;
+
+    return 0;
+}
+
+static void json_delete_real(json_real_t *real)
 {
     free(real);
 }

@@ -56,11 +56,23 @@ int main()
         fail("json_string failed");
     if(strcmp(json_string_value(value), "foo"))
         fail("invalid string value");
+
+    if(json_string_set(value, "bar"))
+        fail("json_string_set failed");
+    if(strcmp(json_string_value(value), "bar"))
+        fail("invalid string value");
+
     json_decref(value);
 
     value = json_string(NULL);
     if(value)
         fail("json_string(NULL) failed");
+
+    /* invalid UTF-8  */
+    value = json_string("a\xefz");
+    if(value)
+        fail("json_string(<invalid utf-8>) failed");
+
 
     value = json_integer(123);
     if(!value)
@@ -69,6 +81,14 @@ int main()
         fail("invalid integer value");
     if(json_number_value(value) != 123.0)
         fail("invalid number value");
+
+    if(json_integer_set(value, 321))
+        fail("json_integer_set failed");
+    if(json_integer_value(value) != 321)
+        fail("invalid integer value");
+    if(json_number_value(value) != 321.0)
+        fail("invalid number value");
+
     json_decref(value);
 
     value = json_real(123.123);
@@ -78,6 +98,14 @@ int main()
         fail("invalid integer value");
     if(json_number_value(value) != 123.123)
         fail("invalid number value");
+
+    if(json_real_set(value, 321.321))
+        fail("json_real_set failed");
+    if(json_real_value(value) != 321.321)
+        fail("invalid real value");
+    if(json_number_value(value) != 321.321)
+        fail("invalid number value");
+
     json_decref(value);
 
     value = json_true();
