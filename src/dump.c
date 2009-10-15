@@ -242,11 +242,15 @@ char *json_dumps(const json_t *json, unsigned long flags)
     if(strbuffer_init(&strbuff))
       return NULL;
 
-    if(do_dump(json, flags, 0, dump_to_strbuffer, (void *)&strbuff))
+    if(do_dump(json, flags, 0, dump_to_strbuffer, (void *)&strbuff)) {
+        strbuffer_close(&strbuff);
         return NULL;
+    }
 
-    if(dump_to_strbuffer("\n", 1, (void *)&strbuff))
+    if(dump_to_strbuffer("\n", 1, (void *)&strbuff)) {
+        strbuffer_close(&strbuff);
         return NULL;
+    }
 
     result = strdup(strbuffer_value(&strbuff));
     strbuffer_close(&strbuff);
