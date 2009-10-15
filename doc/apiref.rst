@@ -514,6 +514,9 @@ is in UTF-8.
 
    Write the JSON representation of *root* to the stream *output*.
    *flags* is described above. Returns 0 on success and -1 on error.
+   If an error occurs, something may have already been written to
+   *output*. In this case, the output is undefined and most likely not
+   valid JSON.
 
 .. cfunction:: int json_dump_file(const json_t *json, const char *path, unsigned long flags)
 
