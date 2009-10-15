@@ -15,41 +15,6 @@
 #include "utf.h"
 #include "util.h"
 
-#define container_of(ptr_, type_, member_)  \
-    ((type_ *)((char *)ptr_ - (size_t)&((type_ *)0)->member_))
-
-typedef struct {
-    json_t json;
-    hashtable_t hashtable;
-} json_object_t;
-
-typedef struct {
-    json_t json;
-    unsigned int size;
-    unsigned int entries;
-    json_t **table;
-} json_array_t;
-
-typedef struct {
-    json_t json;
-    char *value;
-} json_string_t;
-
-typedef struct {
-    json_t json;
-    double value;
-} json_real_t;
-
-typedef struct {
-    json_t json;
-    int value;
-} json_integer_t;
-
-#define json_to_object(json_)  container_of(json_, json_object_t, json)
-#define json_to_array(json_)   container_of(json_, json_array_t, json)
-#define json_to_string(json_)  container_of(json_, json_string_t, json)
-#define json_to_real(json_)   container_of(json_, json_real_t, json)
-#define json_to_integer(json_) container_of(json_, json_integer_t, json)
 
 static inline void json_init(json_t *json, json_type type)
 {
@@ -98,6 +63,9 @@ json_t *json_object(void)
         free(object);
         return NULL;
     }
+
+    object->visited = 0;
+
     return &object->json;
 }
 
@@ -136,7 +104,7 @@ int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value)
     if(!key || !value)
         return -1;
 
-    if(!json_is_object(json))
+    if(!json_is_object(json) || json == value)
     {
         json_decref(value);
         return -1;
@@ -273,6 +241,8 @@ json_t *json_array(void)
         return NULL;
     }
 
+    array->visited = 0;
+
     return &array->json;
 }
 
@@ -315,7 +285,7 @@ int json_array_set_new(json_t *json, unsigned int index, json_t *value)
     if(!value)
         return -1;
 
-    if(!json_is_array(json))
+    if(!json_is_array(json) || json == value)
     {
         json_decref(value);
         return -1;
@@ -383,7 +353,7 @@ int json_array_append_new(json_t *json, json_t *value)
     if(!value)
         return -1;
 
-    if(!json_is_array(json))
+    if(!json_is_array(json) || json == value)
     {
         json_decref(value);
         return -1;
@@ -409,7 +379,7 @@ int json_array_insert_new(json_t *json, unsigned int index, json_t *value)
     if(!value)
         return -1;
 
-    if(!json_is_array(json)) {
+    if(!json_is_array(json) || json == value) {
         json_decref(value);
         return -1;
     }

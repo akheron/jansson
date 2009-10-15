@@ -139,6 +139,34 @@ static void test_update()
     json_decref(object);
 }
 
+static void test_circular()
+{
+    json_t *object1, *object2;
+
+    object1 = json_object();
+    object2 = json_object();
+    if(!object1 || !object2)
+        fail("unable to create object");
+
+    /* the simple case is checked */
+    if(json_object_set(object1, "a", object1) == 0)
+        fail("able to set self");
+
+    /* create circular references */
+    if(json_object_set(object1, "a", object2) ||
+       json_object_set(object2, "a", object1))
+        fail("unable to set value");
+
+    /* circularity is detected when dumping */
+    if(json_dumps(object1, 0) != NULL)
+        fail("able to dump circulars");
+
+    /* decref twice to deal with the circular references */
+    json_decref(object1);
+    json_decref(object2);
+    json_decref(object1);
+}
+
 static void test_misc()
 {
     json_t *object, *string, *other_string, *value;
@@ -264,6 +292,7 @@ int main()
     test_misc();
     test_clear();
     test_update();
+    test_circular();
 
     return 0;
 }

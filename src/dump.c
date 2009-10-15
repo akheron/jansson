@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include <jansson.h>
+#include "jansson_private.h"
 #include "strbuffer.h"
 
 #define MAX_INTEGER_STR_LENGTH  100
@@ -157,7 +158,16 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
         case JSON_ARRAY:
         {
             int i;
-            int n = json_array_size(json);
+            int n;
+            json_array_t *array;
+
+            /* detect circular references */
+            array = json_to_array(json);
+            if(array->visited)
+                return -1;
+            array->visited = 1;
+
+            n = json_array_size(json);
 
             if(dump("[", 1, data))
                 return -1;
@@ -183,12 +193,23 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
                         return -1;
                 }
             }
+
+            array->visited = 0;
             return dump("]", 1, data);
         }
 
         case JSON_OBJECT:
         {
-            void *iter = json_object_iter((json_t *)json);
+            json_object_t *object;
+            void *iter;
+
+            /* detect circular references */
+            object = json_to_object(json);
+            if(object->visited)
+                return -1;
+            object->visited = 1;
+
+            iter = json_object_iter((json_t *)json);
 
             if(dump("{", 1, data))
                 return -1;
@@ -221,6 +242,8 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
 
                 iter = next;
             }
+
+            object->visited = 0;
             return dump("}", 1, data);
         }
 

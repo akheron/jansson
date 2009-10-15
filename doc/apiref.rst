@@ -159,6 +159,37 @@ will return a new or borrowed reference or steal a reference to its
 argument.
 
 
+Circular References
+-------------------
+
+A circular reference is created when an object or an array is,
+directly or indirectly, inserted inside itself. The direct case is
+simple::
+
+  json_t *obj = json_object();
+  json_object_set(obj, "foo", obj);
+
+Jansson will refuse to do this, and :cfunc:`json_object_set()` (and
+all the other such functions for objects and arrays) will return with
+an error status. The indirect case is the dangerous one::
+
+  json_t *arr1 = json_array(), *arr2 = json_array();
+  json_array_append(arr1, arr2);
+  json_array_append(arr2, arr1);
+
+In this example, the array ``arr2`` is contained in the array
+``arr1``, and vice versa. Jansson cannot check for this kind of
+indirect circular references without a performance hit, so it's up to
+the user to avoid them.
+
+If a circular reference is created, the memory consumed by the values
+cannot be freed by :cfunc:`json_decref()`. The reference counts never
+drops to zero because the values are keeping the circular reference to
+themselves. Moreover, trying to encode the values with any of the
+encoding functions will fail. The encoder detects circular references
+and returns an error status.
+
+
 True, False and Null
 ====================
 

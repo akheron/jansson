@@ -340,6 +340,52 @@ static void test_extend(void)
     json_decref(array2);
 }
 
+static void test_circular()
+{
+    json_t *array1, *array2;
+
+    /* the simple cases are checked */
+
+    array1 = json_array();
+    if(!array1)
+        fail("unable to create array");
+
+    if(json_array_append(array1, array1) == 0)
+        fail("able to append self");
+
+    if(json_array_insert(array1, 0, array1) == 0)
+        fail("able to insert self");
+
+    if(json_array_append_new(array1, json_true()))
+        fail("failed to append true");
+
+    if(json_array_set(array1, 0, array1) == 0)
+        fail("able to set self");
+
+    json_decref(array1);
+
+
+    /* create circular references */
+
+    array1 = json_array();
+    array2 = json_array();
+    if(!array1 || !array2)
+        fail("unable to create array");
+
+    if(json_array_append(array1, array2) ||
+       json_array_append(array2, array1))
+        fail("unable to append");
+
+    /* circularity is detected when dumping */
+    if(json_dumps(array1, 0) != NULL)
+        fail("able to dump circulars");
+
+    /* decref twice to deal with the circular references */
+    json_decref(array1);
+    json_decref(array2);
+    json_decref(array1);
+}
+
 
 int main()
 {
@@ -348,6 +394,7 @@ int main()
     test_remove();
     test_clear();
     test_extend();
+    test_circular();
 
     return 0;
 }
