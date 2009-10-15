@@ -147,7 +147,7 @@ the value is no longer needed, :cfunc:`json_decref` should be called
 to release the reference.
 
 Normally, all functions accepting a JSON value as an argument will
-nmanage the reference, i.e. increase and decrease the reference count
+manage the reference, i.e. increase and decrease the reference count
 as needed. However, some functions **steal** the reference, i.e. they
 have the same result as if the user called :cfunc:`json_decref()` on
 the argument right after calling the function. These are usually
