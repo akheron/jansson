@@ -338,9 +338,10 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
 
                         if(0xDC00 <= value2 && value2 <= 0xDFFF) {
                             /* valid second surrogate */
-                            value = ((value - 0xD800) << 10) +
-                                    (value2 - 0xDC00) +
-                                    0x10000;
+                            value =
+                                ((value - 0xD800) << 10) +
+                                (value2 - 0xDC00) +
+                                0x10000;
                         }
                         else {
                             /* invalid second surrogate */
@@ -505,8 +506,8 @@ static int lex_scan(lex_t *lex, json_error_t *error)
     strbuffer_clear(&lex->saved_text);
 
     if(lex->token == TOKEN_STRING) {
-      free(lex->value.string);
-      lex->value.string = NULL;
+        free(lex->value.string);
+        lex->value.string = NULL;
     }
 
     c = lex_get(lex, error);
@@ -744,7 +745,7 @@ static json_t *parse_value(lex_t *lex, json_error_t *error)
             break;
 
         case '{':
-          json = parse_object(lex, error);
+            json = parse_object(lex, error);
             break;
 
         case '[':

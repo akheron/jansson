@@ -274,7 +274,7 @@ static void test_misc()
 
     value = json_object_get(object, "foo");
     if(!json_is_integer(value) || json_integer_value(value) != 123)
-      fail("json_object_set_new works incorrectly");
+        fail("json_object_set_new works incorrectly");
 
     if(!json_object_set_new(object, NULL, json_integer(432)))
         fail("able to set_new NULL key");

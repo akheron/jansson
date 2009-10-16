@@ -229,7 +229,7 @@ json_t *json_array(void)
 {
     json_array_t *array = malloc(sizeof(json_array_t));
     if(!array)
-      return NULL;
+        return NULL;
     json_init(&array->json, JSON_ARRAY);
 
     array->entries = 0;
@@ -480,7 +480,7 @@ json_t *json_string_nocheck(const char *value)
 
     string = malloc(sizeof(json_string_t));
     if(!string)
-       return NULL;
+        return NULL;
     json_init(&string->json, JSON_STRING);
 
     string->value = strdup(value);
@@ -540,7 +540,7 @@ json_t *json_integer(int value)
 {
     json_integer_t *integer = malloc(sizeof(json_integer_t));
     if(!integer)
-       return NULL;
+        return NULL;
     json_init(&integer->json, JSON_INTEGER);
 
     integer->value = value;
@@ -577,7 +577,7 @@ json_t *json_real(double value)
 {
     json_real_t *real = malloc(sizeof(json_real_t));
     if(!real)
-       return NULL;
+        return NULL;
     json_init(&real->json, JSON_REAL);
 
     real->value = value;

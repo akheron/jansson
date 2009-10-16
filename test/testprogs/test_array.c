@@ -94,7 +94,7 @@ static void test_misc(void)
 
     value = json_array_get(array, 15);
     if(!json_is_integer(value) || json_integer_value(value) != 123)
-      fail("json_array_set_new works incorrectly");
+        fail("json_array_set_new works incorrectly");
 
     if(!json_array_set_new(array, 15, NULL))
         fail("able to set_new NULL value");
@@ -104,7 +104,7 @@ static void test_misc(void)
 
     value = json_array_get(array, json_array_size(array) - 1);
     if(!json_is_integer(value) || json_integer_value(value) != 321)
-      fail("json_array_append_new works incorrectly");
+        fail("json_array_append_new works incorrectly");
 
     if(!json_array_append_new(array, NULL))
         fail("able to append_new NULL value");

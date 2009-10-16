@@ -263,7 +263,7 @@ char *json_dumps(const json_t *json, unsigned long flags)
         return NULL;
 
     if(strbuffer_init(&strbuff))
-      return NULL;
+        return NULL;
 
     if(do_dump(json, flags, 0, dump_to_strbuffer, (void *)&strbuff)) {
         strbuffer_close(&strbuff);

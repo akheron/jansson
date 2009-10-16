@@ -13,8 +13,8 @@ typedef int (*key_cmp_fn)(const void *key1, const void *key2);
 typedef void (*free_fn)(void *key);
 
 struct hashtable_list {
-  struct hashtable_list *prev;
-  struct hashtable_list *next;
+    struct hashtable_list *prev;
+    struct hashtable_list *next;
 };
 
 struct hashtable_pair {

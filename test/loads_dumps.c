@@ -26,8 +26,8 @@ int main(int argc, char *argv[])
 
     count = fread(buffer, 1, BUFFER_SIZE, stdin);
     if(count < 0 || count >= BUFFER_SIZE) {
-      fprintf(stderr, "unable to read input\n");
-      return 1;
+        fprintf(stderr, "unable to read input\n");
+        return 1;
     }
     buffer[count] = '\0';
 
