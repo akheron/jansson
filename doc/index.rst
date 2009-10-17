@@ -11,6 +11,7 @@ This is the documentation for Jansson_ |release|, last updated |today|.
    :maxdepth: 2
 
    gettingstarted
+   tutorial
    apiref
 
 

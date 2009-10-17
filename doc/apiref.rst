@@ -1,3 +1,5 @@
+.. _apiref:
+
 *************
 API Reference
 *************
@@ -112,6 +114,8 @@ functions:
    Returns true for types :const:`JSON_TRUE` and :const:`JSON_FALSE`,
    and false for values of other types and for *NULL*.
 
+
+.. _apiref-reference-count:
 
 Reference Count
 ---------------
