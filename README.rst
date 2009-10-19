@@ -6,13 +6,13 @@ data. Its main features and design principles are:
 
 - Simple and intuitive API and data model
 
-- Good documentation
+- Comprehensive documentation
+
+- No dependencies on other libraries
 
 - Full Unicode support (UTF-8)
 
 - Extensive test suite
-
-- No dependencies on other libraries
 
 Jansson is licensed under the `MIT license`_; see LICENSE in the
 source distribution for details.

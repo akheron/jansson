@@ -7,11 +7,8 @@ Getting Started
 Compiling and Installing Jansson
 ================================
 
-This chapter explains how to compile and install the library itself.
-
-
-Compiling and Installing from a Source Tarball
-----------------------------------------------
+The Jansson source is available at
+http://www.digip.org/jansson/releases/.
 
 Unpack the source tarball and change to the source directory:
 
@@ -34,17 +31,9 @@ the ``--prefix=DIR`` argument to ``./configure``. See ``./configure
 no options to customize the resulting Jansson binary.)
 
 The command ``make check`` runs the test suite distributed with
-Jansson. This step is not strictly necessary, but it may find possible
-problems that Jansson has on your platform. If any problems are found,
-please report them.
-
-.. _autoconf: http://www.gnu.org/software/autoconf/
-.. _automake: http://www.gnu.org/software/automake/
-.. _libtool: http://www.gnu.org/software/libtool/
-
-
-Compiling and Installing from Git
----------------------------------
+Jansson. Python_ is required to run the tests. This step is not
+strictly necessary, but it may find possible problems that Jansson has
+on your platform. If any problems are found, please report them.
 
 If you obtained the source from a Git repository (or any other source
 control system), there's no ``./configure`` script as it's not kept in
@@ -57,20 +46,44 @@ to use ``autoreconf``::
 This command creates the ``./configure`` script, which can then be
 used as described in the previous section.
 
+.. _autoconf: http://www.gnu.org/software/autoconf/
+.. _automake: http://www.gnu.org/software/automake/
+.. _libtool: http://www.gnu.org/software/libtool/
+.. _Python: http://www.python.org/
+
 
 Installing Prebuilt Binary Packages
 -----------------------------------
 
-Binary ``.deb`` packages for Ubuntu are available in the `Jansson
-PPA`_ at Launchpad_. Follow the instructions in the PPA ("Read about
-installing" link) to take the PPA into use. Then install the -dev
+Binary ``.deb`` packages for Ubuntu are available in `this PPA`_ at
+Launchpad_. Follow the instructions in the PPA ("Technical details
+about this PPA" link) to take the PPA into use. Then install the -dev
 package::
 
-  apt-get install libjansson-dev
+  sudo apt-get install libjansson-dev
 
-.. _Jansson PPA: http://launchpad.net/~petri/+archive/ppa
+.. _this PPA: http://launchpad.net/~petri/+archive/ppa
 .. _Launchpad: http://launchpad.net/
 
+
+Building the Documentation
+--------------------------
+
+(This subsection describes how to build the HTML documentation you are
+currently reading, so it can be safely skipped.)
+
+Documentation is in the ``doc/`` subdirectory. It's written in
+reStructuredText_ with Sphinx_ annotations. To generate the HTML
+documentation, invoke::
+
+   cd doc/
+   sphinx-build . .build/html
+
+... and point your browser to ``.build/html/index.html``. Sphinx_ is
+required to generate the documentation.
+
+.. _reStructuredText: http://docutils.sourceforge.net/rst.html
+.. _Sphinx: http://sphinx.pocoo.org/
 
 
 Compiling Programs Using Jansson

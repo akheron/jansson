@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
     }
 
     commits = json_object_get(root, "commits");
-    if(!commits || !json_is_array(commits))
+    if(!json_is_array(commits))
     {
         fprintf(stderr, "error: commits is not an array\n");
         return 1;
@@ -139,14 +139,14 @@ int main(int argc, char *argv[])
         }
 
         id = json_object_get(commit, "id");
-        if(!id || !json_is_string(id))
+        if(!json_is_string(id))
         {
             fprintf(stderr, "error: commit %d: id is not a string\n", i + 1);
             return 1;
         }
 
         message = json_object_get(commit, "message");
-        if(!message || !json_is_string(message))
+        if(!json_is_string(message))
         {
             fprintf(stderr, "error: commit %d: message is not a string\n", i + 1);
             return 1;

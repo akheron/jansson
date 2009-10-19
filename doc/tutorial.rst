@@ -41,16 +41,12 @@ starts to respond with an error.
 The GitHub Commits API
 ======================
 
-The GitHub commits API is used by sending HTTP requests to URLs
+The `GitHub commits API`_ is used by sending HTTP requests to URLs
 starting with ``http://github.com/api/v2/json/commits/``. Our program
 only lists the latest commits, so the rest of the URL is
 ``list/USER/REPOSITORY/BRANCH``, where ``USER``, ``REPOSITORY`` and
 ``BRANCH`` are the GitHub user ID, the name of the repository, and the
-name of the branch whose commits are to be listed, respectively. The
-following definitions are used to build the request URL::
-
-   #define URL_FORMAT   "http://github.com/api/v2/json/commits/list/%s/%s/master"
-   #define URL_SIZE     256
+name of the branch whose commits are to be listed, respectively.
 
 GitHub responds with a JSON object of the following form:
 
@@ -78,10 +74,13 @@ function::
     static char *request(const char *url);
 
 It takes the URL as a parameter, preforms a HTTP GET request, and
-returns a newly allocated string that contains the response body. For
-full details, refer to :download:`the code <github_commits.c>`, as the
-actual implementation is not important here.
+returns a newly allocated string that contains the response body. If
+the request fails, an error message is printed to stderr and the
+return value is *NULL*. For full details, refer to :download:`the code
+<github_commits.c>`, as the actual implementation is not important
+here.
 
+.. _GitHub commits API: http://develop.github.com/p/commits.html
 
 .. _tutorial-the-program:
 
@@ -95,6 +94,12 @@ First the includes::
 
 Like all the programs using Jansson, we need to include
 :file:`jansson.h`.
+
+The following definitions are used to build the GitHub commits API
+request URL::
+
+   #define URL_FORMAT   "http://github.com/api/v2/json/commits/list/%s/%s/master"
+   #define URL_SIZE     256
 
 The following function is used when formatting the result to find the
 first newline in the commit message::
@@ -161,22 +166,24 @@ variable right after decoding it. If :cfunc:`json_loads()` fails, it
 returns *NULL* and sets error information to the :ctype:`json_error_t`
 structure given as the second parameter. In this case, our program
 prints the error information out and returns 1 from the main function.
-This check is really only to be sure, because we can assume that the
-GitHub API returns correct JSON to us.
 
-Next, we'll extract the ``commits`` array from the JSON response::
+Now we're ready to extract the data out of the decoded JSON response.
+The structure of the response JSON was explained in section
+:ref:`tutorial-github-commits-api`.
+
+First, we'll extract the ``commits`` array from the JSON response::
 
     commits = json_object_get(root, "commits");
-    if(!commits || !json_is_array(commits))
+    if(!json_is_array(commits))
     {
         fprintf(stderr, "error: commits is not an array\n");
         return 1;
     }
 
 This is the array that contains objects describing latest commits in
-the repository. If the key ``commits`` doesn't exist,
-:cfunc:`json_object_get()` returns *NULL*. We also check that the
-returned value really is an array.
+the repository. We check that the returned value really is an array.
+If the key ``commits`` doesn't exist, :cfunc:`json_object_get()`
+returns *NULL*, but :cfunc:`json_is_array()` handles this case, too.
 
 Then we proceed to loop over all the commits in the array::
 
@@ -196,22 +203,20 @@ Then we proceed to loop over all the commits in the array::
 The function :cfunc:`json_array_size()` returns the size of a JSON
 array. First, we again declare some variables and then extract the
 i'th element of the ``commits`` array using :cfunc:`json_array_get()`.
-We also check that the resulting value is a JSON object. (The
-structure of the response JSON was explained in
-:ref:`tutorial-github-commits-api`).
+We also check that the resulting value is a JSON object.
 
 Next we'll extract the commit ID and commit message, and check that
 they both are JSON strings::
 
         id = json_object_get(commit, "id");
-        if(!id || !json_is_string(id))
+        if(!json_is_string(id))
         {
             fprintf(stderr, "error: commit %d: id is not a string\n", i + 1);
             return 1;
         }
 
         message = json_object_get(commit, "message");
-        if(!message || !json_is_string(message))
+        if(!json_is_string(message))
         {
             fprintf(stderr, "error: commit %d: message is not a string\n", i + 1);
             return 1;
@@ -230,7 +235,7 @@ from a JSON string using :cfunc:`json_string_value()`::
     }
 
 After sending the HTTP request, we decoded the JSON text using
-:cfunc:`json_loads()`, remember? It returns a *new reference* to a
+:cfunc:`json_loads()`, remember? It returns a *new reference* to the
 JSON value it decodes. When we're finished with the value, we'll need
 to decrease the reference count using :cfunc:`json_decref()`. This way
 Jansson can release the resources::
