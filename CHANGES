@@ -1,3 +1,23 @@
+Version 1.1, released 2009-10-XX
+
+* API additions and improvements:
+  - Extend array and object APIs
+  - Add functions to modify integer, real and string values
+  - Improve argument validation
+  - Use unsigned int instead of uint32_t for encoding flags
+* Enhance documentation
+  - Add getting started guide and tutorial
+  - Fix some typos
+  - General clarifications and cleanup
+* Check for integer and real overflows and underflows in decoder
+* Make singleton values thread-safe (true, false and null)
+* Enhance circular reference handling
+* Don't define -std=c99 in AM_CFLAGS
+* Add C++ guards to jansson.h
+* Minor performance and portability improvements
+* Expand test coverage
+
+
 Version 1.0.4, released 2009-10-11
 
 * Relax Autoconf version requirement to 2.59
