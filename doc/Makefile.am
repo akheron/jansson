@@ -1,5 +1,5 @@
 EXTRA_DIST = \
-	conf.py apiref.rst gettingstarted.rst index.rst \
+	conf.py apiref.rst gettingstarted.rst github_commits.c index.rst \
 	tutorial.rst ext/refcounting.py
 
 clean-local:
