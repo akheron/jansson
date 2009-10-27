@@ -864,6 +864,8 @@ json_t *json_load_file(const char *path, json_error_t *error)
     json_t *result;
     FILE *fp;
 
+    error_init(error);
+
     fp = fopen(path, "r");
     if(!fp)
     {
