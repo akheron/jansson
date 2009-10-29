@@ -167,7 +167,22 @@ too big negative integer near '-123123123123123'
 ====
 1
 invalid token near 'troo'
-==== invalid-escap ====
+==== minus-sign-without-number ====
+[-foo]
+====
+1
+invalid token near '-'
+==== invalid-negative-integerr ====
+[-123foo]
+====
+1
+']' expected near 'foo'
+==== invalid-negative-real ====
+[-123.123foo]
+====
+1
+']' expected near 'foo'
+==== invalid-escape ====
 ["\a <-- invalid escape"]
 ====
 1

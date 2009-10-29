@@ -418,10 +418,14 @@ static int lex_scan_number(lex_t *lex, char c, json_error_t *error)
             goto out;
         }
     }
-    else /* c != '0' */ {
+    else if(isdigit(c)) {
         c = lex_get_save(lex, error);
         while(isdigit(c))
             c = lex_get_save(lex, error);
+    }
+    else {
+      lex_unget_unsave(lex, c);
+      goto out;
     }
 
     if(c != '.' && c != 'E' && c != 'e') {
