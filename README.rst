@@ -49,10 +49,9 @@ available at http://www.digip.org/jansson/doc/.
 
 To generate HTML documentation yourself, invoke::
 
-   cd doc/
-   sphinx-build . .build/html
+   make html
 
-... and point your browser to ``.build/html/index.html``. Sphinx_ is
+and point your browser to ``doc/_build/html/index.html``. Sphinx_ is
 required to generate the documentation.
 
 

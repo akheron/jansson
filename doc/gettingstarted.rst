@@ -76,10 +76,9 @@ Documentation is in the ``doc/`` subdirectory. It's written in
 reStructuredText_ with Sphinx_ annotations. To generate the HTML
 documentation, invoke::
 
-   cd doc/
-   sphinx-build . .build/html
+   make html
 
-... and point your browser to ``.build/html/index.html``. Sphinx_ is
+and point your browser to ``doc/_build/html/index.html``. Sphinx_ is
 required to generate the documentation.
 
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
