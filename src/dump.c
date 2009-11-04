@@ -42,7 +42,7 @@ static int dump_to_file(const char *buffer, int size, void *data)
 /* 256 spaces (the maximum indentation size) */
 static char whitespace[] = "                                                                                                                                                                                                                                                                ";
 
-static int dump_indent(unsigned long flags, int depth, dump_func dump, void *data)
+static int dump_indent(unsigned long flags, int depth, int space, dump_func dump, void *data)
 {
     if(JSON_INDENT(flags) > 0)
     {
@@ -56,6 +56,10 @@ static int dump_indent(unsigned long flags, int depth, dump_func dump, void *dat
             if(dump(whitespace, ws_count, data))
                 return -1;
         }
+    }
+    else if(space && !(flags & JSON_COMPACT))
+    {
+        return dump(" ", 1, data);
     }
     return 0;
 }
@@ -173,7 +177,7 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
                 return -1;
             if(n == 0)
                 return dump("]", 1, data);
-            if(dump_indent(flags, depth + 1, dump, data))
+            if(dump_indent(flags, depth + 1, 0, dump, data))
                 return -1;
 
             for(i = 0; i < n; ++i) {
@@ -184,12 +188,12 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
                 if(i < n - 1)
                 {
                     if(dump(",", 1, data) ||
-                       dump_indent(flags, depth + 1, dump, data))
+                       dump_indent(flags, depth + 1, 1, dump, data))
                         return -1;
                 }
                 else
                 {
-                    if(dump_indent(flags, depth, dump, data))
+                    if(dump_indent(flags, depth, 0, dump, data))
                         return -1;
                 }
             }
@@ -202,6 +206,17 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
         {
             json_object_t *object;
             void *iter;
+            const char *separator;
+            int separator_length;
+
+            if(flags & JSON_COMPACT) {
+                separator = ":";
+                separator_length = 1;
+            }
+            else {
+                separator = ": ";
+                separator_length = 2;
+            }
 
             /* detect circular references */
             object = json_to_object(json);
@@ -215,7 +230,7 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
                 return -1;
             if(!iter)
                 return dump("}", 1, data);
-            if(dump_indent(flags, depth + 1, dump, data))
+            if(dump_indent(flags, depth + 1, 0, dump, data))
                 return -1;
 
             while(iter)
@@ -223,7 +238,7 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
                 void *next = json_object_iter_next((json_t *)json, iter);
 
                 dump_string(json_object_iter_key(iter), dump, data);
-                if(dump(": ", 2, data) ||
+                if(dump(separator, separator_length, data) ||
                    do_dump(json_object_iter_value(iter), flags, depth + 1,
                            dump, data))
                     return -1;
@@ -231,12 +246,12 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
                 if(next)
                 {
                     if(dump(",", 1, data) ||
-                       dump_indent(flags, depth + 1, dump, data))
+                       dump_indent(flags, depth + 1, 1, dump, data))
                         return -1;
                 }
                 else
                 {
-                    if(dump_indent(flags, depth, dump, data))
+                    if(dump_indent(flags, depth, 0, dump, data))
                         return -1;
                 }
 
@@ -270,11 +285,6 @@ char *json_dumps(const json_t *json, unsigned long flags)
         return NULL;
     }
 
-    if(dump_to_strbuffer("\n", 1, (void *)&strbuff)) {
-        strbuffer_close(&strbuff);
-        return NULL;
-    }
-
     result = strdup(strbuffer_value(&strbuff));
     strbuffer_close(&strbuff);
 
@@ -286,9 +296,7 @@ int json_dumpf(const json_t *json, FILE *output, unsigned long flags)
     if(!json_is_array(json) && !json_is_object(json))
         return -1;
 
-    if(do_dump(json, flags, 0, dump_to_file, (void *)output))
-        return -1;
-    return dump_to_file("\n", 1, (void *)output);
+    return do_dump(json, flags, 0, dump_to_file, (void *)output);
 }
 
 int json_dump_file(const json_t *json, const char *path, unsigned long flags)

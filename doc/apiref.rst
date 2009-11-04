@@ -494,16 +494,30 @@ This sections describes the functions that can be used to encode
 values to JSON. Only objects and arrays can be encoded, since they are
 the only valid "root" values of a JSON text.
 
+By default, the output has no newlines, and spaces are used between
+array and object elements for a readable output. This behavior can be
+altered by using the ``JSON_INDENT`` and ``JSON_COMPACT`` flags
+described below. A newline is never appended to the end of the encoded
+JSON data.
+
 Each function takes a *flags* parameter that controls some aspects of
 how the data is encoded. Its default value is 0. The following macros
 can be ORed together to obtain *flags*.
 
 ``JSON_INDENT(n)``
-   Pretty-print the result, indenting arrays and objects by *n*
-   spaces. The valid range for *n* is between 0 and 255, other values
-   result in an undefined output. If ``JSON_INDENT`` is not used or
-   *n* is 0, no pretty-printing is done and the result is a compact
-   representation.
+   Pretty-print the result, using newlines between array and object
+   items, and indenting with *n* spaces. The valid range for *n* is
+   between 0 and 255, other values result in an undefined output. If
+   ``JSON_INDENT`` is not used or *n* is 0, no newlines are inserted
+   between array and object items.
+
+``JSON_COMPACT``
+   This flag enables a compact representation, i.e. sets the separator
+   between array and object items to ``","`` and between object keys
+   and values to ``":"``. Without this flag, the corresponding
+   separators are ``", "`` and ``": "`` for more readable output.
+
+   .. versionadded:: 1.2
 
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
