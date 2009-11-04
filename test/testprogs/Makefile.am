@@ -1,7 +1,8 @@
-check_PROGRAMS = test_array test_dump test_simple test_number test_object
+check_PROGRAMS = test_array test_dump test_load test_simple test_number test_object
 
 test_array_SOURCES = test_array.c util.h
 test_dump_SOURCES = test_dump.c util.h
+test_load_SOURCES = test_load.c util.h
 test_simple_SOURCES = test_simple.c util.h
 test_number_SOURCES = test_number.c util.h
 test_object_SOURCES = test_object.c util.h
