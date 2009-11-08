@@ -1,5 +1,5 @@
 AC_PREREQ([2.59])
-AC_INIT([jansson], [1.1.1], [petri@digip.org])
+AC_INIT([jansson], [1.1.2], [petri@digip.org])
 
 AM_INIT_AUTOMAKE([1.10 foreign])
 
