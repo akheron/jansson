@@ -1,3 +1,12 @@
+Version 1.1.2, released 2009-11-08
+
+* Fix a bug where an error message was not produced if the input file
+  could not be opened in json_load_file()
+* Fix an assertion failure in decoder caused by a minus sign without a
+  digit after it
+* Remove an unneeded include for stdint.h in jansson.h
+
+
 Version 1.1.1, released 2009-10-26
 
 * All documentation files were not distributed with v1.1; build
