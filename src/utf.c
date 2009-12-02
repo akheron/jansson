@@ -6,8 +6,9 @@
  */
 
 #include <string.h>
+#include <stdint.h>
 
-int utf8_encode(int codepoint, char *buffer, int *size)
+int utf8_encode(int32_t codepoint, char *buffer, int *size)
 {
     if(codepoint < 0)
         return -1;
@@ -81,7 +82,8 @@ int utf8_check_first(char byte)
 
 int utf8_check_full(const char *buffer, int size)
 {
-    int i, value = 0;
+    int i;
+    int32_t value = 0;
     unsigned char u = (unsigned char)buffer[0];
 
     if(size == 2)

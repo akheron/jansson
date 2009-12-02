@@ -14,6 +14,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include <jansson.h>
 #include "jansson_private.h"
@@ -221,10 +222,10 @@ static void lex_save_cached(lex_t *lex)
 }
 
 /* assumes that str points to 'u' plus at least 4 valid hex digits */
-static int decode_unicode_escape(const char *str)
+static int32_t decode_unicode_escape(const char *str)
 {
     int i;
-    int value = 0;
+    int32_t value = 0;
 
     assert(str[0] == 'u');
 
@@ -325,7 +326,7 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
             if(*p == 'u') {
                 char buffer[4];
                 int length;
-                int value;
+                int32_t value;
 
                 value = decode_unicode_escape(p);
                 p += 5;
@@ -333,7 +334,7 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
                 if(0xD800 <= value && value <= 0xDBFF) {
                     /* surrogate pair */
                     if(*p == '\\' && *(p + 1) == 'u') {
-                        int value2 = decode_unicode_escape(++p);
+                        int32_t value2 = decode_unicode_escape(++p);
                         p += 5;
 
                         if(0xDC00 <= value2 && value2 <= 0xDFFF) {
