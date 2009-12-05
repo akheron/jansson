@@ -149,7 +149,7 @@ static char stream_get(stream_t *stream, json_error_t *error)
             for(i = 1; i < count; i++)
                 stream->buffer[i] = stream->get(stream->data);
 
-            if(!utf8_check_full(stream->buffer, count))
+            if(!utf8_check_full(stream->buffer, count, NULL))
                 goto out;
 
             stream->stream_pos += count;

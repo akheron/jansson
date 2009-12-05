@@ -14,6 +14,7 @@
 #include <jansson.h>
 #include "jansson_private.h"
 #include "strbuffer.h"
+#include "utf.h"
 
 #define MAX_INTEGER_STR_LENGTH  100
 #define MAX_REAL_STR_LENGTH     100
@@ -65,34 +66,49 @@ static int dump_indent(unsigned long flags, int depth, int space, dump_func dump
     return 0;
 }
 
-static int dump_string(const char *str, dump_func dump, void *data)
+static int dump_string(const char *str, int ascii, dump_func dump, void *data)
 {
-    const char *end;
+    const char *pos, *end;
+    int32_t codepoint;
 
     if(dump("\"", 1, data))
         return -1;
 
-    end = str;
+    end = pos = str;
     while(1)
     {
         const char *text;
-        char seq[7];
+        char seq[13];
         int length;
 
-        while(*end && *end != '\\' && *end != '"' && (unsigned char)*end > 0x1F)
-            end++;
+        while(*end)
+        {
+            end = utf8_iterate(pos, &codepoint);
+            if(!end)
+                return -1;
 
-        if(end != str) {
-            if(dump(str, end - str, data))
+            /* mandatory escape or control char */
+            if(codepoint == '\\' || codepoint == '"' || codepoint < 0x20)
+                break;
+
+            /* non-ASCII */
+            if(ascii && codepoint > 0x7F)
+                break;
+
+            pos = end;
+        }
+
+        if(pos != str) {
+            if(dump(str, pos - str, data))
                 return -1;
         }
 
-        if(!*end)
+        if(end == pos)
             break;
 
         /* handle \, ", and control codes */
         length = 2;
-        switch(*end)
+        switch(codepoint)
         {
             case '\\': text = "\\\\"; break;
             case '\"': text = "\\\""; break;
@@ -103,9 +119,27 @@ static int dump_string(const char *str, dump_func dump, void *data)
             case '\t': text = "\\t"; break;
             default:
             {
-                sprintf(seq, "\\u00%02x", *end);
+                /* codepoint is in BMP */
+                if(codepoint < 0x10000)
+                {
+                    sprintf(seq, "\\u%04x", codepoint);
+                    length = 6;
+                }
+
+                /* not in BMP -> construct a UTF-16 surrogate pair */
+                else
+                {
+                    int32_t first, last;
+
+                    codepoint -= 0x10000;
+                    first = 0xD800 | ((codepoint & 0xffc00) >> 10);
+                    last = 0xDC00 | (codepoint & 0x003ff);
+
+                    sprintf(seq, "\\u%04x\\u%04x", first, last);
+                    length = 12;
+                }
+
                 text = seq;
-                length = 6;
                 break;
             }
         }
@@ -113,8 +147,7 @@ static int dump_string(const char *str, dump_func dump, void *data)
         if(dump(text, length, data))
             return -1;
 
-        end++;
-        str = end;
+        str = pos = end;
     }
 
     return dump("\"", 1, data);
@@ -123,6 +156,8 @@ static int dump_string(const char *str, dump_func dump, void *data)
 static int do_dump(const json_t *json, unsigned long flags, int depth,
                    dump_func dump, void *data)
 {
+    int ascii = flags & JSON_ENSURE_ASCII ? 1 : 0;
+
     switch(json_typeof(json)) {
         case JSON_NULL:
             return dump("null", 4, data);
@@ -158,7 +193,7 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
         }
 
         case JSON_STRING:
-            return dump_string(json_string_value(json), dump, data);
+            return dump_string(json_string_value(json), ascii, dump, data);
 
         case JSON_ARRAY:
         {
@@ -238,7 +273,7 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
             {
                 void *next = json_object_iter_next((json_t *)json, iter);
 
-                dump_string(json_object_iter_key(iter), dump, data);
+                dump_string(json_object_iter_key(iter), ascii, dump, data);
                 if(dump(separator, separator_length, data) ||
                    do_dump(json_object_iter_value(iter), flags, depth + 1,
                            dump, data))

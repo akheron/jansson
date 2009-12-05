@@ -519,6 +519,13 @@ can be ORed together to obtain *flags*.
 
    .. versionadded:: 1.2
 
+``JSON_ENSURE_ASCII``
+   If this flag is used, the output is guaranteed to consist only of
+   ASCII characters. This is achived by escaping all Unicode
+   characters outside the ASCII range.
+
+   .. versionadded:: 1.2
+
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
 

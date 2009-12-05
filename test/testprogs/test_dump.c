@@ -131,8 +131,8 @@ static void test_compact()
 
 #define INDENTED_COMPACT_OBJECT                 \
     "{\n"                                       \
-    "    \"a\":1,\n"                           \
-    "    \"b\":2\n"                            \
+    "    \"a\":1,\n"                            \
+    "    \"b\":2\n"                             \
     "}"
 #define INDENTED_COMPACT_ARRAY                  \
     "[\n"                                       \
@@ -163,12 +163,65 @@ static void test_compact_indent()
     json_decref(array);
 }
 
+
+static const char *test_ensure_ascii_data[][2] = {
+    /*
+    { "input", "output" }
+    */
+
+    /* ascii */
+    { "foo", "foo" },
+
+    /* BMP */
+    { "\xc3\xa4 \xc3\xb6 \xc3\xa5", "\\u00e4 \\u00f6 \\u00e5" },
+    { "foo \xc3\xa4\xc3\xa5", "foo \\u00e4\\u00e5" },
+    { "\xc3\xa4\xc3\xa5 foo", "\\u00e4\\u00e5 foo" },
+    { "\xc3\xa4 foo \xc3\xa5", "\\u00e4 foo \\u00e5" },
+
+    /* non-BMP */
+    { "clef g: \xf0\x9d\x84\x9e", "clef g: \\ud834\\udd1e" },
+};
+
+static void test_ensure_ascii()
+{
+    int i;
+    int num_tests = sizeof(test_ensure_ascii_data) / sizeof(const char *) / 2;
+
+    for(i = 0; i < num_tests; i++) {
+        json_t *array, *string;
+        const char *input, *output;
+        char *result, *stripped;
+
+        input = test_ensure_ascii_data[i][0];
+        output = test_ensure_ascii_data[i][1];
+
+        array = json_array();
+        string = json_string(input);
+        if(!array || !string)
+            fail("unable to create json values");
+
+        json_array_append(array, string);
+        result = json_dumps(array, JSON_ENSURE_ASCII);
+
+        /* strip leading [" and trailing "] */
+        stripped = &result[2];
+        stripped[strlen(stripped) - 2] = '\0';
+
+        if(strcmp(stripped, output) != 0) {
+            free(result);
+            fail("the result of json_dumps is invalid");
+        }
+        free(result);
+    }
+}
+
 int main(void)
 {
     test_normal();
     test_indent();
     test_compact();
     test_compact_indent();
+    test_ensure_ascii();
 
     return 0;
 }
