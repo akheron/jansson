@@ -526,6 +526,13 @@ can be ORed together to obtain *flags*.
 
    .. versionadded:: 1.2
 
+``JSON_SORT_KEYS``
+   If this flag is used, all the objects in output are sorted by key.
+   This is useful e.g. if two JSON texts are diffed or visually
+   compared.
+
+   .. versionadded:: 1.2
+
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
 

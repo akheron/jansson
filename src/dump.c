@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include <jansson.h>
 #include "jansson_private.h"
@@ -153,6 +154,11 @@ static int dump_string(const char *str, int ascii, dump_func dump, void *data)
     return dump("\"", 1, data);
 }
 
+static int object_key_cmp(const void *key1, const void *key2)
+{
+    return strcmp(*(const char **)key1, *(const char **)key2);
+}
+
 static int do_dump(const json_t *json, unsigned long flags, int depth,
                    dump_func dump, void *data)
 {
@@ -269,29 +275,96 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
             if(dump_indent(flags, depth + 1, 0, dump, data))
                 return -1;
 
-            while(iter)
+            if(flags & JSON_SORT_KEYS)
             {
-                void *next = json_object_iter_next((json_t *)json, iter);
+                /* Sort keys */
 
-                dump_string(json_object_iter_key(iter), ascii, dump, data);
-                if(dump(separator, separator_length, data) ||
-                   do_dump(json_object_iter_value(iter), flags, depth + 1,
-                           dump, data))
+                const char **keys;
+                unsigned int size;
+                unsigned int i;
+
+                size = json_object_size(json);
+                keys = malloc(size * sizeof(const char *));
+                if(!keys)
                     return -1;
 
-                if(next)
+                i = 0;
+                while(iter)
                 {
-                    if(dump(",", 1, data) ||
-                       dump_indent(flags, depth + 1, 1, dump, data))
-                        return -1;
+                    keys[i] = json_object_iter_key(iter);
+                    iter = json_object_iter_next((json_t *)json, iter);
+                    i++;
                 }
-                else
+                assert(i == size);
+
+                qsort(keys, size, sizeof(const char *), object_key_cmp);
+
+                for(i = 0; i < size; i++)
                 {
-                    if(dump_indent(flags, depth, 0, dump, data))
+                    const char *key;
+                    json_t *value;
+
+                    key = keys[i];
+                    value = json_object_get(json, key);
+                    assert(value);
+
+                    dump_string(key, ascii, dump, data);
+                    if(dump(separator, separator_length, data) ||
+                       do_dump(value, flags, depth + 1, dump, data))
+                    {
+                        free(keys);
                         return -1;
+                    }
+
+                    if(i < size - 1)
+                    {
+                        if(dump(",", 1, data) ||
+                           dump_indent(flags, depth + 1, 1, dump, data))
+                        {
+                            free(keys);
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if(dump_indent(flags, depth, 0, dump, data))
+                        {
+                            free(keys);
+                            return -1;
+                        }
+                    }
                 }
 
-                iter = next;
+                free(keys);
+            }
+            else
+            {
+                /* Don't sort keys */
+
+                while(iter)
+                {
+                    void *next = json_object_iter_next((json_t *)json, iter);
+
+                    dump_string(json_object_iter_key(iter), ascii, dump, data);
+                    if(dump(separator, separator_length, data) ||
+                       do_dump(json_object_iter_value(iter), flags, depth + 1,
+                               dump, data))
+                        return -1;
+
+                    if(next)
+                    {
+                        if(dump(",", 1, data) ||
+                           dump_indent(flags, depth + 1, 1, dump, data))
+                            return -1;
+                    }
+                    else
+                    {
+                        if(dump_indent(flags, depth, 0, dump, data))
+                            return -1;
+                    }
+
+                    iter = next;
+                }
             }
 
             object->visited = 0;

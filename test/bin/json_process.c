@@ -53,6 +53,9 @@ int main(int argc, char *argv[])
     if(getenv_int("JSON_ENSURE_ASCII"))
         flags |= JSON_ENSURE_ASCII;
 
+    if(getenv_int("JSON_SORT_KEYS"))
+        flags |= JSON_SORT_KEYS;
+
     json = json_loadf(stdin, &error);
     if(!json) {
         fprintf(stderr, "%d\n%s\n", error.line, error.text);
