@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# Copyright (c) 2009 Petri Lehtinen <petri@digip.org>
+#
+# Jansson is free software; you can redistribute it and/or modify
+# it under the terms of the MIT license. See LICENSE for details.
+
+is_test() {
+    test "${test_name%.c}" != "$test_name"
+}
+
+run_test() {
+    $suite_builddir/${test_name%.c} >$test_log/stdout 2>$test_log/stderr
+}
+
+show_error() {
+    valgrind_show_error && return
+    cat $test_log/stderr
+}
+
+. $top_srcdir/test/scripts/run-tests.sh
