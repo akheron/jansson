@@ -1,0 +1,2 @@
+export JSON_INDENT=4
+export JSON_COMPACT=1

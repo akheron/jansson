@@ -5,6 +5,8 @@
 # Jansson is free software; you can redistribute it and/or modify
 # it under the terms of the MIT license. See LICENSE for details.
 
+export JSON_SORT_KEYS=1
+
 is_test() {
     test -d $test_path
 }
