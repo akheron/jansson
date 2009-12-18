@@ -15,6 +15,6 @@ libjansson_la_SOURCES = \
 	value.c
 libjansson_la_LDFLAGS = \
 	-export-symbols-regex '^json_' \
-	-version-info 1:1:1
+	-version-info 1:2:1
 
 AM_CFLAGS = -Wall -Wextra -Werror
