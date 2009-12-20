@@ -772,7 +772,7 @@ static json_t *parse_value(lex_t *lex, json_error_t *error)
     return json;
 }
 
-json_t *parse_json(lex_t *lex, json_error_t *error)
+static json_t *parse_json(lex_t *lex, json_error_t *error)
 {
     error_init(error);
 
