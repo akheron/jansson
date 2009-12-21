@@ -73,6 +73,33 @@ int main()
     if(value)
         fail("json_string(<invalid utf-8>) failed");
 
+    value = json_string_nocheck("foo");
+    if(!value)
+        fail("json_string_nocheck failed");
+    if(strcmp(json_string_value(value), "foo"))
+        fail("invalid string value");
+
+    if(json_string_set_nocheck(value, "bar"))
+        fail("json_string_set_nocheck failed");
+    if(strcmp(json_string_value(value), "bar"))
+        fail("invalid string value");
+
+    json_decref(value);
+
+    /* invalid UTF-8 */
+    value = json_string_nocheck("qu\xff");
+    if(!value)
+        fail("json_string_nocheck failed");
+    if(strcmp(json_string_value(value), "qu\xff"))
+        fail("invalid string value");
+
+    if(json_string_set_nocheck(value, "\xfd\xfe\xff"))
+        fail("json_string_set_nocheck failed");
+    if(strcmp(json_string_value(value), "\xfd\xfe\xff"))
+        fail("invalid string value");
+
+    json_decref(value);
+
 
     value = json_integer(123);
     if(!value)

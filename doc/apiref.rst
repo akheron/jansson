@@ -229,6 +229,16 @@ String
    Returns a new JSON string, or *NULL* on error. *value* must be a
    valid UTF-8 encoded Unicode string.
 
+.. cfunction:: json_t *json_string_nocheck(const char *value)
+
+   .. refcounting:: new
+
+   Like :cfunc:`json_string`, but doesn't check that *value* is valid
+   UTF-8. Use this function only if you are certain that this really
+   is the case (e.g. you have already checked it by other means).
+
+   .. versionadded:: 1.2
+
 .. cfunction:: const char *json_string_value(const json_t *string)
 
    Returns the associated value of *string* as a null terminated UTF-8
@@ -241,6 +251,15 @@ String
    error.
 
    .. versionadded:: 1.1
+
+.. cfunction:: int json_string_set_nocheck(const json_t *string, const char *value)
+
+   Like :cfunc:`json_string_set`, but doesn't check that *value* is
+   valid UTF-8. Use this function only if you are certain that this
+   really is the case (e.g. you have already checked it by other
+   means).
+
+   .. versionadded:: 1.2
 
 
 Number
@@ -420,6 +439,15 @@ Unicode string and the value is any JSON value.
    already is a value for *key*, it is replaced by the new value.
    Returns 0 on success and -1 on error.
 
+.. cfunction:: int json_object_set_nocheck(json_t *object, const char *key, json_t *value)
+
+   Like :cfunc:`json_object_set`, but doesn't check that *key* is
+   valid UTF-8. Use this function only if you are certain that this
+   really is the case (e.g. you have already checked it by other
+   means).
+
+   .. versionadded:: 1.2
+
 .. cfunction:: int json_object_set_new(json_t *object, const char *key, json_t *value)
 
    Like :cfunc:`json_object_set()` but steals the reference to
@@ -427,6 +455,15 @@ Unicode string and the value is any JSON value.
    after the call.
 
    .. versionadded:: 1.1
+
+.. cfunction:: int json_object_set_new_nocheck(json_t *object, const char *key, json_t *value)
+
+   Like :cfunc:`json_object_set_new`, but doesn't check that *key* is
+   valid UTF-8. Use this function only if you are certain that this
+   really is the case (e.g. you have already checked it by other
+   means).
+
+   .. versionadded:: 1.2
 
 .. cfunction:: int json_object_del(json_t *object, const char *key)
 

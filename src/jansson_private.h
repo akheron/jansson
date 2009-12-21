@@ -49,7 +49,4 @@ typedef struct {
 #define json_to_real(json_)   container_of(json_, json_real_t, json)
 #define json_to_integer(json_) container_of(json_, json_integer_t, json)
 
-int json_object_set_nocheck(json_t *json, const char *key, json_t *value);
-json_t *json_string_nocheck(const char *value);
-
 #endif

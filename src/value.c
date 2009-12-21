@@ -120,11 +120,6 @@ int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value)
     return 0;
 }
 
-int json_object_set_nocheck(json_t *json, const char *key, json_t *value)
-{
-    return json_object_set_new_nocheck(json, key, json_incref(value));
-}
-
 int json_object_set_new(json_t *json, const char *key, json_t *value)
 {
     if(!key || !utf8_check_string(key, -1))
@@ -508,13 +503,10 @@ const char *json_string_value(const json_t *json)
     return json_to_string(json)->value;
 }
 
-int json_string_set(json_t *json, const char *value)
+int json_string_set_nocheck(json_t *json, const char *value)
 {
     char *dup;
     json_string_t *string;
-
-    if(!json_is_string(json) || !value || !utf8_check_string(value, -1))
-        return -1;
 
     dup = strdup(value);
     if(!dup)
@@ -525,6 +517,14 @@ int json_string_set(json_t *json, const char *value)
     string->value = dup;
 
     return 0;
+}
+
+int json_string_set(json_t *json, const char *value)
+{
+    if(!value || !utf8_check_string(value, -1))
+        return -1;
+
+    return json_string_set_nocheck(json, value);
 }
 
 static void json_delete_string(json_string_t *string)
