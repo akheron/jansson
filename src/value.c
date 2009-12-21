@@ -508,7 +508,7 @@ const char *json_string_value(const json_t *json)
     return json_to_string(json)->value;
 }
 
-int json_string_set(const json_t *json, const char *value)
+int json_string_set(json_t *json, const char *value)
 {
     char *dup;
     json_string_t *string;
@@ -555,7 +555,7 @@ int json_integer_value(const json_t *json)
     return json_to_integer(json)->value;
 }
 
-int json_integer_set(const json_t *json, int value)
+int json_integer_set(json_t *json, int value)
 {
     if(!json_is_integer(json))
         return -1;
@@ -592,7 +592,7 @@ double json_real_value(const json_t *json)
     return json_to_real(json)->value;
 }
 
-int json_real_set(const json_t *json, double value)
+int json_real_set(json_t *json, double value)
 {
     if(!json_is_real(json))
         return 0;
