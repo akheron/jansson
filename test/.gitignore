@@ -2,6 +2,7 @@ logs
 bin/json_process
 suites/api/test_array
 suites/api/test_equal
+suites/api/test_copy
 suites/api/test_load
 suites/api/test_number
 suites/api/test_object

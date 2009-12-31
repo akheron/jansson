@@ -49,6 +49,8 @@ json_loads
 json_loadf
 json_load_file
 json_equal
+json_copy
+json_deep_copy
 EOF
 
 # The list of functions are not exported in the library because they

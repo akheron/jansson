@@ -243,6 +243,56 @@ static int json_object_equal(json_t *object1, json_t *object2)
     return 1;
 }
 
+static json_t *json_object_copy(json_t *object)
+{
+    json_t *result;
+    void *iter;
+
+    result = json_object();
+    if(!result)
+        return NULL;
+
+    iter = json_object_iter(object);
+    while(iter)
+    {
+        const char *key;
+        json_t *value;
+
+        key = json_object_iter_key(iter);
+        value = json_object_iter_value(iter);
+        json_object_set(result, key, value);
+
+        iter = json_object_iter_next(object, iter);
+    }
+
+    return result;
+}
+
+static json_t *json_object_deep_copy(json_t *object)
+{
+    json_t *result;
+    void *iter;
+
+    result = json_object();
+    if(!result)
+        return NULL;
+
+    iter = json_object_iter(object);
+    while(iter)
+    {
+        const char *key;
+        json_t *value;
+
+        key = json_object_iter_key(iter);
+        value = json_object_iter_value(iter);
+        json_object_set(result, key, json_deep_copy(value));
+
+        iter = json_object_iter_next(object, iter);
+    }
+
+    return result;
+}
+
 
 /*** array ***/
 
@@ -511,6 +561,35 @@ static int json_array_equal(json_t *array1, json_t *array2)
     return 1;
 }
 
+static json_t *json_array_copy(json_t *array)
+{
+    json_t *result;
+    unsigned int i;
+
+    result = json_array();
+    if(!result)
+        return NULL;
+
+    for(i = 0; i < json_array_size(array); i++)
+        json_array_append(result, json_array_get(array, i));
+
+    return result;
+}
+
+static json_t *json_array_deep_copy(json_t *array)
+{
+    json_t *result;
+    unsigned int i;
+
+    result = json_array();
+    if(!result)
+        return NULL;
+
+    for(i = 0; i < json_array_size(array); i++)
+        json_array_append(result, json_deep_copy(json_array_get(array, i)));
+
+    return result;
+}
 
 /*** string ***/
 
@@ -586,6 +665,12 @@ static int json_string_equal(json_t *string1, json_t *string2)
     return strcmp(json_string_value(string1), json_string_value(string2)) == 0;
 }
 
+static json_t *json_string_copy(json_t *string)
+{
+    return json_string(json_string_value(string));
+}
+
+
 /*** integer ***/
 
 json_t *json_integer(int value)
@@ -627,6 +712,12 @@ static int json_integer_equal(json_t *integer1, json_t *integer2)
     return json_integer_value(integer1) == json_integer_value(integer2);
 }
 
+static json_t *json_integer_copy(json_t *integer)
+{
+    return json_integer(json_integer_value(integer));
+}
+
+
 /*** real ***/
 
 json_t *json_real(double value)
@@ -667,6 +758,12 @@ static int json_real_equal(json_t *real1, json_t *real2)
 {
     return json_real_value(real1) == json_real_value(real2);
 }
+
+static json_t *json_real_copy(json_t *real)
+{
+    return json_real(json_real_value(real));
+}
+
 
 /*** number ***/
 
@@ -766,4 +863,62 @@ int json_equal(json_t *json1, json_t *json2)
         return json_real_equal(json1, json2);
 
     return 0;
+}
+
+
+/*** copying ***/
+
+json_t *json_copy(json_t *json)
+{
+    if(!json)
+        return NULL;
+
+    if(json_is_object(json))
+        return json_object_copy(json);
+
+    if(json_is_array(json))
+        return json_array_copy(json);
+
+    if(json_is_string(json))
+        return json_string_copy(json);
+
+    if(json_is_integer(json))
+        return json_integer_copy(json);
+
+    if(json_is_real(json))
+        return json_real_copy(json);
+
+    if(json_is_true(json) || json_is_false(json) || json_is_null(json))
+        return json;
+
+    return NULL;
+}
+
+json_t *json_deep_copy(json_t *json)
+{
+    if(!json)
+        return NULL;
+
+    if(json_is_object(json))
+        return json_object_deep_copy(json);
+
+    if(json_is_array(json))
+        return json_array_deep_copy(json);
+
+    /* for the rest of the types, deep copying doesn't differ from
+       shallow copying */
+
+    if(json_is_string(json))
+        return json_string_copy(json);
+
+    if(json_is_integer(json))
+        return json_integer_copy(json);
+
+    if(json_is_real(json))
+        return json_real_copy(json);
+
+    if(json_is_true(json) || json_is_false(json) || json_is_null(json))
+        return json;
+
+    return NULL;
 }

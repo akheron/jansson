@@ -713,3 +713,35 @@ equal.
    *NULL*.
 
    .. versionadded:: 1.2
+
+
+Copying
+=======
+
+Because of reference counting, passing JSON values around doesn't
+require copying them. But sometimes a fresh copy of a JSON value is
+needed. For example, if you need to modify an array, but still want to
+use the original afterwards, you should take a copy of it first.
+
+Jansson supports two kinds of copying: shallow and deep. There is a
+difference between these methods only for arrays and objects. Shallow
+copying only copies the first level value (array or object) and uses
+the same child values in the copied value. Deep copying makes a fresh
+copy of the child values, too. Moreover, all the child values are deep
+copied in a recursive fashion.
+
+.. cfunction:: json_t *json_copy(json_t *value)
+
+   .. refcounting:: new
+
+   Returns a shallow copy of *value*, or *NULL* on error.
+
+   .. versionadded:: 1.2
+
+.. cfunction:: json_t *json_deep_copy(json_t *value)
+
+   .. refcounting:: new
+
+   Returns a deep copy of *value*, or *NULL* on error.
+
+   .. versionadded:: 1.2

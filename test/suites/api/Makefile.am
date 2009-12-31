@@ -1,12 +1,14 @@
 check_PROGRAMS = \
 	test_array \
 	test_equal \
+	test_copy \
 	test_load \
 	test_simple \
 	test_number \
 	test_object
 
 test_array_SOURCES = test_array.c util.h
+test_copy_SOURCES = test_copy.c util.h
 test_load_SOURCES = test_load.c util.h
 test_simple_SOURCES = test_simple.c util.h
 test_number_SOURCES = test_number.c util.h
