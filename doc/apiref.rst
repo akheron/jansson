@@ -673,3 +673,43 @@ The following functions perform the actual JSON decoding.
    object it contains, or *NULL* on error, in which case *error* is
    filled with information about the error. See above for discussion
    on the *error* parameter.
+
+
+Equality
+========
+
+Testing for equality of two JSON values cannot, in general, be
+achieved using the ``==`` operator. Equality in the terms of the
+``==`` operator states that the two :ctype:`json_t` pointers point to
+exactly the same JSON value. However, two JSON values can be equal not
+only if they are exactly the same value, but also if they have equal
+"contents":
+
+* Two integer or real values are equal if their contained numeric
+  values are equal. An integer value is never equal to a real value,
+  though.
+
+* Two strings are equal if their contained UTF-8 strings are equal.
+
+* Two arrays are equal if they have the same number of elements and
+  each element in the first array is equal to the corresponding
+  element in the second array.
+
+* Two objects are equal if they have exactly the same keys and the
+  value for each key in the first object is equal to the value of the
+  corresponding key in the second object.
+
+* Two true, false or null values have no "contents", so they are equal
+  if their types are equal. (Because these values are singletons,
+  their equality can actually be tested with ``==``.)
+
+The following function can be used to test whether two JSON values are
+equal.
+
+.. cfunction:: int json_equal(json_t *value1, json_t *value2)
+
+   Returns 1 if *value1* and *value2* are equal, as defined above.
+   Returns 0 if they are inequal or one or both of the pointers are
+   *NULL*.
+
+   .. versionadded:: 1.2

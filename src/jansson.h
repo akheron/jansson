@@ -137,6 +137,11 @@ int json_integer_set(json_t *integer, int value);
 int json_real_set(json_t *real, double value);
 
 
+/* equality */
+
+int json_equal(json_t *value1, json_t *value2);
+
+
 /* loading, printing */
 
 #define JSON_ERROR_TEXT_LENGTH  160

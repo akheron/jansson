@@ -1,5 +1,6 @@
 check_PROGRAMS = \
 	test_array \
+	test_equal \
 	test_load \
 	test_simple \
 	test_number \

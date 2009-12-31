@@ -217,6 +217,32 @@ json_t *json_object_iter_value(void *iter)
     return (json_t *)hashtable_iter_value(iter);
 }
 
+static int json_object_equal(json_t *object1, json_t *object2)
+{
+    void *iter;
+
+    if(json_object_size(object1) != json_object_size(object2))
+        return 0;
+
+    iter = json_object_iter(object1);
+    while(iter)
+    {
+        const char *key;
+        json_t *value1, *value2;
+
+        key = json_object_iter_key(iter);
+        value1 = json_object_iter_value(iter);
+        value2 = json_object_get(object2, key);
+
+        if(!json_equal(value1, value2))
+            return 0;
+
+        iter = json_object_iter_next(object1, iter);
+    }
+
+    return 1;
+}
+
 
 /*** array ***/
 
@@ -463,6 +489,28 @@ int json_array_extend(json_t *json, json_t *other_json)
     return 0;
 }
 
+static int json_array_equal(json_t *array1, json_t *array2)
+{
+    unsigned int i, size;
+
+    size = json_array_size(array1);
+    if(size != json_array_size(array2))
+        return 0;
+
+    for(i = 0; i < size; i++)
+    {
+        json_t *value1, *value2;
+
+        value1 = json_array_get(array1, i);
+        value2 = json_array_get(array2, i);
+
+        if(!json_equal(value1, value2))
+            return 0;
+    }
+
+    return 1;
+}
+
 
 /*** string ***/
 
@@ -533,6 +581,10 @@ static void json_delete_string(json_string_t *string)
     free(string);
 }
 
+static int json_string_equal(json_t *string1, json_t *string2)
+{
+    return strcmp(json_string_value(string1), json_string_value(string2)) == 0;
+}
 
 /*** integer ***/
 
@@ -570,6 +622,10 @@ static void json_delete_integer(json_integer_t *integer)
     free(integer);
 }
 
+static int json_integer_equal(json_t *integer1, json_t *integer2)
+{
+    return json_integer_value(integer1) == json_integer_value(integer2);
+}
 
 /*** real ***/
 
@@ -607,6 +663,10 @@ static void json_delete_real(json_real_t *real)
     free(real);
 }
 
+static int json_real_equal(json_t *real1, json_t *real2)
+{
+    return json_real_value(real1) == json_real_value(real2);
+}
 
 /*** number ***/
 
@@ -673,4 +733,37 @@ void json_delete(json_t *json)
         json_delete_real(json_to_real(json));
 
     /* json_delete is not called for true, false or null */
+}
+
+
+/*** equality ***/
+
+int json_equal(json_t *json1, json_t *json2)
+{
+    if(!json1 || !json2)
+        return 0;
+
+    if(json_typeof(json1) != json_typeof(json2))
+        return 0;
+
+    /* this covers true, false and null as they are singletons */
+    if(json1 == json2)
+        return 1;
+
+    if(json_is_object(json1))
+        return json_object_equal(json1, json2);
+
+    if(json_is_array(json1))
+        return json_array_equal(json1, json2);
+
+    if(json_is_string(json1))
+        return json_string_equal(json1, json2);
+
+    if(json_is_integer(json1))
+        return json_integer_equal(json1, json2);
+
+    if(json_is_real(json1))
+        return json_real_equal(json1, json2);
+
+    return 0;
 }
