@@ -285,7 +285,7 @@ static json_t *json_object_deep_copy(json_t *object)
 
         key = json_object_iter_key(iter);
         value = json_object_iter_value(iter);
-        json_object_set_nocheck(result, key, json_deep_copy(value));
+        json_object_set_new_nocheck(result, key, json_deep_copy(value));
 
         iter = json_object_iter_next(object, iter);
     }
@@ -586,7 +586,7 @@ static json_t *json_array_deep_copy(json_t *array)
         return NULL;
 
     for(i = 0; i < json_array_size(array); i++)
-        json_array_append(result, json_deep_copy(json_array_get(array, i)));
+        json_array_append_new(result, json_deep_copy(json_array_get(array, i)));
 
     return result;
 }
