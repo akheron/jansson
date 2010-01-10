@@ -8,7 +8,10 @@
 VALGRIND_CMDLINE="valgrind --leak-check=full --show-reachable=yes --track-origins=yes -q"
 
 if [ $VALGRIND -eq 1 ]; then
+    test_runner="$VALGRIND_CMDLINE"
     json_process="$VALGRIND_CMDLINE $json_process"
+else
+    test_runner=""
 fi
 
 valgrind_check() {
