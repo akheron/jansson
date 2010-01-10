@@ -170,7 +170,7 @@ int json_object_update(json_t *object, json_t *other)
         key = json_object_iter_key(iter);
         value = json_object_iter_value(iter);
 
-        if(json_object_set(object, key, value))
+        if(json_object_set_nocheck(object, key, value))
             return -1;
 
         iter = json_object_iter_next(other, iter);
@@ -260,7 +260,7 @@ static json_t *json_object_copy(json_t *object)
 
         key = json_object_iter_key(iter);
         value = json_object_iter_value(iter);
-        json_object_set(result, key, value);
+        json_object_set_nocheck(result, key, value);
 
         iter = json_object_iter_next(object, iter);
     }
@@ -285,7 +285,7 @@ static json_t *json_object_deep_copy(json_t *object)
 
         key = json_object_iter_key(iter);
         value = json_object_iter_value(iter);
-        json_object_set(result, key, json_deep_copy(value));
+        json_object_set_nocheck(result, key, json_deep_copy(value));
 
         iter = json_object_iter_next(object, iter);
     }
@@ -667,7 +667,7 @@ static int json_string_equal(json_t *string1, json_t *string2)
 
 static json_t *json_string_copy(json_t *string)
 {
-    return json_string(json_string_value(string));
+    return json_string_nocheck(json_string_value(string));
 }
 
 
