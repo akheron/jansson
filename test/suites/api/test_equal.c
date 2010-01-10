@@ -137,12 +137,12 @@ static void test_equal_object()
     if(json_equal(object1, object2))
         fail("json_equal fails for two inequal objects");
 
-    json_object_set(object2, "c", json_integer(3));
+    json_object_set_new(object2, "c", json_integer(3));
     if(json_equal(object1, object2))
         fail("json_equal fails for two inequal objects");
 
     json_object_del(object2, "c");
-    json_object_set(object2, "d", json_integer(2));
+    json_object_set_new(object2, "d", json_integer(2));
     if(json_equal(object1, object2))
         fail("json_equal fails for two inequal objects");
 
@@ -173,6 +173,9 @@ static void test_equal_complex()
         fail("unable to parse JSON");
     if(!json_equal(value1, value2))
         fail("json_equal fails for two inequal strings");
+
+    json_decref(value1);
+    json_decref(value2);
 
     /* TODO: There's no negative test case here */
 }
