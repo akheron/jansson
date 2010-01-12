@@ -75,7 +75,7 @@ public:
 	static Value null() { return Value::_take(json_null()); }
 
 	// get the underlying json_t
-	json_t* as_json_t() const { return _value; }
+	json_t* as_json() const { return _value; }
 
 	// check value type
 	bool is_undefined() const { return _value == 0; }
@@ -154,7 +154,7 @@ public:
 			_value = json_object();
 		}
 
-		json_object_set(_value, key, value.as_json_t());
+		json_object_set(_value, key, value.as_json());
 
 		return *this;
 	}
@@ -171,9 +171,9 @@ public:
 		}
 
 		if (index == size())
-			json_array_append(_value, value.as_json_t());
+			json_array_append(_value, value.as_json());
 		else
-			json_array_set(_value, index, value.as_json_t());
+			json_array_set(_value, index, value.as_json());
 
 		return *this;
 	}
@@ -199,12 +199,12 @@ class Iterator {
 public:
 	// construct a new iterator for a given object
 	Iterator(const Value& value) : _object(value), _iter(0) {
-		_iter = json_object_iter(_object.as_json_t());
+		_iter = json_object_iter(_object.as_json());
 	}
 
 	// increment iterator
 	void next() {
-		_iter = json_object_iter_next(_object.as_json_t(), _iter);
+		_iter = json_object_iter_next(_object.as_json(), _iter);
 	}
 
 	Iterator& operator++() { next(); return *this; }
