@@ -62,6 +62,12 @@ int main() {
 	ASSERT_TRUE(e3.is_string(), "e3 is not a string after assignment");
 	ASSERT_EQ(e3.as_string(), "foobar", "e3 has incorrect value after assignment");
 
+	e3 = jansson::Value::object();
+	ASSERT_TRUE(e3.is_object(), "e3 is not an object after assignment");
+
+	e3 = jansson::Value::null();
+	ASSERT_TRUE(e3.is_null(), "e3 is not null after assignment");
+
 	e3.set(0, jansson::Value::from("foobar"));
 	ASSERT_TRUE(e3.is_array(), "e3 is not an array after index assignment");
 	ASSERT_EQ(e3.size(), 1, "e3 has incorrect number of elements after assignment");
@@ -80,6 +86,27 @@ int main() {
 	e3.set(100, jansson::Value::null());
 	ASSERT_TRUE(e3.is_array(), "e3 is not an array after index assignment");
 	ASSERT_EQ(e3.size(), 2, "e3 has incorrect number of elements after assignment");
+
+	e3.clear();
+	ASSERT_EQ(e3.size(), 0, "e3 has incorrect number of elements after clear");
+
+	e3.set("foo", jansson::Value::from("test"));
+	ASSERT_TRUE(e3.is_object(), "e3 is not an object after property assignment");
+	ASSERT_EQ(e3.size(), 1, "e3 has incorrect number of properties after assignment");
+	ASSERT_EQ(e3["foo"].as_string(), "test", "e3.foo has incorrect value after assignment");
+
+	e3.set("foo", jansson::Value::from("again"));
+	ASSERT_TRUE(e3.is_object(), "e3 is not an object after property assignment");
+	ASSERT_EQ(e3.size(), 1, "e3 has incorrect number of properties after assignment");
+	ASSERT_EQ(e3["foo"].as_string(), "again", "e3.foo has incorrect value after assignment");
+
+	e3.set("bar", jansson::Value::from("test"));
+	ASSERT_TRUE(e3.is_object(), "e3 is not an object after property assignment");
+	ASSERT_EQ(e3.size(), 2, "e3 has incorrect number of properties after assignment");
+	ASSERT_EQ(e3["bar"].as_string(), "test", "e3.foo has incorrect value after assignment");
+
+	e3.clear();
+	ASSERT_EQ(e3.size(), 0, "e3 has incorrect number of properties after clear");
 
 	return 0;
 }
