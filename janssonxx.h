@@ -149,13 +149,7 @@ public:
 
 	// set an object property (converts value to object is not one already)
 	Value& set_key(const char* key, const Value& value) {
-		if (!is_object()) {
-			json_decref(_value);
-			_value = json_object();
-		}
-
 		json_object_set(_value, key, value.as_json());
-
 		return *this;
 	}
 
@@ -165,16 +159,10 @@ public:
 
 	// set an array index (converts value to object is not one already)
 	Value& set_at(unsigned int index, const Value& value) {
-		if (!is_array()) {
-			json_decref(_value);
-			_value = json_array();
-		}
-
 		if (index == size())
 			json_array_append(_value, value.as_json());
 		else
 			json_array_set(_value, index, value.as_json());
-
 		return *this;
 	}
 
