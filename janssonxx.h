@@ -144,7 +144,7 @@ public:
 	bool as_boolean() const { return is_true(); }
 
 	// set an object property (converts value to object is not one already)
-	Value& set(const char* key, const Value& value) {
+	Value& set_key(const char* key, const Value& value) {
 		if (!is_object()) {
 			json_decref(_value);
 			_value = json_object();
@@ -155,8 +155,12 @@ public:
 		return *this;
 	}
 
+	Value& set_key(const std::string& key, const Value& value) {
+		return set_key(key.c_str(), value);
+	}
+
 	// set an array index (converts value to object is not one already)
-	Value& set(unsigned int index, const Value& value) {
+	Value& set_at(unsigned int index, const Value& value) {
 		if (!is_array()) {
 			json_decref(_value);
 			_value = json_array();
@@ -170,7 +174,9 @@ public:
 		return *this;
 	}
 
-	Value& set(int index, const Value& value) { return set(static_cast<unsigned int>(index), value); }
+	Value& set_at(int index, const Value& value) {
+		return set_at(static_cast<unsigned int>(index), value);
+	}
 
 private:
 	// take ownership of a json_t (does not increase reference count)
