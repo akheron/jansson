@@ -36,8 +36,6 @@ To run the test suite, invoke::
 
    $ make check
 
-Python_ is required to run the tests.
-
 
 Documentation
 -------------
@@ -57,6 +55,5 @@ required to generate the documentation.
 
 .. _Jansson: http://www.digip.org/jansson/
 .. _`MIT license`: http://www.opensource.org/licenses/mit-license.php
-.. _Python: http://www.python.org/
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://sphinx.pocoo.org/
