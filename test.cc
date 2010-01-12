@@ -50,17 +50,22 @@ int main() {
 	i.next();
 	ASSERT_FALSE(i.valid(), "iterator has more values than expected");
 
-	e3 = 12.34;
+	e3 = jansson::Value::from(12.34);
 	ASSERT_TRUE(e3.is_number(), "e3 is not a number after assignment");
 	ASSERT_EQ(e3.as_real(), 12.34, "e3 has incorrect value after assignment");
 
-	e3 = true;
+	e3 = jansson::Value::from(true);
 	ASSERT_TRUE(e3.is_boolean(), "e3 is not a boolean after assignment");
 	ASSERT_EQ(e3.as_boolean(), true, "e3 has incorrect value after assignment");
 
-	e3 = "foobar";
+	e3 = jansson::Value::from("foobar");
 	ASSERT_TRUE(e3.is_string(), "e3 is not a string after assignment");
 	ASSERT_EQ(e3.as_string(), "foobar", "e3 has incorrect value after assignment");
+
+	e3.set(0, jansson::Value::from("foobar"));
+	ASSERT_TRUE(e3.is_array(), "e3 is not an array after index assignment");
+	ASSERT_EQ(e3.size(), 1, "e3 has incorrect number of elements after assignment");
+	ASSERT_EQ(e3[0].as_string(), "foobar", "e3[0] has incorrect value after assignment");
 
 	return 0;
 }

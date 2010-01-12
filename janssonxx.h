@@ -47,10 +47,26 @@ public:
 		return Value().take_ownership(json_loads(string, error));
 	}
 
+	// construct Value from input
+	static Value from(const char* value) { return Value().take_ownership(json_string(value)); }
+	static Value from(const std::string& value) { return from(value.c_str()); }
+	static Value from(bool value) { return Value().take_ownership(value ? json_true() : json_false()); }
+	static Value from(int value) { return Value().take_ownership(json_integer(value)); }
+	static Value from(double value) { return Value().take_ownership(json_real(value)); }
+
+	// create a new empty object
+	static Value object() { return Value().take_ownership(json_object()); }
+
+	// create a new empty array
+	static Value array() { return Value().take_ownership(json_array()); }
+
+	// create a new null value
+	static Value null() { return Value().take_ownership(json_null()); }
+
 	// get the underlying json_t
 	json_t* as_json_t() const { return _value; }
 
-	// check Value value type
+	// check value type
 	bool is_undefined() const { return _value == 0; }
 	bool is_object() const { return json_is_object(_value); }
 	bool is_array() const { return json_is_array(_value); }
@@ -73,7 +89,7 @@ public:
 			return 0;
 	}
 
-	// get value at array index
+	// get value at array index (const version)
 	const Value at(unsigned int index) const {
 		if (is_array())
 			return Value(json_array_get(_value, index));
@@ -87,6 +103,21 @@ public:
 	const Value operator[](unsigned short index) const { return at(index); }
 	const Value operator[](signed long index) const { return at(index); }
 	const Value operator[](unsigned long index) const { return at(index); }
+
+	// get value at array index (non-const version)
+	Value at(unsigned int index) {
+		if (is_array())
+			return Value(json_array_get(_value, index));
+		else
+			return Value();
+	}
+
+	Value operator[](signed int index) { return at(index); }
+	Value operator[](unsigned int index) { return at(index); }
+	Value operator[](signed short index) { return at(index); }
+	Value operator[](unsigned short index) { return at(index); }
+	Value operator[](signed long index) { return at(index); }
+	Value operator[](unsigned long index) { return at(index); }
 
 	// get object property
 	const Value get(const char* key) const {
@@ -116,33 +147,34 @@ public:
 	double as_number() const { return json_number_value(_value); }
 	bool as_boolean() const { return is_true(); }
 
-	// assign new string value
-	Value& operator=(const char* value) {
-		json_decref(_value);
-		_value = json_string(value);
+	// set an object property (converts value to object is not one already)
+	Value& set(const char* key, const Value& value) {
+		if (!is_object()) {
+			json_decref(_value);
+			_value = json_object();
+		}
+
+		json_object_set(_value, key, value.as_json_t());
+
 		return *this;
 	}
 
-	// assign new integer value
-	Value& operator=(int value) {
-		json_decref(_value);
-		_value = json_integer(value);
+	// set an array index (converts value to object is not one already)
+	Value& set(unsigned int index, const Value& value) {
+		if (!is_array()) {
+			json_decref(_value);
+			_value = json_array();
+		}
+
+		if (index == size())
+			json_array_append(_value, value.as_json_t());
+		else
+			json_array_set(_value, index, value.as_json_t());
+
 		return *this;
 	}
 
-	// assign new real/double/number value
-	Value& operator=(double value) {
-		json_decref(_value);
-		_value = json_real(value);
-		return *this;
-	}
-
-	// assign new boolean value
-	Value& operator=(bool value) {
-		json_decref(_value);
-		_value = value ? json_true() : json_false();
-		return *this;
-	}
+	Value& set(int index, const Value& value) { return set(static_cast<unsigned int>(index), value); }
 
 private:
 	// internal value pointer
