@@ -27,26 +27,21 @@ public:
 
 	// copy an existing Value
 	Value& operator=(const Value& e) {
-		json_decref(_value);
-		_value = json_incref(e._value);
-		return *this;
-	}
-
-	// take ownership of a json_t (does not increase reference count)
-	Value& take_ownership(json_t* value) {
-		json_decref(_value);
-		_value = value;
+		if (&e != this) {
+			json_decref(_value);
+			_value = json_incref(e._value);
+		}
 		return *this;
 	}
 
 	// load a file as a JSON value
 	static Value load_file(const char* path, json_error_t* error = 0) {
-		return Value().take_ownership(json_load_file(path, error));
+		return Value::_take(json_load_file(path, error));
 	}
 
 	// load a string as a JSON value
 	static Value load_string(const char* string, json_error_t* error = 0) {
-		return Value().take_ownership(json_loads(string, error));
+		return Value::_take(json_loads(string, error));
 	}
 
 	// write the value to a file
@@ -60,20 +55,20 @@ public:
 	}
 
 	// construct Value from input
-	static Value from(const char* value) { return Value().take_ownership(json_string(value)); }
+	static Value from(const char* value) { return Value::_take(json_string(value)); }
 	static Value from(const std::string& value) { return from(value.c_str()); }
-	static Value from(bool value) { return Value().take_ownership(value ? json_true() : json_false()); }
-	static Value from(int value) { return Value().take_ownership(json_integer(value)); }
-	static Value from(double value) { return Value().take_ownership(json_real(value)); }
+	static Value from(bool value) { return Value::_take(value ? json_true() : json_false()); }
+	static Value from(int value) { return Value::_take(json_integer(value)); }
+	static Value from(double value) { return Value::_take(json_real(value)); }
 
 	// create a new empty object
-	static Value object() { return Value().take_ownership(json_object()); }
+	static Value object() { return Value::_take(json_object()); }
 
 	// create a new empty array
-	static Value array() { return Value().take_ownership(json_array()); }
+	static Value array() { return Value::_take(json_array()); }
 
 	// create a new null value
-	static Value null() { return Value().take_ownership(json_null()); }
+	static Value null() { return Value::_take(json_null()); }
 
 	// get the underlying json_t
 	json_t* as_json_t() const { return _value; }
@@ -189,6 +184,13 @@ public:
 	Value& set(int index, const Value& value) { return set(static_cast<unsigned int>(index), value); }
 
 private:
+	// take ownership of a json_t (does not increase reference count)
+	static Value _take(json_t* json) {
+		Value v;
+		v._value = json;
+		return v;
+	}
+
 	// internal value pointer
 	json_t* _value;
 };
