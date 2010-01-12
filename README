@@ -1,5 +1,7 @@
 janssonxx is a simple C++ wrapper around the Jansson library.
 
+	http://digip.org/jansson/
+
 It does not purport to be as flexible or efficient as what a competent
 developer can achieve using the Jansson C API, but it does offer a
 safe and easy to use API that should cover most users' needs.
