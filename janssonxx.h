@@ -49,6 +49,16 @@ public:
 		return Value().take_ownership(json_loads(string, error));
 	}
 
+	// write the value to a file
+	int save_file(const char* path, int flags = JSON_INDENT(2)) const {
+		return json_dump_file(_value, path, flags);
+	}
+
+	// write the value to a string (caller must deallocate with free()!)
+	char* save_string(int flags = JSON_INDENT(2)) const {
+		return json_dumps(_value, flags);
+	}
+
 	// construct Value from input
 	static Value from(const char* value) { return Value().take_ownership(json_string(value)); }
 	static Value from(const std::string& value) { return from(value.c_str()); }

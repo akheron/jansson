@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <malloc.h>
 
 #include "janssonxx.h"
 
@@ -107,6 +108,14 @@ int main() {
 
 	e3.clear();
 	ASSERT_EQ(e3.size(), 0, "e3 has incorrect number of properties after clear");
+
+	e3 = jansson::Value::object();
+	e3.set("foo", jansson::Value::from("test"));
+	e3.set("bar", jansson::Value::from(3));
+	char* out_cstr = e3.save_string(0);
+	string out(out_cstr);
+	free(out_cstr);
+	ASSERT_EQ(out, "{\"bar\": 3,\"foo\": \"test\"}\n", "object did not serialize as expected");
 
 	return 0;
 }
