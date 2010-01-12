@@ -117,5 +117,16 @@ int main() {
 	free(out_cstr);
 	ASSERT_EQ(out, "{\"bar\": 3,\"foo\": \"test\"}\n", "object did not serialize as expected");
 
+	std::istringstream instr(out);
+	instr >> e3;
+	ASSERT_TRUE(e3.is_object(), "e3 is not an object after stream read");
+	ASSERT_EQ(e3.size(), 2, "e3 has wrong size after stream read");
+	ASSERT_EQ(e3.get("bar").as_integer(), 3, "e3.bar has incorrect value after stream read");
+	ASSERT_EQ(e3.get("foo").as_string(), "test", "ee3.test has incorrect value after stream read");
+
+	std::ostringstream outstr;
+	outstr << e3;
+	ASSERT_EQ(instr.str(), "{\"bar\": 3,\"foo\": \"test\"}\n", "object did not serialize as expected");
+
 	return 0;
 }

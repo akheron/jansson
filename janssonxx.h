@@ -2,6 +2,10 @@
 #define JANSSONXX_H 1
 
 #include <string>
+#include <ostream>
+#include <istream>
+#include <sstream>
+#include <cstdlib>
 
 namespace jansson {
 
@@ -237,5 +241,22 @@ private:
 };
 
 } // namespace jansson
+
+// stream JSON value out
+std::ostream& operator<<(std::ostream& os, const jansson::Value& value) {
+	char* tmp = value.save_string();
+	os << tmp;
+	free(tmp);
+	return os;
+}
+
+// read JSON value
+std::istream& operator>>(std::istream& is, jansson::Value& value) {
+	std::stringstream tmp;
+	while (is)
+		tmp << static_cast<char>(is.get());
+	value = jansson::Value::load_string(tmp.str().c_str());
+	return is;
+}
 
 #endif
