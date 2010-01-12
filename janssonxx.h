@@ -2,9 +2,11 @@
 #define JANSSONXX_H 1
 
 #include <string>
-#include <jansson.h>
 
 namespace jansson {
+
+// include in the jansson namespace
+#include <jansson.h>
 
 class Iterator;
 
