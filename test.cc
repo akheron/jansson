@@ -67,5 +67,19 @@ int main() {
 	ASSERT_EQ(e3.size(), 1, "e3 has incorrect number of elements after assignment");
 	ASSERT_EQ(e3[0].as_string(), "foobar", "e3[0] has incorrect value after assignment");
 
+	e3.set(1, jansson::Value::from("foobar"));
+	ASSERT_TRUE(e3.is_array(), "e3 is not an array after index assignment");
+	ASSERT_EQ(e3.size(), 2, "e3 has incorrect number of elements after assignment");
+	ASSERT_EQ(e3[1].as_string(), "foobar", "e3[0] has incorrect value after assignment");
+
+	e3.set(0, jansson::Value::from("barfoo"));
+	ASSERT_TRUE(e3.is_array(), "e3 is not an array after index assignment");
+	ASSERT_EQ(e3.size(), 2, "e3 has incorrect number of elements after assignment");
+	ASSERT_EQ(e3[0].as_string(), "barfoo", "e3[0] has incorrect value after assignment");
+
+	e3.set(100, jansson::Value::null());
+	ASSERT_TRUE(e3.is_array(), "e3 is not an array after index assignment");
+	ASSERT_EQ(e3.size(), 2, "e3 has incorrect number of elements after assignment");
+
 	return 0;
 }
