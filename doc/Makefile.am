@@ -5,7 +5,15 @@ EXTRA_DIST = \
 SPHINXBUILD = sphinx-build
 SPHINXOPTS = -d _build/doctrees -W
 
-html-local:
+# Convert json_*() functions to :cfunc: cross references in
+# ../CHANGES, and add a header from changes.rst.in
+changes.rst: changes.rst.in ../CHANGES
+	set -e; \
+	cat changes.rst.in >$@; \
+	sed -r -e 's/``(json_[a-z_]+\(\))``/:cfunc:`\1`/g' ../CHANGES \
+		>>$@
+
+html-local: changes.rst
 	$(SPHINXBUILD) -b html $(SPHINXOPTS) $(srcdir) _build/html
 
 install-html-local: html
@@ -17,4 +25,4 @@ uninstall-local:
 
 clean-local:
 	rm -rf _build
-	rm -f ext/refcounting.pyc
+	rm -f ext/refcounting.pyc changes.rst
