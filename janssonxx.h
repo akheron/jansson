@@ -90,18 +90,13 @@ public:
 	unsigned int size() const {
 		if (is_object())
 			return json_object_size(_value);
-		else if (is_array())
-			return json_array_size(_value);
 		else
-			return 0;
+			return json_array_size(_value);
 	}
 
 	// get value at array index (const version)
 	const Value at(unsigned int index) const {
-		if (is_array())
-			return Value(json_array_get(_value, index));
-		else
-			return Value();
+		return Value(json_array_get(_value, index));
 	}
 
 	const Value operator[](signed int index) const { return at(index); }
@@ -113,10 +108,7 @@ public:
 
 	// get value at array index (non-const version)
 	Value at(unsigned int index) {
-		if (is_array())
-			return Value(json_array_get(_value, index));
-		else
-			return Value();
+		return Value(json_array_get(_value, index));
 	}
 
 	Value operator[](signed int index) { return at(index); }
@@ -128,10 +120,7 @@ public:
 
 	// get object property
 	const Value get(const char* key) const {
-		if (is_object())
-			return Value(json_object_get(_value, key));
-		else
-			return Value();
+		return Value(json_object_get(_value, key));
 	}
 
 	const Value get(const std::string& key) const { return get(key.c_str()); }
@@ -142,7 +131,7 @@ public:
 	void clear() {
 		if (is_object())
 			json_object_clear(_value);
-		else if (is_array())
+		else
 			json_array_clear(_value);
 	}
 
@@ -205,8 +194,7 @@ public:
 
 	// increment iterator
 	void next() {
-		if (_iter != 0)
-			_iter = json_object_iter_next(_object.as_json_t(), _iter);
+		_iter = json_object_iter_next(_object.as_json_t(), _iter);
 	}
 
 	Iterator& operator++() { next(); return *this; }
@@ -217,20 +205,14 @@ public:
 
 	// get key
 	const char* ckey() const {
-		if (_iter != 0)
-			return json_object_iter_key(_iter);
-		else
-			return "";
+		return json_object_iter_key(_iter);
 	}
 
 	std::string key() const { return ckey(); }
 
 	// get value
 	const Value value() const {
-		if (_iter != 0)
-			return Value(json_object_iter_value(_iter));
-		else
-			return Value();
+		return Value(json_object_iter_value(_iter));
 	}
 
 	// dereference value
