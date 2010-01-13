@@ -90,6 +90,15 @@ int main() {
 	ASSERT_TRUE(e10.is_array(), "e10 is not an array after index assignment");
 	ASSERT_EQ(e10.size(), 2, "e10 has incorrect number of elements after assignment");
 
+	e10.insert_at(1, jansson::Value::from("new"));
+	ASSERT_EQ(e10.size(), 3, "e10 has incorrect size after insert");
+	ASSERT_EQ(e10[1].as_string(), "new", "e10[1] has incorrect value after insert");
+	ASSERT_EQ(e10[2].as_string(), "foobar", "e10[2] has incorrect value after insert");
+
+	e10.del_at(0);
+	ASSERT_EQ(e10.size(), 2, "e10 has incorrect size after delete");
+	ASSERT_EQ(e10[1].as_string(), "foobar", "e10[1] has incorrect value after delete");
+
 	e10.clear();
 	ASSERT_EQ(e10.size(), 0, "e10 has incorrect number of elements after clear");
 

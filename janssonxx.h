@@ -70,7 +70,12 @@ public:
 	static Value from(const char* value) { return Value::_take(json_string(value)); }
 	static Value from(const std::string& value) { return from(value.c_str()); }
 	static Value from(bool value) { return Value::_take(value ? json_true() : json_false()); }
-	static Value from(int value) { return Value::_take(json_integer(value)); }
+	static Value from(signed int value) { return Value::_take(json_integer(value)); }
+	static Value from(unsigned int value) { return Value::_take(json_integer(value)); }
+	static Value from(signed short value) { return Value::_take(json_integer(value)); }
+	static Value from(unsigned short value) { return Value::_take(json_integer(value)); }
+	static Value from(signed long value) { return Value::_take(json_integer(value)); }
+	static Value from(unsigned long value) { return Value::_take(json_integer(value)); }
 	static Value from(double value) { return Value::_take(json_real(value)); }
 
 	// create a new empty object
@@ -174,8 +179,26 @@ public:
 		return *this;
 	}
 
-	Value& set_at(int index, const Value& value) {
-		return set_at(static_cast<unsigned int>(index), value);
+	// delete an object key
+	Value& del_key(const char* key) {
+		json_object_del(_value, key);
+		return *this;
+	}
+
+	Value& del_key(const std::string& key) {
+		return del_key(key.c_str());
+	}
+
+	// delete an item from an array by index
+	Value& del_at(unsigned int index) {
+		json_array_remove(_value, index);
+		return *this;
+	}
+
+	// insert an item into an array at a given index
+	Value& insert_at(unsigned int index, const Value& value) {
+		json_array_insert(_value, index, value.as_json());
+		return *this;
 	}
 
 private:
