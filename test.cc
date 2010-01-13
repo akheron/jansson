@@ -51,85 +51,85 @@ int main() {
 	i.next();
 	ASSERT_FALSE(i.valid(), "iterator has more values than expected");
 
-	e3 = jansson::Value::from(12.34);
-	ASSERT_TRUE(e3.is_number(), "e3 is not a number after assignment");
-	ASSERT_EQ(e3.as_real(), 12.34, "e3 has incorrect value after assignment");
+	jansson::Value e5(jansson::Value::from(12.34));
+	ASSERT_TRUE(e5.is_number(), "e5 is not a number after assignment");
+	ASSERT_EQ(e5.as_real(), 12.34, "e5 has incorrect value after assignment");
 
-	e3 = jansson::Value::from(true);
-	ASSERT_TRUE(e3.is_boolean(), "e3 is not a boolean after assignment");
-	ASSERT_EQ(e3.as_boolean(), true, "e3 has incorrect value after assignment");
+	jansson::Value e6(jansson::Value::from(true));
+	ASSERT_TRUE(e6.is_boolean(), "e6 is not a boolean after assignment");
+	ASSERT_EQ(e6.as_boolean(), true, "e6 has incorrect value after assignment");
 
-	e3 = jansson::Value::from("foobar");
-	ASSERT_TRUE(e3.is_string(), "e3 is not a string after assignment");
-	ASSERT_EQ(e3.as_string(), "foobar", "e3 has incorrect value after assignment");
+	jansson::Value e7(jansson::Value::from("foobar"));
+	ASSERT_TRUE(e7.is_string(), "e7 is not a string after assignment");
+	ASSERT_EQ(e7.as_string(), "foobar", "e7 has incorrect value after assignment");
 
-	e3 = jansson::Value::object();
-	ASSERT_TRUE(e3.is_object(), "e3 is not an object after assignment");
+	jansson::Value e8(jansson::Value::object());
+	ASSERT_TRUE(e8.is_object(), "e8 is not an object after assignment");
 
-	e3 = jansson::Value::null();
-	ASSERT_TRUE(e3.is_null(), "e3 is not null after assignment");
+	jansson::Value e9(jansson::Value::null());
+	ASSERT_TRUE(e9.is_null(), "e9 is not null after assignment");
 
-	e3 = jansson::Value::array();
-	ASSERT_TRUE(e3.is_array(), "e3 is not an array after index assignment");
+	jansson::Value e10(jansson::Value::array());
+	ASSERT_TRUE(e10.is_array(), "e10 is not an array after index assignment");
 
-	e3.set_at(0, jansson::Value::from("foobar"));
-	ASSERT_EQ(e3.size(), 1, "e3 has incorrect number of elements after assignment");
-	ASSERT_EQ(e3[0].as_string(), "foobar", "e3[0] has incorrect value after assignment");
+	e10.set_at(0, jansson::Value::from("foobar"));
+	ASSERT_EQ(e10.size(), 1, "e10 has incorrect number of elements after assignment");
+	ASSERT_EQ(e10[0].as_string(), "foobar", "e10[0] has incorrect value after assignment");
 
-	e3.set_at(1, jansson::Value::from("foobar"));
-	ASSERT_TRUE(e3.is_array(), "e3 is not an array after index assignment");
-	ASSERT_EQ(e3.size(), 2, "e3 has incorrect number of elements after assignment");
-	ASSERT_EQ(e3[1].as_string(), "foobar", "e3[0] has incorrect value after assignment");
+	e10.set_at(1, jansson::Value::from("foobar"));
+	ASSERT_TRUE(e10.is_array(), "e10 is not an array after index assignment");
+	ASSERT_EQ(e10.size(), 2, "e10 has incorrect number of elements after assignment");
+	ASSERT_EQ(e10[1].as_string(), "foobar", "e10[0] has incorrect value after assignment");
 
-	e3.set_at(0, jansson::Value::from("barfoo"));
-	ASSERT_TRUE(e3.is_array(), "e3 is not an array after index assignment");
-	ASSERT_EQ(e3.size(), 2, "e3 has incorrect number of elements after assignment");
-	ASSERT_EQ(e3[0].as_string(), "barfoo", "e3[0] has incorrect value after assignment");
+	e10.set_at(0, jansson::Value::from("barfoo"));
+	ASSERT_TRUE(e10.is_array(), "e10 is not an array after index assignment");
+	ASSERT_EQ(e10.size(), 2, "e10 has incorrect number of elements after assignment");
+	ASSERT_EQ(e10[0].as_string(), "barfoo", "e10[0] has incorrect value after assignment");
 
-	e3.set_at(100, jansson::Value::null());
-	ASSERT_TRUE(e3.is_array(), "e3 is not an array after index assignment");
-	ASSERT_EQ(e3.size(), 2, "e3 has incorrect number of elements after assignment");
+	e10.set_at(100, jansson::Value::null());
+	ASSERT_TRUE(e10.is_array(), "e10 is not an array after index assignment");
+	ASSERT_EQ(e10.size(), 2, "e10 has incorrect number of elements after assignment");
 
-	e3.clear();
-	ASSERT_EQ(e3.size(), 0, "e3 has incorrect number of elements after clear");
+	e10.clear();
+	ASSERT_EQ(e10.size(), 0, "e10 has incorrect number of elements after clear");
 
-	e3 = jansson::Value::object();
-	ASSERT_TRUE(e3.is_object(), "e3 is not an object after property assignment");
+	jansson::Value e11(jansson::Value::object());
+	ASSERT_TRUE(e11.is_object(), "e11 is not an object after property assignment");
 
-	e3.set_key("foo", jansson::Value::from("test"));
-	ASSERT_EQ(e3.size(), 1, "e3 has incorrect number of properties after assignment");
-	ASSERT_EQ(e3["foo"].as_string(), "test", "e3.foo has incorrect value after assignment");
+	e11.set_key("foo", jansson::Value::from("test"));
+	ASSERT_EQ(e11.size(), 1, "e11 has incorrect number of properties after assignment");
+	ASSERT_EQ(e11["foo"].as_string(), "test", "e11.foo has incorrect value after assignment");
 
-	e3.set_key("foo", jansson::Value::from("again"));
-	ASSERT_TRUE(e3.is_object(), "e3 is not an object after property assignment");
-	ASSERT_EQ(e3.size(), 1, "e3 has incorrect number of properties after assignment");
-	ASSERT_EQ(e3["foo"].as_string(), "again", "e3.foo has incorrect value after assignment");
+	e11.set_key("foo", jansson::Value::from("again"));
+	ASSERT_TRUE(e11.is_object(), "e11 is not an object after property assignment");
+	ASSERT_EQ(e11.size(), 1, "e11 has incorrect number of properties after assignment");
+	ASSERT_EQ(e11["foo"].as_string(), "again", "e11.foo has incorrect value after assignment");
 
-	e3.set_key("bar", jansson::Value::from("test"));
-	ASSERT_TRUE(e3.is_object(), "e3 is not an object after property assignment");
-	ASSERT_EQ(e3.size(), 2, "e3 has incorrect number of properties after assignment");
-	ASSERT_EQ(e3["bar"].as_string(), "test", "e3.foo has incorrect value after assignment");
+	e11.set_key("bar", jansson::Value::from("test"));
+	ASSERT_TRUE(e11.is_object(), "e11 is not an object after property assignment");
+	ASSERT_EQ(e11.size(), 2, "e11 has incorrect number of properties after assignment");
+	ASSERT_EQ(e11["bar"].as_string(), "test", "e11.foo has incorrect value after assignment");
 
-	e3.clear();
-	ASSERT_EQ(e3.size(), 0, "e3 has incorrect number of properties after clear");
+	e11.clear();
+	ASSERT_EQ(e11.size(), 0, "e11 has incorrect number of properties after clear");
 
-	e3 = jansson::Value::object();
-	e3.set_key("foo", jansson::Value::from("test"));
-	e3.set_key("bar", jansson::Value::from(3));
-	char* out_cstr = e3.save_string(0);
+	jansson::Value e12(jansson::Value::object());
+	e12.set_key("foo", jansson::Value::from("test"));
+	e12.set_key("bar", jansson::Value::from(3));
+	char* out_cstr = e12.save_string(0);
 	string out(out_cstr);
 	free(out_cstr);
 	ASSERT_EQ(out, "{\"bar\": 3,\"foo\": \"test\"}\n", "object did not serialize as expected");
 
 	std::istringstream instr(out);
-	instr >> e3;
-	ASSERT_TRUE(e3.is_object(), "e3 is not an object after stream read");
-	ASSERT_EQ(e3.size(), 2, "e3 has wrong size after stream read");
-	ASSERT_EQ(e3.get("bar").as_integer(), 3, "e3.bar has incorrect value after stream read");
-	ASSERT_EQ(e3.get("foo").as_string(), "test", "ee3.test has incorrect value after stream read");
+	instr >> e12;
+	ASSERT_TRUE(e12.is_object(), "e12 is not an object after stream read");
+	ASSERT_EQ(e12.size(), 2, "e12 has wrong size after stream read");
+	ASSERT_EQ(e12.get("bar").as_integer(), 3, "e12.bar has incorrect value after stream read");
+	ASSERT_EQ(e12.get("foo").as_string(), "test", "ee12.test has incorrect value after stream read");
 
 	std::ostringstream outstr;
-	outstr << e3;
+	outstr << e12;
 	ASSERT_EQ(instr.str(), "{\"bar\": 3,\"foo\": \"test\"}\n", "object did not serialize as expected");
 
 	return 0;
