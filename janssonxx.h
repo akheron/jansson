@@ -76,6 +76,7 @@ public:
 	static Value from(unsigned short value) { return Value::_take(json_integer(value)); }
 	static Value from(signed long value) { return Value::_take(json_integer(value)); }
 	static Value from(unsigned long value) { return Value::_take(json_integer(value)); }
+	static Value from(float value) { return Value::_take(json_real(value)); }
 	static Value from(double value) { return Value::_take(json_real(value)); }
 
 	// create a new empty object
