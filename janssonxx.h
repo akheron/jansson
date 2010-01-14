@@ -265,8 +265,10 @@ private:
 // stream JSON value out
 std::ostream& operator<<(std::ostream& os, const jansson::Value& value) {
 	char* tmp = value.save_string();
-	os << tmp;
-	free(tmp);
+	if (tmp != 0) {
+		os << tmp;
+		free(tmp);
+	}
 	return os;
 }
 
