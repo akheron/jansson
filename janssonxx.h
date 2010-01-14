@@ -57,12 +57,12 @@ public:
 	}
 
 	// write the value to a file
-	int save_file(const char* path, int flags = JSON_INDENT(2)) const {
+	int save_file(const char* path, int flags = 0) const {
 		return json_dump_file(_value, path, flags);
 	}
 
 	// write the value to a string (caller must deallocate with free()!)
-	char* save_string(int flags = JSON_INDENT(2)) const {
+	char* save_string(int flags = 0) const {
 		return json_dumps(_value, flags);
 	}
 
