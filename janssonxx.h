@@ -155,7 +155,10 @@ public:
 
 	// get value cast to specified type
 	const char* as_cstring() const { return json_string_value(_value); }
-	std::string as_string() const { return as_cstring(); }
+	std::string as_string() const {
+		const char* tmp = as_cstring();
+		return tmp == 0 ? "" : tmp;
+	}
 	int as_integer() const { return json_integer_value(_value); }
 	double as_real() const { return json_real_value(_value); }
 	double as_number() const { return json_number_value(_value); }
