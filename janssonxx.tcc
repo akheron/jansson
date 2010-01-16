@@ -45,7 +45,7 @@ jansson::_ValueBase<jansson::_ArrayProxy> jansson::_ValueBase<_Base>::operator[]
 template <typename _Base>
 jansson::_ValueBase<jansson::_ArrayProxy> jansson::_ValueBase<_Base>::operator[](unsigned long index) { return at(index); }
 
-// get object property
+// get object property (const version)
 template <typename _Base>
 const jansson::Value jansson::_ValueBase<_Base>::get(const char* key) const {
 	return jansson::Value(json_object_get(_Base::as_json(), key));
@@ -57,6 +57,19 @@ template <typename _Base>
 const jansson::Value jansson::_ValueBase<_Base>::operator[](const char* key) const { return get(key); }
 template <typename _Base>
 const jansson::Value jansson::_ValueBase<_Base>::operator[](const std::string& key) const { return get(key.c_str()); }
+
+// get object property (non-const version)
+template <typename _Base>
+jansson::_ValueBase<jansson::_ObjectProxy> jansson::_ValueBase<_Base>::get(const char* key) {
+	return _ObjectProxy(_Base::as_json(), key);
+}
+
+template <typename _Base>
+jansson::_ValueBase<jansson::_ObjectProxy> jansson::_ValueBase<_Base>::get(const std::string& key) { return get(key.c_str()); }
+template <typename _Base>
+jansson::_ValueBase<jansson::_ObjectProxy> jansson::_ValueBase<_Base>::operator[](const char* key) { return get(key); }
+template <typename _Base>
+jansson::_ValueBase<jansson::_ObjectProxy> jansson::_ValueBase<_Base>::operator[](const std::string& key) { return get(key.c_str()); }
 
 // clear all array/object values
 template <typename _Base>
@@ -135,5 +148,11 @@ template <typename _Base>
 // assign value to proxied array element
 jansson::_ArrayProxy& jansson::_ArrayProxy::operator=(const Value& value) {
 	json_array_set(_array, _index, value.as_json());
+	return *this;
+}
+
+// assign value to proxied object property
+jansson::_ObjectProxy& jansson::_ObjectProxy::operator=(const Value& value) {
+	json_object_set(_object, _key, value.as_json());
 	return *this;
 }

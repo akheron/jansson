@@ -22,6 +22,7 @@ namespace jansson {
 	class Iterator;
 	class Value;
 	class _ArrayProxy;
+	class _ObjectProxy;
 
 	// base class for JSON value interface
 	template <typename _Base>
@@ -75,12 +76,19 @@ namespace jansson {
 		inline _ValueBase<_ArrayProxy> operator[](signed long index);
 		inline _ValueBase<_ArrayProxy> operator[](unsigned long index);
 
-		// get object property
+		// get object property (const version)
 		inline const Value get(const char* key) const;
 
 		inline const Value get(const std::string& key) const;
 		inline const Value operator[](const char* key) const;
 		inline const Value operator[](const std::string& key) const;
+
+		// get object property (non-const version)
+		inline _ValueBase<_ObjectProxy> get(const char* key);
+
+		inline _ValueBase<_ObjectProxy> get(const std::string& key);
+		inline _ValueBase<_ObjectProxy> operator[](const char* key);
+		inline _ValueBase<_ObjectProxy> operator[](const std::string& key);
 
 		// clear all array/object values
 		inline void clear();
@@ -156,9 +164,6 @@ namespace jansson {
 	// proxies an array element
 	class _ArrayProxy {
 	public:
-		// construct new Value with an undefined value
-		_ArrayProxy() : _array(0), _index(0) {}
-
 		// constructor
 		_ArrayProxy(json_t* array, unsigned int index) : _array(array), _index(index) {}
 
@@ -174,6 +179,26 @@ namespace jansson {
 
 		// index of property
 		unsigned int _index;
+	};
+
+	// proxies an object property
+	class _ObjectProxy {
+	public:
+		// constructor
+		_ObjectProxy(json_t* array, const char* key) : _object(array), _key(key) {}
+
+		// assign to the proxied element
+		inline _ObjectProxy& operator=(const Value& value);
+
+		// get the proxied element
+		json_t* as_json() const { return json_object_get(_object, _key); }
+
+	private:
+		// array object we wrap
+		json_t* _object;
+
+		// key of property
+		const char* _key;
 	};
 
 	// represents any JSON value
@@ -242,6 +267,11 @@ namespace jansson {
 	public:
 		// construct a new iterator for a given object
 		Iterator(const Value& value) : _object(value), _iter(0) {
+			_iter = json_object_iter(_object.as_json());
+		}
+
+		// construct a new iterator for a given object
+		Iterator(const _ValueBase<_ObjectProxy>& value) : _object(value.as_json()), _iter(0) {
 			_iter = json_object_iter(_object.as_json());
 		}
 
