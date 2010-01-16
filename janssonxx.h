@@ -21,203 +21,207 @@ namespace jansson {
 
 	class Iterator;
 	class Value;
-	class _ArrayProxy;
-	class _ObjectProxy;
 
-	// base class for JSON value interface
-	template <typename _Base>
-	class _ValueBase : public _Base {
-	public:
-		// empty constructor
-		_ValueBase() : _Base() {}
+	namespace _private {
+		class ArrayProxy;
+		class ObjectProxy;
 
-		// copy constructor
-		_ValueBase(const _Base& base) : _Base(base) {}
+		// base class for JSON value interface
+		template <typename _Base>
+		class ValueBase : public _Base {
+		public:
+			// empty constructor
+			ValueBase() : _Base() {}
 
-		// create reference to value
-		_ValueBase(json_t* json) : _Base(json) {}
+			// copy constructor
+			ValueBase(const _Base& base) : _Base(base) {}
 
-		// assignment operator
-		_ValueBase& operator=(const Value& value) { _Base::operator=(value); return *this; }
+			// create reference to value
+			ValueBase(json_t* json) : _Base(json) {}
 
-		// check value type
-		bool is_undefined() const { return _Base::as_json() == 0; }
-		bool is_object() const { return json_is_object(_Base::as_json()); }
-		bool is_array() const { return json_is_array(_Base::as_json()); }
-		bool is_string() const { return json_is_string(_Base::as_json()); }
-		bool is_integer() const { return json_is_integer(_Base::as_json()); }
-		bool is_real() const { return json_is_real(_Base::as_json()); }
-		bool is_number() const { return json_is_number(_Base::as_json()); }
-		bool is_true() const { return json_is_true(_Base::as_json()); }
-		bool is_false() const { return json_is_false(_Base::as_json()); }
-		bool is_boolean() const { return json_is_boolean(_Base::as_json()); }
-		bool is_null() const { return json_is_null(_Base::as_json()); }
+			// assignment operator
+			ValueBase& operator=(const Value& value) { _Base::operator=(value); return *this; }
 
-		// get size of array or object
-		inline unsigned int size() const;
+			// check value type
+			bool is_undefined() const { return _Base::as_json() == 0; }
+			bool is_object() const { return json_is_object(_Base::as_json()); }
+			bool is_array() const { return json_is_array(_Base::as_json()); }
+			bool is_string() const { return json_is_string(_Base::as_json()); }
+			bool is_integer() const { return json_is_integer(_Base::as_json()); }
+			bool is_real() const { return json_is_real(_Base::as_json()); }
+			bool is_number() const { return json_is_number(_Base::as_json()); }
+			bool is_true() const { return json_is_true(_Base::as_json()); }
+			bool is_false() const { return json_is_false(_Base::as_json()); }
+			bool is_boolean() const { return json_is_boolean(_Base::as_json()); }
+			bool is_null() const { return json_is_null(_Base::as_json()); }
 
-		// get value at array index (const version)
-		inline const Value at(unsigned int index) const;
+			// get size of array or object
+			inline unsigned int size() const;
 
-		inline const Value operator[](signed int index) const;
-		inline const Value operator[](unsigned int index) const;
-		inline const Value operator[](signed short index) const;
-		inline const Value operator[](unsigned short index) const;
-		inline const Value operator[](signed long index) const;
-		inline const Value operator[](unsigned long index) const;
+			// get value at array index (const version)
+			inline const Value at(unsigned int index) const;
 
-		// get value at array index (non-const version)
-		inline _ValueBase<_ArrayProxy> at(unsigned int index);
+			inline const Value operator[](signed int index) const;
+			inline const Value operator[](unsigned int index) const;
+			inline const Value operator[](signed short index) const;
+			inline const Value operator[](unsigned short index) const;
+			inline const Value operator[](signed long index) const;
+			inline const Value operator[](unsigned long index) const;
 
-		inline _ValueBase<_ArrayProxy> operator[](signed int index);
-		inline _ValueBase<_ArrayProxy> operator[](unsigned int index);
-		inline _ValueBase<_ArrayProxy> operator[](signed short index);
-		inline _ValueBase<_ArrayProxy> operator[](unsigned short index);
-		inline _ValueBase<_ArrayProxy> operator[](signed long index);
-		inline _ValueBase<_ArrayProxy> operator[](unsigned long index);
+			// get value at array index (non-const version)
+			inline ValueBase<ArrayProxy> at(unsigned int index);
 
-		// get object property (const version)
-		inline const Value get(const char* key) const;
+			inline ValueBase<ArrayProxy> operator[](signed int index);
+			inline ValueBase<ArrayProxy> operator[](unsigned int index);
+			inline ValueBase<ArrayProxy> operator[](signed short index);
+			inline ValueBase<ArrayProxy> operator[](unsigned short index);
+			inline ValueBase<ArrayProxy> operator[](signed long index);
+			inline ValueBase<ArrayProxy> operator[](unsigned long index);
 
-		inline const Value get(const std::string& key) const;
-		inline const Value operator[](const char* key) const;
-		inline const Value operator[](const std::string& key) const;
+			// get object property (const version)
+			inline const Value get(const char* key) const;
 
-		// get object property (non-const version)
-		inline _ValueBase<_ObjectProxy> get(const char* key);
+			inline const Value get(const std::string& key) const;
+			inline const Value operator[](const char* key) const;
+			inline const Value operator[](const std::string& key) const;
 
-		inline _ValueBase<_ObjectProxy> get(const std::string& key);
-		inline _ValueBase<_ObjectProxy> operator[](const char* key);
-		inline _ValueBase<_ObjectProxy> operator[](const std::string& key);
+			// get object property (non-const version)
+			inline ValueBase<ObjectProxy> get(const char* key);
 
-		// clear all array/object values
-		inline void clear();
+			inline ValueBase<ObjectProxy> get(const std::string& key);
+			inline ValueBase<ObjectProxy> operator[](const char* key);
+			inline ValueBase<ObjectProxy> operator[](const std::string& key);
 
-		// get value cast to specified type
-		inline const char* as_cstring() const;
-		inline std::string as_string() const;
-		inline int as_integer() const;
-		inline double as_real() const;
-		inline double as_number() const;
-		inline bool as_boolean() const;
+			// clear all array/object values
+			inline void clear();
 
-		// set an object property (converts value to object is not one already)
-		inline _Base& set_key(const char* key, const Value& value);
+			// get value cast to specified type
+			inline const char* as_cstring() const;
+			inline std::string as_string() const;
+			inline int as_integer() const;
+			inline double as_real() const;
+			inline double as_number() const;
+			inline bool as_boolean() const;
 
-		inline _Base& set_key(const std::string& key, const Value& value);
+			// set an object property (converts value to object is not one already)
+			inline _Base& set_key(const char* key, const Value& value);
 
-		// set an array index (converts value to object is not one already)
-		inline _Base& set_at(unsigned int index, const Value& value);
+			inline _Base& set_key(const std::string& key, const Value& value);
 
-		// delete an object key
-		inline _Base& del_key(const char* key);
+			// set an array index (converts value to object is not one already)
+			inline _Base& set_at(unsigned int index, const Value& value);
 
-		inline _Base& del_key(const std::string& key);
+			// delete an object key
+			inline _Base& del_key(const char* key);
 
-		// delete an item from an array by index
-		inline _Base& del_at(unsigned int index);
+			inline _Base& del_key(const std::string& key);
 
-		// insert an item into an array at a given index
-		inline _Base& insert_at(unsigned int index, const Value& value);
-	};
+			// delete an item from an array by index
+			inline _Base& del_at(unsigned int index);
 
-	// represents any JSON value, private base
-	class _Value {
-	public:
-		// construct new Value with an undefined value
-		_Value() : _value(0) {}
+			// insert an item into an array at a given index
+			inline _Base& insert_at(unsigned int index, const Value& value);
+		};
 
-		// copy constructor
-		_Value(const _Value& value) : _value(json_incref(value._value)) {}
+		// represents any JSON value, private base
+		class Basic {
+		public:
+			// construct new Value with an undefined value
+			Basic() : _value(0) {}
 
-		// make a reference to an existing json_t value
-		explicit _Value(json_t* value) : _value(json_incref(value)) {}
+			// copy constructor
+			Basic(const Basic& value) : _value(json_incref(value._value)) {}
 
-		// free Value resources
-		~_Value() { json_decref(_value); }
+			// make a reference to an existing json_t value
+			explicit Basic(json_t* value) : _value(json_incref(value)) {}
 
-		// copy an existing Value
-		_Value& operator=(const _Value& e) {
-			if (&e != this) {
-				json_decref(_value);
-				_value = json_incref(e._value);
+			// free Value resources
+			~Basic() { json_decref(_value); }
+
+			// copy an existing Value
+			Basic& operator=(const Basic& e) {
+				if (&e != this) {
+					json_decref(_value);
+					_value = json_incref(e._value);
+				}
+				return *this;
 			}
-			return *this;
-		}
 
-		// get the underlying json_t
-		json_t* as_json() const { return _value; }
+			// get the underlying json_t
+			json_t* as_json() const { return _value; }
 
-	protected:
-		// take ownership of a json_t (does not increase reference count)
-		static _Value _take(json_t* json) {
-			_Value v;
-			v._value = json;
-			return v;
-		}
+		protected:
+			// take ownership of a json_t (does not increase reference count)
+			static Basic _take(json_t* json) {
+				Basic v;
+				v._value = json;
+				return v;
+			}
 
-	private:
-		// internal value pointer
-		json_t* _value;
-	};
+		private:
+			// internal value pointer
+			json_t* _value;
+		};
 
-	// proxies an array element
-	class _ArrayProxy {
-	public:
-		// constructor
-		_ArrayProxy(json_t* array, unsigned int index) : _array(array), _index(index) {}
+		// proxies an array element
+		class ArrayProxy {
+		public:
+			// constructor
+			ArrayProxy(json_t* array, unsigned int index) : _array(array), _index(index) {}
 
-		// assign to the proxied element
-		inline _ArrayProxy& operator=(const Value& value);
+			// assign to the proxied element
+			inline ArrayProxy& operator=(const Value& value);
 
-		// get the proxied element
-		json_t* as_json() const { return json_array_get(_array, _index); }
+			// get the proxied element
+			json_t* as_json() const { return json_array_get(_array, _index); }
 
-	private:
-		// array object we wrap
-		json_t* _array;
+		private:
+			// array object we wrap
+			json_t* _array;
 
-		// index of property
-		unsigned int _index;
-	};
+			// index of property
+			unsigned int _index;
+		};
 
-	// proxies an object property
-	class _ObjectProxy {
-	public:
-		// constructor
-		_ObjectProxy(json_t* array, const char* key) : _object(array), _key(key) {}
+		// proxies an object property
+		class ObjectProxy {
+		public:
+			// constructor
+			ObjectProxy(json_t* array, const char* key) : _object(array), _key(key) {}
 
-		// assign to the proxied element
-		inline _ObjectProxy& operator=(const Value& value);
+			// assign to the proxied element
+			inline ObjectProxy& operator=(const Value& value);
 
-		// get the proxied element
-		json_t* as_json() const { return json_object_get(_object, _key); }
+			// get the proxied element
+			json_t* as_json() const { return json_object_get(_object, _key); }
 
-	private:
-		// array object we wrap
-		json_t* _object;
+		private:
+			// array object we wrap
+			json_t* _object;
 
-		// key of property
-		const char* _key;
-	};
+			// key of property
+			const char* _key;
+		};
+
+	} // namespace jansson::_private
 
 	// represents any JSON value
-	class Value : public _ValueBase<_Value> {
+	class Value : public _private::ValueBase<_private::Basic> {
 	public:
 		// empty constructor
-		Value() : _ValueBase<_Value>() {}
+		Value() : _private::ValueBase<_private::Basic>() {}
 
 		// copy constructor for base
-		Value(const _Value& value) : _ValueBase<_Value>(value) {}
+		Value(const _private::Basic& value) : _private::ValueBase<_private::Basic>(value) {}
 	
 		// copy constructor for base
-		Value(const _ValueBase<_Value>& value) : _ValueBase<_Value>(value) {}
+		Value(const _private::ValueBase<_private::Basic>& value) : _private::ValueBase<_private::Basic>(value) {}
 
 		// copy constructor
-		Value(const Value& value) : _ValueBase<_Value>(value) {}
+		Value(const Value& value) : _private::ValueBase<_private::Basic>(value) {}
 
 		// create reference to value
-		explicit Value(json_t* json) : _ValueBase<_Value>(json) {}
+		explicit Value(json_t* json) : _private::ValueBase<_private::Basic>(json) {}
 
 		// construct Value from input
 		static inline Value from(const char* value) { return Value::_take(json_string(value)); }
@@ -271,7 +275,7 @@ namespace jansson {
 		}
 
 		// construct a new iterator for a given object
-		Iterator(const _ValueBase<_ObjectProxy>& value) : _object(value.as_json()), _iter(0) {
+		Iterator(const _private::ValueBase<_private::ObjectProxy>& value) : _object(value.as_json()), _iter(0) {
 			_iter = json_object_iter(_object.as_json());
 		}
 
