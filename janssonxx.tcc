@@ -28,22 +28,22 @@ const jansson::Value jansson::_ValueBase<_Base>::operator[](unsigned long index)
 
 // get value at array index (non-const version)
 template <typename _Base>
-jansson::Value jansson::_ValueBase<_Base>::at(unsigned int index) {
-	return jansson::Value(json_array_get(_Base::as_json(), index));
+jansson::_ValueBase<jansson::_ArrayProxy> jansson::_ValueBase<_Base>::at(unsigned int index) {
+	return _ArrayProxy(_Base::as_json(), index);
 }
 
 template <typename _Base>
-jansson::Value jansson::_ValueBase<_Base>::operator[](signed int index) { return at(index); }
+jansson::_ValueBase<jansson::_ArrayProxy> jansson::_ValueBase<_Base>::operator[](signed int index) { return at(index); }
 template <typename _Base>
-jansson::Value jansson::_ValueBase<_Base>::operator[](unsigned int index) { return at(index); }
+jansson::_ValueBase<jansson::_ArrayProxy> jansson::_ValueBase<_Base>::operator[](unsigned int index) { return at(index); }
 template <typename _Base>
-jansson::Value jansson::_ValueBase<_Base>::operator[](signed short index) { return at(index); }
+jansson::_ValueBase<jansson::_ArrayProxy> jansson::_ValueBase<_Base>::operator[](signed short index) { return at(index); }
 template <typename _Base>
-jansson::Value jansson::_ValueBase<_Base>::operator[](unsigned short index) { return at(index); }
+jansson::_ValueBase<jansson::_ArrayProxy> jansson::_ValueBase<_Base>::operator[](unsigned short index) { return at(index); }
 template <typename _Base>
-jansson::Value jansson::_ValueBase<_Base>::operator[](signed long index) { return at(index); }
+jansson::_ValueBase<jansson::_ArrayProxy> jansson::_ValueBase<_Base>::operator[](signed long index) { return at(index); }
 template <typename _Base>
-jansson::Value jansson::_ValueBase<_Base>::operator[](unsigned long index) { return at(index); }
+jansson::_ValueBase<jansson::_ArrayProxy> jansson::_ValueBase<_Base>::operator[](unsigned long index) { return at(index); }
 
 // get object property
 template <typename _Base>
@@ -129,5 +129,11 @@ template <typename _Base>
 template <typename _Base>
  _Base& jansson::_ValueBase<_Base>::insert_at(unsigned int index, const jansson::Value& value) {
 	json_array_insert(_Base::as_json(), index, value._Base::as_json());
+	return *this;
+}
+
+// assign value to proxied array element
+jansson::_ArrayProxy& jansson::_ArrayProxy::operator=(const Value& value) {
+	json_array_set(_array, _index, value.as_json());
 	return *this;
 }

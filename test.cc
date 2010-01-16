@@ -149,7 +149,13 @@ int main() {
 	e14.set_key("foo", jansson::Value::object());
 	ASSERT_TRUE(e14["foo"].is_object(), "e14.foo is not an object after assignment");
 	//e14["foo"]["bar"] = jansson::Value::from(42);
-	//ASSERT_EQ(e14["foo"]["bar"].as_integer(), 42, "e14.foo.bar has incorrecy value after assignment");
+	//ASSERT_EQ(e14["foo"]["bar"].as_integer(), 42, "e14.foo.bar has incorrect value after assignment");
 
+	jansson::Value e15(jansson::Value::array());
+	ASSERT_TRUE(e15.is_array(), "e15 is not an array after construction");
+	e15.set_at(0, jansson::Value::from(42));
+	ASSERT_EQ(e15[0].as_integer(), 42, "e15[0] has incorrect value after assignment");
+	e15[0] = jansson::Value::from("foo");
+	ASSERT_EQ(e15[0].as_string(), "foo", "e15[0] has incorrecy value after assignment");
 	return 0;
 }

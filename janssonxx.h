@@ -21,6 +21,7 @@ namespace jansson {
 
 	class Iterator;
 	class Value;
+	class _ArrayProxy;
 
 	// base class for JSON value interface
 	template <typename _Base>
@@ -34,6 +35,9 @@ namespace jansson {
 
 		// create reference to value
 		_ValueBase(json_t* json) : _Base(json) {}
+
+		// assignment operator
+		_ValueBase& operator=(const Value& value) { _Base::operator=(value); return *this; }
 
 		// check value type
 		bool is_undefined() const { return _Base::as_json() == 0; }
@@ -62,14 +66,14 @@ namespace jansson {
 		inline const Value operator[](unsigned long index) const;
 
 		// get value at array index (non-const version)
-		inline Value at(unsigned int index);
+		inline _ValueBase<_ArrayProxy> at(unsigned int index);
 
-		inline Value operator[](signed int index);
-		inline Value operator[](unsigned int index);
-		inline Value operator[](signed short index);
-		inline Value operator[](unsigned short index);
-		inline Value operator[](signed long index);
-		inline Value operator[](unsigned long index);
+		inline _ValueBase<_ArrayProxy> operator[](signed int index);
+		inline _ValueBase<_ArrayProxy> operator[](unsigned int index);
+		inline _ValueBase<_ArrayProxy> operator[](signed short index);
+		inline _ValueBase<_ArrayProxy> operator[](unsigned short index);
+		inline _ValueBase<_ArrayProxy> operator[](signed long index);
+		inline _ValueBase<_ArrayProxy> operator[](unsigned long index);
 
 		// get object property
 		inline const Value get(const char* key) const;
@@ -147,6 +151,29 @@ namespace jansson {
 	private:
 		// internal value pointer
 		json_t* _value;
+	};
+
+	// proxies an array element
+	class _ArrayProxy {
+	public:
+		// construct new Value with an undefined value
+		_ArrayProxy() : _array(0), _index(0) {}
+
+		// constructor
+		_ArrayProxy(json_t* array, unsigned int index) : _array(array), _index(index) {}
+
+		// assign to the proxied element
+		inline _ArrayProxy& operator=(const Value& value);
+
+		// get the proxied element
+		json_t* as_json() const { return json_array_get(_array, _index); }
+
+	private:
+		// array object we wrap
+		json_t* _array;
+
+		// index of property
+		unsigned int _index;
 	};
 
 	// represents any JSON value
