@@ -28,22 +28,22 @@ const jansson::Value jansson::_private::ValueBase<_Base>::operator[](unsigned lo
 
 // get value at array index (non-const version)
 template <typename _Base>
-jansson::_private::ValueBase<jansson::_private::ArrayProxy> jansson::_private::ValueBase<_Base>::at(unsigned int index) {
-	return ArrayProxy(_Base::as_json(), index);
+jansson::_private::ValueBase<jansson::_private::ElementProxy> jansson::_private::ValueBase<_Base>::at(unsigned int index) {
+	return ElementProxy(_Base::as_json(), index);
 }
 
 template <typename _Base>
-jansson::_private::ValueBase<jansson::_private::ArrayProxy> jansson::_private::ValueBase<_Base>::operator[](signed int index) { return at(index); }
+jansson::_private::ValueBase<jansson::_private::ElementProxy> jansson::_private::ValueBase<_Base>::operator[](signed int index) { return at(index); }
 template <typename _Base>
-jansson::_private::ValueBase<jansson::_private::ArrayProxy> jansson::_private::ValueBase<_Base>::operator[](unsigned int index) { return at(index); }
+jansson::_private::ValueBase<jansson::_private::ElementProxy> jansson::_private::ValueBase<_Base>::operator[](unsigned int index) { return at(index); }
 template <typename _Base>
-jansson::_private::ValueBase<jansson::_private::ArrayProxy> jansson::_private::ValueBase<_Base>::operator[](signed short index) { return at(index); }
+jansson::_private::ValueBase<jansson::_private::ElementProxy> jansson::_private::ValueBase<_Base>::operator[](signed short index) { return at(index); }
 template <typename _Base>
-jansson::_private::ValueBase<jansson::_private::ArrayProxy> jansson::_private::ValueBase<_Base>::operator[](unsigned short index) { return at(index); }
+jansson::_private::ValueBase<jansson::_private::ElementProxy> jansson::_private::ValueBase<_Base>::operator[](unsigned short index) { return at(index); }
 template <typename _Base>
-jansson::_private::ValueBase<jansson::_private::ArrayProxy> jansson::_private::ValueBase<_Base>::operator[](signed long index) { return at(index); }
+jansson::_private::ValueBase<jansson::_private::ElementProxy> jansson::_private::ValueBase<_Base>::operator[](signed long index) { return at(index); }
 template <typename _Base>
-jansson::_private::ValueBase<jansson::_private::ArrayProxy> jansson::_private::ValueBase<_Base>::operator[](unsigned long index) { return at(index); }
+jansson::_private::ValueBase<jansson::_private::ElementProxy> jansson::_private::ValueBase<_Base>::operator[](unsigned long index) { return at(index); }
 
 // get object property (const version)
 template <typename _Base>
@@ -60,16 +60,16 @@ const jansson::Value jansson::_private::ValueBase<_Base>::operator[](const std::
 
 // get object property (non-const version)
 template <typename _Base>
-jansson::_private::ValueBase<jansson::_private::ObjectProxy> jansson::_private::ValueBase<_Base>::get(const char* key) {
-	return ObjectProxy(_Base::as_json(), key);
+jansson::_private::ValueBase<jansson::_private::PropertyProxy> jansson::_private::ValueBase<_Base>::get(const char* key) {
+	return PropertyProxy(_Base::as_json(), key);
 }
 
 template <typename _Base>
-jansson::_private::ValueBase<jansson::_private::ObjectProxy> jansson::_private::ValueBase<_Base>::get(const std::string& key) { return get(key.c_str()); }
+jansson::_private::ValueBase<jansson::_private::PropertyProxy> jansson::_private::ValueBase<_Base>::get(const std::string& key) { return get(key.c_str()); }
 template <typename _Base>
-jansson::_private::ValueBase<jansson::_private::ObjectProxy> jansson::_private::ValueBase<_Base>::operator[](const char* key) { return get(key); }
+jansson::_private::ValueBase<jansson::_private::PropertyProxy> jansson::_private::ValueBase<_Base>::operator[](const char* key) { return get(key); }
 template <typename _Base>
-jansson::_private::ValueBase<jansson::_private::ObjectProxy> jansson::_private::ValueBase<_Base>::operator[](const std::string& key) { return get(key.c_str()); }
+jansson::_private::ValueBase<jansson::_private::PropertyProxy> jansson::_private::ValueBase<_Base>::operator[](const std::string& key) { return get(key.c_str()); }
 
 // clear all array/object values
 template <typename _Base>
@@ -146,13 +146,13 @@ template <typename _Base>
 }
 
 // assign value to proxied array element
-jansson::_private::ArrayProxy& jansson::_private::ArrayProxy::operator=(const Value& value) {
+jansson::_private::ElementProxy& jansson::_private::ElementProxy::operator=(const Value& value) {
 	json_array_set(_array, _index, value.as_json());
 	return *this;
 }
 
 // assign value to proxied object property
-jansson::_private::ObjectProxy& jansson::_private::ObjectProxy::operator=(const Value& value) {
+jansson::_private::PropertyProxy& jansson::_private::PropertyProxy::operator=(const Value& value) {
 	json_object_set(_object, _key, value.as_json());
 	return *this;
 }

@@ -23,8 +23,8 @@ namespace jansson {
 	class Value;
 
 	namespace _private {
-		class ArrayProxy;
-		class ObjectProxy;
+		class ElementProxy;
+		class PropertyProxy;
 
 		// base class for JSON value interface
 		template <typename _Base>
@@ -69,14 +69,14 @@ namespace jansson {
 			inline const Value operator[](unsigned long index) const;
 
 			// get value at array index (non-const version)
-			inline ValueBase<ArrayProxy> at(unsigned int index);
+			inline ValueBase<ElementProxy> at(unsigned int index);
 
-			inline ValueBase<ArrayProxy> operator[](signed int index);
-			inline ValueBase<ArrayProxy> operator[](unsigned int index);
-			inline ValueBase<ArrayProxy> operator[](signed short index);
-			inline ValueBase<ArrayProxy> operator[](unsigned short index);
-			inline ValueBase<ArrayProxy> operator[](signed long index);
-			inline ValueBase<ArrayProxy> operator[](unsigned long index);
+			inline ValueBase<ElementProxy> operator[](signed int index);
+			inline ValueBase<ElementProxy> operator[](unsigned int index);
+			inline ValueBase<ElementProxy> operator[](signed short index);
+			inline ValueBase<ElementProxy> operator[](unsigned short index);
+			inline ValueBase<ElementProxy> operator[](signed long index);
+			inline ValueBase<ElementProxy> operator[](unsigned long index);
 
 			// get object property (const version)
 			inline const Value get(const char* key) const;
@@ -86,11 +86,11 @@ namespace jansson {
 			inline const Value operator[](const std::string& key) const;
 
 			// get object property (non-const version)
-			inline ValueBase<ObjectProxy> get(const char* key);
+			inline ValueBase<PropertyProxy> get(const char* key);
 
-			inline ValueBase<ObjectProxy> get(const std::string& key);
-			inline ValueBase<ObjectProxy> operator[](const char* key);
-			inline ValueBase<ObjectProxy> operator[](const std::string& key);
+			inline ValueBase<PropertyProxy> get(const std::string& key);
+			inline ValueBase<PropertyProxy> operator[](const char* key);
+			inline ValueBase<PropertyProxy> operator[](const std::string& key);
 
 			// clear all array/object values
 			inline void clear();
@@ -164,13 +164,13 @@ namespace jansson {
 		};
 
 		// proxies an array element
-		class ArrayProxy {
+		class ElementProxy {
 		public:
 			// constructor
-			ArrayProxy(json_t* array, unsigned int index) : _array(array), _index(index) {}
+			ElementProxy(json_t* array, unsigned int index) : _array(array), _index(index) {}
 
 			// assign to the proxied element
-			inline ArrayProxy& operator=(const Value& value);
+			inline ElementProxy& operator=(const Value& value);
 
 			// get the proxied element
 			json_t* as_json() const { return json_array_get(_array, _index); }
@@ -184,13 +184,13 @@ namespace jansson {
 		};
 
 		// proxies an object property
-		class ObjectProxy {
+		class PropertyProxy {
 		public:
 			// constructor
-			ObjectProxy(json_t* array, const char* key) : _object(array), _key(key) {}
+			PropertyProxy(json_t* array, const char* key) : _object(array), _key(key) {}
 
 			// assign to the proxied element
-			inline ObjectProxy& operator=(const Value& value);
+			inline PropertyProxy& operator=(const Value& value);
 
 			// get the proxied element
 			json_t* as_json() const { return json_object_get(_object, _key); }
@@ -275,7 +275,7 @@ namespace jansson {
 		}
 
 		// construct a new iterator for a given object
-		Iterator(const _private::ValueBase<_private::ObjectProxy>& value) : _object(value.as_json()), _iter(0) {
+		Iterator(const _private::ValueBase<_private::PropertyProxy>& value) : _object(value.as_json()), _iter(0) {
 			_iter = json_object_iter(_object.as_json());
 		}
 
