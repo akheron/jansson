@@ -141,5 +141,15 @@ int main() {
 	outstr << e12;
 	ASSERT_EQ(instr.str(), "{\"bar\": 3,\"foo\": \"test\"}\n", "object did not serialize as expected");
 
+	const jansson::Value e13(e12);
+	ASSERT_EQ(e13["bar"].as_integer(), 3, "e13.bar has incorrect value after copy");
+
+	jansson::Value e14(jansson::Value::object());
+	ASSERT_TRUE(e14.is_object(), "e14 is not an object after construction");
+	e14.set_key("foo", jansson::Value::object());
+	ASSERT_TRUE(e14["foo"].is_object(), "e14.foo is not an object after assignment");
+	//e14["foo"]["bar"] = jansson::Value::from(42);
+	//ASSERT_EQ(e14["foo"]["bar"].as_integer(), 42, "e14.foo.bar has incorrecy value after assignment");
+
 	return 0;
 }
