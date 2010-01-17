@@ -16,12 +16,13 @@
 #include <cstdlib>
 
 namespace jansson {
-	// include in the jansson namespace
-#	include <jansson.h>
+	// include Jansson C library in the jansson namespace
+	#include <jansson.h>
 
 	class Iterator;
 	class Value;
 
+	// implementation details; do not use directly
 	namespace _private {
 		class ElementProxy;
 		class PropertyProxy;
@@ -40,20 +41,20 @@ namespace jansson {
 			ValueBase(json_t* json) : _Base(json) {}
 
 			// assignment operator
-			ValueBase& operator=(const Value& value) { _Base::operator=(value); return *this; }
+			inline ValueBase& operator=(const Value& value);
 
 			// check value type
-			bool is_undefined() const { return _Base::as_json() == 0; }
-			bool is_object() const { return json_is_object(_Base::as_json()); }
-			bool is_array() const { return json_is_array(_Base::as_json()); }
-			bool is_string() const { return json_is_string(_Base::as_json()); }
-			bool is_integer() const { return json_is_integer(_Base::as_json()); }
-			bool is_real() const { return json_is_real(_Base::as_json()); }
-			bool is_number() const { return json_is_number(_Base::as_json()); }
-			bool is_true() const { return json_is_true(_Base::as_json()); }
-			bool is_false() const { return json_is_false(_Base::as_json()); }
-			bool is_boolean() const { return json_is_boolean(_Base::as_json()); }
-			bool is_null() const { return json_is_null(_Base::as_json()); }
+			inline bool is_undefined() const;
+			inline bool is_object() const;
+			inline bool is_array() const;
+			inline bool is_string() const;
+			inline bool is_integer() const;
+			inline bool is_real() const;
+			inline bool is_number() const;
+			inline bool is_true() const;
+			inline bool is_false() const;
+			inline bool is_boolean() const;
+			inline bool is_null() const;
 
 			// get size of array or object
 			inline unsigned int size() const;
@@ -121,6 +122,12 @@ namespace jansson {
 
 			// insert an item into an array at a given index
 			inline _Base& insert_at(unsigned int index, const Value& value);
+
+			// write the value to a file
+			inline int save_file(const char* path, int flags = 0) const;
+
+			// write the value to a string (caller must deallocate with free()!)
+			inline char* save_string(int flags = 0) const;
 		};
 
 		// represents any JSON value, private base
@@ -136,27 +143,17 @@ namespace jansson {
 			explicit Basic(json_t* value) : _value(json_incref(value)) {}
 
 			// free Value resources
-			~Basic() { json_decref(_value); }
+			inline ~Basic();
 
 			// copy an existing Value
-			Basic& operator=(const Basic& e) {
-				if (&e != this) {
-					json_decref(_value);
-					_value = json_incref(e._value);
-				}
-				return *this;
-			}
+			inline Basic& operator=(const Basic& e);
 
 			// get the underlying json_t
-			json_t* as_json() const { return _value; }
+			inline json_t* as_json() const;
 
 		protected:
 			// take ownership of a json_t (does not increase reference count)
-			static Basic _take(json_t* json) {
-				Basic v;
-				v._value = json;
-				return v;
-			}
+			static inline Basic _take(json_t* json);
 
 		private:
 			// internal value pointer
@@ -173,7 +170,7 @@ namespace jansson {
 			inline ElementProxy& operator=(const Value& value);
 
 			// get the proxied element
-			json_t* as_json() const { return json_array_get(_array, _index); }
+			inline json_t* as_json() const;
 
 		private:
 			// array object we wrap
@@ -193,7 +190,7 @@ namespace jansson {
 			inline PropertyProxy& operator=(const Value& value);
 
 			// get the proxied element
-			json_t* as_json() const { return json_object_get(_object, _key); }
+			inline json_t* as_json() const;
 
 		private:
 			// array object we wrap
@@ -224,86 +221,63 @@ namespace jansson {
 		explicit Value(json_t* json) : _private::ValueBase<_private::Basic>(json) {}
 
 		// construct Value from input
-		static inline Value from(const char* value) { return Value::_take(json_string(value)); }
-		static inline Value from(const std::string& value) { return from(value.c_str()); }
-		static inline Value from(bool value) { return Value::_take(value ? json_true() : json_false()); }
-		static inline Value from(signed int value) { return Value::_take(json_integer(value)); }
-		static inline Value from(unsigned int value) { return Value::_take(json_integer(value)); }
-		static inline Value from(signed short value) { return Value::_take(json_integer(value)); }
-		static inline Value from(unsigned short value) { return Value::_take(json_integer(value)); }
-		static inline Value from(signed long value) { return Value::_take(json_integer(value)); }
-		static inline Value from(unsigned long value) { return Value::_take(json_integer(value)); }
-		static inline Value from(float value) { return Value::_take(json_real(value)); }
-		static inline Value from(double value) { return Value::_take(json_real(value)); }
+		static inline Value from(const char* value);
+		static inline Value from(const std::string& value);
+		static inline Value from(bool value);
+		static inline Value from(signed int value);
+		static inline Value from(unsigned int value);
+		static inline Value from(signed short value);
+		static inline Value from(unsigned short value);
+		static inline Value from(signed long value);
+		static inline Value from(unsigned long value);
+		static inline Value from(float value);
+		static inline Value from(double value);
 
 		// create a new empty object
-		static inline Value object() { return Value::_take(json_object()); }
+		static inline Value object();
 
 		// create a new empty array
-		static inline Value array() { return Value::_take(json_array()); }
+		static inline Value array();
 
 		// create a new null value
-		static inline Value null() { return Value::_take(json_null()); }
+		static inline Value null();
 
 		// load a file as a JSON value
-		static Value load_file(const char* path, json_error_t* error = 0) {
-			return Value::_take(json_load_file(path, error));
-		}
+		static inline Value load_file(const char* path, json_error_t* error = 0);
 
 		// load a string as a JSON value
-		static Value load_string(const char* string, json_error_t* error = 0) {
-			return Value::_take(json_loads(string, error));
-		}
-
-		// write the value to a file
-		int save_file(const char* path, int flags = 0) const {
-			return json_dump_file(as_json(), path, flags);
-		}
-
-		// write the value to a string (caller must deallocate with free()!)
-		char* save_string(int flags = 0) const {
-			return json_dumps(as_json(), flags);
-		}
+		static inline Value load_string(const char* string, json_error_t* error = 0);
 	};
 
 	// iterators over a JSON object
 	class Iterator {
 	public:
 		// construct a new iterator for a given object
-		Iterator(const Value& value) : _object(value), _iter(0) {
-			_iter = json_object_iter(_object.as_json());
-		}
+		inline Iterator(const Value& value);
 
 		// construct a new iterator for a given object
-		Iterator(const _private::ValueBase<_private::PropertyProxy>& value) : _object(value.as_json()), _iter(0) {
-			_iter = json_object_iter(_object.as_json());
-		}
+		inline Iterator(const _private::ValueBase<_private::PropertyProxy>& value);
 
 		// increment iterator
-		void next() {
-			_iter = json_object_iter_next(_object.as_json(), _iter);
-		}
+		inline void next();
 
-		Iterator& operator++() { next(); return *this; }
+		inline Iterator& operator++();
 
 		// test if iterator is still valid
-		bool valid() const { return _iter != 0; }
-		operator bool() const { return valid(); }
+		inline bool valid() const;
+
+		inline operator bool() const;
 
 		// get key
-		const char* ckey() const {
-			return json_object_iter_key(_iter);
-		}
+		inline const char* ckey() const;
 
-		std::string key() const { return ckey(); }
+		inline std::string key() const;
 
 		// get value
-		const Value value() const {
-			return Value(json_object_iter_value(_iter));
-		}
+		inline const Value value() const;
 
 		// dereference value
-		const Value operator*() const { return value(); }
+		inline const Value operator*() const;
 
 	private:
 		// disallow copying
@@ -320,23 +294,10 @@ namespace jansson {
 } // namespace jansson
 
 // stream JSON value out
-std::ostream& operator<<(std::ostream& os, const jansson::Value& value) {
-	char* tmp = value.save_string();
-	if (tmp != 0) {
-		os << tmp;
-		free(tmp);
-	}
-	return os;
-}
+inline std::ostream& operator<<(std::ostream& os, const jansson::Value& value);
 
 // read JSON value
-std::istream& operator>>(std::istream& is, jansson::Value& value) {
-	std::stringstream tmp;
-	while (is)
-		tmp << static_cast<char>(is.get());
-	value = jansson::Value::load_string(tmp.str().c_str());
-	return is;
-}
+inline std::istream& operator>>(std::istream& is, jansson::Value& value);
 
 #include "janssonxx.tcc"
 
