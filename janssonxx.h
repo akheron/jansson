@@ -299,6 +299,7 @@ inline std::ostream& operator<<(std::ostream& os, const jansson::Value& value);
 // read JSON value
 inline std::istream& operator>>(std::istream& is, jansson::Value& value);
 
+// include implementation code
 #include "janssonxx.tcc"
 
-#endif
+#endif // defined(JANSSONXX_H)
