@@ -1,3 +1,14 @@
+// janssonxx - C++ wrapper for jansson, implementation file
+//
+// author: Sean Middleditch <sean@middleditch.us>
+//
+// janssonxx is free software; you can redistribute it and/or modify
+// it under the terms of the MIT license. See LICENSE for details.
+
+#if !defined(IN_JANSSON_HPP)
+#	error "jansson-impl.hpp may only by included from jansson.hpp"
+#endif
+
 namespace jansson {
 	namespace _private {
 		// assignment operator

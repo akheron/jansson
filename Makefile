@@ -3,7 +3,7 @@ JANSSON_LIBS := $(shell pkg-config --libs jansson)
 
 all: test
 
-test-bin: test.cc janssonxx.h janssonxx.tcc Makefile
+test-bin: test.cpp jansson.hpp jansson-impl.hpp Makefile
 	$(CXX) -o $@ -g -O0 -Wall $(JANSSON_CFLAGS) $< $(JANSSON_LIBS)
 
 test: test-bin

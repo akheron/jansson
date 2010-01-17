@@ -5,9 +5,8 @@
 // janssonxx is free software; you can redistribute it and/or modify
 // it under the terms of the MIT license. See LICENSE for details.
 
-
-#if !defined(JANSSONXX_H)
-#define JANSSONXX_H 1
+#if !defined(JANSSON_HPP)
+#define JANSSON_HPP 1
 
 #include <string>
 #include <ostream>
@@ -300,6 +299,8 @@ inline std::ostream& operator<<(std::ostream& os, const jansson::Value& value);
 inline std::istream& operator>>(std::istream& is, jansson::Value& value);
 
 // include implementation code
-#include "janssonxx.tcc"
+#define IN_JANSSON_HPP 1
+#include "jansson-impl.hpp"
+#undef IN_JANSSON_HPP
 
-#endif // defined(JANSSONXX_H)
+#endif // defined(JANSSON_HPP)

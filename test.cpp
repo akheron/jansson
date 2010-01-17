@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <malloc.h>
 
-#include "janssonxx.h"
+#include "jansson.hpp"
 
 using namespace std;
 
