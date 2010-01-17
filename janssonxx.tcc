@@ -438,8 +438,10 @@ namespace jansson {
 
 // stream JSON value out
 std::ostream& operator<<(std::ostream& os, const jansson::Value& value) {
+	// get the temporary serialize string
 	char* tmp = value.save_string();
 	if (tmp != 0) {
+		// stream temp string out and release it
 		os << tmp;
 		free(tmp);
 	}
@@ -448,9 +450,11 @@ std::ostream& operator<<(std::ostream& os, const jansson::Value& value) {
 
 // read JSON value
 std::istream& operator>>(std::istream& is, jansson::Value& value) {
+	// buffer the remaining bytes into a single string for Jansson
 	std::stringstream tmp;
 	while (is)
 		tmp << static_cast<char>(is.get());
+	// parse the buffered string
 	value = jansson::Value::load_string(tmp.str().c_str());
 	return is;
 }

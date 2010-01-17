@@ -293,10 +293,10 @@ namespace jansson {
 
 } // namespace jansson
 
-// stream JSON value out
+// stream JSON value out -- inefficient and not recommended for production use
 inline std::ostream& operator<<(std::ostream& os, const jansson::Value& value);
 
-// read JSON value
+// read JSON value -- inefficient and not recommended for production use
 inline std::istream& operator>>(std::istream& is, jansson::Value& value);
 
 // include implementation code
