@@ -19,6 +19,7 @@ AC_PROG_LIBTOOL
 # Checks for library functions.
 
 AC_CONFIG_FILES([
+        jansson.pc
         Makefile
         doc/Makefile
         src/Makefile
