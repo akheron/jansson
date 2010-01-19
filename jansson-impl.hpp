@@ -328,6 +328,51 @@ namespace json {
 		}
 
 	} // namespace json::_private
+
+	// construct Value::Value input
+	Value::Value(const char* value) {
+		_value = json_string(value);
+	}
+
+	Value::Value(const std::string& value) {
+		_value = json_string(value.c_str());
+	}
+
+	Value::Value(bool value) {
+		_value = value ? json_true() : json_false();
+	}
+
+	Value::Value(signed int value) {
+		_value = json_integer(value);
+	}
+
+	Value::Value(unsigned int value) {
+		_value = json_integer(value);
+	}
+
+	Value::Value(signed short value) {
+		_value = json_integer(value);
+	}
+
+	Value::Value(unsigned short value) {
+		_value = json_integer(value);
+	}
+
+	Value::Value(signed long value) {
+		_value = json_integer(value);
+	}
+
+	Value::Value(unsigned long value) {
+		_value = json_integer(value);
+	}
+
+	Value::Value(float value) {
+		_value = json_real(value);
+	}
+
+	Value::Value(double value) {
+		_value = json_real(value);
+	}
 	
 	// construct a new iterator for a given object
 	Iterator::Iterator(const Value& value) : _object(value), _iter(0) {
@@ -373,51 +418,6 @@ namespace json {
 	// dereference value
 	const Value Iterator::operator*() const {
 		return value();
-	}
-
-	// construct Value from input
-	Value from(const char* value) {
-		return Value::take_ownership(json_string(value));
-	}
-
-	Value from(const std::string& value) {
-		return from(value.c_str());
-	}
-
-	Value from(bool value) {
-		return Value::take_ownership(value ? json_true() : json_false());
-	}
-
-	Value from(signed int value) {
-		return Value::take_ownership(json_integer(value));
-	}
-
-	Value from(unsigned int value) {
-		return Value::take_ownership(json_integer(value));
-	}
-
-	Value from(signed short value) {
-		return Value::take_ownership(json_integer(value));
-	}
-
-	Value from(unsigned short value) {
-		return Value::take_ownership(json_integer(value));
-	}
-
-	Value from(signed long value) {
-		return Value::take_ownership(json_integer(value));
-	}
-
-	Value from(unsigned long value) {
-		return Value::take_ownership(json_integer(value));
-	}
-
-	Value from(float value) {
-		return Value::take_ownership(json_real(value));
-	}
-
-	Value from(double value) {
-		return Value::take_ownership(json_real(value));
 	}
 
 	// create a new empty object

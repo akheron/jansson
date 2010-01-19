@@ -151,9 +151,9 @@ namespace json {
 			inline json_t* as_json() const;
 
 			// take ownership of a json_t (does not increase reference count)
-			static inline Basic take_ownership(json_t* json);
+			inline static Basic take_ownership(json_t* json);
 
-		private:
+		protected:
 			// internal value pointer
 			json_t* _value;
 		};
@@ -203,6 +203,19 @@ namespace json {
 	// represents any JSON value
 	class Value : public _private::ValueBase<_private::Basic> {
 	public:
+		// construct Value from input
+		explicit inline Value(const char* value);
+		explicit inline Value(const std::string& value);
+		explicit inline Value(bool value);
+		explicit inline Value(signed int value);
+		explicit inline Value(unsigned int value);
+		explicit inline Value(signed short value);
+		explicit inline Value(unsigned short value);
+		explicit inline Value(signed long value);
+		explicit inline Value(unsigned long value);
+		explicit inline Value(float value);
+		explicit inline Value(double value);
+
 		// empty constructor
 		Value() : _private::ValueBase<_private::Basic>() {}
 
@@ -260,19 +273,6 @@ namespace json {
 		// iterator value
 		void* _iter;
 	};
-
-	// construct Value from input
-	inline Value from(const char* value);
-	inline Value from(const std::string& value);
-	inline Value from(bool value);
-	inline Value from(signed int value);
-	inline Value from(unsigned int value);
-	inline Value from(signed short value);
-	inline Value from(unsigned short value);
-	inline Value from(signed long value);
-	inline Value from(unsigned long value);
-	inline Value from(float value);
-	inline Value from(double value);
 
 	// create a new empty object
 	inline Value object();
