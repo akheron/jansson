@@ -20,14 +20,22 @@ Version 1.2 (in development)
 
 * Bug fixes:
 
-  - Revise and unify whitespace usage in encoder
+  - Revise and unify whitespace usage in encoder: Add spaces between
+    array and object items, never append newline to output.
+  - Remove const qualifier from the ``json_t`` parameter in
+    ``json_string_set()``, ``json_integer_set()`` and
+    ``json_real_set``.
+  - Use ``int32_t`` internally for representing Unicode code points
+    (int is not enough on all platforms)
 
 * Other changes:
 
   - Convert ``CHANGES`` (this file) to reStructured text and add it to
     HTML documentation
-  - Python is no longer required to run the tests
+  - The test system has been refactored. Python is no longer required
+    to run the tests.
   - Documentation can now be built by invoking ``make html``
+  - Support for pkg-config
 
 
 Version 1.1.3
