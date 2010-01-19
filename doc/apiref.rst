@@ -745,3 +745,47 @@ copied in a recursive fashion.
    Returns a deep copy of *value*, or *NULL* on error.
 
    .. versionadded:: 1.2
+
+
+C++ Interface
+=============
+
+A simple C++ wrapper around the Jansson interface exists in the header
+:file:`jansson.hpp`.
+
+The C++ interface consists of the :ctype:`Value` class in the ``json``
+namespace.
+
+.. ctype:: json::Value
+
+   Wrapper around the :ctype:`json_t` type of the C API, with automatic
+   reference counting.
+
+.. ctype:: proxy
+
+   An unspecified type used for proxying array element and object
+   property accesses.  This type should never be used by the client.
+
+   Warning: using C++0x's ``auto`` keyword may result in creating
+   objects of the proxy type.  It is recommended that uses always
+   explicitly declare variables with the type :ctype:`json::Value`.
+
+.. cfunction:: json::Value::Value()
+
+   Constructs a new :ctype:`json::Value` of undefined type.
+
+.. cfunction:: bool json::Value::is_undefined()
+
+   Returns ``true`` if the type of the :ctype:`Value` is undefined.
+
+.. cfunction:: bool json::Value::is_null()
+
+   Returns ``true`` if the type of the :ctype:`Value` is :const:`JSON_NULL`.
+
+.. cfunction:: bool json::Value::is_string()
+
+   Returns ``true`` if the type of the :ctype:`Value` is :const:`JSON_STRING`.
+ 
+.. cfunction:: proxy json::Value::operator[](int index)
+
+   Returns a proxy object referencing a specific array element.
