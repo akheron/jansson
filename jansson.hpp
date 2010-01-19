@@ -150,9 +150,8 @@ namespace json {
 			// get the underlying json_t
 			inline json_t* as_json() const;
 
-		protected:
 			// take ownership of a json_t (does not increase reference count)
-			static inline Basic _take(json_t* json);
+			static inline Basic take_ownership(json_t* json);
 
 		private:
 			// internal value pointer
@@ -218,34 +217,6 @@ namespace json {
 
 		// create reference to value
 		explicit Value(json_t* json) : _private::ValueBase<_private::Basic>(json) {}
-
-		// construct Value from input
-		static inline Value from(const char* value);
-		static inline Value from(const std::string& value);
-		static inline Value from(bool value);
-		static inline Value from(signed int value);
-		static inline Value from(unsigned int value);
-		static inline Value from(signed short value);
-		static inline Value from(unsigned short value);
-		static inline Value from(signed long value);
-		static inline Value from(unsigned long value);
-		static inline Value from(float value);
-		static inline Value from(double value);
-
-		// create a new empty object
-		static inline Value object();
-
-		// create a new empty array
-		static inline Value array();
-
-		// create a new null value
-		static inline Value null();
-
-		// load a file as a JSON value
-		static inline Value load_file(const char* path, json_error_t* error = 0);
-
-		// load a string as a JSON value
-		static inline Value load_string(const char* string, json_error_t* error = 0);
 	};
 
 	// iterators over a JSON object
@@ -289,6 +260,34 @@ namespace json {
 		// iterator value
 		void* _iter;
 	};
+
+	// construct Value from input
+	inline Value from(const char* value);
+	inline Value from(const std::string& value);
+	inline Value from(bool value);
+	inline Value from(signed int value);
+	inline Value from(unsigned int value);
+	inline Value from(signed short value);
+	inline Value from(unsigned short value);
+	inline Value from(signed long value);
+	inline Value from(unsigned long value);
+	inline Value from(float value);
+	inline Value from(double value);
+
+	// create a new empty object
+	inline Value object();
+
+	// create a new empty array
+	inline Value array();
+
+	// create a new null value
+	inline Value null();
+
+	// load a file as a JSON value
+	inline Value load_file(const char* path, json_error_t* error = 0);
+
+	// load a string as a JSON value
+	inline Value load_string(const char* string, json_error_t* error = 0);
 
 } // namespace json 
 

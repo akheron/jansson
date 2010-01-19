@@ -300,7 +300,7 @@ namespace json {
 		}
 
 		// take ownership of a json_t (does not increase reference count)
-		Basic Basic::_take(json_t* json) {
+		Basic Basic::take_ownership(json_t* json) {
 			Basic v;
 			v._value = json;
 			return v;
@@ -328,76 +328,6 @@ namespace json {
 		}
 
 	} // namespace json::_private
-
-	// construct Value from input
-	Value Value::from(const char* value) {
-		return Value::_take(json_string(value));
-	}
-
-	Value Value::from(const std::string& value) {
-		return Value::from(value.c_str());
-	}
-
-	Value Value::from(bool value) {
-		return Value::_take(value ? json_true() : json_false());
-	}
-
-	Value Value::from(signed int value) {
-		return Value::_take(json_integer(value));
-	}
-
-	Value Value::from(unsigned int value) {
-		return Value::_take(json_integer(value));
-	}
-
-	Value Value::from(signed short value) {
-		return Value::_take(json_integer(value));
-	}
-
-	Value Value::from(unsigned short value) {
-		return Value::_take(json_integer(value));
-	}
-
-	Value Value::from(signed long value) {
-		return Value::_take(json_integer(value));
-	}
-
-	Value Value::from(unsigned long value) {
-		return Value::_take(json_integer(value));
-	}
-
-	Value Value::from(float value) {
-		return Value::_take(json_real(value));
-	}
-
-	Value Value::from(double value) {
-		return Value::_take(json_real(value));
-	}
-
-	// create a new empty object
-	Value Value::object() {
-		return Value::_take(json_object());
-	}
-
-	// create a new empty array
-	Value Value::array() {
-		return Value::_take(json_array());
-	}
-
-	// create a new null value
-	Value Value::null() {
-		return Value::_take(json_null());
-	}
-
-	// load a file as a JSON value
-	Value Value::load_file(const char* path, json_error_t* error) {
-		return Value::_take(json_load_file(path, error));
-	}
-
-	// load a string as a JSON value
-	Value Value::load_string(const char* string, json_error_t* error) {
-		return Value::_take(json_loads(string, error));
-	}
 	
 	// construct a new iterator for a given object
 	Iterator::Iterator(const Value& value) : _object(value), _iter(0) {
@@ -445,6 +375,76 @@ namespace json {
 		return value();
 	}
 
+	// construct Value from input
+	Value from(const char* value) {
+		return Value::take_ownership(json_string(value));
+	}
+
+	Value from(const std::string& value) {
+		return from(value.c_str());
+	}
+
+	Value from(bool value) {
+		return Value::take_ownership(value ? json_true() : json_false());
+	}
+
+	Value from(signed int value) {
+		return Value::take_ownership(json_integer(value));
+	}
+
+	Value from(unsigned int value) {
+		return Value::take_ownership(json_integer(value));
+	}
+
+	Value from(signed short value) {
+		return Value::take_ownership(json_integer(value));
+	}
+
+	Value from(unsigned short value) {
+		return Value::take_ownership(json_integer(value));
+	}
+
+	Value from(signed long value) {
+		return Value::take_ownership(json_integer(value));
+	}
+
+	Value from(unsigned long value) {
+		return Value::take_ownership(json_integer(value));
+	}
+
+	Value from(float value) {
+		return Value::take_ownership(json_real(value));
+	}
+
+	Value from(double value) {
+		return Value::take_ownership(json_real(value));
+	}
+
+	// create a new empty object
+	Value object() {
+		return Value::take_ownership(json_object());
+	}
+
+	// create a new empty array
+	Value array() {
+		return Value::take_ownership(json_array());
+	}
+
+	// create a new null value
+	Value null() {
+		return Value::take_ownership(json_null());
+	}
+
+	// load a file as a JSON value
+	Value load_file(const char* path, json_error_t* error) {
+		return Value::take_ownership(json_load_file(path, error));
+	}
+
+	// load a string as a JSON value
+	Value load_string(const char* string, json_error_t* error) {
+		return Value::take_ownership(json_loads(string, error));
+	}
+
 } // namespace json
 
 // stream JSON value out
@@ -466,6 +466,6 @@ std::istream& operator>>(std::istream& is, json::Value& value) {
 	while (is)
 		tmp << static_cast<char>(is.get());
 	// parse the buffered string
-	value = json::Value::load_string(tmp.str().c_str());
+	value = json::load_string(tmp.str().c_str());
 	return is;
 }
