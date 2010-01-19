@@ -9,7 +9,7 @@
 #	error "jansson-impl.hpp may only by included from jansson.hpp"
 #endif
 
-namespace jansson {
+namespace json {
 	namespace _private {
 		// assignment operator
 		template <typename _Base>
@@ -327,7 +327,7 @@ namespace jansson {
 			return json_object_get(_object, _key);
 		}
 
-	} // namespace jansson::_private
+	} // namespace json::_private
 
 	// construct Value from input
 	Value Value::from(const char* value) {
@@ -445,10 +445,10 @@ namespace jansson {
 		return value();
 	}
 
-} // namespace jansson
+} // namespace json
 
 // stream JSON value out
-std::ostream& operator<<(std::ostream& os, const jansson::Value& value) {
+std::ostream& operator<<(std::ostream& os, const json::Value& value) {
 	// get the temporary serialize string
 	char* tmp = value.save_string();
 	if (tmp != 0) {
@@ -460,12 +460,12 @@ std::ostream& operator<<(std::ostream& os, const jansson::Value& value) {
 }
 
 // read JSON value
-std::istream& operator>>(std::istream& is, jansson::Value& value) {
+std::istream& operator>>(std::istream& is, json::Value& value) {
 	// buffer the remaining bytes into a single string for Jansson
 	std::stringstream tmp;
 	while (is)
 		tmp << static_cast<char>(is.get());
 	// parse the buffered string
-	value = jansson::Value::load_string(tmp.str().c_str());
+	value = json::Value::load_string(tmp.str().c_str());
 	return is;
 }

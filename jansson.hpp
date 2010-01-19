@@ -14,8 +14,8 @@
 #include <sstream>
 #include <cstdlib>
 
-namespace jansson {
-	// include Jansson C library in the jansson namespace
+namespace json {
+	// include Jansson C library into the json namespace
 	#include <jansson.h>
 
 	class Iterator;
@@ -199,7 +199,7 @@ namespace jansson {
 			const char* _key;
 		};
 
-	} // namespace jansson::_private
+	} // namespace json::_private
 
 	// represents any JSON value
 	class Value : public _private::ValueBase<_private::Basic> {
@@ -290,13 +290,13 @@ namespace jansson {
 		void* _iter;
 	};
 
-} // namespace jansson
+} // namespace json 
 
 // stream JSON value out -- inefficient and not recommended for production use
-inline std::ostream& operator<<(std::ostream& os, const jansson::Value& value);
+inline std::ostream& operator<<(std::ostream& os, const json::Value& value);
 
 // read JSON value -- inefficient and not recommended for production use
-inline std::istream& operator>>(std::istream& is, jansson::Value& value);
+inline std::istream& operator>>(std::istream& is, json::Value& value);
 
 // include implementation code
 #define IN_JANSSON_HPP 1
