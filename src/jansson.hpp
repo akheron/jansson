@@ -1,8 +1,6 @@
-// janssonxx - C++ wrapper for jansson
+// Copyright (c) 2010 Sean Middleditch <sean@middleditch.us>
 //
-// author: Sean Middleditch <sean@middleditch.us>
-//
-// janssonxx is free software; you can redistribute it and/or modify
+// Jansson is free software; you can redistribute it and/or modify
 // it under the terms of the MIT license. See LICENSE for details.
 
 #if !defined(JANSSON_HPP)
