@@ -7,3 +7,4 @@ suites/api/test_load
 suites/api/test_number
 suites/api/test_object
 suites/api/test_simple
+suites/api/test_cpp
