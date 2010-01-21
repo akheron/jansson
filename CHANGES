@@ -3,13 +3,13 @@ Version 1.2 (in development)
 
 * New functions:
 
-  - ``json_equal()``: Test whether two JSON values are equal
-  - ``json_copy()`` and ``json_deep_copy()``: Make shallow and deep
-    copies of JSON values
+  - `json_equal()`: Test whether two JSON values are equal
+  - `json_copy()` and `json_deep_copy()`: Make shallow and deep copies
+    of JSON values
   - Add a version of all functions taking a string argument that
-    doesn't check for valid UTF-8: ``json_string_nocheck()``,
-    ``json_string_set_nocheck()``, ``json_object_set_nocheck()``,
-    ``json_object_set_new_nocheck()``
+    doesn't check for valid UTF-8: `json_string_nocheck()`,
+    `json_string_set_nocheck()`, `json_object_set_nocheck()`,
+    `json_object_set_new_nocheck()`
 
 * New encoding flags:
 
@@ -23,8 +23,7 @@ Version 1.2 (in development)
   - Revise and unify whitespace usage in encoder: Add spaces between
     array and object items, never append newline to output.
   - Remove const qualifier from the ``json_t`` parameter in
-    ``json_string_set()``, ``json_integer_set()`` and
-    ``json_real_set``.
+    `json_string_set()`, `json_integer_set()` and `json_real_set`.
   - Use ``int32_t`` internally for representing Unicode code points
     (int is not enough on all platforms)
 
@@ -54,7 +53,7 @@ Version 1.1.2
 Released 2009-11-08
 
 * Fix a bug where an error message was not produced if the input file
-  could not be opened in ``json_load_file()``
+  could not be opened in `json_load_file()`
 * Fix an assertion failure in decoder caused by a minus sign without a
   digit after it
 * Remove an unneeded include of ``stdint.h`` in ``jansson.h``
@@ -131,7 +130,7 @@ Version 1.0.1
 
 Released 2009-09-04
 
-* Fixed broken ``json_is_boolean()``
+* Fixed broken `json_is_boolean()`
 
 
 Version 1.0
