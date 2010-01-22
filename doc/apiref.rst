@@ -785,7 +785,30 @@ namespace.
 .. cfunction:: bool json::Value::is_string()
 
    Returns ``true`` if the type of the :ctype:`Value` is :const:`JSON_STRING`.
+
+.. cfunction:: proxy json::Value::at(int index)
+
+   Returns a proxy object referencing a specific array element.
  
 .. cfunction:: proxy json::Value::operator[](int index)
 
-   Returns a proxy object referencing a specific array element.
+   Synonym for `json::Value::at(int index)`.
+
+.. cfunction:: proxy json::Value::get(const char* key)
+
+   Returns a proxy object referencing a specific object property.
+ 
+.. cfunction:: proxy json::Value::operator[](const char* key)
+
+   Synonym for `json::Value::get(const char*)`.
+
+.. cfunction:: const char* json::Value::as_cstring()
+
+   Fetch the value as a C string, if the stored value is of type
+   :const:`JSON_STRING`.  Otherwise, :const:`NULL` is returned.
+
+.. cfunction:: std::string json::Value::as_string()
+
+   Fetch the value as a C++ string, if the stored value is of type
+   :const:`JSON_STRING`.  An empty string is returned if the value
+   is not a string type.
