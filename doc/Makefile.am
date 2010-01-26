@@ -16,4 +16,4 @@ uninstall-local:
 
 clean-local:
 	rm -rf _build
-	rm -f ext/refcounting.pyc changes.rst
+	rm -f ext/refcounting.pyc
