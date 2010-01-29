@@ -1,3 +1,5 @@
+EXTRA_DIST = run
+
 check_PROGRAMS = \
 	test_array \
 	test_equal \

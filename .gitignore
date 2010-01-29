@@ -22,3 +22,4 @@ missing
 *.la
 stamp-h1
 *.pyc
+*.pc

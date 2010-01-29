@@ -17,7 +17,8 @@ run_test() {
     else
         $test_runner $suite_builddir/${test_name%.c} \
             >$test_log/stdout \
-            2>$test_log/stderr
+            2>$test_log/stderr \
+            || return 1
         valgrind_check $test_log/stderr || return 1
     fi
 }

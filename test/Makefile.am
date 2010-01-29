@@ -1,5 +1,5 @@
 SUBDIRS = bin suites
-EXTRA_DIST = scripts
+EXTRA_DIST = scripts run-suites
 
 TESTS = run-suites
 TESTS_ENVIRONMENT = \

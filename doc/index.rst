@@ -35,6 +35,7 @@ Contents
    gettingstarted
    tutorial
    apiref
+   changes
 
 
 Indices and Tables

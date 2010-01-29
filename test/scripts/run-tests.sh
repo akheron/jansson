@@ -29,7 +29,7 @@ for test_path in $suite_srcdir/*; do
     rm -rf $test_log
     mkdir -p $test_log
     if [ $VERBOSE -eq 1 ]; then
-        echo -n "$name... "
+        echo -n "$test_name... "
     fi
 
     if run_test; then

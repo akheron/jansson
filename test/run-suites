@@ -14,7 +14,7 @@ done
 if [ -z "$SUITES" ]; then
     suitedirs=$top_srcdir/test/suites/*
     for suitedir in $suitedirs; do
-        if [ -x $suitedir/run ]; then
+        if [ -d $suitedir ]; then
             SUITES="$SUITES `basename $suitedir`"
         fi
     done
