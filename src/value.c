@@ -190,6 +190,17 @@ void *json_object_iter(json_t *json)
     return hashtable_iter(&object->hashtable);
 }
 
+void *json_object_iter_at(json_t *json, const char *key)
+{
+    json_object_t *object;
+
+    if(!key || !json_is_object(json))
+        return NULL;
+
+    object = json_to_object(json);
+    return hashtable_iter_at(&object->hashtable, key);
+}
+
 void *json_object_iter_next(json_t *json, void *iter)
 {
     json_object_t *object;
@@ -215,6 +226,19 @@ json_t *json_object_iter_value(void *iter)
         return NULL;
 
     return (json_t *)hashtable_iter_value(iter);
+}
+
+int json_object_iter_set_new(json_t *json, void *iter, json_t *value)
+{
+    json_object_t *object;
+
+    if(!json_is_object(json) || !iter || !value)
+        return -1;
+
+    object = json_to_object(json);
+    hashtable_iter_set(&object->hashtable, iter, value);
+
+    return 0;
 }
 
 static int json_object_equal(json_t *object1, json_t *object2)

@@ -318,6 +318,22 @@ void *hashtable_iter(hashtable_t *hashtable)
     return hashtable_iter_next(hashtable, &hashtable->list);
 }
 
+void *hashtable_iter_at(hashtable_t *hashtable, const void *key)
+{
+    pair_t *pair;
+    unsigned int hash;
+    bucket_t *bucket;
+
+    hash = hashtable->hash_key(key);
+    bucket = &hashtable->buckets[hash % num_buckets(hashtable)];
+
+    pair = hashtable_find_pair(hashtable, bucket, key, hash);
+    if(!pair)
+        return NULL;
+
+    return &pair->list;
+}
+
 void *hashtable_iter_next(hashtable_t *hashtable, void *iter)
 {
     list_t *list = (list_t *)iter;
@@ -336,4 +352,14 @@ void *hashtable_iter_value(void *iter)
 {
     pair_t *pair = list_to_pair((list_t *)iter);
     return pair->value;
+}
+
+void hashtable_iter_set(hashtable_t *hashtable, void *iter, void *value)
+{
+    pair_t *pair = list_to_pair((list_t *)iter);
+
+    if(hashtable->free_value)
+        hashtable->free_value(pair->value);
+
+    pair->value = value;
 }

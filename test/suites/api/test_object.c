@@ -258,6 +258,36 @@ static void test_iterators()
     if(json_object_iter_next(object, iter) != NULL)
         fail("able to iterate over the end");
 
+    if(json_object_iter_at(object, "foo"))
+        fail("json_object_iter_at() succeeds for non-existent key");
+
+    iter = json_object_iter_at(object, "b");
+    if(!iter)
+        fail("json_object_iter_at() fails for an existing key");
+
+    if(strcmp(json_object_iter_key(iter), "b"))
+        fail("iterating failed: wrong key");
+    if(json_object_iter_value(iter) != bar)
+        fail("iterating failed: wrong value");
+
+    iter = json_object_iter_next(object, iter);
+    if(!iter)
+        fail("unable to increment iterator");
+    if(strcmp(json_object_iter_key(iter), "c"))
+        fail("iterating failed: wrong key");
+    if(json_object_iter_value(iter) != baz)
+        fail("iterating failed: wrong value");
+
+    if(json_object_iter_set(object, iter, bar))
+        fail("unable to set value at iterator");
+
+    if(strcmp(json_object_iter_key(iter), "c"))
+        fail("json_object_iter_key() fails after json_object_iter_set()");
+    if(json_object_iter_value(iter) != bar)
+        fail("json_object_iter_value() fails after json_object_iter_set()");
+    if(json_object_get(object, "c") != bar)
+        fail("json_object_get() fails after json_object_iter_set()");
+
     json_decref(object);
     json_decref(foo);
     json_decref(bar);

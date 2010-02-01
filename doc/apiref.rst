@@ -493,6 +493,16 @@ The following functions implement an iteration protocol for objects:
    Returns an opaque iterator which can be used to iterate over all
    key-value pairs in *object*, or *NULL* if *object* is empty.
 
+.. cfunction:: void *json_object_iter_at(json_t *object, const char *key)
+
+   Like :cfunc:`json_object_iter()`, but returns an iterator to the
+   key-value pair in *object* whose key is equal to *key*, or NULL if
+   *key* is not found in *object*. Iterating forward to the end of
+   *object* only yields all key-value pairs of the object if *key*
+   happens to be the first key in the underlying hash table.
+
+   .. versionadded:: 1.3
+
 .. cfunction:: void *json_object_iter_next(json_t *object, void *iter)
 
    Returns an iterator pointing to the next key-value pair in *object*
@@ -508,6 +518,21 @@ The following functions implement an iteration protocol for objects:
    .. refcounting:: borrow
 
    Extract the associated value from *iter*.
+
+.. cfunction:: int json_object_iter_set(json_t *object, void *iter, json_t *value)
+
+   Set the value of the key-value pair in *object*, that is pointed to
+   by *iter*, to *value*.
+
+   .. versionadded:: 1.3
+
+.. cfunction:: int json_object_iter_set_new(json_t *object, void *iter, json_t *value)
+
+   Like :cfunc:`json_object_iter_set()`, but steals the reference to
+   *value*. This is useful when *value* is newly created and not used
+   after the call.
+
+   .. versionadded:: 1.3
 
 The iteration protocol can be used for example as follows::
 

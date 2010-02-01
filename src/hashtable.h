@@ -161,6 +161,17 @@ void hashtable_clear(hashtable_t *hashtable);
 void *hashtable_iter(hashtable_t *hashtable);
 
 /**
+ * hashtable_iter - Return an iterator at a specific key
+ *
+ * @hashtable: The hashtable object
+ * @key: The key that the iterator should point to
+ *
+ * Like hashtable_iter() but returns an iterator pointing to a
+ * specific key.
+ */
+void *hashtable_iter_at(hashtable_t *hashtable, const void *key);
+
+/**
  * hashtable_iter_next - Advance an iterator
  *
  * @hashtable: The hashtable object
@@ -184,5 +195,13 @@ void *hashtable_iter_key(void *iter);
  * @iter: The iterator
  */
 void *hashtable_iter_value(void *iter);
+
+/**
+ * hashtable_iter_set - Set the value pointed by an iterator
+ *
+ * @iter: The iterator
+ * @value: The value to set
+ */
+void hashtable_iter_set(hashtable_t *hashtable, void *iter, void *value);
 
 #endif
