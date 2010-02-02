@@ -8,7 +8,7 @@
 #endif
 
 namespace json {
-    namespace _private {
+    namespace detail {
         // assignment operator
         template <typename _Base>
         ValueBase<_Base>& ValueBase<_Base>::operator=(const Value& value) {
@@ -325,7 +325,7 @@ namespace json {
             return json_object_get(_object, _key);
         }
 
-    } // namespace json::_private
+    } // namespace json::detail
 
     // construct Value::Value input
     Value::Value(const char* value) {
@@ -378,7 +378,7 @@ namespace json {
     }
 
     // construct a new iterator for a given object
-    Iterator::Iterator(const _private::ValueBase<_private::PropertyProxy>& value) :
+    Iterator::Iterator(const detail::ValueBase<detail::PropertyProxy>& value) :
         _object(value.as_json()), _iter(0) {
         _iter = json_object_iter(_object.as_json());
     }

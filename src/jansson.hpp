@@ -20,7 +20,7 @@ namespace json {
     class Value;
 
     // implementation details; do not use directly
-    namespace _private {
+    namespace detail {
         class ElementProxy;
         class PropertyProxy;
 
@@ -196,10 +196,10 @@ namespace json {
             const char* _key;
         };
 
-    } // namespace json::_private
+    } // namespace json::detail
 
     // represents any JSON value
-    class Value : public _private::ValueBase<_private::Basic> {
+    class Value : public detail::ValueBase<detail::Basic> {
     public:
         // construct Value from input
         explicit inline Value(const char* value);
@@ -215,19 +215,19 @@ namespace json {
         explicit inline Value(double value);
 
         // empty constructor
-        Value() : _private::ValueBase<_private::Basic>() {}
+        Value() : detail::ValueBase<detail::Basic>() {}
 
         // copy constructor for base
-        Value(const _private::Basic& value) : _private::ValueBase<_private::Basic>(value) {}
+        Value(const detail::Basic& value) : detail::ValueBase<detail::Basic>(value) {}
 
         // copy constructor for base
-        Value(const _private::ValueBase<_private::Basic>& value) : _private::ValueBase<_private::Basic>(value) {}
+        Value(const detail::ValueBase<detail::Basic>& value) : detail::ValueBase<detail::Basic>(value) {}
 
         // copy constructor
-        Value(const Value& value) : _private::ValueBase<_private::Basic>(value) {}
+        Value(const Value& value) : detail::ValueBase<detail::Basic>(value) {}
 
         // create reference to value
-        explicit Value(json_t* json) : _private::ValueBase<_private::Basic>(json) {}
+        explicit Value(json_t* json) : detail::ValueBase<detail::Basic>(json) {}
     };
 
     // iterators over a JSON object
@@ -237,7 +237,7 @@ namespace json {
         inline Iterator(const Value& value);
 
         // construct a new iterator for a given object
-        inline Iterator(const _private::ValueBase<_private::PropertyProxy>& value);
+        inline Iterator(const detail::ValueBase<detail::PropertyProxy>& value);
 
         // increment iterator
         inline void next();
