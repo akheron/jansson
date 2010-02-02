@@ -1,4 +1,5 @@
 // Copyright (c) 2010 Sean Middleditch <sean@middleditch.us>
+// Copyright (c) 2010 Petri Lehtinen <petri@digip.org>
 //
 // Jansson is free software; you can redistribute it and/or modify
 // it under the terms of the MIT license. See LICENSE for details.
