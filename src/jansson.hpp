@@ -3,8 +3,8 @@
 // Jansson is free software; you can redistribute it and/or modify
 // it under the terms of the MIT license. See LICENSE for details.
 
-#if !defined(JANSSON_HPP)
-#define JANSSON_HPP 1
+#ifndef JANSSON_HPP
+#define JANSSON_HPP
 
 #include <string>
 #include <ostream>
@@ -296,8 +296,8 @@ inline std::ostream& operator<<(std::ostream& os, const json::Value& value);
 inline std::istream& operator>>(std::istream& is, json::Value& value);
 
 // include implementation code
-#define IN_JANSSON_HPP 1
-#include "jansson-impl.hpp"
+#define IN_JANSSON_HPP
+#include "jansson.ipp"
 #undef IN_JANSSON_HPP
 
 #endif // defined(JANSSON_HPP)

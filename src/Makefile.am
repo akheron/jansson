@@ -1,4 +1,4 @@
-include_HEADERS = jansson.h jansson.hpp jansson-impl.hpp
+include_HEADERS = jansson.h jansson.hpp jansson.ipp
 
 lib_LTLIBRARIES = libjansson.la
 libjansson_la_SOURCES = \
