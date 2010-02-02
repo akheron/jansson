@@ -6,16 +6,29 @@
 # it under the terms of the MIT license. See LICENSE for details.
 
 is_test() {
-    [ "${test_name%.c}" != "$test_name" ] && return 0
-    [ -x $test_path -a ! -f $test_path.c ] && return 0
-    return 1
+    case "$test_name" in
+        *.c|*.cpp|check-exports)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
 }
 
 run_test() {
-    if [ -x $test_path ]; then
+    if [ "$test_name" = "check-exports" ]; then
         test_log=$test_log $test_path >$test_log/stdout 2>$test_log/stderr
     else
-        $test_runner $suite_builddir/${test_name%.c} \
+        case "$test_name" in
+            *.c)
+                test_bin=${test_name%.c}
+                ;;
+            *.cpp)
+                test_bin=${test_name%.cpp}
+                ;;
+        esac
+        $test_runner $suite_builddir/$test_bin \
             >$test_log/stdout \
             2>$test_log/stderr \
             || return 1
