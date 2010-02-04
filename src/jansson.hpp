@@ -11,6 +11,11 @@
 #include <ostream>
 #include <istream>
 #include <sstream>
+
+// Included so that standard functions don't end up in namespace json
+#include <cstdio>
+
+// For free()
 #include <cstdlib>
 
 namespace json {
