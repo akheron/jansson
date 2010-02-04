@@ -1,6 +1,5 @@
 #include <iostream>
 #include <iomanip>
-#include <malloc.h>
 
 #include "jansson.hpp"
 
@@ -23,7 +22,7 @@
 #define ASSERT_FALSE(p, m) ASSERT_OP(p, true, !=, m)
 
 int main() {
-    json::Value e1(json::load_file("suites/api/test.json"));
+    json::Value e1(json::load_file("suites/api/test_cpp.json"));
     json::Value e2(e1);
     json::Value e3;
     json::Value e4(json::load_string("{\"foo\": true, \"bar\": \"test\"}"));
