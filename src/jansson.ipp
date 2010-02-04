@@ -274,6 +274,11 @@ namespace json {
             return json_dump_file(_Base::as_json(), path, flags);
         }
 
+        template <typename _Base>
+        int ValueBase<_Base>::dump_file(const std::string& path, int flags) const {
+            return dump_file(path.c_str(), flags);
+        }
+
         // write the value to a string (caller must deallocate with free()!)
         template <typename _Base>
         char* ValueBase<_Base>::dumps(int flags) const {
@@ -439,9 +444,17 @@ namespace json {
         return Value::take_ownership(json_load_file(path, error));
     }
 
+    Value load_file(const std::string& path, json_error_t* error) {
+        return load_file(path.c_str(), error);
+    }
+
     // load a string as a JSON value
     Value loads(const char* string, json_error_t* error) {
         return Value::take_ownership(json_loads(string, error));
+    }
+
+    Value loads(const std::string& string, json_error_t* error) {
+        return loads(string.c_str(), error);
     }
 
 } // namespace json

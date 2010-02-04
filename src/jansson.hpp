@@ -128,6 +128,7 @@ namespace json {
 
             // write the value to a file
             inline int dump_file(const char* path, int flags = 0) const;
+            inline int dump_file(const std::string& path, int flags = 0) const;
 
             // write the value to a string (caller must deallocate with free()!)
             inline char* dumps(int flags = 0) const;
@@ -289,9 +290,11 @@ namespace json {
 
     // load a file as a JSON value
     inline Value load_file(const char* path, json_error_t* error = 0);
+    inline Value load_file(const std::string& path, json_error_t* error = 0);
 
     // load a string as a JSON value
     inline Value loads(const char* string, json_error_t* error = 0);
+    inline Value loads(const std::string& string, json_error_t* error = 0);
 
 } // namespace json
 
