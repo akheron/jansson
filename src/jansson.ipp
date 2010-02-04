@@ -270,13 +270,13 @@ namespace json {
 
         // write the value to a file
         template <typename _Base>
-        int ValueBase<_Base>::save_file(const char* path, int flags) const {
+        int ValueBase<_Base>::dump_file(const char* path, int flags) const {
             return json_dump_file(_Base::as_json(), path, flags);
         }
 
         // write the value to a string (caller must deallocate with free()!)
         template <typename _Base>
-        char* ValueBase<_Base>::save_string(int flags) const {
+        char* ValueBase<_Base>::dumps(int flags) const {
             return json_dumps(_Base::as_json(), flags);
         }
 
@@ -440,7 +440,7 @@ namespace json {
     }
 
     // load a string as a JSON value
-    Value load_string(const char* string, json_error_t* error) {
+    Value loads(const char* string, json_error_t* error) {
         return Value::take_ownership(json_loads(string, error));
     }
 
@@ -449,7 +449,7 @@ namespace json {
 // stream JSON value out
 std::ostream& operator<<(std::ostream& os, const json::Value& value) {
     // get the temporary serialize string
-    char* tmp = value.save_string();
+    char* tmp = value.dumps();
     if (tmp != 0) {
         // stream temp string out and release it
         os << tmp;
@@ -465,6 +465,6 @@ std::istream& operator>>(std::istream& is, json::Value& value) {
     while (is)
         tmp << static_cast<char>(is.get());
     // parse the buffered string
-    value = json::load_string(tmp.str().c_str());
+    value = json::loads(tmp.str().c_str());
     return is;
 }

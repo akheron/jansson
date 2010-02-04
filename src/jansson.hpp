@@ -127,10 +127,10 @@ namespace json {
             inline _Base& insert_at(unsigned int index, const Value& value);
 
             // write the value to a file
-            inline int save_file(const char* path, int flags = 0) const;
+            inline int dump_file(const char* path, int flags = 0) const;
 
             // write the value to a string (caller must deallocate with free()!)
-            inline char* save_string(int flags = 0) const;
+            inline char* dumps(int flags = 0) const;
         };
 
         // represents any JSON value, private base
@@ -291,7 +291,7 @@ namespace json {
     inline Value load_file(const char* path, json_error_t* error = 0);
 
     // load a string as a JSON value
-    inline Value load_string(const char* string, json_error_t* error = 0);
+    inline Value loads(const char* string, json_error_t* error = 0);
 
 } // namespace json
 

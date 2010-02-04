@@ -25,7 +25,7 @@ int main() {
     json::Value e1(json::load_file("suites/api/test_cpp.json"));
     json::Value e2(e1);
     json::Value e3;
-    json::Value e4(json::load_string("{\"foo\": true, \"bar\": \"test\"}"));
+    json::Value e4(json::loads("{\"foo\": true, \"bar\": \"test\"}"));
 
     ASSERT_TRUE(e1.is_object(), "e1 is not an object");
     ASSERT_TRUE(e2.is_object(), "e2 is not an object");
@@ -125,7 +125,7 @@ int main() {
     json::Value e12(json::object());
     e12.set_key("foo", json::Value("test"));
     e12.set_key("bar", json::Value(3));
-    char* out_cstr = e12.save_string(0);
+    char* out_cstr = e12.dumps(0);
     std::string out(out_cstr);
     free(out_cstr);
     ASSERT_EQ(out, "{\"bar\": 3, \"foo\": \"test\"}", "object did not serialize as expected");
