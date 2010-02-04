@@ -22,7 +22,8 @@
 #define ASSERT_FALSE(p, m) ASSERT_OP(p, true, !=, m)
 
 int main() {
-    json::Value e1(json::load_file("suites/api/test_cpp.json"));
+    std::string top_srcdir = getenv("top_srcdir");
+    json::Value e1(json::load_file(top_srcdir + "/test/suites/api/test_cpp.json"));
     json::Value e2(e1);
     json::Value e3;
     json::Value e4(json::loads("{\"foo\": true, \"bar\": \"test\"}"));
