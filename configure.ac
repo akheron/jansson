@@ -15,6 +15,7 @@ AC_PROG_LIBTOOL
 # Checks for header files.
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_TYPE_INT32_T
 
 # Checks for library functions.
 
