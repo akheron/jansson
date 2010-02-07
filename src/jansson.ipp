@@ -8,6 +8,8 @@
 #error "jansson.ipp may only be included from jansson.hpp"
 #endif
 
+#include <string.h>
+
 namespace json {
     namespace detail {
         // assignment operator
@@ -310,6 +312,20 @@ namespace json {
             return v;
         }
 
+        ElementProxy::ElementProxy(json_t* array, unsigned int index)
+            : _array(array), _index(index) {
+            json_incref(_array);
+        }
+
+        ElementProxy::ElementProxy(const ElementProxy& other) 
+            : _array(other._array), _index(other._index) {
+            json_incref(_array);
+        }
+
+        ElementProxy::~ElementProxy() {
+            json_decref(_array);
+        }
+
         // assign value to proxied array element
         ElementProxy& ElementProxy::operator=(const Value& value) {
             json_array_set(_array, _index, value.as_json());
@@ -319,6 +335,23 @@ namespace json {
         // get the proxied element
         json_t* ElementProxy::as_json() const {
             return json_array_get(_array, _index);
+        }
+
+        PropertyProxy::PropertyProxy(json_t* object, const char* key)
+            : _object(object) {
+            _key = strdup(key);
+            json_incref(_object);
+        }
+
+        PropertyProxy::PropertyProxy(const PropertyProxy& other)
+            : _object(other._object) {
+            _key = strdup(other._key);
+            json_incref(_object);
+        }
+
+        PropertyProxy::~PropertyProxy() {
+            free(_key);
+            json_decref(_object);
         }
 
         // assign value to proxied object property
