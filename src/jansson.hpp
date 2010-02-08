@@ -201,6 +201,9 @@ namespace json {
             // array object we wrap
             json_t* _object;
 
+            // iterator pointing to property
+            void* _iter;
+
             // key of property
             char* _key;
         };
