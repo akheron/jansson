@@ -25,9 +25,16 @@ static inline void json_init(json_t *json, json_type type)
 
 /*** object ***/
 
-static unsigned int hash_string(const void *key)
+/* This macro just returns a pointer that's a few bytes backwards from
+   string. This makes it possible to pass a pointer to object_key_t
+   when only the string inside it is used, without actually creating
+   an object_key_t instance. */
+#define string_to_key(string)  container_of(string, object_key_t, key)
+
+static unsigned int hash_key(const void *ptr)
 {
-    const char *str = (const char *)key;
+    const char *str = ((const object_key_t *)ptr)->key;
+
     unsigned int hash = 5381;
     unsigned int c;
 
@@ -40,9 +47,10 @@ static unsigned int hash_string(const void *key)
     return hash;
 }
 
-static int string_equal(const void *key1, const void *key2)
+static int key_equal(const void *ptr1, const void *ptr2)
 {
-    return strcmp((const char *)key1, (const char *)key2) == 0;
+    return strcmp(((const object_key_t *)ptr1)->key,
+                  ((const object_key_t *)ptr2)->key) == 0;
 }
 
 static void value_decref(void *value)
@@ -57,13 +65,14 @@ json_t *json_object(void)
         return NULL;
     json_init(&object->json, JSON_OBJECT);
 
-    if(hashtable_init(&object->hashtable, hash_string, string_equal,
+    if(hashtable_init(&object->hashtable, hash_key, key_equal,
                       free, value_decref))
     {
         free(object);
         return NULL;
     }
 
+    object->serial = 0;
     object->visited = 0;
 
     return &object->json;
@@ -94,12 +103,13 @@ json_t *json_object_get(const json_t *json, const char *key)
         return NULL;
 
     object = json_to_object(json);
-    return hashtable_get(&object->hashtable, key);
+    return hashtable_get(&object->hashtable, string_to_key(key));
 }
 
 int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value)
 {
     json_object_t *object;
+    object_key_t *k;
 
     if(!key || !value)
         return -1;
@@ -111,7 +121,14 @@ int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value)
     }
     object = json_to_object(json);
 
-    if(hashtable_set(&object->hashtable, strdup(key), value))
+    k = malloc(sizeof(object_key_t) + strlen(key) + 1);
+    if(!k)
+        return -1;
+
+    k->serial = object->serial++;
+    strcpy(k->key, key);
+
+    if(hashtable_set(&object->hashtable, k, value))
     {
         json_decref(value);
         return -1;
@@ -139,7 +156,7 @@ int json_object_del(json_t *json, const char *key)
         return -1;
 
     object = json_to_object(json);
-    return hashtable_del(&object->hashtable, key);
+    return hashtable_del(&object->hashtable, string_to_key(key));
 }
 
 int json_object_clear(json_t *json)
@@ -198,7 +215,7 @@ void *json_object_iter_at(json_t *json, const char *key)
         return NULL;
 
     object = json_to_object(json);
-    return hashtable_iter_at(&object->hashtable, key);
+    return hashtable_iter_at(&object->hashtable, string_to_key(key));
 }
 
 void *json_object_iter_next(json_t *json, void *iter)
@@ -212,12 +229,20 @@ void *json_object_iter_next(json_t *json, void *iter)
     return hashtable_iter_next(&object->hashtable, iter);
 }
 
+const object_key_t *jsonp_object_iter_fullkey(void *iter)
+{
+    if(!iter)
+        return NULL;
+
+    return hashtable_iter_key(iter);
+}
+
 const char *json_object_iter_key(void *iter)
 {
     if(!iter)
         return NULL;
 
-    return (const char *)hashtable_iter_key(iter);
+    return jsonp_object_iter_fullkey(iter)->key;
 }
 
 json_t *json_object_iter_value(void *iter)

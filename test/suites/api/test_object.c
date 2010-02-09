@@ -402,6 +402,41 @@ static void test_misc()
     json_decref(object);
 }
 
+static void test_preserve_order()
+{
+    json_t *object;
+    char *result;
+
+    const char *expected = "{\"foobar\": 1, \"bazquux\": 6, \"lorem ipsum\": 3, \"sit amet\": 5, \"helicopter\": 7}";
+
+    object = json_object();
+
+    json_object_set_new(object, "foobar", json_integer(1));
+    json_object_set_new(object, "bazquux", json_integer(2));
+    json_object_set_new(object, "lorem ipsum", json_integer(3));
+    json_object_set_new(object, "dolor", json_integer(4));
+    json_object_set_new(object, "sit amet", json_integer(5));
+
+    /* changing a value should preserve the order */
+    json_object_set_new(object, "bazquux", json_integer(6));
+
+    /* deletion shouldn't change the order of others */
+    json_object_del(object, "dolor");
+
+    /* add a new item just to make sure */
+    json_object_set_new(object, "helicopter", json_integer(7));
+
+    result = json_dumps(object, JSON_PRESERVE_ORDER);
+
+    if(strcmp(expected, result) != 0) {
+        fprintf(stderr, "%s != %s", expected, result);
+        fail("JSON_PRESERVE_ORDER doesn't work");
+    }
+
+    free(result);
+    json_decref(object);
+}
+
 int main()
 {
     test_misc();
@@ -410,6 +445,7 @@ int main()
     test_circular();
     test_set_nocheck();
     test_iterators();
+    test_preserve_order();
 
     return 0;
 }

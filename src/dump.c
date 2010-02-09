@@ -154,9 +154,16 @@ static int dump_string(const char *str, int ascii, dump_func dump, void *data)
     return dump("\"", 1, data);
 }
 
-static int object_key_cmp(const void *key1, const void *key2)
+static int object_key_compare_keys(const void *key1, const void *key2)
 {
-    return strcmp(*(const char **)key1, *(const char **)key2);
+    return strcmp((*(const object_key_t **)key1)->key,
+                  (*(const object_key_t **)key2)->key);
+}
+
+static int object_key_compare_serials(const void *key1, const void *key2)
+{
+    return (*(const object_key_t **)key1)->serial -
+           (*(const object_key_t **)key2)->serial;
 }
 
 static int do_dump(const json_t *json, unsigned long flags, int depth,
@@ -290,36 +297,40 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
             if(dump_indent(flags, depth + 1, 0, dump, data))
                 return -1;
 
-            if(flags & JSON_SORT_KEYS)
+            if(flags & JSON_SORT_KEYS || flags & JSON_PRESERVE_ORDER)
             {
-                /* Sort keys */
-
-                const char **keys;
+                const object_key_t **keys;
                 unsigned int size;
                 unsigned int i;
+                int (*cmp_func)(const void *, const void *);
 
                 size = json_object_size(json);
-                keys = malloc(size * sizeof(const char *));
+                keys = malloc(size * sizeof(object_key_t *));
                 if(!keys)
                     return -1;
 
                 i = 0;
                 while(iter)
                 {
-                    keys[i] = json_object_iter_key(iter);
+                    keys[i] = jsonp_object_iter_fullkey(iter);
                     iter = json_object_iter_next((json_t *)json, iter);
                     i++;
                 }
                 assert(i == size);
 
-                qsort(keys, size, sizeof(const char *), object_key_cmp);
+                if(flags & JSON_SORT_KEYS)
+                    cmp_func = object_key_compare_keys;
+                else
+                    cmp_func = object_key_compare_serials;
+
+                qsort(keys, size, sizeof(object_key_t *), cmp_func);
 
                 for(i = 0; i < size; i++)
                 {
                     const char *key;
                     json_t *value;
 
-                    key = keys[i];
+                    key = keys[i]->key;
                     value = json_object_get(json, key);
                     assert(value);
 
