@@ -39,9 +39,11 @@ json_object_del
 json_object_clear
 json_object_update
 json_object_iter
+json_object_iter_at
 json_object_iter_next
 json_object_iter_key
 json_object_iter_value
+json_object_iter_set_new
 json_dumps
 json_dumpf
 json_dump_file
