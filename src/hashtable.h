@@ -161,7 +161,7 @@ void hashtable_clear(hashtable_t *hashtable);
 void *hashtable_iter(hashtable_t *hashtable);
 
 /**
- * hashtable_iter - Return an iterator at a specific key
+ * hashtable_iter_at - Return an iterator at a specific key
  *
  * @hashtable: The hashtable object
  * @key: The key that the iterator should point to
