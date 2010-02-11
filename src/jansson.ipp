@@ -8,6 +8,8 @@
 #error "jansson.ipp may only be included from jansson.hpp"
 #endif
 
+#include <string.h>
+
 namespace json {
     namespace detail {
         // assignment operator
@@ -310,6 +312,20 @@ namespace json {
             return v;
         }
 
+        ElementProxy::ElementProxy(json_t* array, unsigned int index)
+            : _array(array), _index(index) {
+            json_incref(_array);
+        }
+
+        ElementProxy::ElementProxy(const ElementProxy& other) 
+            : _array(other._array), _index(other._index) {
+            json_incref(_array);
+        }
+
+        ElementProxy::~ElementProxy() {
+            json_decref(_array);
+        }
+
         // assign value to proxied array element
         ElementProxy& ElementProxy::operator=(const Value& value) {
             json_array_set(_array, _index, value.as_json());
@@ -321,14 +337,40 @@ namespace json {
             return json_array_get(_array, _index);
         }
 
+        PropertyProxy::PropertyProxy(json_t* object, const char* key)
+            : _object(object), _key(0) {
+            _iter = json_object_iter_at(object, key);
+            if(!_iter)
+                _key = strdup(key);
+            json_incref(_object);
+        }
+
+        PropertyProxy::PropertyProxy(const PropertyProxy& other)
+            : _object(other._object), _iter(other._iter), _key(0) {
+            if(other._key)
+                _key = strdup(other._key);
+            json_incref(_object);
+        }
+
+        PropertyProxy::~PropertyProxy() {
+            free(_key);
+            json_decref(_object);
+        }
+
         // assign value to proxied object property
         PropertyProxy& PropertyProxy::operator=(const Value& value) {
-            json_object_set(_object, _key, value.as_json());
+            if(_iter)
+                json_object_iter_set(_object, _iter, value.as_json());
+            else
+                json_object_set(_object, _key, value.as_json());
             return *this;
         }
 
         json_t* PropertyProxy::as_json() const {
-            return json_object_get(_object, _key);
+            if(_iter)
+                return json_object_iter_value(_iter);
+            else
+                return json_object_get(_object, _key);
         }
 
     } // namespace json::detail
