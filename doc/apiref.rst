@@ -819,17 +819,25 @@ namespace.
 
    Returns ``true`` if the type of the :ctype:`Value` is :const:`JSON_STRING`.
 
-.. cfunction:: proxy json::Value::at(int index)
+.. cfunction:: bool json::Value::is_object()
 
-   Returns a proxy object referencing a specific array element.
- 
-.. cfunction:: proxy json::Value::operator[](int index)
+   Returns ``true`` if the type of the :ctype:`Value` is :const:`JSON_OBJECT`.
 
-   Synonym for `json::Value::at(int index)`.
+.. cfunction:: bool json::Value::is_array()
 
-.. cfunction:: proxy json::Value::get(const char* key)
+   Returns ``true`` if the type of the :ctype:`Value` is :const:`JSON_ARRAY`.
 
-   Returns a proxy object referencing a specific object property.
+.. cfunction:: bool json::Value::is_real()
+
+   Returns ``true`` if the type of the :ctype:`Value` is :const:`JSON_REAL`.
+
+.. cfunction:: bool json::Value::is_number()
+
+   Returns ``true`` if the type of the :ctype:`Value` is :const:`JSON_REAL`.
+
+.. cfunction:: bool json::Value::is_integer()
+
+   Returns ``true`` if the type of the :ctype:`Value` is :const:`JSON_INTEGER`.
  
 .. cfunction:: proxy json::Value::operator[](const char* key)
 
@@ -845,3 +853,73 @@ namespace.
    Fetch the value as a C++ string, if the stored value is of type
    :const:`JSON_STRING`.  An empty string is returned if the value
    is not a string type.
+
+.. cfunction:: int json::Value::as_integer()
+
+   Fetch the value as an integer, if the stored value is of type
+   :const:`JSON_INTEGER`.
+
+.. cfunction:: double json::Value::as_real()
+
+   Fetch the value as a double, if the stored value is of type
+   :const:`JSON_REAL`.
+
+.. cfunction:: double json::Value::as_number()
+
+   Fetch the value as a double, if the stored value is of type
+   :const:`JSON_REAL`.
+
+.. cfunction:: bool json::Value::as_boolean()
+
+   Fetch the value as a bool, if the stored value is of type
+   :const:`JSON_TRUE` or :const:`JSON_FALSE`.
+
+.. cfunction:: void json::Value::clear()
+
+   Delete all object properties or array elements within the value.
+
+.. cfunction:: proxy json::Value::at(int index)
+
+   Returns a proxy object referencing a specific array element.
+
+.. cfunction:: proxy json::Value::get(const char* key)
+
+   Returns a proxy object referencing a specific object property.
+
+.. cfunction:: proxy json::Value::get(const std::string& key)
+
+   Returns a proxy object referencing a specific object property.
+
+.. cfunction:: Value json::Value::set_at(unsigned int index, json::Value value)
+
+   Assigns the given value to the specified index within the value if the
+   value is an array.  The index must be 0 <= index <= size.  If the index
+   is equal to the size, the value is appended to the array and the size
+   is increased by one.
+
+.. cfunction:: Value json::Value::set_key(const char* key, json::Value value)
+
+   Assigns the given value to the specified key within the value if the
+   value is an object.
+
+.. cfunction:: Value json::Value::set_key(const std::string& key, json::Value value)
+
+   Assigns the given value to the specified key within the value if the
+   value is an object.
+
+.. cfunction:: Value json::Value::del_at(unsigned int index)
+
+   Deletes the value within the array at the given index.  Elements are
+   shifted down after deletion.  The index must be 0 <= index < size.
+
+.. cfunction:: Value json::Value::del_key(const char* key)
+
+   Deletes the property with the given key.
+
+.. cfunction:: Value json::Value::del_key(const std::string& key)
+
+   Deletes the property with the given key.
+ 
+.. cfunction:: proxy json::Value::operator[](int index)
+
+   Synonym for `json::Value::at(int index)`.
