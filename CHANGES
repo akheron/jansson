@@ -1,3 +1,12 @@
+Version 1.3 (in development)
+============================
+
+* New encoding flags:
+
+  - ``JSON_PRESERVE_ORDER``: Preserve the insertion order of object
+    keys.
+
+
 Version 1.2
 ===========
 

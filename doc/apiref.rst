@@ -595,6 +595,14 @@ can be ORed together to obtain *flags*.
 
    .. versionadded:: 1.2
 
+``JSON_PRESERVE_ORDER``
+   If this flag is used, object keys in the output are sorted into the
+   same order in which they were first inserted to the object. For
+   example, decoding a JSON text and then encoding with this flag
+   preserves the order of object keys.
+
+   .. versionadded:: 1.3
+
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
 

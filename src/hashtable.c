@@ -247,31 +247,39 @@ int hashtable_set(hashtable_t *hashtable, void *key, void *value)
     bucket_t *bucket;
     unsigned int hash, index;
 
-    hash = hashtable->hash_key(key);
-
-    /* if the key already exists, delete it */
-    hashtable_do_del(hashtable, key, hash);
-
     /* rehash if the load ratio exceeds 1 */
     if(hashtable->size >= num_buckets(hashtable))
         if(hashtable_do_rehash(hashtable))
             return -1;
 
-    pair = malloc(sizeof(pair_t));
-    if(!pair)
-        return -1;
-
-    pair->key = key;
-    pair->value = value;
-    pair->hash = hash;
-    list_init(&pair->list);
-
+    hash = hashtable->hash_key(key);
     index = hash % num_buckets(hashtable);
     bucket = &hashtable->buckets[index];
+    pair = hashtable_find_pair(hashtable, bucket, key, hash);
 
-    insert_to_bucket(hashtable, bucket, &pair->list);
+    if(pair)
+    {
+        if(hashtable->free_key)
+            hashtable->free_key(key);
+        if(hashtable->free_value)
+            hashtable->free_value(pair->value);
+        pair->value = value;
+    }
+    else
+    {
+        pair = malloc(sizeof(pair_t));
+        if(!pair)
+            return -1;
 
-    hashtable->size++;
+        pair->key = key;
+        pair->value = value;
+        pair->hash = hash;
+        list_init(&pair->list);
+
+        insert_to_bucket(hashtable, bucket, &pair->list);
+
+        hashtable->size++;
+    }
     return 0;
 }
 

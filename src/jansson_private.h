@@ -17,6 +17,7 @@
 typedef struct {
     json_t json;
     hashtable_t hashtable;
+    unsigned long serial;
     int visited;
 } json_object_t;
 
@@ -48,5 +49,12 @@ typedef struct {
 #define json_to_string(json_)  container_of(json_, json_string_t, json)
 #define json_to_real(json_)   container_of(json_, json_real_t, json)
 #define json_to_integer(json_) container_of(json_, json_integer_t, json)
+
+typedef struct {
+    unsigned long serial;
+    char key[];
+} object_key_t;
+
+const object_key_t *jsonp_object_iter_fullkey(void *iter);
 
 #endif

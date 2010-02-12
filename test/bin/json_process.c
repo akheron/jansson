@@ -53,6 +53,9 @@ int main(int argc, char *argv[])
     if(getenv_int("JSON_ENSURE_ASCII"))
         flags |= JSON_ENSURE_ASCII;
 
+    if(getenv_int("JSON_PRESERVE_ORDER"))
+        flags |= JSON_PRESERVE_ORDER;
+
     if(getenv_int("JSON_SORT_KEYS"))
         flags |= JSON_SORT_KEYS;
 
