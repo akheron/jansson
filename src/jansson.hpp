@@ -166,9 +166,9 @@ namespace json {
         // proxies an array element
         class ElementProxy {
         public:
-            ElementProxy(json_t* array, unsigned int index);
-            ElementProxy(const ElementProxy& other);
-            ~ElementProxy();
+            inline ElementProxy(json_t* array, unsigned int index);
+            inline ElementProxy(const ElementProxy& other);
+            inline ~ElementProxy();
 
             // assign to the proxied element
             inline ElementProxy& operator=(const Value& value);
@@ -187,9 +187,9 @@ namespace json {
         // proxies an object property
         class PropertyProxy {
         public:
-            PropertyProxy(json_t* object, const char *key);
-            PropertyProxy(const PropertyProxy& other);
-            ~PropertyProxy();
+            inline PropertyProxy(json_t* object, const char *key);
+            inline PropertyProxy(const PropertyProxy& other);
+            inline ~PropertyProxy();
 
             // assign to the proxied element
             inline PropertyProxy& operator=(const Value& value);
