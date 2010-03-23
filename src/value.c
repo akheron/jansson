@@ -833,7 +833,7 @@ json_t *json_true(void)
 {
     static json_t the_true = {
         .type = JSON_TRUE,
-        .refcount = (unsigned int)1
+        .refcount = (unsigned int)-1
     };
     return &the_true;
 }
@@ -843,7 +843,7 @@ json_t *json_false(void)
 {
     static json_t the_false = {
         .type = JSON_FALSE,
-        .refcount = (unsigned int)1
+        .refcount = (unsigned int)-1
     };
     return &the_false;
 }
@@ -853,7 +853,7 @@ json_t *json_null(void)
 {
     static json_t the_null = {
         .type = JSON_NULL,
-        .refcount = (unsigned int)1
+        .refcount = (unsigned int)-1
     };
     return &the_null;
 }

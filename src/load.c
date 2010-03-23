@@ -14,7 +14,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
-#include <stdint.h>
 
 #include <jansson.h>
 #include "jansson_private.h"
