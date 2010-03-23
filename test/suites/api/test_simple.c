@@ -150,5 +150,36 @@ int main()
         fail("json_null failed");
     json_decref(value);
 
+    /* Test reference counting on singletons (true, false, null) */
+    value = json_true();
+    if(value->refcount != (unsigned int)-1)
+      fail("refcounting true works incorrectly");
+    json_decref(value);
+    if(value->refcount != (unsigned int)-1)
+      fail("refcounting true works incorrectly");
+    json_incref(value);
+    if(value->refcount != (unsigned int)-1)
+      fail("refcounting true works incorrectly");
+
+    value = json_false();
+    if(value->refcount != (unsigned int)-1)
+      fail("refcounting false works incorrectly");
+    json_decref(value);
+    if(value->refcount != (unsigned int)-1)
+      fail("refcounting false works incorrectly");
+    json_incref(value);
+    if(value->refcount != (unsigned int)-1)
+      fail("refcounting false works incorrectly");
+
+    value = json_null();
+    if(value->refcount != (unsigned int)-1)
+      fail("refcounting null works incorrectly");
+    json_decref(value);
+    if(value->refcount != (unsigned int)-1)
+      fail("refcounting null works incorrectly");
+    json_incref(value);
+    if(value->refcount != (unsigned int)-1)
+      fail("refcounting null works incorrectly");
+
     return 0;
 }
