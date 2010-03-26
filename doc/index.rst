@@ -34,6 +34,7 @@ Contents
 
    gettingstarted
    tutorial
+   conformance
    apiref
    changes
 
