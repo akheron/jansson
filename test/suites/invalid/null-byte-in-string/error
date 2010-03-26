@@ -1,2 +1,2 @@
 1
-\u0000 is not allowed
+control character 0x0 near '"null byte '
