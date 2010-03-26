@@ -483,14 +483,7 @@ static int lex_scan_number(lex_t *lex, char c, json_error_t *error)
     value = strtod(saved_text, &end);
     assert(end == saved_text + lex->saved_text.length);
 
-    if(value == 0 && errno == ERANGE) {
-        error_set(error, lex, "real number underflow");
-        goto out;
-    }
-
-    /* Cannot test for +/-HUGE_VAL because the HUGE_VAL constant is
-       only defined in C99 mode. So let's trust in sole errno. */
-    else if(errno == ERANGE) {
+    if(errno == ERANGE && value != 0) {
         error_set(error, lex, "real number overflow");
         goto out;
     }
