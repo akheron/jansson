@@ -5,6 +5,8 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
+#include <config.h>
+
 #include <stdlib.h>
 #include "hashtable.h"
 

@@ -24,3 +24,4 @@ missing
 stamp-h1
 *.pyc
 *.pc
+/src/jansson.h

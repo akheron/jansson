@@ -10,7 +10,10 @@
 
 #include <stdio.h>
 
-#ifdef __cplusplus
+#ifndef __cplusplus
+#define JSON_INLINE @json_inline@
+#else
+#define JSON_INLINE inline
 extern "C" {
 #endif
 
@@ -56,7 +59,8 @@ json_t *json_true(void);
 json_t *json_false(void);
 json_t *json_null(void);
 
-static inline json_t *json_incref(json_t *json)
+static JSON_INLINE
+json_t *json_incref(json_t *json)
 {
     if(json && json->refcount != (unsigned int)-1)
         ++json->refcount;
@@ -66,7 +70,8 @@ static inline json_t *json_incref(json_t *json)
 /* do not call json_delete directly */
 void json_delete(json_t *json);
 
-static inline void json_decref(json_t *json)
+static JSON_INLINE
+void json_decref(json_t *json)
 {
     if(json && json->refcount != (unsigned int)-1 && --json->refcount == 0)
         json_delete(json);
@@ -89,13 +94,13 @@ const char *json_object_iter_key(void *iter);
 json_t *json_object_iter_value(void *iter);
 int json_object_iter_set_new(json_t *object, void *iter, json_t *value);
 
-static inline
+static JSON_INLINE
 int json_object_set(json_t *object, const char *key, json_t *value)
 {
     return json_object_set_new(object, key, json_incref(value));
 }
 
-static inline
+static JSON_INLINE
 int json_object_set_nocheck(json_t *object, const char *key, json_t *value)
 {
     return json_object_set_new_nocheck(object, key, json_incref(value));
@@ -116,19 +121,19 @@ int json_array_remove(json_t *array, unsigned int index);
 int json_array_clear(json_t *array);
 int json_array_extend(json_t *array, json_t *other);
 
-static inline
+static JSON_INLINE
 int json_array_set(json_t *array, unsigned int index, json_t *value)
 {
     return json_array_set_new(array, index, json_incref(value));
 }
 
-static inline
+static JSON_INLINE
 int json_array_append(json_t *array, json_t *value)
 {
     return json_array_append_new(array, json_incref(value));
 }
 
-static inline
+static JSON_INLINE
 int json_array_insert(json_t *array, unsigned int index, json_t *value)
 {
     return json_array_insert_new(array, index, json_incref(value));
