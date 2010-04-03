@@ -1,3 +1,33 @@
+Version 1.2.1
+=============
+
+Released 2010-04-03
+
+* Bug fixes:
+
+  - Fix reference counting on ``true``, ``false`` and ``null``
+  - Estimate real number underflows in decoder with 0.0 instead of
+    issuing an error
+
+* Portability:
+
+  - Make ``int32_t`` available on all systems
+  - Support compilers that don't have the ``inline`` keyword
+  - Require Autoconf 2.60 (for ``int32_t``)
+
+* Tests:
+
+  - Print test names correctly when ``VERBOSE=1``
+  - ``test/suites/api``: Fail when a test fails
+  - Enhance tests for iterators
+  - Enhance tests for decoding texts that contain null bytes
+
+* Documentation:
+
+  - Don't remove ``changes.rst`` in ``make clean``
+  - Add a chapter on RFC conformance
+
+
 Version 1.2
 ===========
 
