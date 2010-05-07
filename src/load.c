@@ -113,7 +113,8 @@ static void error_set(json_error_t *error, const lex_t *lex,
 
 /*** lexical analyzer ***/
 
-void stream_init(stream_t *stream, get_func get, eof_func eof, void *data)
+static void
+stream_init(stream_t *stream, get_func get, eof_func eof, void *data)
 {
     stream->get = get;
     stream->eof = eof;
