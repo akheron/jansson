@@ -231,8 +231,10 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
 
             if(dump("[", 1, data))
                 return -1;
-            if(n == 0)
+            if(n == 0) {
+                array->visited = 0;
                 return dump("]", 1, data);
+            }
             if(dump_indent(flags, depth + 1, 0, dump, data))
                 return -1;
 
@@ -284,8 +286,10 @@ static int do_dump(const json_t *json, unsigned long flags, int depth,
 
             if(dump("{", 1, data))
                 return -1;
-            if(!iter)
+            if(!iter) {
+                object->visited = 0;
                 return dump("}", 1, data);
+            }
             if(dump_indent(flags, depth + 1, 0, dump, data))
                 return -1;
 
