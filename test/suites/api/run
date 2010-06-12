@@ -7,7 +7,7 @@
 
 is_test() {
     case "$test_name" in
-        *.c|*.cpp|check-exports)
+        *.c|check-exports)
             return 0
             ;;
         *)
@@ -20,15 +20,7 @@ run_test() {
     if [ "$test_name" = "check-exports" ]; then
         test_log=$test_log $test_path >$test_log/stdout 2>$test_log/stderr
     else
-        case "$test_name" in
-            *.c)
-                test_bin=${test_name%.c}
-                ;;
-            *.cpp)
-                test_bin=${test_name%.cpp}
-                ;;
-        esac
-        $test_runner $suite_builddir/$test_bin \
+        $test_runner $suite_builddir/${test_name%.c} \
             >$test_log/stdout \
             2>$test_log/stderr \
             || return 1
