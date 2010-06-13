@@ -1,10 +1,26 @@
-Version 1.3 (in development)
-============================
+Version 1.3
+===========
+
+Released 2010-06-13
 
 * New encoding flags:
 
   - ``JSON_PRESERVE_ORDER``: Preserve the insertion order of object
     keys.
+
+* Bug fixes:
+
+  - Fix an error that occured when an array or object was first
+    encoded as empty, then populated with some data, and then
+    re-encoded
+
+  - Fix the situation like above, but when the first encoding resulted
+    in an error
+
+* Documentation:
+
+  - Clarify the documentation on reference stealing, providing an
+    example usage pattern
 
 
 Version 1.2.1
