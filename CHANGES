@@ -3,6 +3,14 @@ Version 1.3
 
 Released 2010-06-13
 
+* New functions:
+
+  - `json_object_iter_set()`, `json_object_iter_set_new()`: Change
+    object contents while iterating over it.
+
+  - `json_object_iter_at()`: Return an iterator that points to a
+    specific object item.
+
 * New encoding flags:
 
   - ``JSON_PRESERVE_ORDER``: Preserve the insertion order of object
