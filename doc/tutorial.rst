@@ -118,7 +118,7 @@ first newline in the commit message::
 The main function follows. In the beginning, we first declare a bunch
 of variables and check the command line parameters::
 
-    unsigned int i;
+    size_t i;
     char *text;
     char url[URL_SIZE];
 

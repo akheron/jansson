@@ -345,12 +345,12 @@ A JSON array is an ordered collection of other JSON values.
    Returns a new JSON array, or *NULL* on error. Initially, the array
    is empty.
 
-.. cfunction:: unsigned int json_array_size(const json_t *array)
+.. cfunction:: size_t json_array_size(const json_t *array)
 
    Returns the number of elements in *array*, or 0 if *array* is NULL
    or not a JSON array.
 
-.. cfunction:: json_t *json_array_get(const json_t *array, unsigned int index)
+.. cfunction:: json_t *json_array_get(const json_t *array, size_t index)
 
    .. refcounting:: borrow
 
@@ -360,14 +360,14 @@ A JSON array is an ordered collection of other JSON values.
    if *array* is *NULL*, or if *index* is out of range, *NULL* is
    returned.
 
-.. cfunction:: int json_array_set(json_t *array, unsigned int index, json_t *value)
+.. cfunction:: int json_array_set(json_t *array, size_t index, json_t *value)
 
    Replaces the element in *array* at position *index* with *value*.
    The valid range for *index* is from 0 to the return value of
    :cfunc:`json_array_size()` minus 1. Returns 0 on success and -1 on
    error.
 
-.. cfunction:: int json_array_set_new(json_t *array, unsigned int index, json_t *value)
+.. cfunction:: int json_array_set_new(json_t *array, size_t index, json_t *value)
 
    Like :cfunc:`json_array_set()` but steals the reference to *value*.
    This is useful when *value* is newly created and not used after
@@ -388,7 +388,7 @@ A JSON array is an ordered collection of other JSON values.
 
    .. versionadded:: 1.1
 
-.. cfunction:: int json_array_insert(json_t *array, unsigned int index, json_t *value)
+.. cfunction:: int json_array_insert(json_t *array, size_t index, json_t *value)
 
    Inserts *value* to *array* at position *index*, shifting the
    elements at *index* and after it one position towards the end of
@@ -396,7 +396,7 @@ A JSON array is an ordered collection of other JSON values.
 
    .. versionadded:: 1.1
 
-.. cfunction:: int json_array_insert_new(json_t *array, unsigned int index, json_t *value)
+.. cfunction:: int json_array_insert_new(json_t *array, size_t index, json_t *value)
 
    Like :cfunc:`json_array_insert()` but steals the reference to
    *value*. This is useful when *value* is newly created and not used
@@ -404,7 +404,7 @@ A JSON array is an ordered collection of other JSON values.
 
    .. versionadded:: 1.1
 
-.. cfunction:: int json_array_remove(json_t *array, unsigned int index)
+.. cfunction:: int json_array_remove(json_t *array, size_t index)
 
    Removes the element in *array* at position *index*, shifting the
    elements after *index* one position towards the start of the array.
@@ -440,7 +440,7 @@ Unicode string and the value is any JSON value.
    Returns a new JSON object, or *NULL* on error. Initially, the
    object is empty.
 
-.. cfunction:: unsigned int json_object_size(const json_t *object)
+.. cfunction:: size_t json_object_size(const json_t *object)
 
    Returns the number of elements in *object*, or 0 if *object* is not
    a JSON object.
@@ -628,13 +628,13 @@ can be ORed together to obtain *flags*.
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
 
-.. cfunction:: char *json_dumps(const json_t *root, unsigned long flags)
+.. cfunction:: char *json_dumps(const json_t *root, size_t flags)
 
    Returns the JSON representation of *root* as a string, or *NULL* on
    error. *flags* is described above. The return value must be freed
    by the caller using :cfunc:`free()`.
 
-.. cfunction:: int json_dumpf(const json_t *root, FILE *output, unsigned long flags)
+.. cfunction:: int json_dumpf(const json_t *root, FILE *output, size_t flags)
 
    Write the JSON representation of *root* to the stream *output*.
    *flags* is described above. Returns 0 on success and -1 on error.
@@ -642,7 +642,7 @@ is in UTF-8.
    *output*. In this case, the output is undefined and most likely not
    valid JSON.
 
-.. cfunction:: int json_dump_file(const json_t *json, const char *path, unsigned long flags)
+.. cfunction:: int json_dump_file(const json_t *json, const char *path, size_t flags)
 
    Write the JSON representation of *root* to the file *path*. If
    *path* already exists, it is overwritten. *flags* is described

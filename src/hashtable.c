@@ -59,22 +59,22 @@ static void insert_to_bucket(hashtable_t *hashtable, bucket_t *bucket,
     }
 }
 
-static unsigned int primes[] = {
+static size_t primes[] = {
     5, 13, 23, 53, 97, 193, 389, 769, 1543, 3079, 6151, 12289, 24593,
     49157, 98317, 196613, 393241, 786433, 1572869, 3145739, 6291469,
     12582917, 25165843, 50331653, 100663319, 201326611, 402653189,
     805306457, 1610612741
 };
-static const unsigned int num_primes = sizeof(primes) / sizeof(unsigned int);
+static const size_t num_primes = sizeof(primes) / sizeof(size_t);
 
-static inline unsigned int num_buckets(hashtable_t *hashtable)
+static inline size_t num_buckets(hashtable_t *hashtable)
 {
     return primes[hashtable->num_buckets];
 }
 
 
 static pair_t *hashtable_find_pair(hashtable_t *hashtable, bucket_t *bucket,
-                                   const void *key, unsigned int hash)
+                                   const void *key, size_t hash)
 {
     list_t *list;
     pair_t *pair;
@@ -100,11 +100,11 @@ static pair_t *hashtable_find_pair(hashtable_t *hashtable, bucket_t *bucket,
 
 /* returns 0 on success, -1 if key was not found */
 static int hashtable_do_del(hashtable_t *hashtable,
-                            const void *key, unsigned int hash)
+                            const void *key, size_t hash)
 {
     pair_t *pair;
     bucket_t *bucket;
-    unsigned int index;
+    size_t index;
 
     index = hash % num_buckets(hashtable);
     bucket = &hashtable->buckets[index];
@@ -156,7 +156,7 @@ static int hashtable_do_rehash(hashtable_t *hashtable)
 {
     list_t *list, *next;
     pair_t *pair;
-    unsigned int i, index, new_size;
+    size_t i, index, new_size;
 
     free(hashtable->buckets);
 
@@ -213,7 +213,7 @@ int hashtable_init(hashtable_t *hashtable,
                    key_hash_fn hash_key, key_cmp_fn cmp_keys,
                    free_fn free_key, free_fn free_value)
 {
-    unsigned int i;
+    size_t i;
 
     hashtable->size = 0;
     hashtable->num_buckets = 0;  /* index to primes[] */
@@ -247,7 +247,7 @@ int hashtable_set(hashtable_t *hashtable, void *key, void *value)
 {
     pair_t *pair;
     bucket_t *bucket;
-    unsigned int hash, index;
+    size_t hash, index;
 
     /* rehash if the load ratio exceeds 1 */
     if(hashtable->size >= num_buckets(hashtable))
@@ -288,7 +288,7 @@ int hashtable_set(hashtable_t *hashtable, void *key, void *value)
 void *hashtable_get(hashtable_t *hashtable, const void *key)
 {
     pair_t *pair;
-    unsigned int hash;
+    size_t hash;
     bucket_t *bucket;
 
     hash = hashtable->hash_key(key);
@@ -303,13 +303,13 @@ void *hashtable_get(hashtable_t *hashtable, const void *key)
 
 int hashtable_del(hashtable_t *hashtable, const void *key)
 {
-    unsigned int hash = hashtable->hash_key(key);
+    size_t hash = hashtable->hash_key(key);
     return hashtable_do_del(hashtable, key, hash);
 }
 
 void hashtable_clear(hashtable_t *hashtable)
 {
-    unsigned int i;
+    size_t i;
 
     hashtable_do_clear(hashtable);
 
@@ -331,7 +331,7 @@ void *hashtable_iter(hashtable_t *hashtable)
 void *hashtable_iter_at(hashtable_t *hashtable, const void *key)
 {
     pair_t *pair;
-    unsigned int hash;
+    size_t hash;
     bucket_t *bucket;
 
     hash = hashtable->hash_key(key);

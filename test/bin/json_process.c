@@ -28,7 +28,7 @@ static int getenv_int(const char *name)
 int main(int argc, char *argv[])
 {
     int indent = 0;
-    unsigned int flags = 0;
+    size_t flags = 0;
 
     json_t *json;
     json_error_t error;

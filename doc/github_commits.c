@@ -96,7 +96,7 @@ static char *request(const char *url)
 
 int main(int argc, char *argv[])
 {
-    unsigned int i;
+    size_t i;
     char *text;
     char url[URL_SIZE];
 

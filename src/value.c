@@ -34,14 +34,14 @@ static inline void json_init(json_t *json, json_type type)
    an object_key_t instance. */
 #define string_to_key(string)  container_of(string, object_key_t, key)
 
-static unsigned int hash_key(const void *ptr)
+static size_t hash_key(const void *ptr)
 {
     const char *str = ((const object_key_t *)ptr)->key;
 
-    unsigned int hash = 5381;
-    unsigned int c;
+    size_t hash = 5381;
+    size_t c;
 
-    while((c = (unsigned int)*str))
+    while((c = (size_t)*str))
     {
         hash = ((hash << 5) + hash) + c;
         str++;
@@ -87,7 +87,7 @@ static void json_delete_object(json_object_t *object)
     free(object);
 }
 
-unsigned int json_object_size(const json_t *json)
+size_t json_object_size(const json_t *json)
 {
     json_object_t *object;
 
@@ -371,7 +371,7 @@ json_t *json_array(void)
 
 static void json_delete_array(json_array_t *array)
 {
-    unsigned int i;
+    size_t i;
 
     for(i = 0; i < array->entries; i++)
         json_decref(array->table[i]);
@@ -380,7 +380,7 @@ static void json_delete_array(json_array_t *array)
     free(array);
 }
 
-unsigned int json_array_size(const json_t *json)
+size_t json_array_size(const json_t *json)
 {
     if(!json_is_array(json))
         return 0;
@@ -388,7 +388,7 @@ unsigned int json_array_size(const json_t *json)
     return json_to_array(json)->entries;
 }
 
-json_t *json_array_get(const json_t *json, unsigned int index)
+json_t *json_array_get(const json_t *json, size_t index)
 {
     json_array_t *array;
     if(!json_is_array(json))
@@ -401,7 +401,7 @@ json_t *json_array_get(const json_t *json, unsigned int index)
     return array->table[index];
 }
 
-int json_array_set_new(json_t *json, unsigned int index, json_t *value)
+int json_array_set_new(json_t *json, size_t index, json_t *value)
 {
     json_array_t *array;
 
@@ -427,24 +427,24 @@ int json_array_set_new(json_t *json, unsigned int index, json_t *value)
     return 0;
 }
 
-static void array_move(json_array_t *array, unsigned int dest,
-                       unsigned int src, unsigned int count)
+static void array_move(json_array_t *array, size_t dest,
+                       size_t src, size_t count)
 {
     memmove(&array->table[dest], &array->table[src], count * sizeof(json_t *));
 }
 
-static void array_copy(json_t **dest, unsigned int dpos,
-                       json_t **src, unsigned int spos,
-                       unsigned int count)
+static void array_copy(json_t **dest, size_t dpos,
+                       json_t **src, size_t spos,
+                       size_t count)
 {
     memcpy(&dest[dpos], &src[spos], count * sizeof(json_t *));
 }
 
 static json_t **json_array_grow(json_array_t *array,
-                                unsigned int amount,
+                                size_t amount,
                                 int copy)
 {
-    unsigned int new_size;
+    size_t new_size;
     json_t **old_table, **new_table;
 
     if(array->entries + amount <= array->size)
@@ -494,7 +494,7 @@ int json_array_append_new(json_t *json, json_t *value)
     return 0;
 }
 
-int json_array_insert_new(json_t *json, unsigned int index, json_t *value)
+int json_array_insert_new(json_t *json, size_t index, json_t *value)
 {
     json_array_t *array;
     json_t **old_table;
@@ -534,7 +534,7 @@ int json_array_insert_new(json_t *json, unsigned int index, json_t *value)
     return 0;
 }
 
-int json_array_remove(json_t *json, unsigned int index)
+int json_array_remove(json_t *json, size_t index)
 {
     json_array_t *array;
 
@@ -556,7 +556,7 @@ int json_array_remove(json_t *json, unsigned int index)
 int json_array_clear(json_t *json)
 {
     json_array_t *array;
-    unsigned int i;
+    size_t i;
 
     if(!json_is_array(json))
         return -1;
@@ -572,7 +572,7 @@ int json_array_clear(json_t *json)
 int json_array_extend(json_t *json, json_t *other_json)
 {
     json_array_t *array, *other;
-    unsigned int i;
+    size_t i;
 
     if(!json_is_array(json) || !json_is_array(other_json))
         return -1;
@@ -593,7 +593,7 @@ int json_array_extend(json_t *json, json_t *other_json)
 
 static int json_array_equal(json_t *array1, json_t *array2)
 {
-    unsigned int i, size;
+    size_t i, size;
 
     size = json_array_size(array1);
     if(size != json_array_size(array2))
@@ -616,7 +616,7 @@ static int json_array_equal(json_t *array1, json_t *array2)
 static json_t *json_array_copy(json_t *array)
 {
     json_t *result;
-    unsigned int i;
+    size_t i;
 
     result = json_array();
     if(!result)
@@ -631,7 +631,7 @@ static json_t *json_array_copy(json_t *array)
 static json_t *json_array_deep_copy(json_t *array)
 {
     json_t *result;
-    unsigned int i;
+    size_t i;
 
     result = json_array();
     if(!result)
@@ -836,7 +836,7 @@ json_t *json_true(void)
 {
     static json_t the_true = {
         .type = JSON_TRUE,
-        .refcount = (unsigned int)-1
+        .refcount = (size_t)-1
     };
     return &the_true;
 }
@@ -846,7 +846,7 @@ json_t *json_false(void)
 {
     static json_t the_false = {
         .type = JSON_FALSE,
-        .refcount = (unsigned int)-1
+        .refcount = (size_t)-1
     };
     return &the_false;
 }
@@ -856,7 +856,7 @@ json_t *json_null(void)
 {
     static json_t the_null = {
         .type = JSON_NULL,
-        .refcount = (unsigned int)-1
+        .refcount = (size_t)-1
     };
     return &the_null;
 }

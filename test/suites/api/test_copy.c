@@ -174,7 +174,7 @@ static void test_copy_array(void)
     const char *json_array_text = "[1, \"foo\", 3.141592, {\"foo\": \"bar\"}]";
 
     json_t *array, *copy;
-    unsigned int i;
+    size_t i;
 
     array = json_loads(json_array_text, NULL);
     if(!array)
@@ -203,7 +203,7 @@ static void test_deep_copy_array(void)
     const char *json_array_text = "[1, \"foo\", 3.141592, {\"foo\": \"bar\"}]";
 
     json_t *array, *copy;
-    unsigned int i;
+    size_t i;
 
     array = json_loads(json_array_text, NULL);
     if(!array)

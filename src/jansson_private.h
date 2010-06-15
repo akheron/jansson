@@ -17,14 +17,14 @@
 typedef struct {
     json_t json;
     hashtable_t hashtable;
-    unsigned long serial;
+    size_t serial;
     int visited;
 } json_object_t;
 
 typedef struct {
     json_t json;
-    unsigned int size;
-    unsigned int entries;
+    size_t size;
+    size_t entries;
     json_t **table;
     int visited;
 } json_array_t;
@@ -51,7 +51,7 @@ typedef struct {
 #define json_to_integer(json_) container_of(json_, json_integer_t, json)
 
 typedef struct {
-    unsigned long serial;
+    size_t serial;
     char key[];
 } object_key_t;
 
