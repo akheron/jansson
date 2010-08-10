@@ -287,18 +287,18 @@ String
 Number
 ======
 
-.. cfunction:: json_t *json_integer(int value)
+.. cfunction:: json_t *json_integer(long value)
 
    .. refcounting:: new
 
    Returns a new JSON integer, or *NULL* on error.
 
-.. cfunction:: int json_integer_value(const json_t *integer)
+.. cfunction:: long json_integer_value(const json_t *integer)
 
    Returns the associated value of *integer*, or 0 if *json* is not a
    JSON integer.
 
-.. cfunction:: int json_integer_set(const json_t *integer, int value)
+.. cfunction:: int json_integer_set(const json_t *integer, long value)
 
    Sets the associated value of *integer* to *value*. Returns 0 on
    success and -1 if *integer* is not a JSON integer.

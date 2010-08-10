@@ -36,7 +36,7 @@ Real vs. Integer
 
 JSON makes no distinction between real and integer numbers; Jansson
 does. Real numbers are mapped to the ``double`` type and integers to
-the ``int`` type.
+the ``long`` type.
 
 A JSON number is considered to be a real number if its lexical
 representation includes one of ``e``, ``E``, or ``.``; regardless if
@@ -64,7 +64,7 @@ error). Thus, depending on platform, JSON numbers like 1E+999 or
 -1E+999 may result in a parsing error.
 
 Likewise, integer numbers whose absolute values are too large to be
-represented in the ``int`` type will result in an overflow error (a
+represented in the ``long`` type will result in an overflow error (a
 JSON decoding error). Thus, depending on platform, JSON numbers like
 1000000000000000 may result in parsing error.
 
@@ -94,9 +94,9 @@ Types
 -----
 
 No support is provided in Jansson for any C numeric types other than
-``int`` and ``double``. This excludes things such as unsigned types,
-``long``, ``long long``, ``long double``, etc. Obviously, shorter
-types like ``short`` and ``float`` are implicitly handled via the
+``long`` and ``double``. This excludes things such as unsigned types,
+``long long``, ``long double``, etc. Obviously, shorter types like
+``short``, ``int`` and ``float`` are implicitly handled via the
 ordinary C type coercion rules (subject to overflow semantics). Also,
 no support or hooks are provided for any supplemental "bignum" type
 add-on packages.

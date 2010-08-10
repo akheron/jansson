@@ -52,7 +52,7 @@ typedef struct {
     int line, column;
     union {
         char *string;
-        int integer;
+        long integer;
         double real;
     } value;
 } lex_t;
@@ -438,17 +438,17 @@ static int lex_scan_number(lex_t *lex, char c, json_error_t *error)
         value = strtol(saved_text, &end, 10);
         assert(end == saved_text + lex->saved_text.length);
 
-        if((value == LONG_MAX && errno == ERANGE) || value > INT_MAX) {
+        if(value == LONG_MAX && errno == ERANGE) {
             error_set(error, lex, "too big integer");
             goto out;
         }
-        else if((value == LONG_MIN && errno == ERANGE) || value < INT_MIN) {
+        else if(value == LONG_MIN && errno == ERANGE) {
             error_set(error, lex, "too big negative integer");
             goto out;
         }
 
         lex->token = TOKEN_INTEGER;
-        lex->value.integer = (int)value;
+        lex->value.integer = value;
         return 0;
     }
 
