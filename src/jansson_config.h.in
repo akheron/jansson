@@ -1,0 +1,17 @@
+/*
+ * Copyright (c) 2010 Petri Lehtinen <petri@digip.org>
+ *
+ * Jansson is free software; you can redistribute it and/or modify
+ * it under the terms of the MIT license. See LICENSE for details.
+ */
+
+#ifndef JANSSON_CONFIG_H
+#define JANSSON_CONFIG_H
+
+#ifdef __cplusplus
+#define JSON_INLINE inline
+#else
+#define JSON_INLINE @json_inline@
+#endif
+
+#endif

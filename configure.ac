@@ -33,7 +33,7 @@ AC_CONFIG_FILES([
         Makefile
         doc/Makefile
         src/Makefile
-        src/jansson.h
+        src/jansson_config.h
         test/Makefile
         test/bin/Makefile
         test/suites/Makefile

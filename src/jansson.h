@@ -10,11 +10,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>  /* for size_t */
+#include <jansson_config.h>
 
-#ifndef __cplusplus
-#define JSON_INLINE @json_inline@
-#else
-#define JSON_INLINE inline
+#ifdef __cplusplus
 extern "C" {
 #endif
 
