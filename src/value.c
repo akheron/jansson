@@ -9,6 +9,7 @@
 
 #include <config.h>
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -124,9 +125,11 @@ int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value)
     }
     object = json_to_object(json);
 
-    k = malloc(sizeof(object_key_t) + strlen(key) + 1);
-    if(!k)
-        return -1;
+    /* offsetof(...) returns the size of object_key_t without the
+       last, flexible member. This way, the correct amount is
+       allocated. */
+    k = malloc(offsetof(object_key_t, key) +
+    strlen(key) + 1); if(!k) return -1;
 
     k->serial = object->serial++;
     strcpy(k->key, key);

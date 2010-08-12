@@ -53,7 +53,7 @@ typedef struct {
 
 typedef struct {
     unsigned long serial;
-    char key[];
+    char key[1];
 } object_key_t;
 
 const object_key_t *jsonp_object_iter_fullkey(void *iter);
