@@ -9,6 +9,7 @@ AC_CONFIG_HEADERS([config.h])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_LIBTOOL
+AM_CONDITIONAL([GCC], [test x$GCC = xyes])
 
 # Checks for libraries.
 
