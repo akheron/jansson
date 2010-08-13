@@ -618,7 +618,7 @@ can be ORed together to obtain *flags*.
 ``JSON_INDENT(n)``
    Pretty-print the result, using newlines between array and object
    items, and indenting with *n* spaces. The valid range for *n* is
-   between 0 and 255, other values result in an undefined output. If
+   between 0 and 32, other values result in an undefined output. If
    ``JSON_INDENT`` is not used or *n* is 0, no newlines are inserted
    between array and object items.
 
