@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
     if(!text)
         return 1;
 
-    root = json_loads(text, &error);
+    root = json_loads(text, 0, &error);
     free(text);
 
     if(!root)

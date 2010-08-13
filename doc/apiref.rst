@@ -713,7 +713,7 @@ subset of).
           json_t *json;
           json_error_t error;
 
-          json = json_load_file("/path/to/file.json", &error);
+          json = json_load_file("/path/to/file.json", 0, &error);
           if(!json) {
               /* the error variable contains error information */
           }
@@ -729,32 +729,35 @@ subset of).
 
 The following functions perform the actual JSON decoding.
 
-.. cfunction:: json_t *json_loads(const char *input, json_error_t *error)
+.. cfunction:: json_t *json_loads(const char *input, size_t flags, json_error_t *error)
 
    .. refcounting:: new
 
    Decodes the JSON string *input* and returns the array or object it
    contains, or *NULL* on error, in which case *error* is filled with
    information about the error. See above for discussion on the
-   *error* parameter.
+   *error* parameter. *flags* is currently unused, and should be set
+   to 0.
 
-.. cfunction:: json_t *json_loadf(FILE *input, json_error_t *error)
+.. cfunction:: json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 
    .. refcounting:: new
 
    Decodes the JSON text in stream *input* and returns the array or
    object it contains, or *NULL* on error, in which case *error* is
    filled with information about the error. See above for discussion
-   on the *error* parameter.
+   on the *error* parameter. *flags* is currently unused, and should
+   be set to 0.
 
-.. cfunction:: json_t *json_load_file(const char *path, json_error_t *error)
+.. cfunction:: json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 
    .. refcounting:: new
 
    Decodes the JSON text in file *path* and returns the array or
    object it contains, or *NULL* on error, in which case *error* is
    filled with information about the error. See above for discussion
-   on the *error* parameter.
+   on the *error* parameter. *flags* is currently unused, and should
+   be set to 0.
 
 
 Equality

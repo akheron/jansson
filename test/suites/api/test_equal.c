@@ -167,8 +167,8 @@ static void test_equal_complex()
 "    \"array\": [\"foo\", false, null, 1.234]"
 "}";
 
-    value1 = json_loads(complex_json, NULL);
-    value2 = json_loads(complex_json, NULL);
+    value1 = json_loads(complex_json, 0, NULL);
+    value2 = json_loads(complex_json, 0, NULL);
     if(!value1 || !value2)
         fail("unable to parse JSON");
     if(!json_equal(value1, value2))

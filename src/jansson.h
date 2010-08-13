@@ -177,9 +177,9 @@ typedef struct {
     int line;
 } json_error_t;
 
-json_t *json_loads(const char *input, json_error_t *error);
-json_t *json_loadf(FILE *input, json_error_t *error);
-json_t *json_load_file(const char *path, json_error_t *error);
+json_t *json_loads(const char *input, size_t flags, json_error_t *error);
+json_t *json_loadf(FILE *input, size_t flags, json_error_t *error);
+json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
 
 #define JSON_INDENT(n)      (n & 0x1F)
 #define JSON_COMPACT        0x20

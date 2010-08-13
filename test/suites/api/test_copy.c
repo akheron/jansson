@@ -176,7 +176,7 @@ static void test_copy_array(void)
     json_t *array, *copy;
     size_t i;
 
-    array = json_loads(json_array_text, NULL);
+    array = json_loads(json_array_text, 0, NULL);
     if(!array)
         fail("unable to parse an array");
 
@@ -205,7 +205,7 @@ static void test_deep_copy_array(void)
     json_t *array, *copy;
     size_t i;
 
-    array = json_loads(json_array_text, NULL);
+    array = json_loads(json_array_text, 0, NULL);
     if(!array)
         fail("unable to parse an array");
 
@@ -235,7 +235,7 @@ static void test_copy_object(void)
     json_t *object, *copy;
     void *iter;
 
-    object = json_loads(json_object_text, NULL);
+    object = json_loads(json_object_text, 0, NULL);
     if(!object)
         fail("unable to parse an object");
 
@@ -275,7 +275,7 @@ static void test_deep_copy_object(void)
     json_t *object, *copy;
     void *iter;
 
-    object = json_loads(json_object_text, NULL);
+    object = json_loads(json_object_text, 0, NULL);
     if(!object)
         fail("unable to parse an object");
 

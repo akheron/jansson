@@ -14,7 +14,7 @@ int main()
     json_t *json;
     json_error_t error;
 
-    json = json_load_file("/path/to/nonexistent/file.json", &error);
+    json = json_load_file("/path/to/nonexistent/file.json", 0, &error);
     if(error.line != -1)
         fail("json_load_file returned an invalid line number");
     if(strcmp(error.text, "unable to open /path/to/nonexistent/file.json: No such file or directory") != 0)

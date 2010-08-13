@@ -811,10 +811,11 @@ static int string_eof(void *data)
     return (stream->data[stream->pos] == '\0');
 }
 
-json_t *json_loads(const char *string, json_error_t *error)
+json_t *json_loads(const char *string, size_t flags, json_error_t *error)
 {
     lex_t lex;
     json_t *result;
+    (void)flags; /* unused */
 
     string_data_t stream_data = {
         .data = string,
@@ -840,10 +841,11 @@ out:
     return result;
 }
 
-json_t *json_loadf(FILE *input, json_error_t *error)
+json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 {
     lex_t lex;
     json_t *result;
+    (void)flags; /* unused */
 
     if(lex_init(&lex, (get_func)fgetc, (eof_func)feof, input))
         return NULL;
@@ -864,7 +866,7 @@ out:
     return result;
 }
 
-json_t *json_load_file(const char *path, json_error_t *error)
+json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 {
     json_t *result;
     FILE *fp;
@@ -879,7 +881,7 @@ json_t *json_load_file(const char *path, json_error_t *error)
         return NULL;
     }
 
-    result = json_loadf(fp, error);
+    result = json_loadf(fp, flags, error);
 
     fclose(fp);
     return result;

@@ -152,7 +152,7 @@ function.
 Next we'll call :cfunc:`json_loads()` to decode the JSON text we got
 as a response::
 
-    root = json_loads(text, &error);
+    root = json_loads(text, 0, &error);
     free(text);
 
     if(!root)

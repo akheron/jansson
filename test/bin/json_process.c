@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     if(getenv_int("JSON_SORT_KEYS"))
         flags |= JSON_SORT_KEYS;
 
-    json = json_loadf(stdin, &error);
+    json = json_loadf(stdin, 0, &error);
     if(!json) {
         fprintf(stderr, "%d\n%s\n", error.line, error.text);
         return 1;
