@@ -34,6 +34,14 @@ typedef struct {
     size_t refcount;
 } json_t;
 
+#if JSON_INTEGER_IS_LONG_LONG
+#define JSON_INTEGER_FORMAT "lld"
+typedef long long json_int_t;
+#else
+#define JSON_INTEGER_FORMAT "ld"
+typedef long json_int_t;
+#endif /* JSON_INTEGER_IS_LONG_LONG */
+
 #define json_typeof(json)      ((json)->type)
 #define json_is_object(json)   (json && json_typeof(json) == JSON_OBJECT)
 #define json_is_array(json)    (json && json_typeof(json) == JSON_ARRAY)
@@ -52,7 +60,7 @@ json_t *json_object(void);
 json_t *json_array(void);
 json_t *json_string(const char *value);
 json_t *json_string_nocheck(const char *value);
-json_t *json_integer(long value);
+json_t *json_integer(json_int_t value);
 json_t *json_real(double value);
 json_t *json_true(void);
 json_t *json_false(void);
@@ -139,13 +147,13 @@ int json_array_insert(json_t *array, size_t index, json_t *value)
 }
 
 const char *json_string_value(const json_t *string);
-long json_integer_value(const json_t *integer);
+json_int_t json_integer_value(const json_t *integer);
 double json_real_value(const json_t *real);
 double json_number_value(const json_t *json);
 
 int json_string_set(json_t *string, const char *value);
 int json_string_set_nocheck(json_t *string, const char *value);
-int json_integer_set(json_t *integer, long value);
+int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
 
 

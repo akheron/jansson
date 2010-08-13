@@ -725,7 +725,7 @@ static json_t *json_string_copy(json_t *string)
 
 /*** integer ***/
 
-json_t *json_integer(long value)
+json_t *json_integer(json_int_t value)
 {
     json_integer_t *integer = malloc(sizeof(json_integer_t));
     if(!integer)
@@ -736,7 +736,7 @@ json_t *json_integer(long value)
     return &integer->json;
 }
 
-long json_integer_value(const json_t *json)
+json_int_t json_integer_value(const json_t *json)
 {
     if(!json_is_integer(json))
         return 0;
@@ -744,7 +744,7 @@ long json_integer_value(const json_t *json)
     return json_to_integer(json)->value;
 }
 
-int json_integer_set(json_t *json, long value)
+int json_integer_set(json_t *json, json_int_t value)
 {
     if(!json_is_integer(json))
         return -1;

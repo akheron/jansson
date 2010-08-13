@@ -3,6 +3,18 @@
  *
  * Jansson is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
+ *
+ *
+ * This file specifies a part of the site-specific configuration for
+ * Jansson, namely those things that affect the public API in
+ * jansson.h.
+ *
+ * The configure script copies this file to jansson_config.h and
+ * replaces @var@ substitutions by values that fit your system. If you
+ * cannot run the configure script, you can copy the file and do the
+ * value substitution by hand.
+ *
+ * See below for explanations of each substitution variable.
  */
 
 #ifndef JANSSON_CONFIG_H
@@ -11,7 +23,17 @@
 #ifdef __cplusplus
 #define JSON_INLINE inline
 #else
+/* If your compiler supports the inline keyword, @json_inline@ is
+   replaced with `inline', otherwise empty. */
 #define JSON_INLINE @json_inline@
+#endif
+
+/* If your compiler supports the `long long` type,
+   @json_have_long_long@ is replaced with 1, otherwise with 0. */
+#if @json_have_long_long@
+#define JSON_INTEGER_IS_LONG_LONG 1
+#else
+#define JSON_INTEGER_IS_LONG 1
 #endif
 
 #endif

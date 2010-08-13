@@ -210,10 +210,10 @@ the user to avoid them.
 
 If a circular reference is created, the memory consumed by the values
 cannot be freed by :cfunc:`json_decref()`. The reference counts never
-drops to zero because the values are keeping the circular reference to
-themselves. Moreover, trying to encode the values with any of the
-encoding functions will fail. The encoder detects circular references
-and returns an error status.
+drops to zero because the values are keeping the references to each
+other. Moreover, trying to encode the values with any of the encoding
+functions will fail. The encoder detects circular references and
+returns an error status.
 
 
 True, False and Null
@@ -287,18 +287,45 @@ String
 Number
 ======
 
-.. cfunction:: json_t *json_integer(long value)
+.. ctype:: json_int_t
+
+   This is the C type that is used to store JSON integer values. It
+   represents the widest integer type available on your system. In
+   practice it's just a typedef of ``long long`` if your compiler
+   supports it, otherwise ``long``.
+
+   Usually, you can safely use plain ``int`` in place of
+   ``json_int_t``, and the implicit C integer conversion handles the
+   rest. Only when you know that you need a full 64-bit range, you
+   should use ``json_int_t`` explicitly.
+
+``JSON_INTEGER_FORMAT``
+
+   This is a macro that expands to a :cfunc:`printf()` conversion
+   specifier that corresponds to :ctype:`json_int_t`, without the
+   leading ``%`` sign, i.e. either ``"lld"`` or ``"ld"``. This macro
+   is required because the actual type of :ctype:`json_int_t` can be
+   either ``long`` or ``long long``, and :cfunc:`printf()` reuiqres
+   different length modifiers for the two.
+
+   Example::
+
+       json_int_t x = 123123123;
+       printf("x is %" JSON_INTEGER_FORMAT "\n", x);
+
+
+.. cfunction:: json_t *json_integer(json_int_t value)
 
    .. refcounting:: new
 
    Returns a new JSON integer, or *NULL* on error.
 
-.. cfunction:: long json_integer_value(const json_t *integer)
+.. cfunction:: json_int_t json_integer_value(const json_t *integer)
 
    Returns the associated value of *integer*, or 0 if *json* is not a
    JSON integer.
 
-.. cfunction:: int json_integer_set(const json_t *integer, long value)
+.. cfunction:: int json_integer_set(const json_t *integer, json_int_t value)
 
    Sets the associated value of *integer* to *value*. Returns 0 on
    success and -1 if *integer* is not a JSON integer.

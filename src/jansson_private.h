@@ -41,7 +41,7 @@ typedef struct {
 
 typedef struct {
     json_t json;
-    long value;
+    json_int_t value;
 } json_integer_t;
 
 #define json_to_object(json_)  container_of(json_, json_object_t, json)

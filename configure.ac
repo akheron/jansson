@@ -18,6 +18,13 @@ AC_PROG_LIBTOOL
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_INT32_T
 
+AC_TYPE_LONG_LONG_INT
+case $ac_cv_type_long_long_int in
+     yes) json_have_long_long=1;;
+     *) json_have_long_long=0;;
+esac
+AC_SUBST([json_have_long_long])
+
 AC_C_INLINE
 case $ac_cv_c_inline in
     yes) json_inline=inline;;

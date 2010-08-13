@@ -52,7 +52,7 @@ typedef struct {
     int line, column;
     union {
         char *string;
-        long integer;
+        json_int_t integer;
         double real;
     } value;
 } lex_t;
@@ -401,6 +401,12 @@ out:
     free(lex->value.string);
 }
 
+#ifdef JSON_INTEGER_IS_LONG_LONG
+#define json_strtoint     strtoll
+#else
+#define json_strtoint     strtol
+#endif
+
 static int lex_scan_number(lex_t *lex, char c, json_error_t *error)
 {
     const char *saved_text;
@@ -430,22 +436,23 @@ static int lex_scan_number(lex_t *lex, char c, json_error_t *error)
     }
 
     if(c != '.' && c != 'E' && c != 'e') {
-        long value;
+        json_int_t value;
 
         lex_unget_unsave(lex, c);
 
         saved_text = strbuffer_value(&lex->saved_text);
-        value = strtol(saved_text, &end, 10);
-        assert(end == saved_text + lex->saved_text.length);
 
-        if(value == LONG_MAX && errno == ERANGE) {
-            error_set(error, lex, "too big integer");
+        errno = 0;
+        value = json_strtoint(saved_text, &end, 10);
+        if(errno == ERANGE) {
+            if(value < 0)
+                error_set(error, lex, "too big negative integer");
+            else
+                error_set(error, lex, "too big integer");
             goto out;
         }
-        else if(value == LONG_MIN && errno == ERANGE) {
-            error_set(error, lex, "too big negative integer");
-            goto out;
-        }
+
+        assert(end == saved_text + lex->saved_text.length);
 
         lex->token = TOKEN_INTEGER;
         lex->value.integer = value;
