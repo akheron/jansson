@@ -244,6 +244,12 @@ returns the same value each time.
 String
 ======
 
+Jansson uses UTF-8 as the character encoding. All JSON strings must be
+valid UTF-8 (or ASCII, as it's a subset of UTF-8). Normal null
+terminated C strings are used, so JSON strings may not contain
+embedded null characters. All other Unicode codepoints U+0001 through
+U+10FFFF are allowed.
+
 .. cfunction:: json_t *json_string(const char *value)
 
    .. refcounting:: new
@@ -286,6 +292,12 @@ String
 
 Number
 ======
+
+The JSON specification only contains one numeric type, "number". The C
+programming language has distinct types for integer and floating-point
+numbers, so for practical reasons Jansson also has distinct types for
+the two. They are called "integer" and "real", respectively. For more
+information, see :ref:`rfc-conformance`.
 
 .. ctype:: json_int_t
 
@@ -695,10 +707,12 @@ This sections describes the functions that can be used to decode JSON
 text to the Jansson representation of JSON data. The JSON
 specification requires that a JSON text is either a serialized array
 or object, and this requirement is also enforced with the following
-functions.
+functions. In other words, the top level value in the JSON text being
+decoded must be either array or object.
 
-The only supported character encoding is UTF-8 (which ASCII is a
-subset of).
+See :ref:`rfc-conformance` for a discussion on Jansson's conformance
+to the JSON specification. It explains many design decisions that
+affect especially the behavior of the decoder.
 
 .. ctype:: json_error_t
 
@@ -786,7 +800,8 @@ only if they are exactly the same value, but also if they have equal
   values are equal. An integer value is never equal to a real value,
   though.
 
-* Two strings are equal if their contained UTF-8 strings are equal.
+* Two strings are equal if their contained UTF-8 strings are equal,
+  byte by byte. Unicode comparison algorithms are not implemented.
 
 * Two arrays are equal if they have the same number of elements and
   each element in the first array is equal to the corresponding

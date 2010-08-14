@@ -1,3 +1,5 @@
+.. _rfc-conformance:
+
 ***************
 RFC Conformance
 ***************

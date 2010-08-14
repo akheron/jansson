@@ -8,11 +8,12 @@
 #ifndef JANSSON_PRIVATE_H
 #define JANSSON_PRIVATE_H
 
+#include <stddef.h>
 #include "jansson.h"
 #include "hashtable.h"
 
 #define container_of(ptr_, type_, member_)  \
-    ((type_ *)((char *)ptr_ - (size_t)&((type_ *)0)->member_))
+    ((type_ *)((char *)ptr_ - offsetof(type_, member_)))
 
 typedef struct {
     json_t json;
@@ -52,7 +53,7 @@ typedef struct {
 
 typedef struct {
     size_t serial;
-    char key[];
+    char key[1];
 } object_key_t;
 
 const object_key_t *jsonp_object_iter_fullkey(void *iter);
