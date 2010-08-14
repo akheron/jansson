@@ -296,8 +296,20 @@ Number
 
    Usually, you can safely use plain ``int`` in place of
    ``json_int_t``, and the implicit C integer conversion handles the
-   rest. Only when you know that you need a full 64-bit range, you
+   rest. Only when you know that you need the full 64-bit range, you
    should use ``json_int_t`` explicitly.
+
+``JSON_INTEGER_IS_LONG_LONG``
+
+   This is a preprocessor variable that holds the value 1 if
+   :ctype:`json_int_t` is ``long long``, and 0 if it's ``long``. It
+   can be used as follows::
+
+       #if JSON_INTEGER_IS_LONG_LONG
+       /* Code specific for long long */
+       #else
+       /* Code specific for long */
+       #endif
 
 ``JSON_INTEGER_FORMAT``
 

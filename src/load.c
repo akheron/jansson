@@ -401,7 +401,7 @@ out:
     free(lex->value.string);
 }
 
-#ifdef JSON_INTEGER_IS_LONG_LONG
+#if JSON_INTEGER_IS_LONG_LONG
 #define json_strtoint     strtoll
 #else
 #define json_strtoint     strtol

@@ -11,29 +11,24 @@
  *
  * The configure script copies this file to jansson_config.h and
  * replaces @var@ substitutions by values that fit your system. If you
- * cannot run the configure script, you can copy the file and do the
- * value substitution by hand.
- *
- * See below for explanations of each substitution variable.
+ * cannot run the configure script, you can do the value substitution
+ * by hand.
  */
 
 #ifndef JANSSON_CONFIG_H
 #define JANSSON_CONFIG_H
 
+/* If your compiler supports the inline keyword in C, JSON_INLINE is
+   defined to `inline', otherwise empty. In C++, the inline is always
+   supported. */
 #ifdef __cplusplus
 #define JSON_INLINE inline
 #else
-/* If your compiler supports the inline keyword, @json_inline@ is
-   replaced with `inline', otherwise empty. */
 #define JSON_INLINE @json_inline@
 #endif
 
 /* If your compiler supports the `long long` type,
-   @json_have_long_long@ is replaced with 1, otherwise with 0. */
-#if @json_have_long_long@
-#define JSON_INTEGER_IS_LONG_LONG 1
-#else
-#define JSON_INTEGER_IS_LONG 1
-#endif
+   JSON_INTEGER_IS_LONG_LONG is defined to 1, otherwise to 0. */
+#define JSON_INTEGER_IS_LONG_LONG @json_have_long_long@
 
 #endif
