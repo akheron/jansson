@@ -5,27 +5,24 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#include <config.h>
-
 #include <stdlib.h>
+#include <jansson_config.h>   /* for JSON_INLINE */
+#include "jansson_private.h"  /* for container_of() */
 #include "hashtable.h"
 
 typedef struct hashtable_list list_t;
 typedef struct hashtable_pair pair_t;
 typedef struct hashtable_bucket bucket_t;
 
-#define container_of(ptr_, type_, member_)                      \
-    ((type_ *)((char *)ptr_ - (size_t)&((type_ *)0)->member_))
-
 #define list_to_pair(list_)  container_of(list_, pair_t, list)
 
-static inline void list_init(list_t *list)
+static JSON_INLINE void list_init(list_t *list)
 {
     list->next = list;
     list->prev = list;
 }
 
-static inline void list_insert(list_t *list, list_t *node)
+static JSON_INLINE void list_insert(list_t *list, list_t *node)
 {
     node->next = list;
     node->prev = list->prev;
@@ -33,13 +30,13 @@ static inline void list_insert(list_t *list, list_t *node)
     list->prev = node;
 }
 
-static inline void list_remove(list_t *list)
+static JSON_INLINE void list_remove(list_t *list)
 {
     list->prev->next = list->next;
     list->next->prev = list->prev;
 }
 
-static inline int bucket_is_empty(hashtable_t *hashtable, bucket_t *bucket)
+static JSON_INLINE int bucket_is_empty(hashtable_t *hashtable, bucket_t *bucket)
 {
     return bucket->first == &hashtable->list && bucket->first == bucket->last;
 }
@@ -67,7 +64,7 @@ static size_t primes[] = {
 };
 static const size_t num_primes = sizeof(primes) / sizeof(size_t);
 
-static inline size_t num_buckets(hashtable_t *hashtable)
+static JSON_INLINE size_t num_buckets(hashtable_t *hashtable)
 {
     return primes[hashtable->num_buckets];
 }

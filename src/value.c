@@ -7,8 +7,6 @@
 
 #define _GNU_SOURCE
 
-#include <config.h>
-
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +18,7 @@
 #include "util.h"
 
 
-static inline void json_init(json_t *json, json_type type)
+static JSON_INLINE void json_init(json_t *json, json_type type)
 {
     json->type = type;
     json->refcount = 1;
