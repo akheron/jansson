@@ -17,6 +17,10 @@
 no need to include stdint.h separately. If inttypes.h doesn't define
 int32_t, it's defined in config.h. */
 #include <inttypes.h>
+#else
+#ifdef _WIN32
+typedef int int32_t;
+#endif
 #endif
 
 int utf8_encode(int codepoint, char *buffer, int *size);
