@@ -8,8 +8,8 @@
 #define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
+#include "jansson_private.h"
 #include "strbuffer.h"
-#include "util.h"
 
 #define STRBUFFER_MIN_SIZE  16
 #define STRBUFFER_FACTOR    2

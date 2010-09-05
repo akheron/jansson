@@ -11,7 +11,6 @@ libjansson_la_SOURCES = \
 	strbuffer.h \
 	utf.c \
 	utf.h \
-	util.h \
 	value.c
 libjansson_la_LDFLAGS = \
 	-export-symbols-regex '^json_' \

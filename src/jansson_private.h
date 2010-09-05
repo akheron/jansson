@@ -15,6 +15,11 @@
 #define container_of(ptr_, type_, member_)  \
     ((type_ *)((char *)ptr_ - offsetof(type_, member_)))
 
+/* On some platforms, max() may already be defined */
+#ifndef max
+#define max(a, b)  ((a) > (b) ? (a) : (b))
+#endif
+
 typedef struct {
     json_t json;
     hashtable_t hashtable;

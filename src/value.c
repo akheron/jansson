@@ -15,7 +15,6 @@
 #include "hashtable.h"
 #include "jansson_private.h"
 #include "utf.h"
-#include "util.h"
 
 
 static JSON_INLINE void json_init(json_t *json, json_type type)
