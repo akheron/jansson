@@ -149,7 +149,7 @@ If an error occurs, our function ``request`` prints the error and
 returns *NULL*, so it's enough to just return 1 from the main
 function.
 
-Next we'll call :cfunc:`json_loads()` to decode the JSON text we got
+Next we'll call :func:`json_loads()` to decode the JSON text we got
 as a response::
 
     root = json_loads(text, 0, &error);
@@ -162,8 +162,8 @@ as a response::
     }
 
 We don't need the JSON text anymore, so we can free the ``text``
-variable right after decoding it. If :cfunc:`json_loads()` fails, it
-returns *NULL* and sets error information to the :ctype:`json_error_t`
+variable right after decoding it. If :func:`json_loads()` fails, it
+returns *NULL* and sets error information to the :type:`json_error_t`
 structure given as the second parameter. In this case, our program
 prints the error information out and returns 1 from the main function.
 
@@ -182,8 +182,8 @@ First, we'll extract the ``commits`` array from the JSON response::
 
 This is the array that contains objects describing latest commits in
 the repository. We check that the returned value really is an array.
-If the key ``commits`` doesn't exist, :cfunc:`json_object_get()`
-returns *NULL*, but :cfunc:`json_is_array()` handles this case, too.
+If the key ``commits`` doesn't exist, :func:`json_object_get()`
+returns *NULL*, but :func:`json_is_array()` handles this case, too.
 
 Then we proceed to loop over all the commits in the array::
 
@@ -200,9 +200,9 @@ Then we proceed to loop over all the commits in the array::
         }
     ...
 
-The function :cfunc:`json_array_size()` returns the size of a JSON
+The function :func:`json_array_size()` returns the size of a JSON
 array. First, we again declare some variables and then extract the
-i'th element of the ``commits`` array using :cfunc:`json_array_get()`.
+i'th element of the ``commits`` array using :func:`json_array_get()`.
 We also check that the resulting value is a JSON object.
 
 Next we'll extract the commit ID and commit message, and check that
@@ -225,7 +225,7 @@ they both are JSON strings::
 
 And finally, we'll print the first 8 characters of the commit ID and
 the first line of the commit message. A C-style string is extracted
-from a JSON string using :cfunc:`json_string_value()`::
+from a JSON string using :func:`json_string_value()`::
 
         message_text = json_string_value(message);
         printf("%.8s %.*s\n",
@@ -235,9 +235,9 @@ from a JSON string using :cfunc:`json_string_value()`::
     }
 
 After sending the HTTP request, we decoded the JSON text using
-:cfunc:`json_loads()`, remember? It returns a *new reference* to the
+:func:`json_loads()`, remember? It returns a *new reference* to the
 JSON value it decodes. When we're finished with the value, we'll need
-to decrease the reference count using :cfunc:`json_decref()`. This way
+to decrease the reference count using :func:`json_decref()`. This way
 Jansson can release the resources::
 
     json_decref(root);
