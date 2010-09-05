@@ -10,6 +10,9 @@ Compiling and Installing Jansson
 The Jansson source is available at
 http://www.digip.org/jansson/releases/.
 
+Unix-like systems
+-----------------
+
 Unpack the source tarball and change to the source directory:
 
 .. parsed-literal::
@@ -51,11 +54,31 @@ used as described above.
 .. _libtool: http://www.gnu.org/software/libtool/
 
 
+Windows
+-------
+
+On Windows (and other non-Unix-like systems), you may be unable to run
+the ``./configure`` script. In this case, follow these steps. All the
+files mentioned can be found in the ``src/`` directory.
+
+1. Rename ``jansson_config.h.win32`` to ``jansson_config.h``. This
+   file has some platform-specific parameters that are normally filled
+   in by the ``./configure`` script.
+
+2. Make ``jansson.h`` and ``jansson_config.h`` available to the
+   compiler, so that they can be found when compiling programs that
+   use Jansson.
+
+3. Compile all the ``.c`` files (in the ``src/`` directory) into a
+   library file. Make the library available to the compiler, as in
+   step 2.
+
+
 Installing Prebuilt Binary Packages
 -----------------------------------
 
-Binary ``.deb`` packages for Ubuntu are available in `this PPA`_ at
-Launchpad_. Follow the instructions in the PPA ("Technical details
+Binary ``.deb`` packages for Ubuntu Linux are available in `this PPA`_
+at Launchpad_. Follow the instructions in the PPA ("Technical details
 about this PPA" link) to take the PPA into use. Then install the -dev
 package::
 
