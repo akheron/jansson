@@ -835,30 +835,21 @@ double json_number_value(const json_t *json)
 
 json_t *json_true(void)
 {
-    static json_t the_true = {
-        .type = JSON_TRUE,
-        .refcount = (size_t)-1
-    };
+    static json_t the_true = {JSON_TRUE, (size_t)-1};
     return &the_true;
 }
 
 
 json_t *json_false(void)
 {
-    static json_t the_false = {
-        .type = JSON_FALSE,
-        .refcount = (size_t)-1
-    };
+    static json_t the_false = {JSON_FALSE, (size_t)-1};
     return &the_false;
 }
 
 
 json_t *json_null(void)
 {
-    static json_t the_null = {
-        .type = JSON_NULL,
-        .refcount = (size_t)-1
-    };
+    static json_t the_null = {JSON_NULL, (size_t)-1};
     return &the_null;
 }
 
