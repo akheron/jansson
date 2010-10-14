@@ -47,6 +47,8 @@ json_object_iter_set_new
 json_dumps
 json_dumpf
 json_dump_file
+json_error_line
+json_error_msg
 json_loads
 json_loadf
 json_load_file

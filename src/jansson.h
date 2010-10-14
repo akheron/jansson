@@ -168,18 +168,19 @@ json_t *json_copy(json_t *value);
 json_t *json_deep_copy(json_t *value);
 
 
+/* error reporting */
+
+typedef struct json_error_t json_error_t;
+
+const char *json_error_msg(const json_error_t *error);
+int json_error_line(const json_error_t *error);
+
+
 /* loading, printing */
 
-#define JSON_ERROR_TEXT_LENGTH  160
-
-typedef struct {
-    char text[JSON_ERROR_TEXT_LENGTH];
-    int line;
-} json_error_t;
-
-json_t *json_loads(const char *input, size_t flags, json_error_t *error);
-json_t *json_loadf(FILE *input, size_t flags, json_error_t *error);
-json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
+json_t *json_loads(const char *input, size_t flags, json_error_t **error);
+json_t *json_loadf(FILE *input, size_t flags, json_error_t **error);
+json_t *json_load_file(const char *path, size_t flags, json_error_t **error);
 
 #define JSON_INDENT(n)      (n & 0x1F)
 #define JSON_COMPACT        0x20

@@ -12,13 +12,16 @@
 int main()
 {
     json_t *json;
-    json_error_t error;
+    json_error_t *error;
 
     json = json_load_file("/path/to/nonexistent/file.json", 0, &error);
-    if(error.line != -1)
+    if(json)
+      fail("json_load didn't return an error!");
+    if(json_error_line(error) != -1)
         fail("json_load_file returned an invalid line number");
-    if(strcmp(error.text, "unable to open /path/to/nonexistent/file.json: No such file or directory") != 0)
+    if(strcmp(json_error_msg(error), "unable to open /path/to/nonexistent/file.json: No such file or directory") != 0)
         fail("json_load_file returned an invalid error message");
 
+    free(error);
     return 0;
 }

@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     size_t flags = 0;
 
     json_t *json;
-    json_error_t error;
+    json_error_t *error;
 
     if(argc != 1) {
         fprintf(stderr, "usage: %s\n", argv[0]);
@@ -61,7 +61,10 @@ int main(int argc, char *argv[])
 
     json = json_loadf(stdin, 0, &error);
     if(!json) {
-        fprintf(stderr, "%d\n%s\n", error.line, error.text);
+        fprintf(stderr, "%d\n%s\n",
+                json_error_line(error),
+                json_error_msg(error));
+        free(error);
         return 1;
     }
 
