@@ -264,8 +264,6 @@ U+10FFFF are allowed.
    UTF-8. Use this function only if you are certain that this really
    is the case (e.g. you have already checked it by other means).
 
-   .. versionadded:: 1.2
-
 .. function:: const char *json_string_value(const json_t *string)
 
    Returns the associated value of *string* as a null terminated UTF-8
@@ -277,16 +275,12 @@ U+10FFFF are allowed.
    valid UTF-8 encoded Unicode string. Returns 0 on success and -1 on
    error.
 
-   .. versionadded:: 1.1
-
 .. function:: int json_string_set_nocheck(const json_t *string, const char *value)
 
    Like :func:`json_string_set`, but doesn't check that *value* is
    valid UTF-8. Use this function only if you are certain that this
    really is the case (e.g. you have already checked it by other
    means).
-
-   .. versionadded:: 1.2
 
 
 Number
@@ -353,8 +347,6 @@ information, see :ref:`rfc-conformance`.
    Sets the associated value of *integer* to *value*. Returns 0 on
    success and -1 if *integer* is not a JSON integer.
 
-   .. versionadded:: 1.1
-
 .. function:: json_t *json_real(double value)
 
    .. refcounting:: new
@@ -370,8 +362,6 @@ information, see :ref:`rfc-conformance`.
 
    Sets the associated value of *real* to *value*. Returns 0 on
    success and -1 if *real* is not a JSON real.
-
-   .. versionadded:: 1.1
 
 In addition to the functions above, there's a common query function
 for integers and reals:
@@ -423,8 +413,6 @@ A JSON array is an ordered collection of other JSON values.
    This is useful when *value* is newly created and not used after
    the call.
 
-   .. versionadded:: 1.1
-
 .. function:: int json_array_append(json_t *array, json_t *value)
 
    Appends *value* to the end of *array*, growing the size of *array*
@@ -436,15 +424,11 @@ A JSON array is an ordered collection of other JSON values.
    *value*. This is useful when *value* is newly created and not used
    after the call.
 
-   .. versionadded:: 1.1
-
 .. function:: int json_array_insert(json_t *array, size_t index, json_t *value)
 
    Inserts *value* to *array* at position *index*, shifting the
    elements at *index* and after it one position towards the end of
    the array. Returns 0 on success and -1 on error.
-
-   .. versionadded:: 1.1
 
 .. function:: int json_array_insert_new(json_t *array, size_t index, json_t *value)
 
@@ -452,29 +436,21 @@ A JSON array is an ordered collection of other JSON values.
    *value*. This is useful when *value* is newly created and not used
    after the call.
 
-   .. versionadded:: 1.1
-
 .. function:: int json_array_remove(json_t *array, size_t index)
 
    Removes the element in *array* at position *index*, shifting the
    elements after *index* one position towards the start of the array.
    Returns 0 on success and -1 on error.
 
-   .. versionadded:: 1.1
-
 .. function:: int json_array_clear(json_t *array)
 
    Removes all elements from *array*. Returns 0 on sucess and -1 on
    error.
 
-   .. versionadded:: 1.1
-
 .. function:: int json_array_extend(json_t *array, json_t *other_array)
 
    Appends all elements in *other_array* to the end of *array*.
    Returns 0 on success and -1 on error.
-
-   .. versionadded:: 1.1
 
 
 Object
@@ -494,8 +470,6 @@ Unicode string and the value is any JSON value.
 
    Returns the number of elements in *object*, or 0 if *object* is not
    a JSON object.
-
-   .. versionadded:: 1.1
 
 .. function:: json_t *json_object_get(const json_t *object, const char *key)
 
@@ -518,15 +492,11 @@ Unicode string and the value is any JSON value.
    really is the case (e.g. you have already checked it by other
    means).
 
-   .. versionadded:: 1.2
-
 .. function:: int json_object_set_new(json_t *object, const char *key, json_t *value)
 
    Like :func:`json_object_set()` but steals the reference to
    *value*. This is useful when *value* is newly created and not used
    after the call.
-
-   .. versionadded:: 1.1
 
 .. function:: int json_object_set_new_nocheck(json_t *object, const char *key, json_t *value)
 
@@ -534,8 +504,6 @@ Unicode string and the value is any JSON value.
    valid UTF-8. Use this function only if you are certain that this
    really is the case (e.g. you have already checked it by other
    means).
-
-   .. versionadded:: 1.2
 
 .. function:: int json_object_del(json_t *object, const char *key)
 
@@ -548,14 +516,10 @@ Unicode string and the value is any JSON value.
    Remove all elements from *object*. Returns 0 on success and -1 if
    *object* is not a JSON object.
 
-   .. versionadded:: 1.1
-
 .. function:: int json_object_update(json_t *object, json_t *other)
 
    Update *object* with the key-value pairs from *other*, overwriting
    existing keys. Returns 0 on success or -1 on error.
-
-   .. versionadded:: 1.1
 
 
 The following functions implement an iteration protocol for objects:
@@ -572,8 +536,6 @@ The following functions implement an iteration protocol for objects:
    *key* is not found in *object*. Iterating forward to the end of
    *object* only yields all key-value pairs of the object if *key*
    happens to be the first key in the underlying hash table.
-
-   .. versionadded:: 1.3
 
 .. function:: void *json_object_iter_next(json_t *object, void *iter)
 
@@ -596,15 +558,11 @@ The following functions implement an iteration protocol for objects:
    Set the value of the key-value pair in *object*, that is pointed to
    by *iter*, to *value*.
 
-   .. versionadded:: 1.3
-
 .. function:: int json_object_iter_set_new(json_t *object, void *iter, json_t *value)
 
    Like :func:`json_object_iter_set()`, but steals the reference to
    *value*. This is useful when *value* is newly created and not used
    after the call.
-
-   .. versionadded:: 1.3
 
 The iteration protocol can be used for example as follows::
 
@@ -651,29 +609,21 @@ can be ORed together to obtain *flags*.
    and values to ``":"``. Without this flag, the corresponding
    separators are ``", "`` and ``": "`` for more readable output.
 
-   .. versionadded:: 1.2
-
 ``JSON_ENSURE_ASCII``
    If this flag is used, the output is guaranteed to consist only of
    ASCII characters. This is achived by escaping all Unicode
    characters outside the ASCII range.
-
-   .. versionadded:: 1.2
 
 ``JSON_SORT_KEYS``
    If this flag is used, all the objects in output are sorted by key.
    This is useful e.g. if two JSON texts are diffed or visually
    compared.
 
-   .. versionadded:: 1.2
-
 ``JSON_PRESERVE_ORDER``
    If this flag is used, object keys in the output are sorted into the
    same order in which they were first inserted to the object. For
    example, decoding a JSON text and then encoding with this flag
    preserves the order of object keys.
-
-   .. versionadded:: 1.3
 
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
@@ -842,8 +792,6 @@ equal.
    Returns 0 if they are inequal or one or both of the pointers are
    *NULL*.
 
-   .. versionadded:: 1.2
-
 
 Copying
 =======
@@ -866,12 +814,8 @@ copied in a recursive fashion.
 
    Returns a shallow copy of *value*, or *NULL* on error.
 
-   .. versionadded:: 1.2
-
 .. function:: json_t *json_deep_copy(json_t *value)
 
    .. refcounting:: new
 
    Returns a deep copy of *value*, or *NULL* on error.
-
-   .. versionadded:: 1.2
