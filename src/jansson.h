@@ -85,6 +85,14 @@ void json_decref(json_t *json)
 }
 
 
+/* error reporting */
+
+typedef struct json_error_t json_error_t;
+
+const char *json_error_msg(const json_error_t *error);
+int json_error_line(const json_error_t *error);
+
+
 /* getters, setters, manipulation */
 
 size_t json_object_size(const json_t *object);
@@ -156,6 +164,8 @@ int json_string_set_nocheck(json_t *string, const char *value);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
 
+json_t *json_pack(json_error_t **error, const char *fmt, ...);
+int json_unpack(json_t *root, json_error_t **error, const char *fmt, ...);
 
 /* equality */
 
@@ -166,14 +176,6 @@ int json_equal(json_t *value1, json_t *value2);
 
 json_t *json_copy(json_t *value);
 json_t *json_deep_copy(json_t *value);
-
-
-/* error reporting */
-
-typedef struct json_error_t json_error_t;
-
-const char *json_error_msg(const json_error_t *error);
-int json_error_line(const json_error_t *error);
 
 
 /* loading, printing */

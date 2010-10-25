@@ -60,13 +60,6 @@ typedef struct {
 
 /*** error reporting ***/
 
-#define JSON_ERROR_MSG_LENGTH 160
-
-struct json_error_t {
-  char msg[JSON_ERROR_MSG_LENGTH];
-  int line;
-};
-
 const char *json_error_msg(const json_error_t *error)
 {
     return error ? error->msg : NULL;

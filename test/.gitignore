@@ -9,3 +9,5 @@ suites/api/test_number
 suites/api/test_object
 suites/api/test_simple
 suites/api/test_cpp
+suites/api/test_pack
+suites/api/test_unpack

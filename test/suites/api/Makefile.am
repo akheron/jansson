@@ -8,7 +8,9 @@ check_PROGRAMS = \
 	test_load \
 	test_simple \
 	test_number \
-	test_object
+	test_object \
+	test_pack \
+	test_unpack
 
 test_array_SOURCES = test_array.c util.h
 test_copy_SOURCES = test_copy.c util.h
@@ -17,6 +19,8 @@ test_load_SOURCES = test_load.c util.h
 test_simple_SOURCES = test_simple.c util.h
 test_number_SOURCES = test_number.c util.h
 test_object_SOURCES = test_object.c util.h
+test_pack_SOURCES = test_pack.c util.h
+test_unpack_SOURCES = test_unpack.c util.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_CFLAGS = -Wall -Werror
