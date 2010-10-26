@@ -701,13 +701,23 @@ affect especially the behavior of the decoder.
    .. member:: const char *text
 
       The error message (in UTF-8), or an empty string if a message is
-      not available. This is actually a fixed-length character array,
-      but should be considered constant.
+      not available.
 
    .. member:: int line
 
       The line number on which the error occurred, or -1 if this
       information is not available.
+
+   .. member:: int column
+
+      The character column on which the error occurred, or -1 if this
+      information is not available.
+
+   .. member:: const char *source
+
+      Source of the error. This is (a part of) the file name when
+      using :func:`json_load_file()`, or a special identifier in angle
+      brackets otherwise (e.g. ``<string>``).
 
    The normal use of :type:`json_error_t` is to allocate it on the
    stack, and pass a pointer to a decoding function. Example::

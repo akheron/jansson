@@ -87,11 +87,14 @@ void json_decref(json_t *json)
 
 /* error reporting */
 
-#define JSON_ERROR_TEXT_LENGTH  160
+#define JSON_ERROR_TEXT_LENGTH    160
+#define JSON_ERROR_SOURCE_LENGTH   80
 
 typedef struct {
     char text[JSON_ERROR_TEXT_LENGTH];
     int line;
+    int column;
+    char source[JSON_ERROR_SOURCE_LENGTH];
 } json_error_t;
 
 

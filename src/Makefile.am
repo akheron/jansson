@@ -3,6 +3,7 @@ include_HEADERS = jansson.h jansson_config.h
 lib_LTLIBRARIES = libjansson.la
 libjansson_la_SOURCES = \
 	dump.c \
+	error.c \
 	hashtable.c \
 	hashtable.h \
 	jansson_private.h \

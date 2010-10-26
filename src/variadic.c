@@ -13,31 +13,6 @@
 #include <jansson.h>
 #include "jansson_private.h"
 
-static void error_init(json_error_t *error)
-{
-    if(error)
-    {
-        error->text[0] = '\0';
-        error->line = -1;
-    }
-}
-
-static void error_set(json_error_t *error, const int line, const char *msg, ...)
-{
-    va_list ap;
-
-    if(!error || error->text[0] != '\0') {
-        /* error already set */
-        return;
-    }
-
-    error->line = line;
-
-    va_start(ap, msg);
-    vsnprintf(error->text, JSON_ERROR_TEXT_LENGTH, msg, ap);
-    va_end(ap);
-}
-
 json_t *json_pack(json_error_t *error, const char *fmt, ...) {
     int fmt_length = strlen(fmt);
     va_list ap;
@@ -63,7 +38,7 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
     stack = calloc(fmt_length, sizeof(json_t *));
     free_list = calloc(fmt_length, sizeof(json_t *));
 
-    error_init(error);
+    jsonp_error_init(error, "");
 
     if(!stack || !free_list)
         goto out;
@@ -81,7 +56,7 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
             case ',': /* Element spacer */
                 if(!root)
                 {
-                    error_set(error, line,
+                    jsonp_error_set(error, line, -1,
                               "Unexpected COMMA precedes root element!");
                     root = NULL;
                     goto out;
@@ -89,7 +64,7 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
 
                 if(!cur)
                 {
-                    error_set(error, line,
+                    jsonp_error_set(error, line, -1,
                               "Unexpected COMMA outside a list or object!");
                     root = NULL;
                     goto out;
@@ -97,7 +72,8 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
 
                 if(key)
                 {
-                    error_set(error, line, "Expected KEY, got COMMA!");
+                    jsonp_error_set(error, line, -1,
+                              "Expected KEY, got COMMA!");
                     root = NULL;
                     goto out;
                 }
@@ -106,16 +82,18 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
             case ':': /* Key/value separator */
                 if(!key)
                 {
-                    error_set(error, line, "Got key/value separator without "
-                            "a key preceding it!");
+                    jsonp_error_set(error, line, -1,
+                              "Got key/value separator without "
+                              "a key preceding it!");
                     root = NULL;
                     goto out;
                 }
 
                 if(!json_is_object(cur))
                 {
-                    error_set(error, line, "Got a key/value separator "
-                            "(':') outside an object!");
+                    jsonp_error_set(error, line, -1,
+                              "Got a key/value separator "
+                              "(':') outside an object!");
                     root = NULL;
                     goto out;
                 }
@@ -127,7 +105,8 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
 
                 if(key)
                 {
-                    error_set(error, line, "OBJECT or ARRAY ended with an "
+                    jsonp_error_set(error, line, -1,
+                              "OBJECT or ARRAY ended with an "
                               "incomplete key/value pair!");
                     root = NULL;
                     goto out;
@@ -135,7 +114,7 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
 
                 if(depth <= 0)
                 {
-                    error_set(error, line,
+                    jsonp_error_set(error, line, -1,
                               "Too many close-brackets '%c'", *fmt);
                     root = NULL;
                     goto out;
@@ -143,7 +122,7 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
 
                 if(*fmt == ']' && !json_is_array(cur))
                 {
-                    error_set(error, line,
+                    jsonp_error_set(error, line, -1,
                               "Stray close-array ']' character");
                     root = NULL;
                     goto out;
@@ -151,7 +130,7 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
 
                 if(*fmt == '}' && !json_is_object(cur))
                 {
-                    error_set(error, line,
+                    jsonp_error_set(error, line, -1,
                               "Stray close-object '}' character");
                     root = NULL;
                     goto out;
@@ -173,7 +152,7 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
 
                 if(!s)
                 {
-                    error_set(error, line,
+                    jsonp_error_set(error, line, -1,
                               "Refusing to handle a NULL string");
                     root = NULL;
                     goto out;
@@ -221,8 +200,8 @@ obj_common:     free_list[free_count++] = obj;
                 if(json_is_object(cur)) {
                     if(!key)
                     {
-                        error_set(error, line,
-                                "Expected key, got identifier '%c'!", *fmt);
+                        jsonp_error_set(error, line, -1,
+                              "Expected key, got identifier '%c'!", *fmt);
                         root = NULL;
                         goto out;
                     }
@@ -241,7 +220,8 @@ obj_common:     free_list[free_count++] = obj;
                 }
                 else
                 {
-                    error_set(error, line, "Can't figure out where to attach "
+                    jsonp_error_set(error, line, -1,
+                              "Can't figure out where to attach "
                               "'%c' object!", *fmt);
                     root = NULL;
                     goto out;
@@ -261,7 +241,7 @@ obj_common:     free_list[free_count++] = obj;
     va_end(ap);
 
     if(depth != 0) {
-        error_set(error, line,
+        jsonp_error_set(error, line, -1,
                 "Missing object or array close-brackets in format string");
         root = NULL;
         goto out;
@@ -301,13 +281,13 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
 
     int fmt_length = strlen(fmt);
 
-    error_init(error);
+    jsonp_error_init(error, "");
 
     /* Allocation provisioned for worst case */
     stack = calloc(fmt_length, sizeof(json_t *));
     if(!stack)
     {
-        error_set(error, line, "Out of memory!");
+        jsonp_error_set(error, line, -1, "Out of memory!");
         rv = -1;
         goto out;
     }
@@ -335,7 +315,7 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
 
                 if(!cur)
                 {
-                    error_set(error, line,
+                    jsonp_error_set(error, line, -1,
                               "Unexpected COMMA outside a list or object!");
                     rv = -1;
                     goto out;
@@ -343,7 +323,8 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
 
                 if(key)
                 {
-                    error_set(error, line, "Expected KEY, got COMMA!");
+                    jsonp_error_set(error, line, -1,
+                              "Expected KEY, got COMMA!");
                     rv = -1;
                     goto out;
                 }
@@ -352,7 +333,7 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
             case ':': /* Key/value separator */
                 if(!json_is_object(cur) || !key)
                 {
-                    error_set(error, line, "Unexpected ':'");
+                    jsonp_error_set(error, line, -1, "Unexpected ':'");
                     rv = -1;
                     goto out;
                 }
@@ -369,7 +350,8 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
                 {
                     if(!key)
                     {
-                        error_set(error, line, "Objects can't be keys");
+                        jsonp_error_set(error, line, -1,
+                              "Objects can't be keys");
                         rv = -1;
                         goto out;
                     }
@@ -419,28 +401,28 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
 
                 if(json_is_array(cur) && *fmt!=']')
                 {
-                    error_set(error, line, "Missing ']'");
+                    jsonp_error_set(error, line, -1, "Missing ']'");
                     rv = -1;
                     goto out;
                 }
 
                 if(json_is_object(cur) && *fmt!='}')
                 {
-                    error_set(error, line, "Missing '}'");
+                    jsonp_error_set(error, line, -1, "Missing '}'");
                     rv = -1;
                     goto out;
                 }
 
                 if(key)
                 {
-                    error_set(error, line, "Unexpected '%c'", *fmt);
+                    jsonp_error_set(error, line, -1, "Unexpected '%c'", *fmt);
                     rv = -1;
                     goto out;
                 }
 
                 if(depth <= 0)
                 {
-                    error_set(error, line, "Unexpected '%c'", *fmt);
+                    jsonp_error_set(error, line, -1, "Unexpected '%c'", *fmt);
                     rv = -1;
                     goto out;
                 }
@@ -474,7 +456,7 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
                 {
                     if(!key)
                     {
-                        error_set(error, line,
+                        jsonp_error_set(error, line, -1,
                                   "Only strings may be used as keys!");
                         rv = -1;
                         goto out;
@@ -492,7 +474,7 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
                 }
                 else
                 {
-                    error_set(error, line,
+                    jsonp_error_set(error, line, -1,
                               "Unsure how to retrieve JSON object '%c'",
                               *fmt);
                     rv = -1;
@@ -504,7 +486,7 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
                     case 's':
                         if(!json_is_string(obj))
                         {
-                            error_set(error, line,
+                            jsonp_error_set(error, line, -1,
                                     "Type mismatch! Object wasn't a string.");
                             rv = -2;
                             goto out;
@@ -515,7 +497,7 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
                     case 'i':
                         if(!json_is_integer(obj))
                         {
-                            error_set(error, line,
+                            jsonp_error_set(error, line, -1,
                                     "Type mismatch! Object wasn't an integer.");
                             rv = -2;
                             goto out;
@@ -526,7 +508,7 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
                     case 'b':
                         if(!json_is_boolean(obj))
                         {
-                            error_set(error, line,
+                            jsonp_error_set(error, line, -1,
                                     "Type mismatch! Object wasn't a boolean.");
                             rv = -2;
                             goto out;
@@ -537,7 +519,7 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
                     case 'f':
                         if(!json_is_number(obj))
                         {
-                            error_set(error, line,
+                            jsonp_error_set(error, line, -1,
                                     "Type mismatch! Object wasn't a real.");
                             rv = -2;
                             goto out;
@@ -560,7 +542,7 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
                         break;
 
                     default:
-                        error_set(error, line,
+                        jsonp_error_set(error, line, -1,
                                 "Unknown format character '%c'", *fmt);
                         rv = -1;
                         goto out;

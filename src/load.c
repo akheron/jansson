@@ -60,54 +60,46 @@ typedef struct {
 
 /*** error reporting ***/
 
-static void error_init(json_error_t *error)
-{
-    if(error)
-    {
-        error->text[0] = '\0';
-        error->line = -1;
-    }
-}
-
 static void error_set(json_error_t *error, const lex_t *lex,
                       const char *msg, ...)
 {
     va_list ap;
-    char text[JSON_ERROR_TEXT_LENGTH];
+    char msg_text[JSON_ERROR_TEXT_LENGTH];
 
-    if(!error || error->text[0] != '\0') {
-        /* error already set */
+    int line = -1, col = -1;
+    const char *result = msg_text;
+
+    if(!error)
         return;
-    }
 
     va_start(ap, msg);
-    vsnprintf(text, JSON_ERROR_TEXT_LENGTH, msg, ap);
+    vsnprintf(msg_text, JSON_ERROR_TEXT_LENGTH, msg, ap);
     va_end(ap);
 
     if(lex)
     {
         const char *saved_text = strbuffer_value(&lex->saved_text);
-        error->line = lex->line;
+        char msg_with_context[JSON_ERROR_TEXT_LENGTH];
+
+        line = lex->line;
+
         if(saved_text && saved_text[0])
         {
             if(lex->saved_text.length <= 20) {
-                snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
-                         "%s near '%s'", text, saved_text);
+                snprintf(msg_with_context, JSON_ERROR_TEXT_LENGTH,
+                         "%s near '%s'", msg_text, saved_text);
+                result = msg_with_context;
             }
-            else
-                snprintf(error->text, JSON_ERROR_TEXT_LENGTH, "%s", text);
         }
         else
         {
-            snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
-                     "%s near end of file", text);
+            snprintf(msg_with_context, JSON_ERROR_TEXT_LENGTH,
+                     "%s near end of file", msg_text);
+            result = msg_with_context;
         }
     }
-    else
-    {
-        error->line = -1;
-        snprintf(error->text, JSON_ERROR_TEXT_LENGTH, "%s", text);
-    }
+
+    jsonp_error_set(error, line, col, "%s", result);
 }
 
 
@@ -774,8 +766,6 @@ static json_t *parse_value(lex_t *lex, json_error_t *error)
 
 static json_t *parse_json(lex_t *lex, json_error_t *error)
 {
-    error_init(error);
-
     lex_scan(lex, error);
     if(lex->token != '[' && lex->token != '{') {
         error_set(error, lex, "'[' or '{' expected");
@@ -822,6 +812,8 @@ json_t *json_loads(const char *string, size_t flags, json_error_t *error)
     if(lex_init(&lex, string_get, string_eof, (void *)&stream_data))
         return NULL;
 
+    jsonp_error_init(error, "<string>");
+
     result = parse_json(&lex, error);
     if(!result)
         goto out;
@@ -841,11 +833,19 @@ out:
 json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 {
     lex_t lex;
+    const char *source;
     json_t *result;
     (void)flags; /* unused */
 
     if(lex_init(&lex, (get_func)fgetc, (eof_func)feof, input))
         return NULL;
+
+    if(input == stdin)
+        source = "<stdin>";
+    else
+        source = "<stream>";
+
+    jsonp_error_init(error, source);
 
     result = parse_json(&lex, error);
     if(!result)
@@ -868,7 +868,7 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
     json_t *result;
     FILE *fp;
 
-    error_init(error);
+    jsonp_error_init(error, path);
 
     fp = fopen(path, "r");
     if(!fp)
