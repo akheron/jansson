@@ -13,35 +13,32 @@
 #include <jansson.h>
 #include "jansson_private.h"
 
-static void error_init(json_error_t **error)
+static void error_init(json_error_t *error)
 {
     if(error)
-        *error = NULL;
+    {
+        error->text[0] = '\0';
+        error->line = -1;
+    }
 }
 
-static void error_set(json_error_t **error, const int line, const char *msg, ...)
+static void error_set(json_error_t *error, const int line, const char *msg, ...)
 {
     va_list ap;
 
-    if(!error || *error)
+    if(!error || error->text[0] != '\0') {
+        /* error already set */
         return;
+    }
 
-    *error = calloc(1, sizeof(json_error_t));
-    if(!*error)
-        return;
+    error->line = line;
 
     va_start(ap, msg);
-    vsnprintf((*error)->msg, JSON_ERROR_MSG_LENGTH, msg, ap);
+    vsnprintf(error->text, JSON_ERROR_TEXT_LENGTH, msg, ap);
     va_end(ap);
-
-    va_start(ap, msg);
-    vfprintf(stderr, msg, ap);
-    va_end(ap);
-
-    (*error)->line = line;
 }
 
-json_t *json_pack(json_error_t **error, const char *fmt, ...) {
+json_t *json_pack(json_error_t *error, const char *fmt, ...) {
     int fmt_length = strlen(fmt);
     va_list ap;
 
@@ -286,7 +283,7 @@ out:
     return(root);
 }
 
-int json_unpack(json_t *root, json_error_t **error, const char *fmt, ...) {
+int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
     va_list ap;
 
     int rv=0; /* Return value */

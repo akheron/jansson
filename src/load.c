@@ -60,64 +60,53 @@ typedef struct {
 
 /*** error reporting ***/
 
-const char *json_error_msg(const json_error_t *error)
-{
-    return error ? error->msg : NULL;
-}
-
-int json_error_line(const json_error_t *error)
-{
-    return error ? error->line : -1;
-}
-
-static void error_init(json_error_t **error)
+static void error_init(json_error_t *error)
 {
     if(error)
-        *error = NULL;
+    {
+        error->text[0] = '\0';
+        error->line = -1;
+    }
 }
 
-static void error_set(json_error_t **error, const lex_t *lex,
+static void error_set(json_error_t *error, const lex_t *lex,
                       const char *msg, ...)
 {
     va_list ap;
-    char text[JSON_ERROR_MSG_LENGTH];
+    char text[JSON_ERROR_TEXT_LENGTH];
 
-    if(!error || *error) {
-        /* error not given or already set */
+    if(!error || error->text[0] != '\0') {
+        /* error already set */
         return;
     }
 
-    *error = malloc(sizeof(json_error_t));
-    if(!(*error))
-        return;
-
     va_start(ap, msg);
-    vsnprintf(text, JSON_ERROR_MSG_LENGTH, msg, ap);
+    vsnprintf(text, JSON_ERROR_TEXT_LENGTH, msg, ap);
     va_end(ap);
 
     if(lex)
     {
         const char *saved_text = strbuffer_value(&lex->saved_text);
-        (*error)->line = lex->line;
+        error->line = lex->line;
         if(saved_text && saved_text[0])
         {
             if(lex->saved_text.length <= 20) {
-                snprintf((*error)->msg, JSON_ERROR_MSG_LENGTH,
+                snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
                          "%s near '%s'", text, saved_text);
             }
             else
-                snprintf((*error)->msg, JSON_ERROR_MSG_LENGTH, "%s", text);
+                snprintf(error->text, JSON_ERROR_TEXT_LENGTH, "%s", text);
         }
         else
         {
-            snprintf((*error)->msg, JSON_ERROR_MSG_LENGTH,
+            snprintf(error->text, JSON_ERROR_TEXT_LENGTH,
                      "%s near end of file", text);
         }
     }
     else
     {
-        (*error)->line = -1;
-        snprintf((*error)->msg, JSON_ERROR_MSG_LENGTH, "%s", text);
+        error->line = -1;
+        snprintf(error->text, JSON_ERROR_TEXT_LENGTH, "%s", text);
     }
 }
 
@@ -135,7 +124,7 @@ stream_init(stream_t *stream, get_func get, eof_func eof, void *data)
     stream->buffer_pos = 0;
 }
 
-static char stream_get(stream_t *stream, json_error_t **error)
+static char stream_get(stream_t *stream, json_error_t *error)
 {
     char c;
 
@@ -193,7 +182,7 @@ static void stream_unget(stream_t *stream, char c)
 }
 
 
-static int lex_get(lex_t *lex, json_error_t **error)
+static int lex_get(lex_t *lex, json_error_t *error)
 {
     return stream_get(&lex->stream, error);
 }
@@ -208,7 +197,7 @@ static void lex_save(lex_t *lex, char c)
     strbuffer_append_byte(&lex->saved_text, c);
 }
 
-static int lex_get_save(lex_t *lex, json_error_t **error)
+static int lex_get_save(lex_t *lex, json_error_t *error)
 {
     char c = stream_get(&lex->stream, error);
     lex_save(lex, c);
@@ -256,7 +245,7 @@ static int32_t decode_unicode_escape(const char *str)
     return value;
 }
 
-static void lex_scan_string(lex_t *lex, json_error_t **error)
+static void lex_scan_string(lex_t *lex, json_error_t *error)
 {
     char c;
     const char *p;
@@ -418,7 +407,7 @@ out:
 #define json_strtoint     strtol
 #endif
 
-static int lex_scan_number(lex_t *lex, char c, json_error_t **error)
+static int lex_scan_number(lex_t *lex, char c, json_error_t *error)
 {
     const char *saved_text;
     char *end;
@@ -515,7 +504,7 @@ out:
     return -1;
 }
 
-static int lex_scan(lex_t *lex, json_error_t **error)
+static int lex_scan(lex_t *lex, json_error_t *error)
 {
     char c;
 
@@ -621,9 +610,9 @@ static void lex_close(lex_t *lex)
 
 /*** parser ***/
 
-static json_t *parse_value(lex_t *lex, json_error_t **error);
+static json_t *parse_value(lex_t *lex, json_error_t *error);
 
-static json_t *parse_object(lex_t *lex, json_error_t **error)
+static json_t *parse_object(lex_t *lex, json_error_t *error)
 {
     json_t *object = json_object();
     if(!object)
@@ -688,7 +677,7 @@ error:
     return NULL;
 }
 
-static json_t *parse_array(lex_t *lex, json_error_t **error)
+static json_t *parse_array(lex_t *lex, json_error_t *error)
 {
     json_t *array = json_array();
     if(!array)
@@ -728,7 +717,7 @@ error:
     return NULL;
 }
 
-static json_t *parse_value(lex_t *lex, json_error_t **error)
+static json_t *parse_value(lex_t *lex, json_error_t *error)
 {
     json_t *json;
 
@@ -783,7 +772,7 @@ static json_t *parse_value(lex_t *lex, json_error_t **error)
     return json;
 }
 
-static json_t *parse_json(lex_t *lex, json_error_t **error)
+static json_t *parse_json(lex_t *lex, json_error_t *error)
 {
     error_init(error);
 
@@ -822,7 +811,7 @@ static int string_eof(void *data)
     return (stream->data[stream->pos] == '\0');
 }
 
-json_t *json_loads(const char *string, size_t flags, json_error_t **error)
+json_t *json_loads(const char *string, size_t flags, json_error_t *error)
 {
     lex_t lex;
     json_t *result;
@@ -849,7 +838,7 @@ out:
     return result;
 }
 
-json_t *json_loadf(FILE *input, size_t flags, json_error_t **error)
+json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 {
     lex_t lex;
     json_t *result;
@@ -874,7 +863,7 @@ out:
     return result;
 }
 
-json_t *json_load_file(const char *path, size_t flags, json_error_t **error)
+json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 {
     json_t *result;
     FILE *fp;

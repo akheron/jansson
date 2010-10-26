@@ -665,93 +665,74 @@ affect especially the behavior of the decoder.
 
 .. type:: json_error_t
 
-   This opaque structure is used to return information on errors from
-   the decoding functions. See below for more discussion on error
-   reporting.
+   This data structure is used to return information on decoding
+   errors from the decoding functions. Its definition is repeated
+   here::
 
-The following functions perform the JSON decoding:
+      #define JSON_ERROR_TEXT_LENGTH  160
 
-.. function:: json_t *json_loads(const char *input, size_t flags, json_error_t **error)
+      typedef struct {
+          char text[JSON_ERROR_TEXT_LENGTH];
+          int line;
+      } json_error_t;
+
+   *line* is the line number on which the error occurred, or -1 if
+   this information is not available. *text* contains the error
+   message (in UTF-8), or an empty string if a message is not
+   available.
+
+   The normal usef of :type:`json_error_t` is to allocate it normally
+   on the stack, and pass a pointer to a decoding function. Example::
+
+      int main() {
+          json_t *json;
+          json_error_t error;
+
+          json = json_load_file("/path/to/file.json", 0, &error);
+          if(!json) {
+              /* the error variable contains error information */
+          }
+          ...
+      }
+
+   Also note that if the decoding succeeded (``json != NULL`` in the
+   above example), the contents of ``error`` are unspecified.
+
+   All decoding functions also accept *NULL* as the
+   :type:`json_error_t` pointer, in which case no error information
+   is returned to the caller.
+
+The following functions perform the actual JSON decoding.
+
+.. function:: json_t *json_loads(const char *input, size_t flags, json_error_t *error)
 
    .. refcounting:: new
 
    Decodes the JSON string *input* and returns the array or object it
-   contains, or *NULL* on error. If *error* is non-*NULL*, it's used
-   to return error information. See below for more discussion on error
-   reporting. *flags* is currently unused, and should be set to 0.
+   contains, or *NULL* on error, in which case *error* is filled with
+   information about the error. See above for discussion on the
+   *error* parameter. *flags* is currently unused, and should be set
+   to 0.
 
-.. function:: json_t *json_loadf(FILE *input, size_t flags, json_error_t **error)
+.. function:: json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 
    .. refcounting:: new
 
    Decodes the JSON text in stream *input* and returns the array or
-   object it contains, or *NULL* on error. If *error* is non-*NULL*,
-   it's used to return error information. See below for more
-   discussion on error reporting. *flags* is currently unused, and
-   should be set to 0.
+   object it contains, or *NULL* on error, in which case *error* is
+   filled with information about the error. See above for discussion
+   on the *error* parameter. *flags* is currently unused, and should
+   be set to 0.
 
-.. function:: json_t *json_load_file(const char *path, size_t flags, json_error_t **error)
+.. function:: json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 
    .. refcounting:: new
 
    Decodes the JSON text in file *path* and returns the array or
-   object it contains, or *NULL* on error. If *error* is non-*NULL*,
-   it's used to return error information. See below for more
-   discussion on error reporting. *flags* is currently unused, and
-   should be set to 0.
-
-
-The :type:`json_error_t` parameter, that all decoding function accept
-as their last parameter, is used to return information on decoding
-errors to the caller. It is used by having a ``json_error_t *``
-variable and passing a pointer to this variable to a decoding
-function. Example::
-
-   int main() {
-       json_t *json;
-       json_error_t *error;
-
-       json = json_load_file("/path/to/file.json", 0, &error);
-       if(!json) {
-           /* the error variable contains error information */
-           fprintf(stderr, "Decoding error occured on line %d: %s\n", json_error_line(error), json_error_msg(error));
-           free(error);
-       }
-
-       /* ... */
-   }
-
-Note that **the caller must free the error structure** after use if a
-decoding error occurs. If decoding is succesfully finished, *error* is
-simply set to *NULL* by the decoding function.
-
-All decoding functions also accept *NULL* as the :type:`json_error_t`
-pointer, in which case no error information is returned to the caller.
-Example::
-
-   int main() {
-       json_t *json;
-
-       json = json_load_file("/path/to/file.json", 0, NULL);
-       if(!json) {
-           /* A decoding error occured but no error information is available */
-       }
-
-       /* ... */
-   }
-
-:type:`json_error_t` is totally opaque and must be queried using the
-following functions:
-
-.. function:: const char *json_error_msg(const json_error_t *error)
-
-   Return a pointer to an UTF-8 encoded string that describes the
-   error in human-readable text, or *NULL* if *error* is *NULL*.
-
-.. function:: int json_error_line(const json_error_t *error)
-
-   Return the line numer on which the error occurred, or -1 if this
-   information is not available or if *error* is *NULL*.
+   object it contains, or *NULL* on error, in which case *error* is
+   filled with information about the error. See above for discussion
+   on the *error* parameter. *flags* is currently unused, and should
+   be set to 0.
 
 
 Equality

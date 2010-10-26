@@ -63,11 +63,4 @@ typedef struct {
 
 const object_key_t *jsonp_object_iter_fullkey(void *iter);
 
-#define JSON_ERROR_MSG_LENGTH 160
-
-struct json_error_t {
-  char msg[JSON_ERROR_MSG_LENGTH];
-  int line;
-};
-
 #endif

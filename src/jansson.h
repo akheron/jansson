@@ -87,10 +87,12 @@ void json_decref(json_t *json)
 
 /* error reporting */
 
-typedef struct json_error_t json_error_t;
+#define JSON_ERROR_TEXT_LENGTH  160
 
-const char *json_error_msg(const json_error_t *error);
-int json_error_line(const json_error_t *error);
+typedef struct {
+    char text[JSON_ERROR_TEXT_LENGTH];
+    int line;
+} json_error_t;
 
 
 /* getters, setters, manipulation */
@@ -164,8 +166,8 @@ int json_string_set_nocheck(json_t *string, const char *value);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
 
-json_t *json_pack(json_error_t **error, const char *fmt, ...);
-int json_unpack(json_t *root, json_error_t **error, const char *fmt, ...);
+json_t *json_pack(json_error_t *error, const char *fmt, ...);
+int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...);
 
 /* equality */
 
@@ -180,9 +182,9 @@ json_t *json_deep_copy(json_t *value);
 
 /* loading, printing */
 
-json_t *json_loads(const char *input, size_t flags, json_error_t **error);
-json_t *json_loadf(FILE *input, size_t flags, json_error_t **error);
-json_t *json_load_file(const char *path, size_t flags, json_error_t **error);
+json_t *json_loads(const char *input, size_t flags, json_error_t *error);
+json_t *json_loadf(FILE *input, size_t flags, json_error_t *error);
+json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
 
 #define JSON_INDENT(n)      (n & 0x1F)
 #define JSON_COMPACT        0x20
