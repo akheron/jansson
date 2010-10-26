@@ -663,47 +663,6 @@ See :ref:`rfc-conformance` for a discussion on Jansson's conformance
 to the JSON specification. It explains many design decisions that
 affect especially the behavior of the decoder.
 
-.. type:: json_error_t
-
-   This data structure is used to return information on decoding
-   errors from the decoding functions. Its definition is repeated
-   here::
-
-      #define JSON_ERROR_TEXT_LENGTH  160
-
-      typedef struct {
-          char text[JSON_ERROR_TEXT_LENGTH];
-          int line;
-      } json_error_t;
-
-   *line* is the line number on which the error occurred, or -1 if
-   this information is not available. *text* contains the error
-   message (in UTF-8), or an empty string if a message is not
-   available.
-
-   The normal usef of :type:`json_error_t` is to allocate it normally
-   on the stack, and pass a pointer to a decoding function. Example::
-
-      int main() {
-          json_t *json;
-          json_error_t error;
-
-          json = json_load_file("/path/to/file.json", 0, &error);
-          if(!json) {
-              /* the error variable contains error information */
-          }
-          ...
-      }
-
-   Also note that if the decoding succeeded (``json != NULL`` in the
-   above example), the contents of ``error`` are unspecified.
-
-   All decoding functions also accept *NULL* as the
-   :type:`json_error_t` pointer, in which case no error information
-   is returned to the caller.
-
-The following functions perform the actual JSON decoding.
-
 .. function:: json_t *json_loads(const char *input, size_t flags, json_error_t *error)
 
    .. refcounting:: new
@@ -733,6 +692,43 @@ The following functions perform the actual JSON decoding.
    filled with information about the error. See above for discussion
    on the *error* parameter. *flags* is currently unused, and should
    be set to 0.
+
+.. type:: json_error_t
+
+   This data structure is used to return information on decoding
+   errors from the decoding functions.
+
+   .. member:: const char *text
+
+      The error message (in UTF-8), or an empty string if a message is
+      not available. This is actually a fixed-length character array,
+      but should be considered constant.
+
+   .. member:: int line
+
+      The line number on which the error occurred, or -1 if this
+      information is not available.
+
+   The normal use of :type:`json_error_t` is to allocate it on the
+   stack, and pass a pointer to a decoding function. Example::
+
+      int main() {
+          json_t *json;
+          json_error_t error;
+
+          json = json_load_file("/path/to/file.json", 0, &error);
+          if(!json) {
+              /* the error variable contains error information */
+          }
+          ...
+      }
+
+   Also note that if the decoding succeeded (``json != NULL`` in the
+   above example), the contents of ``error`` are unspecified.
+
+   All decoding functions also accept *NULL* as the
+   :type:`json_error_t` pointer, in which case no error information
+   is returned to the caller.
 
 
 Equality
