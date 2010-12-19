@@ -17,9 +17,46 @@ All declarations are in :file:`jansson.h`, so it's enough to
 
 in each source file.
 
-All constants are prefixed ``JSON_`` and other identifiers with
-``json_``. Type names are suffixed with ``_t`` and ``typedef``\ 'd so
-that the ``struct`` keyword need not be used.
+All constants are prefixed with ``JSON_`` (except for those describing
+the library version, prefixed with ``JANSSON_``). Other identifiers
+are prefixed with ``json_``. Type names are suffixed with ``_t`` and
+``typedef``\ 'd so that the ``struct`` keyword need not be used.
+
+
+Library Version
+===============
+
+The Jansson version is of the form *A.B.C*, where *A* is the major
+version, *B* is the minor version and *C* is the micro version. If the
+micro version is zero, it's omitted from the version string, i.e. the
+version string is just *A.B*.
+
+When a new release only fixes bugs and doesn't add new features or
+functionality, the micro version is incremented. When new features are
+added in a backwards compatible way, the minor version is incremented
+and the micro version is set to zero. When there are backwards
+incompatible changes, the major version is incremented and others are
+set to zero.
+
+The following preprocessor constants specify the current version of
+the library:
+
+``JANSSON_VERSION_MAJOR``, ``JANSSON_VERSION_MINOR``, ``JANSSON_VERSION_MICRO``
+  Integers specifying the major, minor and micro versions,
+  respectively.
+
+``JANSSON_VERSION``
+  A string representation of the current version, e.g. ``"1.2.1"`` or
+  ``"1.3"``.
+
+``JANSSON_VERSION_HEX``
+  A 3-byte hexadecimal representation of the version, e.g.
+  ``0x010201`` for version 1.2.1 and ``0x010300`` for version 1.3.
+  This is useful in numeric comparisions, e.g.::
+
+      #if JANSSON_VERSION_HEX >= 0x010300
+      /* Code specific to version 1.3 and above */
+      #endif
 
 
 Value Representation
