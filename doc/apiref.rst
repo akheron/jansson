@@ -306,6 +306,10 @@ U+10FFFF are allowed.
    Returns the associated value of *string* as a null terminated UTF-8
    encoded string, or *NULL* if *string* is not a JSON string.
 
+   The retuned value is read-only and must not be modified or freed by
+   the user. It is valid as long as *string* exists, i.e. as long as
+   its reference count has not dropped to zero.
+
 .. function:: int json_string_set(const json_t *string, const char *value)
 
    Sets the associated value of *string* to *value*. *value* must be a
