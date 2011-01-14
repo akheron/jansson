@@ -13,89 +13,134 @@
 #include <jansson.h>
 #include "jansson_private.h"
 
-json_t *json_pack(json_error_t *error, const char *fmt, ...) {
-    int fmt_length = strlen(fmt);
-    va_list ap;
-
-    /* Keep a stack of containers (lists and objects) */
-    int depth = 0;
-    json_t **stack = NULL;
-
-    /* Keep a list of objects we create in case of error */
-    int free_count = 0;
-    json_t **free_list = NULL;
-
-    json_t *cur = NULL; /* Current container */
+static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const fmt, va_list *ap)
+{
     json_t *root = NULL; /* root object */
     json_t *obj = NULL;
+
+    /* Scanner variables */
+    const char *tok = fmt;
+    const char *etok;
+    int etok_depth;
 
     char *key = NULL; /* Current key in an object */
     char *s;
 
-    int line = 1;
+    int line=1;
+    int column=1;
 
-    /* Allocation provisioned for worst case */
-    stack = calloc(fmt_length, sizeof(json_t *));
-    free_list = calloc(fmt_length, sizeof(json_t *));
+    /* Skip whitespace at the beginning of the string. */
+    while(size && *tok == ' ') {
+        tok++;
+        size--;
+        column++;
+    }
 
-    jsonp_error_init(error, "");
+    if(size <= 0) {
+        jsonp_error_set(error, 1, 1, "Empty format string!");
+        return(NULL);
+    }
 
-    if(!stack || !free_list)
-        goto out;
+    /* tok must contain either a container type, or a length-1 string for a
+     * simple type. */
+    if(*tok == '[')
+        root = json_array();
+    else if(*tok == '{')
+        root = json_object();
+    else
+    {
+        /* Simple object. Permit trailing spaces, otherwise complain. */
+        if((ssize_t)strspn(tok+1, " ") < size-1)
+        {
+            jsonp_error_set(error, 1, 1,
+                    "Expected a single object, got %i", size);
+            return(NULL);
+        }
 
-    va_start(ap, fmt);
-    while(*fmt) {
-        switch(*fmt) {
+        switch(*tok)
+        {
+            case 's': /* string */
+                s = va_arg(*ap, char*);
+                if(!s)
+                {
+                    jsonp_error_set(error, 1, 1,
+                              "Refusing to handle a NULL string");
+                    return(NULL);
+                }
+                return(json_string(s));
+
+            case 'n': /* null */
+                return(json_null());
+
+            case 'b': /* boolean */
+                obj = va_arg(*ap, int) ?
+                    json_true() : json_false();
+                return(obj);
+
+            case 'i': /* integer */
+                return(json_integer(va_arg(*ap, int)));
+
+            case 'f': /* double-precision float */
+                return(json_real(va_arg(*ap, double)));
+
+            case 'O': /* a json_t object; increments refcount */
+                obj = va_arg(*ap, json_t *);
+                json_incref(obj);
+                return(obj);
+
+            case 'o': /* a json_t object; doesn't increment refcount */
+                obj = va_arg(*ap, json_t *);
+                return(obj);
+
+            default: /* Whoops! */
+                jsonp_error_set(error, 1, 1,
+                        "Didn't understand format character '%c'",
+                        *tok);
+                return(NULL);
+        }
+    }
+
+    /* Move past container opening token */
+    tok++;
+    column++;
+
+    while(tok-fmt < size) {
+        switch(*tok) {
             case '\n':
                 line++;
+                column=0;
                 break;
 
             case ' ': /* Whitespace */
                 break;
 
             case ',': /* Element spacer */
-                if(!root)
-                {
-                    jsonp_error_set(error, line, -1,
-                              "Unexpected COMMA precedes root element!");
-                    root = NULL;
-                    goto out;
-                }
-
-                if(!cur)
-                {
-                    jsonp_error_set(error, line, -1,
-                              "Unexpected COMMA outside a list or object!");
-                    root = NULL;
-                    goto out;
-                }
-
                 if(key)
                 {
-                    jsonp_error_set(error, line, -1,
+                    jsonp_error_set(error, line, column,
                               "Expected KEY, got COMMA!");
-                    root = NULL;
-                    goto out;
+                    json_decref(root);
+                    return(NULL);
                 }
                 break;
 
             case ':': /* Key/value separator */
                 if(!key)
                 {
-                    jsonp_error_set(error, line, -1,
+                    jsonp_error_set(error, line, column,
                               "Got key/value separator without "
                               "a key preceding it!");
-                    root = NULL;
-                    goto out;
+                    json_decref(root);
+                    return(NULL);
                 }
 
-                if(!json_is_object(cur))
+                if(!json_is_object(root))
                 {
-                    jsonp_error_set(error, line, -1,
+                    jsonp_error_set(error, line, column,
                               "Got a key/value separator "
                               "(':') outside an object!");
-                    root = NULL;
-                    goto out;
+                    json_decref(root);
+                    return(NULL);
                 }
 
                 break;
@@ -103,62 +148,85 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
             case ']': /* Close array or object */
             case '}':
 
-                if(key)
+                if(tok-fmt + (ssize_t)strspn(tok+1, " ") != size-1)
                 {
-                    jsonp_error_set(error, line, -1,
-                              "OBJECT or ARRAY ended with an "
-                              "incomplete key/value pair!");
-                    root = NULL;
-                    goto out;
+                    jsonp_error_set(error, line, column,
+                              "Unexpected close-bracket '%c'", *tok);
+                    json_decref(root);
+                    return(NULL);
                 }
 
-                if(depth <= 0)
+                if((*tok == ']' && !json_is_array(root)) ||
+                   (*tok == '}' && !json_is_object(root)))
                 {
-                    jsonp_error_set(error, line, -1,
-                              "Too many close-brackets '%c'", *fmt);
-                    root = NULL;
-                    goto out;
+                    jsonp_error_set(error, line, column,
+                              "Stray close-array '%c' character", *tok);
+                    json_decref(root);
+                    return(NULL);
                 }
-
-                if(*fmt == ']' && !json_is_array(cur))
-                {
-                    jsonp_error_set(error, line, -1,
-                              "Stray close-array ']' character");
-                    root = NULL;
-                    goto out;
-                }
-
-                if(*fmt == '}' && !json_is_object(cur))
-                {
-                    jsonp_error_set(error, line, -1,
-                              "Stray close-object '}' character");
-                    root = NULL;
-                    goto out;
-                }
-
-                cur = stack[--depth];
-                break;
+                return(root);
 
             case '[':
-                obj = json_array();
-                goto obj_common;
-
             case '{':
-                obj = json_object();
-                goto obj_common;
 
-            case 's': /* string */
-                s = va_arg(ap, char*);
+                /* Shortcut so we don't mess up the column count in error
+                 * messages */
+                if(json_is_object(root) && !key)
+                    goto common;
+
+                /* Find corresponding close bracket */
+                etok = tok+1;
+                etok_depth = 1;
+                while(etok_depth) {
+
+                    if(!*etok || etok-fmt >= size) {
+                        jsonp_error_set(error, line, column,
+                                "Couldn't find matching close bracket for '%c'",
+                                *tok);
+                        json_decref(root);
+                        return(NULL);
+                    }
+
+                    if(*tok==*etok)
+                        etok_depth++;
+                    else if(*tok=='[' && *etok==']') {
+                        etok_depth--;
+                        break;
+                    } else if(*tok=='{' && *etok=='}') {
+                        etok_depth--;
+                        break;
+                    }
+
+                    etok++;
+                }
+
+                /* Recurse */
+                obj = json_vnpack(error, etok-tok+1, tok, ap);
+                if(!obj) {
+                    /* error should already be set */
+                    error->column += column-1;
+                    error->line += line-1;
+                    json_decref(root);
+                    return(NULL);
+                }
+                column += etok-tok;
+                tok = etok;
+                goto common;
+
+            case 's':
+                /* Handle strings specially, since they're used for both keys
+                 * and values */
+                s = va_arg(*ap, char*);
 
                 if(!s)
                 {
-                    jsonp_error_set(error, line, -1,
+                    jsonp_error_set(error, line, column,
                               "Refusing to handle a NULL string");
-                    root = NULL;
-                    goto out;
+                    json_decref(root);
+                    return(NULL);
                 }
 
-                if(json_is_object(cur) && !key)
+                if(json_is_object(root) && !key)
                 {
                     /* It's a key */
                     key = s;
@@ -166,400 +234,360 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...) {
                 }
 
                 obj = json_string(s);
-                goto obj_common;
+                goto common;
 
-            case 'n': /* null */
-                obj = json_null();
-                goto obj_common;
+        default:
+                obj = json_vnpack(error, 1, tok, ap);
+                if(!obj) {
+                    json_decref(root);
+                    return(NULL);
+                }
 
-            case 'b': /* boolean */
-                obj = va_arg(ap, int) ?
-                    json_true() : json_false();
-                goto obj_common;
-
-            case 'i': /* integer */
-                obj = json_integer(va_arg(ap, int));
-                goto obj_common;
-
-            case 'f': /* double-precision float */
-                obj = json_real(va_arg(ap, double));
-                goto obj_common;
-
-            case 'O': /* a json_t object; increments refcount */
-                obj = va_arg(ap, json_t *);
-                json_incref(obj);
-                goto obj_common;
-
-            case 'o': /* a json_t object; doesn't increment refcount */
-                obj = va_arg(ap, json_t *);
-                goto obj_common;
-
-obj_common:     free_list[free_count++] = obj;
-
-                /* Root this object to its parent */
-                if(json_is_object(cur)) {
+common:
+                /* Add to container */
+                if(json_is_object(root)) {
                     if(!key)
                     {
-                        jsonp_error_set(error, line, -1,
-                              "Expected key, got identifier '%c'!", *fmt);
-                        root = NULL;
-                        goto out;
+                        jsonp_error_set(error, line, column,
+                              "Expected key, got identifier '%c'!", *tok);
+                        json_decref(root);
+                        return(NULL);
                     }
 
-                    json_object_set_new(cur, key, obj);
+                    json_object_set_new(root, key, obj);
                     key = NULL;
-                }
-                else if(json_is_array(cur))
-                {
-                    json_array_append_new(cur, obj);
-                }
-                else if(!root)
-                {
-                    printf("Rooting\n");
-                    root = obj;
                 }
                 else
                 {
-                    jsonp_error_set(error, line, -1,
-                              "Can't figure out where to attach "
-                              "'%c' object!", *fmt);
-                    root = NULL;
-                    goto out;
+                    json_array_append_new(root, obj);
                 }
-
-                /* If it was a container ('[' or '{'), descend on the stack */
-                if(json_is_array(obj) || json_is_object(obj))
-                {
-                    stack[depth++] = cur;
-                    cur = obj;
-                }
-
                 break;
         }
-        fmt++;
-    }
-    va_end(ap);
-
-    if(depth != 0) {
-        jsonp_error_set(error, line, -1,
-                "Missing object or array close-brackets in format string");
-        root = NULL;
-        goto out;
+        tok++;
+        column++;
     }
 
-    /* Success: don't free everything we just built! */
-    free_count = 0;
-
-out:
-    while(free_count)
-        json_decref(free_list[--free_count]);
-
-    if(free_list)
-        free(free_list);
-
-    if(stack)
-        free(stack);
-
-    return(root);
+    /* Whoops -- we didn't match the close bracket! */
+    jsonp_error_set(error, line, column, "Missing close array or object!");
+    json_decref(root);
+    return(NULL);
 }
 
-int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...) {
-    va_list ap;
+static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const char *fmt, va_list *ap)
+{
 
     int rv=0; /* Return value */
     int line = 1; /* Line number */
+    int column = 1; /* Column */
 
-    /* Keep a stack of containers (lists and objects) */
-    int depth = 0;
-    json_t **stack;
-
+    /* Position markers for arrays or objects */
     int array_index = 0;
-    char *key = NULL; /* Current key in an object */
+    char *key = NULL;
 
-    json_t *cur = NULL; /* Current container */
-    json_t *obj = NULL;
+    const char **s;
 
-    int fmt_length = strlen(fmt);
+    /* Scanner variables */
+    const char *tok = fmt;
+    const char *etok;
+    int etok_depth;
 
-    jsonp_error_init(error, "");
+    json_t *obj;
 
-    /* Allocation provisioned for worst case */
-    stack = calloc(fmt_length, sizeof(json_t *));
-    if(!stack)
-    {
-        jsonp_error_set(error, line, -1, "Out of memory!");
-        rv = -1;
-        goto out;
-    }
-
-    /* Even if we're successful, we need to know if the number of
-     * arguments provided matches the number of JSON objects.
-     * We can do this by counting the elements in every array or
-     * object we open up, and decrementing the count as we visit
-     * their children. */
+    /* If we're successful, we need to know if the number of arguments
+     * provided matches the number of JSON objects.  We can do this by
+     * counting the elements in every array or object we open up, and
+     * decrementing the count as we visit their children. */
     int unvisited = 0;
 
-    va_start(ap, fmt);
-    while(*fmt)
+    /* Skip whitespace at the beginning of the string. */
+    while(size && *tok == ' ') {
+        tok++;
+        size--;
+        column++;
+    }
+
+    if(size <= 0) {
+        jsonp_error_set(error, 1, 1, "Empty format string!");
+        return(-2);
+    }
+
+    /* tok must contain either a container type, or a length-1 string for a
+     * simple type. */
+    if(*tok != '[' && *tok != '{')
     {
-        switch(*fmt)
+        /* Simple object. Permit trailing spaces, otherwise complain. */
+        if((ssize_t)strspn(tok+1, " ") < size-1)
         {
+            jsonp_error_set(error, 1, 1,
+                    "Expected a single object, got %i", size);
+            return(-1);
+        }
+
+        switch(*tok)
+        {
+            case 's':
+                if(!json_is_string(root))
+                {
+                    jsonp_error_set(error, line, column,
+                            "Type mismatch! Object (%i) wasn't a string.",
+                            json_typeof(root));
+                    return(-2);
+                }
+                s = va_arg(*ap, const char **);
+                if(!s) {
+                    jsonp_error_set(error, line, column, "Passed a NULL string pointer!");
+                    return(-2);
+                }
+                *s = json_string_value(root);
+                return(0);
+
+            case 'i':
+                if(!json_is_integer(root))
+                {
+                    jsonp_error_set(error, line, column,
+                            "Type mismatch! Object (%i) wasn't an integer.",
+                            json_typeof(root));
+                    return(-2);
+                }
+                *va_arg(*ap, int*) = json_integer_value(root);
+                return(0);
+
+            case 'b':
+                if(!json_is_boolean(root))
+                {
+                    jsonp_error_set(error, line, column,
+                            "Type mismatch! Object (%i) wasn't a boolean.",
+                            json_typeof(root));
+                    return(-2);
+                }
+                *va_arg(*ap, int*) = json_is_true(root);
+                return(0);
+
+            case 'f':
+                if(!json_is_number(root))
+                {
+                    jsonp_error_set(error, line, column,
+                            "Type mismatch! Object (%i) wasn't a real.",
+                            json_typeof(root));
+                    return(-2);
+                }
+                *va_arg(*ap, double*) = json_number_value(root);
+                return(0);
+
+            case 'O':
+                json_incref(root);
+                /* Fall through */
+
+            case 'o':
+                *va_arg(*ap, json_t**) = root;
+                return(0);
+
+            case 'n':
+                /* Don't actually assign anything; we're just happy
+                 * the null turned up as promised in the format
+                 * string. */
+                return(0);
+
+            default:
+                jsonp_error_set(error, line, column,
+                        "Unknown format character '%c'", *tok);
+                return(-1);
+        }
+    }
+
+    /* Move past container opening token */
+    tok++;
+
+    while(tok-fmt < size) {
+        switch(*tok) {
+            case '\n':
+                line++;
+                column=0;
+                break;
+
             case ' ': /* Whitespace */
                 break;
 
-            case '\n': /* Line break */
-                line++;
-                break;
-
             case ',': /* Element spacer */
-
-                if(!cur)
-                {
-                    jsonp_error_set(error, line, -1,
-                              "Unexpected COMMA outside a list or object!");
-                    rv = -1;
-                    goto out;
-                }
-
                 if(key)
                 {
-                    jsonp_error_set(error, line, -1,
+                    jsonp_error_set(error, line, column,
                               "Expected KEY, got COMMA!");
-                    rv = -1;
-                    goto out;
+                    return(-2);
                 }
                 break;
 
             case ':': /* Key/value separator */
-                if(!json_is_object(cur) || !key)
+                if(!key)
                 {
-                    jsonp_error_set(error, line, -1, "Unexpected ':'");
-                    rv = -1;
-                    goto out;
+                    jsonp_error_set(error, line, column,
+                              "Got key/value separator without "
+                              "a key preceding it!");
+                    return(-2);
                 }
+
+                if(!json_is_object(root))
+                {
+                    jsonp_error_set(error, line, column,
+                              "Got a key/value separator "
+                              "(':') outside an object!");
+                    return(-2);
+                }
+
                 break;
+
+            case ']': /* Close array or object */
+            case '}':
+
+                if(tok-fmt + (ssize_t)strspn(tok+1, " ") != size-1)
+                {
+                    jsonp_error_set(error, line, column,
+                              "Unexpected close-bracket '%c'", *tok);
+                    return(-2);
+                }
+
+                if((*tok == ']' && !json_is_array(root)) ||
+                   (*tok == '}' && !json_is_object(root)))
+                {
+                    jsonp_error_set(error, line, column,
+                              "Stray close-array '%c' character", *tok);
+                    return(-2);
+                }
+                return(unvisited);
 
             case '[':
             case '{':
-                /* Fetch object */
-                if(!cur)
-                {
-                    obj = root;
-                }
-                else if(json_is_object(cur))
-                {
-                    if(!key)
-                    {
-                        jsonp_error_set(error, line, -1,
-                              "Objects can't be keys");
-                        rv = -1;
-                        goto out;
+
+                /* Find corresponding close bracket */
+                etok = tok+1;
+                etok_depth = 1;
+                while(etok_depth) {
+
+                    if(!*etok || etok-fmt >= size) {
+                        jsonp_error_set(error, line, column,
+                                "Couldn't find matching close bracket for '%c'",
+                                *tok);
+                        return(-2);
                     }
-                    obj = json_object_get(cur, key);
-                    unvisited--;
-                    key = NULL;
-                }
-                else if(json_is_array(cur))
-                {
-                    obj = json_array_get(cur, array_index);
-                    unvisited--;
-                    array_index++;
-                }
-                else
-                {
-                    assert(0);
-                }
 
-                /* Make sure we got what we expected */
-                if(*fmt=='{' && !json_is_object(obj))
-                {
-                    rv = -2;
-                    goto out;
+                    if(*tok==*etok)
+                        etok_depth++;
+                    else if(*tok=='[' && *etok==']') {
+                        etok_depth--;
+                        break;
+                    } else if(*tok=='{' && *etok=='}') {
+                        etok_depth--;
+                        break;
+                    }
+
+                    etok++;
                 }
 
-                if(*fmt=='[' && !json_is_array(obj))
-                {
-                    rv = -2;
-                    goto out;
+                /* Recurse */
+                if(json_is_array(root)) {
+                    rv = json_vnunpack(json_object_get(root, key),
+                            error, etok-tok+1, tok, ap);
+                } else {
+                    rv = json_vnunpack(json_array_get(root, array_index++),
+                            error, etok-tok+1, tok, ap);
                 }
 
-                unvisited += json_is_object(obj) ?
-                    json_object_size(obj) :
-                    json_array_size(obj);
-
-                /* Descend */
-                stack[depth++] = cur;
-                cur = obj;
-
-                key = NULL;
-
-                break;
-
-
-            case ']':
-            case '}':
-
-                if(json_is_array(cur) && *fmt!=']')
-                {
-                    jsonp_error_set(error, line, -1, "Missing ']'");
-                    rv = -1;
-                    goto out;
+                if(rv < 0) {
+                    /* error should already be set */
+                    error->column += column-1;
+                    error->line += line-1;
+                    return(rv);
                 }
 
-                if(json_is_object(cur) && *fmt!='}')
-                {
-                    jsonp_error_set(error, line, -1, "Missing '}'");
-                    rv = -1;
-                    goto out;
-                }
-
-                if(key)
-                {
-                    jsonp_error_set(error, line, -1, "Unexpected '%c'", *fmt);
-                    rv = -1;
-                    goto out;
-                }
-
-                if(depth <= 0)
-                {
-                    jsonp_error_set(error, line, -1, "Unexpected '%c'", *fmt);
-                    rv = -1;
-                    goto out;
-                }
-
-                cur = stack[--depth];
-
+                unvisited += rv;
+                column += etok-tok;
+                tok = etok;
                 break;
 
             case 's':
-                if(!key && json_is_object(cur))
-                {
-                    /* constant string for key */
-                    key = va_arg(ap, char*);
-                    break;
-                }
-                /* fall through */
+                /* Handle strings specially, since they're used for both keys
+                 * and values */
 
-            case 'i': /* integer */
-            case 'f': /* double-precision float */
-            case 'O': /* a json_t object; increments refcount */
-            case 'o': /* a json_t object; borrowed reference */
-            case 'b': /* boolean */
-            case 'n': /* null */
+                if(json_is_object(root) && !key)
+                {
+                    /* It's a key */
+                    key = va_arg(*ap, char*);
+                    printf("Got key '%s'\n", key);
 
-                /* Fetch object */
-                if(!cur)
-                {
-                    obj = root;
-                }
-                else if(json_is_object(cur))
-                {
                     if(!key)
                     {
-                        jsonp_error_set(error, line, -1,
-                                  "Only strings may be used as keys!");
-                        rv = -1;
-                        goto out;
+                        jsonp_error_set(error, line, column,
+                                  "Refusing to handle a NULL key");
+                        return(-2);
                     }
+                    break;
+                }
 
-                    obj = json_object_get(cur, key);
-                    unvisited--;
-                    key = NULL;
-                }
-                else if(json_is_array(cur))
-                {
-                    obj = json_array_get(cur, array_index);
-                    unvisited--;
-                    array_index++;
-                }
+                /* Fall through */
+
+            default:
+
+                /* Fetch the element from the JSON container */
+                if(json_is_object(root))
+                    obj = json_object_get(root, key);
                 else
-                {
-                    jsonp_error_set(error, line, -1,
-                              "Unsure how to retrieve JSON object '%c'",
-                              *fmt);
-                    rv = -1;
-                    goto out;
+                    obj = json_array_get(root, array_index++);
+
+                if(!obj) {
+                    jsonp_error_set(error, line, column,
+                            "Array/object entry didn't exist!");
+                    return(-1);
                 }
 
-                switch(*fmt)
-                {
-                    case 's':
-                        if(!json_is_string(obj))
-                        {
-                            jsonp_error_set(error, line, -1,
-                                    "Type mismatch! Object wasn't a string.");
-                            rv = -2;
-                            goto out;
-                        }
-                        *va_arg(ap, const char**) = json_string_value(obj);
-                        break;
+                rv = json_vnunpack(obj, error, 1, tok, ap);
+                if(rv != 0)
+                    return(rv);
 
-                    case 'i':
-                        if(!json_is_integer(obj))
-                        {
-                            jsonp_error_set(error, line, -1,
-                                    "Type mismatch! Object wasn't an integer.");
-                            rv = -2;
-                            goto out;
-                        }
-                        *va_arg(ap, int*) = json_integer_value(obj);
-                        break;
-
-                    case 'b':
-                        if(!json_is_boolean(obj))
-                        {
-                            jsonp_error_set(error, line, -1,
-                                    "Type mismatch! Object wasn't a boolean.");
-                            rv = -2;
-                            goto out;
-                        }
-                        *va_arg(ap, int*) = json_is_true(obj);
-                        break;
-
-                    case 'f':
-                        if(!json_is_number(obj))
-                        {
-                            jsonp_error_set(error, line, -1,
-                                    "Type mismatch! Object wasn't a real.");
-                            rv = -2;
-                            goto out;
-                        }
-                        *va_arg(ap, double*) = json_number_value(obj);
-                        break;
-
-                    case 'O':
-                        json_incref(obj);
-                        /* Fall through */
-
-                    case 'o':
-                        *va_arg(ap, json_t**) = obj;
-                        break;
-
-                    case 'n':
-                        /* Don't actually assign anything; we're just happy
-                         * the null turned up as promised in the format
-                         * string. */
-                        break;
-
-                    default:
-                        jsonp_error_set(error, line, -1,
-                                "Unknown format character '%c'", *fmt);
-                        rv = -1;
-                        goto out;
-                }
+                break;
         }
-        fmt++;
+        tok++;
+        column++;
     }
 
-    /* Return 0 if everything was matched; otherwise the number of JSON
-     * objects we didn't get to. */
-    rv = unvisited;
+    /* Whoops -- we didn't match the close bracket! */
+    jsonp_error_set(error, line, column, "Missing close array or object!");
+    return(-2);
+}
 
-out:
+json_t *json_pack(json_error_t *error, const char *fmt, ...)
+{
+    va_list ap;
+    json_t *obj;
+
+    jsonp_error_init(error, "");
+
+    if(!fmt || !*fmt) {
+        jsonp_error_set(error, 1, 1, "Null or empty format string!");
+        return(NULL);
+    }
+
+    va_start(ap, fmt);
+    obj = json_vnpack(error, strlen(fmt), fmt, &ap);
     va_end(ap);
 
-    if(stack)
-        free(stack);
+    return(obj);
+}
+
+int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...)
+{
+    va_list ap;
+    int rv;
+
+    jsonp_error_init(error, "");
+
+    if(!fmt || !*fmt) {
+        jsonp_error_set(error, 1, 1, "Null or empty format string!");
+        return(-2);;
+    }
+
+    va_start(ap, fmt);
+    rv = json_vnunpack(root, error, strlen(fmt), fmt, &ap);
+    va_end(ap);
 
     return(rv);
 }
