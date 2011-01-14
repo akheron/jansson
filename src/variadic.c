@@ -512,7 +512,6 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                 {
                     /* It's a key */
                     key = va_arg(*ap, char*);
-                    printf("Got key '%s'\n", key);
 
                     if(!key)
                     {
