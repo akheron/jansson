@@ -805,9 +805,9 @@ json_t *json_loads(const char *string, size_t flags, json_error_t *error)
 {
     lex_t lex;
     json_t *result;
-    (void)flags; /* unused */
-
     string_data_t stream_data = {string, 0};
+
+    (void)flags; /* unused */
 
     if(lex_init(&lex, string_get, string_eof, (void *)&stream_data))
         return NULL;
