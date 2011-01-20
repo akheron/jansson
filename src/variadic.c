@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2009, 2010 Petri Lehtinen <petri@digip.org>
- * Copyright (c) 2010 Graeme Smecher <graeme.smecher@mail.mcgill.ca>
+ * Copyright (c) 2009-2011 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2011 Graeme Smecher <graeme.smecher@mail.mcgill.ca>
  *
  * Jansson is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
@@ -26,8 +26,8 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
     char *key = NULL; /* Current key in an object */
     char *s;
 
-    int line=1;
-    int column=1;
+    int line = 1;
+    int column = 1;
 
     /* Skip whitespace at the beginning of the string. */
     while(size && *tok == ' ') {
@@ -38,7 +38,7 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
 
     if(size <= 0) {
         jsonp_error_set(error, 1, 1, "Empty format string!");
-        return(NULL);
+        return NULL;
     }
 
     /* tok must contain either a container type, or a length-1 string for a
@@ -54,49 +54,49 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
         {
             jsonp_error_set(error, 1, 1,
                     "Expected a single object, got %i", size);
-            return(NULL);
+            return NULL;
         }
 
         switch(*tok)
         {
             case 's': /* string */
-                s = va_arg(*ap, char*);
+                s = va_arg(*ap, char *);
                 if(!s)
                 {
                     jsonp_error_set(error, 1, 1,
                               "Refusing to handle a NULL string");
-                    return(NULL);
+                    return NULL;
                 }
-                return(json_string(s));
+                return json_string(s);
 
             case 'n': /* null */
-                return(json_null());
+                return json_null();
 
             case 'b': /* boolean */
                 obj = va_arg(*ap, int) ?
                     json_true() : json_false();
-                return(obj);
+                return obj;
 
             case 'i': /* integer */
-                return(json_integer(va_arg(*ap, int)));
+                return json_integer(va_arg(*ap, int));
 
             case 'f': /* double-precision float */
-                return(json_real(va_arg(*ap, double)));
+                return json_real(va_arg(*ap, double));
 
             case 'O': /* a json_t object; increments refcount */
                 obj = va_arg(*ap, json_t *);
                 json_incref(obj);
-                return(obj);
+                return obj;
 
             case 'o': /* a json_t object; doesn't increment refcount */
                 obj = va_arg(*ap, json_t *);
-                return(obj);
+                return obj;
 
             default: /* Whoops! */
                 jsonp_error_set(error, 1, 1,
                         "Didn't understand format character '%c'",
                         *tok);
-                return(NULL);
+                return NULL;
         }
     }
 
@@ -108,7 +108,7 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
         switch(*tok) {
             case '\n':
                 line++;
-                column=0;
+                column = 0;
                 break;
 
             case ' ': /* Whitespace */
@@ -120,7 +120,7 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
                     jsonp_error_set(error, line, column,
                               "Expected KEY, got COMMA!");
                     json_decref(root);
-                    return(NULL);
+                    return NULL;
                 }
                 break;
 
@@ -131,7 +131,7 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
                               "Got key/value separator without "
                               "a key preceding it!");
                     json_decref(root);
-                    return(NULL);
+                    return NULL;
                 }
 
                 if(!json_is_object(root))
@@ -140,7 +140,7 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
                               "Got a key/value separator "
                               "(':') outside an object!");
                     json_decref(root);
-                    return(NULL);
+                    return NULL;
                 }
 
                 break;
@@ -153,7 +153,7 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
                     jsonp_error_set(error, line, column,
                               "Unexpected close-bracket '%c'", *tok);
                     json_decref(root);
-                    return(NULL);
+                    return NULL;
                 }
 
                 if((*tok == ']' && !json_is_array(root)) ||
@@ -162,9 +162,9 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
                     jsonp_error_set(error, line, column,
                               "Stray close-array '%c' character", *tok);
                     json_decref(root);
-                    return(NULL);
+                    return NULL;
                 }
-                return(root);
+                return root;
 
             case '[':
             case '{':
@@ -184,15 +184,15 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
                                 "Couldn't find matching close bracket for '%c'",
                                 *tok);
                         json_decref(root);
-                        return(NULL);
+                        return NULL;
                     }
 
-                    if(*tok==*etok)
+                    if(*tok == *etok)
                         etok_depth++;
-                    else if(*tok=='[' && *etok==']') {
+                    else if(*tok == '[' && *etok == ']') {
                         etok_depth--;
                         break;
-                    } else if(*tok=='{' && *etok=='}') {
+                    } else if(*tok == '{' && *etok == '}') {
                         etok_depth--;
                         break;
                     }
@@ -207,7 +207,7 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
                     error->column += column-1;
                     error->line += line-1;
                     json_decref(root);
-                    return(NULL);
+                    return NULL;
                 }
                 column += etok-tok;
                 tok = etok;
@@ -216,14 +216,14 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
             case 's':
                 /* Handle strings specially, since they're used for both keys
                  * and values */
-                s = va_arg(*ap, char*);
+                s = va_arg(*ap, char *);
 
                 if(!s)
                 {
                     jsonp_error_set(error, line, column,
                               "Refusing to handle a NULL string");
                     json_decref(root);
-                    return(NULL);
+                    return NULL;
                 }
 
                 if(json_is_object(root) && !key)
@@ -240,7 +240,7 @@ static json_t *json_vnpack(json_error_t *error, ssize_t size, const char * const
                 obj = json_vnpack(error, 1, tok, ap);
                 if(!obj) {
                     json_decref(root);
-                    return(NULL);
+                    return NULL;
                 }
 
 common:
@@ -251,7 +251,7 @@ common:
                         jsonp_error_set(error, line, column,
                               "Expected key, got identifier '%c'!", *tok);
                         json_decref(root);
-                        return(NULL);
+                        return NULL;
                     }
 
                     json_object_set_new(root, key, obj);
@@ -270,13 +270,13 @@ common:
     /* Whoops -- we didn't match the close bracket! */
     jsonp_error_set(error, line, column, "Missing close array or object!");
     json_decref(root);
-    return(NULL);
+    return NULL;
 }
 
 static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const char *fmt, va_list *ap)
 {
 
-    int rv=0; /* Return value */
+    int rv = 0; /* Return value */
     int line = 1; /* Line number */
     int column = 1; /* Column */
 
@@ -308,7 +308,7 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
 
     if(size <= 0) {
         jsonp_error_set(error, 1, 1, "Empty format string!");
-        return(-2);
+        return -2;
     }
 
     /* tok must contain either a container type, or a length-1 string for a
@@ -320,7 +320,7 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
         {
             jsonp_error_set(error, 1, 1,
                     "Expected a single object, got %i", size);
-            return(-1);
+            return -1;
         }
 
         switch(*tok)
@@ -331,15 +331,15 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                     jsonp_error_set(error, line, column,
                             "Type mismatch! Object (%i) wasn't a string.",
                             json_typeof(root));
-                    return(-2);
+                    return -2;
                 }
                 s = va_arg(*ap, const char **);
                 if(!s) {
                     jsonp_error_set(error, line, column, "Passed a NULL string pointer!");
-                    return(-2);
+                    return -2;
                 }
                 *s = json_string_value(root);
-                return(0);
+                return 0;
 
             case 'i':
                 if(!json_is_integer(root))
@@ -347,10 +347,10 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                     jsonp_error_set(error, line, column,
                             "Type mismatch! Object (%i) wasn't an integer.",
                             json_typeof(root));
-                    return(-2);
+                    return -2;
                 }
                 *va_arg(*ap, int*) = json_integer_value(root);
-                return(0);
+                return 0;
 
             case 'b':
                 if(!json_is_boolean(root))
@@ -358,10 +358,10 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                     jsonp_error_set(error, line, column,
                             "Type mismatch! Object (%i) wasn't a boolean.",
                             json_typeof(root));
-                    return(-2);
+                    return -2;
                 }
                 *va_arg(*ap, int*) = json_is_true(root);
-                return(0);
+                return 0;
 
             case 'f':
                 if(!json_is_number(root))
@@ -369,10 +369,10 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                     jsonp_error_set(error, line, column,
                             "Type mismatch! Object (%i) wasn't a real.",
                             json_typeof(root));
-                    return(-2);
+                    return -2;
                 }
                 *va_arg(*ap, double*) = json_number_value(root);
-                return(0);
+                return 0;
 
             case 'O':
                 json_incref(root);
@@ -380,18 +380,18 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
 
             case 'o':
                 *va_arg(*ap, json_t**) = root;
-                return(0);
+                return 0;
 
             case 'n':
                 /* Don't actually assign anything; we're just happy
                  * the null turned up as promised in the format
                  * string. */
-                return(0);
+                return 0;
 
             default:
                 jsonp_error_set(error, line, column,
                         "Unknown format character '%c'", *tok);
-                return(-1);
+                return -1;
         }
     }
 
@@ -402,7 +402,7 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
         switch(*tok) {
             case '\n':
                 line++;
-                column=0;
+                column = 0;
                 break;
 
             case ' ': /* Whitespace */
@@ -413,7 +413,7 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                 {
                     jsonp_error_set(error, line, column,
                               "Expected KEY, got COMMA!");
-                    return(-2);
+                    return -2;
                 }
                 break;
 
@@ -423,7 +423,7 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                     jsonp_error_set(error, line, column,
                               "Got key/value separator without "
                               "a key preceding it!");
-                    return(-2);
+                    return -2;
                 }
 
                 if(!json_is_object(root))
@@ -431,7 +431,7 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                     jsonp_error_set(error, line, column,
                               "Got a key/value separator "
                               "(':') outside an object!");
-                    return(-2);
+                    return -2;
                 }
 
                 break;
@@ -443,7 +443,7 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                 {
                     jsonp_error_set(error, line, column,
                               "Unexpected close-bracket '%c'", *tok);
-                    return(-2);
+                    return -2;
                 }
 
                 if((*tok == ']' && !json_is_array(root)) ||
@@ -451,9 +451,9 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                 {
                     jsonp_error_set(error, line, column,
                               "Stray close-array '%c' character", *tok);
-                    return(-2);
+                    return -2;
                 }
-                return(unvisited);
+                return unvisited;
 
             case '[':
             case '{':
@@ -467,15 +467,15 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                         jsonp_error_set(error, line, column,
                                 "Couldn't find matching close bracket for '%c'",
                                 *tok);
-                        return(-2);
+                        return -2;
                     }
 
-                    if(*tok==*etok)
+                    if(*tok == *etok)
                         etok_depth++;
-                    else if(*tok=='[' && *etok==']') {
+                    else if(*tok == '[' && *etok == ']') {
                         etok_depth--;
                         break;
-                    } else if(*tok=='{' && *etok=='}') {
+                    } else if(*tok == '{' && *etok == '}') {
                         etok_depth--;
                         break;
                     }
@@ -496,7 +496,7 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                     /* error should already be set */
                     error->column += column-1;
                     error->line += line-1;
-                    return(rv);
+                    return rv;
                 }
 
                 unvisited += rv;
@@ -511,13 +511,13 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                 if(json_is_object(root) && !key)
                 {
                     /* It's a key */
-                    key = va_arg(*ap, char*);
+                    key = va_arg(*ap, char *);
 
                     if(!key)
                     {
                         jsonp_error_set(error, line, column,
                                   "Refusing to handle a NULL key");
-                        return(-2);
+                        return -2;
                     }
                     break;
                 }
@@ -535,12 +535,12 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
                 if(!obj) {
                     jsonp_error_set(error, line, column,
                             "Array/object entry didn't exist!");
-                    return(-1);
+                    return -1;
                 }
 
                 rv = json_vnunpack(obj, error, 1, tok, ap);
                 if(rv != 0)
-                    return(rv);
+                    return rv;
 
                 break;
         }
@@ -550,7 +550,7 @@ static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const 
 
     /* Whoops -- we didn't match the close bracket! */
     jsonp_error_set(error, line, column, "Missing close array or object!");
-    return(-2);
+    return -2;
 }
 
 json_t *json_pack(json_error_t *error, const char *fmt, ...)
@@ -562,14 +562,14 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...)
 
     if(!fmt || !*fmt) {
         jsonp_error_set(error, 1, 1, "Null or empty format string!");
-        return(NULL);
+        return NULL;
     }
 
     va_start(ap, fmt);
-    obj = json_vnpack(error, strlen(fmt), fmt, &ap);
+    obj = json_vpack(error, fmt, &ap);
     va_end(ap);
 
-    return(obj);
+    return obj;
 }
 
 int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...)
@@ -581,15 +581,12 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...)
 
     if(!fmt || !*fmt) {
         jsonp_error_set(error, 1, 1, "Null or empty format string!");
-        return(-2);;
+        return -2;;
     }
 
     va_start(ap, fmt);
     rv = json_vnunpack(root, error, strlen(fmt), fmt, &ap);
     va_end(ap);
 
-    return(rv);
+    return rv;
 }
-
-/* vim: ts=4:expandtab:sw=4
- */

@@ -16,7 +16,6 @@ int main()
     json_t *j, *j2;
     int i1, i2, i3;
     int rv;
-    //void* v;
     double f;
     char *s;
 
@@ -37,21 +36,20 @@ int main()
         fail("json_unpack boolean failed");
 
     /* null */
-    rv = json_unpack(json_null(), &error, "n");
-    if(rv)
+    if(json_unpack(json_null(), &error, "n"))
         fail("json_unpack null failed");
 
     /* integer */
-    j = json_integer(1);
+    j = json_integer(42);
     rv = json_unpack(j, &error, "i", &i1);
-    if(rv || i1 != 1)
+    if(rv || i1 != 42)
         fail("json_unpack integer failed");
     json_decref(j);
 
     /* real */
-    j = json_real(1.0);
+    j = json_real(1.7);
     rv = json_unpack(j, &error, "f", &f);
-    if(rv || f != 1.0)
+    if(rv || f != 1.7)
         fail("json_unpack real failed");
     json_decref(j);
 
@@ -64,37 +62,35 @@ int main()
 
     /* empty object */
     j = json_object();
-    rv = json_unpack(j, &error, "{}");
-    if(rv)
+    if(json_unpack(j, &error, "{}"))
         fail("json_unpack empty object failed");
     json_decref(j);
 
     /* empty list */
     j = json_array();
-    rv = json_unpack(j, &error, "[]");
-    if(rv)
+    if(json_unpack(j, &error, "[]"))
         fail("json_unpack empty list failed");
     json_decref(j);
 
     /* non-incref'd object */
     j = json_object();
     rv = json_unpack(j, &error, "o", &j2);
-    if(j2 != j || j->refcount != (ssize_t)1)
+    if(j2 != j || j->refcount != 1)
         fail("json_unpack object failed");
     json_decref(j);
 
     /* incref'd object */
     j = json_object();
     rv = json_unpack(j, &error, "O", &j2);
-    if(j2 != j || j->refcount != (ssize_t)2)
+    if(j2 != j || j->refcount != 2)
         fail("json_unpack object failed");
     json_decref(j);
     json_decref(j);
 
     /* simple object */
-    j = json_pack(&error, "{s:i}", "foo", 1);
+    j = json_pack(&error, "{s:i}", "foo", 42);
     rv = json_unpack(j, &error, "{s:i}", "foo", &i1);
-    if(rv || i1!=1)
+    if(rv || i1 != 42)
         fail("json_unpack simple object failed");
     json_decref(j);
 
@@ -111,49 +107,38 @@ int main()
 
     /* mismatched open/close array/object */
     j = json_pack(&error, "[]");
-    rv = json_unpack(j, &error, "[}");
-    if(!rv)
+    if(!json_unpack(j, &error, "[}"))
         fail("json_unpack failed to catch mismatched ']'");
     json_decref(j);
 
     j = json_pack(&error, "{}");
-    rv = json_unpack(j, &error, "{]");
-    if(!rv)
+    if(!json_unpack(j, &error, "{]"))
         fail("json_unpack failed to catch mismatched '}'");
     json_decref(j);
 
     /* missing close array */
     j = json_pack(&error, "[]");
-    rv = json_unpack(j, &error, "[");
-    if(rv >= 0)
+    if(!json_unpack(j, &error, "["))
         fail("json_unpack failed to catch missing ']'");
     json_decref(j);
 
     /* missing close object */
     j = json_pack(&error, "{}");
-    rv = json_unpack(j, &error, "{");
-    if(rv >= 0)
+    if(!json_unpack(j, &error, "{"))
         fail("json_unpack failed to catch missing '}'");
     json_decref(j);
 
     /* NULL format string */
     j = json_pack(&error, "[]");
-    rv =json_unpack(j, &error, NULL);
-    if(rv >= 0)
+    if(!json_unpack(j, &error, NULL))
         fail("json_unpack failed to catch null format string");
     json_decref(j);
 
     /* NULL string pointer */
     j = json_string("foobie");
-    rv =json_unpack(j, &error, "s", NULL);
-    if(rv >= 0)
+    if(!json_unpack(j, &error, "s", NULL))
         fail("json_unpack failed to catch null string pointer");
     json_decref(j);
 
     return 0;
-
-    //fprintf(stderr, "%i/%i: %s %s\n", error.line, error.column, error.source, error.text);
 }
-
-/* vim: ts=4:expandtab:sw=4
- */
