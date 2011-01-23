@@ -1,6 +1,4 @@
 #include <string.h>
-#include <stdarg.h>
-
 #include "jansson_private.h"
 
 void jsonp_error_init(json_error_t *error, const char *source)
@@ -21,6 +19,14 @@ void jsonp_error_set(json_error_t *error, int line, int column,
 {
     va_list ap;
 
+    va_start(ap, msg);
+    jsonp_error_vset(error, line, column, msg, ap);
+    va_end(ap);
+}
+
+void jsonp_error_vset(json_error_t *error, int line, int column,
+                      const char *msg, va_list ap)
+{
     if(!error)
         return;
 
@@ -32,7 +38,5 @@ void jsonp_error_set(json_error_t *error, int line, int column,
     error->line = line;
     error->column = column;
 
-    va_start(ap, msg);
     vsnprintf(error->text, JSON_ERROR_TEXT_LENGTH, msg, ap);
-    va_end(ap);
 }

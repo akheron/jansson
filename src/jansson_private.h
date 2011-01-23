@@ -9,6 +9,7 @@
 #define JANSSON_PRIVATE_H
 
 #include <stddef.h>
+#include <stdarg.h>
 #include "jansson.h"
 #include "hashtable.h"
 
@@ -66,5 +67,7 @@ const object_key_t *jsonp_object_iter_fullkey(void *iter);
 void jsonp_error_init(json_error_t *error, const char *source);
 void jsonp_error_set(json_error_t *error, int line, int column,
                      const char *msg, ...);
+void jsonp_error_vset(json_error_t *error, int line, int column,
+                      const char *msg, va_list ap);
 
 #endif

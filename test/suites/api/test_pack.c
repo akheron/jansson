@@ -191,7 +191,7 @@ int main()
 
     if(json_pack(&error, "{ s: {},  s:[ii{} }", "foo", "bar", 12, 13))
         fail("json_pack failed to catch missing ]");
-    if(error.line != 1 || error.column != 13)
+    if(error.line != 1 || error.column != 19)
         fail("json_pack didn't get the error coordinates right!");
 
     if(json_pack(&error, "[[[[[   [[[[[  [[[[ }]]]] ]]]] ]]]]]"))
