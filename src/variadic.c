@@ -175,284 +175,171 @@ static json_t *pack(scanner_t *s, va_list *ap)
     }
 }
 
-static int json_vnunpack(json_t *root, json_error_t *error, ssize_t size, const char *fmt, va_list *ap)
+static int unpack(scanner_t *s, json_t *root, va_list *ap);
+
+static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
 {
-
-    int rv = 0; /* Return value */
-    int line = 1; /* Line number */
-    int column = 1; /* Column */
-
-    /* Position markers for arrays or objects */
-    int array_index = 0;
-    char *key = NULL;
-
-    const char **s;
-
-    /* Scanner variables */
-    const char *tok = fmt;
-    const char *etok;
-    int etok_depth;
-
-    json_t *obj;
-
-    /* If we're successful, we need to know if the number of arguments
-     * provided matches the number of JSON objects.  We can do this by
-     * counting the elements in every array or object we open up, and
-     * decrementing the count as we visit their children. */
-    int unvisited = 0;
-
-    /* Skip whitespace at the beginning of the string. */
-    while(size && *tok == ' ') {
-        tok++;
-        size--;
-        column++;
+    if(!json_is_object(root)) {
+        set_error(s, "Expected object, got %i", json_typeof(root));
+        return -1;
     }
+    next_token(s);
 
-    if(size <= 0) {
-        jsonp_error_set(error, 1, 1, "Empty format string!");
-        return -2;
-    }
+    while(s->token != '}') {
+        const char *key;
+        json_t *value;
 
-    /* tok must contain either a container type, or a length-1 string for a
-     * simple type. */
-    if(*tok != '[' && *tok != '{')
-    {
-        /* Simple object. Permit trailing spaces, otherwise complain. */
-        if((ssize_t)strspn(tok+1, " ") < size-1)
-        {
-            jsonp_error_set(error, 1, 1,
-                    "Expected a single object, got %i", size);
+        if(!s->token) {
+            set_error(s, "Unexpected end of format string");
             return -1;
         }
 
-        switch(*tok)
+        if(s->token != 's') {
+            set_error(s, "Expected format 's', got '%c'\n", *s->fmt);
+            return -1;
+        }
+
+        key = va_arg(*ap, const char *);
+        if(!key) {
+            set_error(s, "NULL object key");
+            return -1;
+        }
+
+        next_token(s);
+
+        value = json_object_get(root, key);
+        if(unpack(s, value, ap))
+            return -1;
+
+        next_token(s);
+    }
+
+    return 0;
+}
+
+static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
+{
+    size_t i = 0;
+
+    if(!json_is_array(root)) {
+        set_error(s, "Expected array, got %d", json_typeof(root));
+        return -1;
+    }
+    next_token(s);
+
+    while(s->token != ']') {
+        json_t *value;
+
+        if(!s->token) {
+            set_error(s, "Unexpected end of format string");
+            return -1;
+        }
+
+        value = json_array_get(root, i);
+        if(!value) {
+            set_error(s, "Array index %lu out of range", (unsigned long)i);
+            return -1;
+        }
+
+        if(unpack(s, value, ap))
+            return -1;
+
+        next_token(s);
+        i++;
+    }
+
+    if(i != json_array_size(root)) {
+        long diff = (long)json_array_size(root) - (long)i;
+        set_error(s, "%li array items were not upacked", diff);
+        return -1;
+    }
+
+    return 0;
+}
+
+static int unpack(scanner_t *s, json_t *root, va_list *ap)
+{
+    switch(s->token)
+    {
+        case '{':
+            return unpack_object(s, root, ap);
+
+        case '[':
+            return unpack_array(s, root, ap);
+
+        case 's':
         {
-            case 's':
-                if(!json_is_string(root))
-                {
-                    jsonp_error_set(error, line, column,
-                            "Type mismatch! Object (%i) wasn't a string.",
-                            json_typeof(root));
-                    return -2;
-                }
-                s = va_arg(*ap, const char **);
-                if(!s) {
-                    jsonp_error_set(error, line, column, "Passed a NULL string pointer!");
-                    return -2;
-                }
-                *s = json_string_value(root);
-                return 0;
+            const char **str;
 
-            case 'i':
-                if(!json_is_integer(root))
-                {
-                    jsonp_error_set(error, line, column,
-                            "Type mismatch! Object (%i) wasn't an integer.",
-                            json_typeof(root));
-                    return -2;
-                }
-                *va_arg(*ap, int*) = json_integer_value(root);
-                return 0;
-
-            case 'b':
-                if(!json_is_boolean(root))
-                {
-                    jsonp_error_set(error, line, column,
-                            "Type mismatch! Object (%i) wasn't a boolean.",
-                            json_typeof(root));
-                    return -2;
-                }
-                *va_arg(*ap, int*) = json_is_true(root);
-                return 0;
-
-            case 'f':
-                if(!json_is_number(root))
-                {
-                    jsonp_error_set(error, line, column,
-                            "Type mismatch! Object (%i) wasn't a real.",
-                            json_typeof(root));
-                    return -2;
-                }
-                *va_arg(*ap, double*) = json_number_value(root);
-                return 0;
-
-            case 'O':
-                json_incref(root);
-                /* Fall through */
-
-            case 'o':
-                *va_arg(*ap, json_t**) = root;
-                return 0;
-
-            case 'n':
-                /* Don't actually assign anything; we're just happy
-                 * the null turned up as promised in the format
-                 * string. */
-                return 0;
-
-            default:
-                jsonp_error_set(error, line, column,
-                        "Unknown format character '%c'", *tok);
+            if(!json_is_string(root))
+            {
+                set_error(s, "Type mismatch! Object (%i) wasn't a string.",
+                          json_typeof(root));
                 return -1;
+            }
+
+            str = va_arg(*ap, const char **);
+            if(!str) {
+                set_error(s, "Passed a NULL string pointer!");
+                return -1;
+            }
+
+            *str = json_string_value(root);
+            return 0;
         }
+
+        case 'i':
+            if(!json_is_integer(root))
+            {
+                set_error(s, "Type mismatch! Object (%i) wasn't an integer.",
+                      json_typeof(root));
+                return -1;
+            }
+            *va_arg(*ap, int*) = json_integer_value(root);
+            return 0;
+
+        case 'b':
+            if(!json_is_boolean(root))
+            {
+                set_error(s, "Type mismatch! Object (%i) wasn't a boolean.",
+                      json_typeof(root));
+                return -1;
+            }
+            *va_arg(*ap, int*) = json_is_true(root);
+            return 0;
+
+        case 'f':
+            if(!json_is_number(root))
+            {
+                set_error(s, "Type mismatch! Object (%i) wasn't a real.",
+                      json_typeof(root));
+                return -1;
+            }
+            *va_arg(*ap, double*) = json_number_value(root);
+            return 0;
+
+        case 'O':
+            json_incref(root);
+            /* Fall through */
+
+        case 'o':
+            *va_arg(*ap, json_t**) = root;
+            return 0;
+
+        case 'n':
+            /* Don't assign, just validate */
+            if(!json_is_null(root))
+            {
+                set_error(s, "Type mismatch! Object (%i) wasn't null.",
+                      json_typeof(root));
+                return -1;
+            }
+            return 0;
+
+        default:
+            set_error(s, "Unknown format character '%c'", s->token);
+            return -1;
     }
-
-    /* Move past container opening token */
-    tok++;
-
-    while(tok-fmt < size) {
-        switch(*tok) {
-            case '\n':
-                line++;
-                column = 0;
-                break;
-
-            case ' ': /* Whitespace */
-                break;
-
-            case ',': /* Element spacer */
-                if(key)
-                {
-                    jsonp_error_set(error, line, column,
-                              "Expected KEY, got COMMA!");
-                    return -2;
-                }
-                break;
-
-            case ':': /* Key/value separator */
-                if(!key)
-                {
-                    jsonp_error_set(error, line, column,
-                              "Got key/value separator without "
-                              "a key preceding it!");
-                    return -2;
-                }
-
-                if(!json_is_object(root))
-                {
-                    jsonp_error_set(error, line, column,
-                              "Got a key/value separator "
-                              "(':') outside an object!");
-                    return -2;
-                }
-
-                break;
-
-            case ']': /* Close array or object */
-            case '}':
-
-                if(tok-fmt + (ssize_t)strspn(tok+1, " ") != size-1)
-                {
-                    jsonp_error_set(error, line, column,
-                              "Unexpected close-bracket '%c'", *tok);
-                    return -2;
-                }
-
-                if((*tok == ']' && !json_is_array(root)) ||
-                   (*tok == '}' && !json_is_object(root)))
-                {
-                    jsonp_error_set(error, line, column,
-                              "Stray close-array '%c' character", *tok);
-                    return -2;
-                }
-                return unvisited;
-
-            case '[':
-            case '{':
-
-                /* Find corresponding close bracket */
-                etok = tok+1;
-                etok_depth = 1;
-                while(etok_depth) {
-
-                    if(!*etok || etok-fmt >= size) {
-                        jsonp_error_set(error, line, column,
-                                "Couldn't find matching close bracket for '%c'",
-                                *tok);
-                        return -2;
-                    }
-
-                    if(*tok == *etok)
-                        etok_depth++;
-                    else if(*tok == '[' && *etok == ']') {
-                        etok_depth--;
-                        break;
-                    } else if(*tok == '{' && *etok == '}') {
-                        etok_depth--;
-                        break;
-                    }
-
-                    etok++;
-                }
-
-                /* Recurse */
-                if(json_is_array(root)) {
-                    rv = json_vnunpack(json_object_get(root, key),
-                            error, etok-tok+1, tok, ap);
-                } else {
-                    rv = json_vnunpack(json_array_get(root, array_index++),
-                            error, etok-tok+1, tok, ap);
-                }
-
-                if(rv < 0) {
-                    /* error should already be set */
-                    error->column += column-1;
-                    error->line += line-1;
-                    return rv;
-                }
-
-                unvisited += rv;
-                column += etok-tok;
-                tok = etok;
-                break;
-
-            case 's':
-                /* Handle strings specially, since they're used for both keys
-                 * and values */
-
-                if(json_is_object(root) && !key)
-                {
-                    /* It's a key */
-                    key = va_arg(*ap, char *);
-
-                    if(!key)
-                    {
-                        jsonp_error_set(error, line, column,
-                                  "Refusing to handle a NULL key");
-                        return -2;
-                    }
-                    break;
-                }
-
-                /* Fall through */
-
-            default:
-
-                /* Fetch the element from the JSON container */
-                if(json_is_object(root))
-                    obj = json_object_get(root, key);
-                else
-                    obj = json_array_get(root, array_index++);
-
-                if(!obj) {
-                    jsonp_error_set(error, line, column,
-                            "Array/object entry didn't exist!");
-                    return -1;
-                }
-
-                rv = json_vnunpack(obj, error, 1, tok, ap);
-                if(rv != 0)
-                    return rv;
-
-                break;
-        }
-        tok++;
-        column++;
-    }
-
-    /* Whoops -- we didn't match the close bracket! */
-    jsonp_error_set(error, line, column, "Missing close array or object!");
-    return -2;
 }
 
 json_t *json_pack(json_error_t *error, const char *fmt, ...)
@@ -490,19 +377,36 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...)
 
 int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...)
 {
+    scanner_t s;
     va_list ap;
-    int rv;
+    int result;
 
     jsonp_error_init(error, "");
 
     if(!fmt || !*fmt) {
         jsonp_error_set(error, 1, 1, "Null or empty format string!");
-        return -2;;
+        return -1;
     }
 
+    s.error = error;
+    s.fmt = fmt;
+    s.line = 1;
+    s.column = 0;
+
+    next_token(&s);
+
     va_start(ap, fmt);
-    rv = json_vnunpack(root, error, strlen(fmt), fmt, &ap);
+    result = unpack(&s, root, &ap);
     va_end(ap);
 
-    return rv;
+    if(result)
+        return -1;
+
+    next_token(&s);
+    if(s.token) {
+        set_error(&s, "Garbage after format string");
+        return -1;
+    }
+
+    return 0;
 }
