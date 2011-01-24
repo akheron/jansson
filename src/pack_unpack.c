@@ -179,9 +179,18 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap);
 
 static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
 {
+    int ret = -1;
+    int wildcard = 0;
+    hashtable_t key_set;
+
+    if(hashtable_init(&key_set, jsonp_hash_key, jsonp_key_equal, NULL, NULL)) {
+        set_error(s, "Out of memory");
+        return -1;
+    }
+
     if(!json_is_object(root)) {
         set_error(s, "Expected object, got %i", json_typeof(root));
-        return -1;
+        goto error;
     }
     next_token(s);
 
@@ -189,37 +198,59 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
         const char *key;
         json_t *value;
 
+        if(wildcard) {
+            set_error(s, "Expected '}', got '%c'", s->token);
+            goto error;
+        }
+
         if(!s->token) {
             set_error(s, "Unexpected end of format string");
-            return -1;
+            goto error;
+        }
+
+        if(s->token == '*') {
+            wildcard = 1;
+            next_token(s);
+            continue;
         }
 
         if(s->token != 's') {
             set_error(s, "Expected format 's', got '%c'\n", *s->fmt);
-            return -1;
+            goto error;
         }
 
         key = va_arg(*ap, const char *);
         if(!key) {
             set_error(s, "NULL object key");
-            return -1;
+            goto error;
         }
 
         next_token(s);
 
         value = json_object_get(root, key);
         if(unpack(s, value, ap))
-            return -1;
+            goto error;
 
+        hashtable_set(&key_set, (void *)key, NULL);
         next_token(s);
     }
 
-    return 0;
+    if(!wildcard && key_set.size != json_object_size(root)) {
+        long diff = (long)json_object_size(root) - (long)key_set.size;
+        set_error(s, "%li object items left unpacked", diff);
+        goto error;
+    }
+    ret = 0;
+
+error:
+    hashtable_close(&key_set);
+    return ret;
 }
 
 static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
 {
     size_t i = 0;
+    int wildcard = 0;
 
     if(!json_is_array(root)) {
         set_error(s, "Expected array, got %d", json_typeof(root));
@@ -230,9 +261,20 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
     while(s->token != ']') {
         json_t *value;
 
+        if(wildcard) {
+            set_error(s, "Expected ']', got '%c'", s->token);
+            return -1;
+        }
+
         if(!s->token) {
             set_error(s, "Unexpected end of format string");
             return -1;
+        }
+
+        if(s->token == '*') {
+            wildcard = 1;
+            next_token(s);
+            continue;
         }
 
         value = json_array_get(root, i);
@@ -248,9 +290,9 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
         i++;
     }
 
-    if(i != json_array_size(root)) {
+    if(!wildcard && i != json_array_size(root)) {
         long diff = (long)json_array_size(root) - (long)i;
-        set_error(s, "%li array items were not upacked", diff);
+        set_error(s, "%li array items left upacked", diff);
         return -1;
     }
 

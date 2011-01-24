@@ -32,7 +32,7 @@ static JSON_INLINE void json_init(json_t *json, json_type type)
    an object_key_t instance. */
 #define string_to_key(string)  container_of(string, object_key_t, key)
 
-static size_t hash_key(const void *ptr)
+size_t jsonp_hash_key(const void *ptr)
 {
     const char *str = ((const object_key_t *)ptr)->key;
 
@@ -48,7 +48,7 @@ static size_t hash_key(const void *ptr)
     return hash;
 }
 
-static int key_equal(const void *ptr1, const void *ptr2)
+int jsonp_key_equal(const void *ptr1, const void *ptr2)
 {
     return strcmp(((const object_key_t *)ptr1)->key,
                   ((const object_key_t *)ptr2)->key) == 0;
@@ -66,7 +66,8 @@ json_t *json_object(void)
         return NULL;
     json_init(&object->json, JSON_OBJECT);
 
-    if(hashtable_init(&object->hashtable, hash_key, key_equal,
+    if(hashtable_init(&object->hashtable,
+                      jsonp_hash_key, jsonp_key_equal,
                       free, value_decref))
     {
         free(object);
