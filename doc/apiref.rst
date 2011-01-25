@@ -782,6 +782,233 @@ affect especially the behavior of the decoder.
    is returned to the caller.
 
 
+.. _apiref-building-values:
+
+Building values
+===============
+
+This sectinon describes functions that help to create, or *pack*,
+complex JSON values, especially nested objects and arrays. Value
+building is based on a *format string* that is used to tell the
+functions about the expected arguments.
+
+For example, the format string ``"i"`` specifies a single integer
+value, while the format string ``"[ssb]"`` or the equivalent ``"[s, s,
+b]"`` specifies an array value with two integers and a boolean as its
+items::
+
+    /* Create the JSON integer 42 */
+    json_pack("i", 42);
+
+    /* Create the JSON array ["foo", "bar", true] */
+    json_pack("[ssb]", "foo", "bar", 1);
+
+Here's the full list of format characters. The type in parentheses
+denotes the resulting JSON type, and the type in brackets (if any)
+denotes the C type that is expected as the corresponding argument.
+
+``s`` (string) [const char \*]
+    Convert a NULL terminated UTF-8 string to a JSON string.
+
+``n`` (null)
+    Output a JSON null value. No argument is consumed.
+
+``b`` (boolean) [int]
+    Convert a C :type:`int` to JSON boolean value. Zero is converted
+    to ``false`` and non-zero to ``true``.
+
+``i`` (integer) [int]
+    Convert a C :type:`int` to JSON integer.
+
+``I`` (integer) [json_int_t]
+    Convert a C :type:`json_int_t` to JSON integer.
+
+``f`` (real) [double]
+    Convert a C :type:`double` to JSON real.
+
+``o`` (any value) [json_t \*]
+    Output any given JSON value as-is. If the value is added to an
+    array or object, the reference to the value passed to ``o`` is
+    stealed by the container.
+
+``O`` (any value) [json_t \*]
+    Like ``o``, but the argument's reference count is incremented.
+    This is useful if you pack and array an array or object and want
+    to keep the reference for the JSON value consumed by ``O`` to
+    yourself.
+
+``[fmt]`` (array)
+    Build an array with contents from the inner format string. ``fmt``
+    may contain objects and arrays, i.e. recursive value building is
+    supported.
+
+``{fmt}`` (object)
+    Build an object with contents from the inner format string
+    ``fmt``. The first, third, etc. format character represent a key,
+    and must be ``s`` (as object keys are always strings). The second,
+    fourth, etc. format character represent a value. Any value may be
+    an object or array, i.e. recursive value building is supported.
+
+
+.. function:: json_t *json_pack(const char *fmt, ...)
+
+   .. refcounting:: new
+
+   Build a new JSON value according to the format string *fmt*. For
+   each format character (except for ``{}[]n``), one argument is
+   consumed and used to build the corresponding value. Returns *NULL*
+   on error.
+
+.. function:: json_t *json_pack_ex(json_error_t *error, size_t flags, const char *fmt, ...)
+              json_t *json_vpack_ex(json_error_t *error, size_t flags, const char *fmt, va_list ap)
+
+   .. refcounting:: new
+
+   Like :func:`json_pack()`, but an in the case of an error, an error
+   message is written to *error*, if it's not *NULL*. The *flags*
+   parameter is currently unused and should be set to 0.
+
+   As only the errors in format string (and out-of-memory errors) can
+   be caught by the packer, these two functions are most likely only
+   useful for debugging format strings.
+
+More examples::
+
+  /* Build an empty JSON object */
+  json_pack("{}");
+
+  /* Build the JSON object {"foo": 42, "bar": 7} */
+  json_pack("{sisb}", "foo", 42, "bar", 7);
+
+  /* Like above, ':', ',' and whitespace are ignored */
+  json_pack("{s:i, s:b}", "foo", 42, "bar", 7);
+
+  /* Build the JSON array [[1, 2], {"cool": true}] */
+  json_pack("[[i,i],{s:b]]", 1, 2, "cool", 1);
+
+
+Parsing and validating values
+=============================
+
+This sectinon describes functions that help to validate complex values
+and extract, or *unpack*, data from them. Like :ref:`building values
+<apiref-building-values>`, this is also based on format strings.
+
+While a JSON value is unpacked, the type specified in the format
+string is checked to match that of the JSON value. This is the
+validation part of the process. By default, the unpacking functions
+also check that all items of arrays and objects are unpacked. This
+check be disabled with the format character ``*`` or by using the flag
+``JSON_UNPACK_ONLY``.
+
+Here's the full list of format characters. The type in parentheses
+denotes the JSON type, and the type in brackets (if any) denotes the C
+type whose address should be passed.
+
+``s`` (string) [const char \*]
+    Convert a JSON string to a pointer to a NULL terminated UTF-8
+    string.
+
+``n`` (null)
+    Expect a JSON null value. Nothing is extracted.
+
+``b`` (boolean) [int]
+    Convert a JSON boolean value to a C :type:`int`, so that ``true``
+    is converted to 1 and ``false`` to 0.
+
+``i`` (integer) [int]
+    Convert a JSON integer to C :type:`int`.
+
+``I`` (integer) [json_int_t]
+    Convert a JSON integer to C :type:`json_int_t`.
+
+``f`` (real) [double]
+    Convert a JSON real to C :type:`double`.
+
+``F`` (integer or real) [double]
+    Convert a JSON number (integer or real) to C :type:`double`.
+
+``o`` (any value) [json_t \*]
+    Store a JSON value with no conversion to a :type:`json_t` pointer.
+
+``O`` (any value) [json_t \*]
+    Like ``O``, but the JSON value's reference count is incremented.
+
+``[fmt]`` (array)
+    Convert each item in the JSON array according to the inner format
+    string. ``fmt`` may contain objects and arrays, i.e. recursive
+    value extraction is supporetd.
+
+``{fmt}`` (object)
+    Convert each item in the JSON object according to the inner format
+    string ``fmt``. The first, third, etc. format character represent
+    a key, and must be ``s``. The corresponding argument to unpack
+    functions is read as the object key. The second fourth, etc.
+    format character represent a value and is written to the address
+    given as the corresponding argument. **Note** that every other
+    argument is read from and every other is written to.
+
+    ``fmt`` may contain objects and arrays as values, i.e. recursive
+    value extraction is supporetd.
+
+``*``
+    This special format character is used to disable the check that
+    all object and array items are accessed on a per-value basis. It
+    must appear inside an array or object as the last format character
+    before the closing bracket or brace.
+
+
+.. function:: int json_unpack(json_t *root, const char *fmt, ...)
+
+   Validate and unpack the JSON value *root* according to the format
+   string *fmt*. Returns 0 on success and -1 on failure.
+
+.. function:: int json_unpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, ...)
+              int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, va_list ap)
+
+   Validate and unpack the JSON value *root* according to the format
+   string *fmt*. If an error occurs and *error* is not *NULL*, write
+   error information to *error*. *flags* can be used to control the
+   behaviour of the unpacker, see below for the flags. Returns 0 on
+   success and -1 on failure.
+
+The following unpacking flags are available:
+
+``JSON_UNPACK_ONLY``
+    Disable the validation step checking that all object and array
+    items are unpacked. This is equivalent to appending the format
+    character ``*`` to the end of every array and object in the format
+    string.
+
+``JSON_VALIDATE_ONLY``
+    Don't extract any data, just validate the JSON value against the
+    given format string. Note that object keys must still be specified
+    after the format string.
+
+Examples::
+
+    /* root is the JSON integer 42 */
+    int myint;
+    json_unpack(root, "i", &myint);
+    assert(myint == 42);
+
+    /* root is the JSON object {"foo": "bar", "quux": true} */
+    const char *str;
+    int boolean;
+    json_unpack(root, "{s:s, s:b}", "foo", &str, "quux", &boolean);
+    assert(strcmp(str, "bar") == 0 && boolean == 1);
+
+    /* root is the JSON array [[1, 2], {"baz": null} */
+    json_error_t error;
+    json_unpack_ex(root, &error, JSON_VALIDATE_ONLY, "[[i,i], {s:n}]", "baz");
+    /* returns 0 for validation success, nothing is extracted */
+
+    /* root is the JSON array [1, 2, 3, 4, 5] */
+    int myint1, myint2, ret;
+    ret = json_unpack(root, "[ii*]", &myint1, &myint2);
+    assert(ret == 0 && myint1 == 1 && myint2 == 2);
+
+
 Equality
 ========
 
