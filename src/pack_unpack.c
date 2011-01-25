@@ -18,6 +18,19 @@ typedef struct {
     int column;
 } scanner_t;
 
+static const char *type_names[] = {
+    "object",
+    "array",
+    "string",
+    "integer",
+    "real",
+    "true",
+    "false",
+    "null"
+};
+
+#define type_name(x) type_names[json_typeof(x)]
+
 static void next_token(scanner_t *s)
 {
     const char *t = s->fmt;
@@ -140,8 +153,7 @@ static json_t *pack(scanner_t *s, va_list *ap)
         case 's': /* string */
         {
             const char *str = va_arg(*ap, const char *);
-            if(!str)
-            {
+            if(!str) {
                 set_error(s, "NULL string");
                 return NULL;
             }
@@ -157,7 +169,7 @@ static json_t *pack(scanner_t *s, va_list *ap)
         case 'i': /* integer */
             return json_integer(va_arg(*ap, int));
 
-        case 'f': /* double-precision float */
+        case 'f': /* real */
             return json_real(va_arg(*ap, double));
 
         case 'O': /* a json_t object; increments refcount */
@@ -166,7 +178,7 @@ static json_t *pack(scanner_t *s, va_list *ap)
         case 'o': /* a json_t object; doesn't increment refcount */
             return va_arg(*ap, json_t *);
 
-        default: /* Whoops! */
+        default:
             set_error(s, "Unrecognized format character '%c'", s->token);
             return NULL;
     }
@@ -195,7 +207,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
     }
 
     if(!json_is_object(root)) {
-        set_error(s, "Expected object, got %i", json_typeof(root));
+        set_error(s, "Expected object, got %s", type_name(root));
         goto error;
     }
     next_token(s);
@@ -267,7 +279,7 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
     int wildcard = 0;
 
     if(!json_is_array(root)) {
-        set_error(s, "Expected array, got %d", json_typeof(root));
+        set_error(s, "Expected array, got %s", type_name(root));
         return -1;
     }
     next_token(s);
@@ -327,10 +339,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             return unpack_array(s, root, ap);
 
         case 's':
-            if(!json_is_string(root))
-            {
-                set_error(s, "Type mismatch! Object (%i) wasn't a string.",
-                          json_typeof(root));
+            if(!json_is_string(root)) {
+                set_error(s, "Expected string, got %s", type_name(root));
                 return -1;
             }
 
@@ -339,7 +349,7 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
                 str = va_arg(*ap, const char **);
                 if(!str) {
-                    set_error(s, "Passed a NULL string pointer!");
+                    set_error(s, "NULL string");
                     return -1;
                 }
 
@@ -348,10 +358,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             return 0;
 
         case 'i':
-            if(!json_is_integer(root))
-            {
-                set_error(s, "Type mismatch! Object (%i) wasn't an integer.",
-                      json_typeof(root));
+            if(!json_is_integer(root)) {
+                set_error(s, "Expected integer, got %s", type_name(root));
                 return -1;
             }
 
@@ -361,10 +369,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             return 0;
 
         case 'b':
-            if(!json_is_boolean(root))
-            {
-                set_error(s, "Type mismatch! Object (%i) wasn't a boolean.",
-                      json_typeof(root));
+            if(!json_is_boolean(root)) {
+                set_error(s, "Expected true or false, got %s", type_name(root));
                 return -1;
             }
 
@@ -374,10 +380,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             return 0;
 
         case 'f':
-            if(!json_is_number(root))
-            {
-                set_error(s, "Type mismatch! Object (%i) wasn't a real.",
-                      json_typeof(root));
+            if(!json_is_number(root)) {
+                set_error(s, "Expected real, got %s", type_name(root));
                 return -1;
             }
 
@@ -399,10 +403,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
         case 'n':
             /* Never assign, just validate */
-            if(!json_is_null(root))
-            {
-                set_error(s, "Type mismatch! Object (%i) wasn't null.",
-                      json_typeof(root));
+            if(!json_is_null(root)) {
+                set_error(s, "Expected null, got %s", type_name(root));
                 return -1;
             }
             return 0;
@@ -422,7 +424,7 @@ json_t *json_vpack_ex(json_error_t *error, size_t flags,
     jsonp_error_init(error, "");
 
     if(!fmt || !*fmt) {
-        jsonp_error_set(error, 1, 1, "Null or empty format string!");
+        jsonp_error_set(error, 1, 1, "Null or empty format string");
         return NULL;
     }
 
@@ -477,7 +479,7 @@ int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags,
     jsonp_error_init(error, "");
 
     if(!fmt || !*fmt) {
-        jsonp_error_set(error, 1, 1, "Null or empty format string!");
+        jsonp_error_set(error, 1, 1, "Null or empty format string");
         return -1;
     }
 
