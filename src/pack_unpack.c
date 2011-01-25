@@ -6,10 +6,6 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#include <stdarg.h>
-#include <string.h>
-#include <assert.h>
-
 #include <jansson.h>
 #include "jansson_private.h"
 
@@ -17,6 +13,7 @@ typedef struct {
     const char *fmt;
     char token;
     json_error_t *error;
+    size_t flags;
     int line;
     int column;
 } scanner_t;
@@ -181,11 +178,20 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
 {
     int ret = -1;
     int wildcard = 0;
-    hashtable_t key_set;
 
-    if(hashtable_init(&key_set, jsonp_hash_key, jsonp_key_equal, NULL, NULL)) {
-        set_error(s, "Out of memory");
-        return -1;
+    /* Use a set (emulated by a hashtable) to check that all object
+       keys are accessed. Checking that the correct number of keys
+       were accessed is not enough, as the same key can be unpacked
+       multiple times.
+    */
+    hashtable_t *key_set;
+
+    if(!(s->flags & JSON_UNPACK_ONLY)) {
+        key_set = hashtable_create(jsonp_hash_key, jsonp_key_equal, NULL, NULL);
+        if(!key_set) {
+            set_error(s, "Out of memory");
+            return -1;
+        }
     }
 
     if(!json_is_object(root)) {
@@ -199,7 +205,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
         json_t *value;
 
         if(wildcard) {
-            set_error(s, "Expected '}', got '%c'", s->token);
+            set_error(s, "Expected '}' after '*', got '%c'", s->token);
             goto error;
         }
 
@@ -231,19 +237,27 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
         if(unpack(s, value, ap))
             goto error;
 
-        hashtable_set(&key_set, (void *)key, NULL);
+        if(!(s->flags & JSON_UNPACK_ONLY))
+            hashtable_set(key_set, (void *)key, NULL);
+
         next_token(s);
     }
 
-    if(!wildcard && key_set.size != json_object_size(root)) {
-        long diff = (long)json_object_size(root) - (long)key_set.size;
+    if(s->flags & JSON_UNPACK_ONLY)
+        wildcard = 1;
+
+    if(!wildcard && key_set->size != json_object_size(root)) {
+        long diff = (long)json_object_size(root) - (long)key_set->size;
         set_error(s, "%li object items left unpacked", diff);
         goto error;
     }
+
     ret = 0;
 
 error:
-    hashtable_close(&key_set);
+    if(!(s->flags & JSON_UNPACK_ONLY))
+        hashtable_destroy(key_set);
+
     return ret;
 }
 
@@ -262,7 +276,7 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
         json_t *value;
 
         if(wildcard) {
-            set_error(s, "Expected ']', got '%c'", s->token);
+            set_error(s, "Expected ']' after '*', got '%c'", s->token);
             return -1;
         }
 
@@ -290,6 +304,9 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
         i++;
     }
 
+    if(s->flags & JSON_UNPACK_ONLY)
+        wildcard = 1;
+
     if(!wildcard && i != json_array_size(root)) {
         long diff = (long)json_array_size(root) - (long)i;
         set_error(s, "%li array items left upacked", diff);
@@ -310,9 +327,6 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             return unpack_array(s, root, ap);
 
         case 's':
-        {
-            const char **str;
-
             if(!json_is_string(root))
             {
                 set_error(s, "Type mismatch! Object (%i) wasn't a string.",
@@ -320,15 +334,18 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
                 return -1;
             }
 
-            str = va_arg(*ap, const char **);
-            if(!str) {
-                set_error(s, "Passed a NULL string pointer!");
-                return -1;
-            }
+            if(!(s->flags & JSON_VALIDATE_ONLY)) {
+                const char **str;
 
-            *str = json_string_value(root);
+                str = va_arg(*ap, const char **);
+                if(!str) {
+                    set_error(s, "Passed a NULL string pointer!");
+                    return -1;
+                }
+
+                *str = json_string_value(root);
+            }
             return 0;
-        }
 
         case 'i':
             if(!json_is_integer(root))
@@ -337,7 +354,10 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
                       json_typeof(root));
                 return -1;
             }
-            *va_arg(*ap, int*) = json_integer_value(root);
+
+            if(!(s->flags & JSON_VALIDATE_ONLY))
+                *va_arg(*ap, int*) = json_integer_value(root);
+
             return 0;
 
         case 'b':
@@ -347,7 +367,10 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
                       json_typeof(root));
                 return -1;
             }
-            *va_arg(*ap, int*) = json_is_true(root);
+
+            if(!(s->flags & JSON_VALIDATE_ONLY))
+                *va_arg(*ap, int*) = json_is_true(root);
+
             return 0;
 
         case 'f':
@@ -357,19 +380,25 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
                       json_typeof(root));
                 return -1;
             }
-            *va_arg(*ap, double*) = json_number_value(root);
+
+            if(!(s->flags & JSON_VALIDATE_ONLY))
+                *va_arg(*ap, double*) = json_number_value(root);
+
             return 0;
 
         case 'O':
-            json_incref(root);
+            if(!(s->flags & JSON_VALIDATE_ONLY))
+                json_incref(root);
             /* Fall through */
 
         case 'o':
-            *va_arg(*ap, json_t**) = root;
+            if(!(s->flags & JSON_VALIDATE_ONLY))
+                *va_arg(*ap, json_t**) = root;
+
             return 0;
 
         case 'n':
-            /* Don't assign, just validate */
+            /* Never assign, just validate */
             if(!json_is_null(root))
             {
                 set_error(s, "Type mismatch! Object (%i) wasn't null.",
@@ -384,11 +413,11 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
     }
 }
 
-json_t *json_pack(json_error_t *error, const char *fmt, ...)
+json_t *json_vpack_ex(json_error_t *error, size_t flags,
+                      const char *fmt, va_list ap)
 {
     scanner_t s;
     json_t *value;
-    va_list ap;
 
     jsonp_error_init(error, "");
 
@@ -398,18 +427,17 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...)
     }
 
     s.error = error;
+    s.flags = flags;
     s.fmt = fmt;
     s.line = 1;
     s.column = 0;
 
     next_token(&s);
-
-    va_start(ap, fmt);
     value = pack(&s, &ap);
-    va_end(ap);
 
     next_token(&s);
     if(s.token) {
+        json_decref(value);
         set_error(&s, "Garbage after format string");
         return NULL;
     }
@@ -417,11 +445,34 @@ json_t *json_pack(json_error_t *error, const char *fmt, ...)
     return value;
 }
 
-int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...)
+json_t *json_pack_ex(json_error_t *error, size_t flags, const char *fmt, ...)
+{
+    json_t *value;
+    va_list ap;
+
+    va_start(ap, fmt);
+    value = json_vpack_ex(error, flags, fmt, ap);
+    va_end(ap);
+
+    return value;
+}
+
+json_t *json_pack(const char *fmt, ...)
+{
+    json_t *value;
+    va_list ap;
+
+    va_start(ap, fmt);
+    value = json_vpack_ex(NULL, 0, fmt, ap);
+    va_end(ap);
+
+    return value;
+}
+
+int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags,
+                    const char *fmt, va_list ap)
 {
     scanner_t s;
-    va_list ap;
-    int result;
 
     jsonp_error_init(error, "");
 
@@ -431,17 +482,14 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...)
     }
 
     s.error = error;
+    s.flags = flags;
     s.fmt = fmt;
     s.line = 1;
     s.column = 0;
 
     next_token(&s);
 
-    va_start(ap, fmt);
-    result = unpack(&s, root, &ap);
-    va_end(ap);
-
-    if(result)
+    if(unpack(&s, root, &ap))
         return -1;
 
     next_token(&s);
@@ -451,4 +499,28 @@ int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...)
     }
 
     return 0;
+}
+
+int json_unpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, ...)
+{
+    int ret;
+    va_list ap;
+
+    va_start(ap, fmt);
+    ret = json_vunpack_ex(root, error, flags, fmt, ap);
+    va_end(ap);
+
+    return ret;
+}
+
+int json_unpack(json_t *root, const char *fmt, ...)
+{
+    int ret;
+    va_list ap;
+
+    va_start(ap, fmt);
+    ret = json_vunpack_ex(root, NULL, 0, fmt, ap);
+    va_end(ap);
+
+    return ret;
 }

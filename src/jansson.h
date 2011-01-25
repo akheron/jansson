@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>  /* for size_t */
+#include <stdarg.h>
+
 #include <jansson_config.h>
 
 #ifdef __cplusplus
@@ -185,8 +187,20 @@ int json_string_set_nocheck(json_t *string, const char *value);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
 
-json_t *json_pack(json_error_t *error, const char *fmt, ...);
-int json_unpack(json_t *root, json_error_t *error, const char *fmt, ...);
+
+/* pack, unpack */
+
+json_t *json_pack(const char *fmt, ...);
+json_t *json_pack_ex(json_error_t *error, size_t flags, const char *fmt, ...);
+json_t *json_vpack_ex(json_error_t *error, size_t flags, const char *fmt, va_list ap);
+
+#define JSON_VALIDATE_ONLY  0x1
+#define JSON_UNPACK_ONLY    0x2
+
+int json_unpack(json_t *root, const char *fmt, ...);
+int json_unpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, ...);
+int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, va_list ap);
+
 
 /* equality */
 
