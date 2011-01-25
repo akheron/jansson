@@ -380,8 +380,20 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             return 0;
 
         case 'f':
-            if(!json_is_number(root)) {
+            if(!json_is_real(root)) {
                 set_error(s, "Expected real, got %s", type_name(root));
+                return -1;
+            }
+
+            if(!(s->flags & JSON_VALIDATE_ONLY))
+                *va_arg(*ap, double*) = json_real_value(root);
+
+            return 0;
+
+        case 'F':
+            if(!json_is_number(root)) {
+                set_error(s, "Expected real or integer, got %s",
+                          type_name(root));
                 return -1;
             }
 
