@@ -166,8 +166,11 @@ static json_t *pack(scanner_t *s, va_list *ap)
         case 'b': /* boolean */
             return va_arg(*ap, int) ? json_true() : json_false();
 
-        case 'i': /* integer */
+        case 'i': /* integer from int */
             return json_integer(va_arg(*ap, int));
+
+        case 'I': /* integer from json_int_t */
+            return json_integer(va_arg(*ap, json_int_t));
 
         case 'f': /* real */
             return json_real(va_arg(*ap, double));
@@ -365,6 +368,17 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
             if(!(s->flags & JSON_VALIDATE_ONLY))
                 *va_arg(*ap, int*) = json_integer_value(root);
+
+            return 0;
+
+        case 'I':
+            if(!json_is_integer(root)) {
+                set_error(s, "Expected integer, got %s", type_name(root));
+                return -1;
+            }
+
+            if(!(s->flags & JSON_VALIDATE_ONLY))
+                *va_arg(*ap, json_int_t*) = json_integer_value(root);
 
             return 0;
 
