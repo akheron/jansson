@@ -849,6 +849,7 @@ denotes the C type that is expected as the corresponding argument.
     fourth, etc. format character represent a value. Any value may be
     an object or array, i.e. recursive value building is supported.
 
+The following functions compose the value building API:
 
 .. function:: json_t *json_pack(const char *fmt, ...)
 
@@ -896,10 +897,10 @@ and extract, or *unpack*, data from them. Like :ref:`building values
 
 While a JSON value is unpacked, the type specified in the format
 string is checked to match that of the JSON value. This is the
-validation part of the process. By default, the unpacking functions
-also check that all items of arrays and objects are unpacked. This
-check be disabled with the format character ``*`` or by using the flag
-``JSON_UNPACK_ONLY``.
+validation part of the process. In addition to this, the unpacking
+functions can also check that all items of arrays and objects are
+unpacked. This check be enabled with the format character ``!`` or by
+using the flag ``JSON_STRICT``. See below for details.
 
 Here's the full list of format characters. The type in parentheses
 denotes the JSON type, and the type in brackets (if any) denotes the C
@@ -951,12 +952,21 @@ type whose address should be passed.
     ``fmt`` may contain objects and arrays as values, i.e. recursive
     value extraction is supporetd.
 
-``*``
-    This special format character is used to disable the check that
-    all object and array items are accessed on a per-value basis. It
+``!``
+    This special format character is used to enable the check that
+    all object and array items are accessed, on a per-value basis. It
     must appear inside an array or object as the last format character
-    before the closing bracket or brace.
+    before the closing bracket or brace. To enable the check globally,
+    use the ``JSON_STRICT`` unpacking flag.
 
+``*``
+    This special format character is the opposite of ``!``. If the
+    ``JSON_STRICT`` flag is used, ``*`` can be used to disable the
+    strict check on a per-value basis. It must appear inside an array
+    or object as the last format character before the closing bracket
+    or brace.
+
+The following functions compose the parsing and validation API:
 
 .. function:: int json_unpack(json_t *root, const char *fmt, ...)
 
@@ -974,11 +984,11 @@ type whose address should be passed.
 
 The following unpacking flags are available:
 
-``JSON_UNPACK_ONLY``
-    Disable the validation step checking that all object and array
-    items are unpacked. This is equivalent to appending the format
-    character ``*`` to the end of every array and object in the format
-    string.
+``JSON_STRICT``
+    Enable the extra validation step checking that all object and
+    array items are unpacked. This is equivalent to appending the
+    format character ``!`` to the end of every array and object in the
+    format string.
 
 ``JSON_VALIDATE_ONLY``
     Don't extract any data, just validate the JSON value against the

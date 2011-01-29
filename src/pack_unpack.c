@@ -192,26 +192,23 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap);
 static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
 {
     int ret = -1;
-    int wildcard = 0;
+    int strict = 0;
 
     /* Use a set (emulated by a hashtable) to check that all object
        keys are accessed. Checking that the correct number of keys
        were accessed is not enough, as the same key can be unpacked
        multiple times.
     */
-    hashtable_t *key_set;
+    hashtable_t key_set;
 
-    if(!(s->flags & JSON_UNPACK_ONLY)) {
-        key_set = hashtable_create(jsonp_hash_key, jsonp_key_equal, NULL, NULL);
-        if(!key_set) {
-            set_error(s, "Out of memory");
-            return -1;
-        }
+    if(hashtable_init(&key_set, jsonp_hash_key, jsonp_key_equal, NULL, NULL)) {
+        set_error(s, "Out of memory");
+        return -1;
     }
 
     if(!json_is_object(root)) {
         set_error(s, "Expected object, got %s", type_name(root));
-        goto error;
+        goto out;
     }
     next_token(s);
 
@@ -219,67 +216,64 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
         const char *key;
         json_t *value;
 
-        if(wildcard) {
-            set_error(s, "Expected '}' after '*', got '%c'", s->token);
-            goto error;
+        if(strict != 0) {
+            set_error(s, "Expected '}' after '%c', got '%c'",
+                      (strict == 1 ? '!' : '*'), s->token);
+            goto out;
         }
 
         if(!s->token) {
             set_error(s, "Unexpected end of format string");
-            goto error;
+            goto out;
         }
 
-        if(s->token == '*') {
-            wildcard = 1;
+        if(s->token == '!' || s->token == '*') {
+            strict = (s->token == '!' ? 1 : -1);
             next_token(s);
             continue;
         }
 
         if(s->token != 's') {
             set_error(s, "Expected format 's', got '%c'\n", *s->fmt);
-            goto error;
+            goto out;
         }
 
         key = va_arg(*ap, const char *);
         if(!key) {
             set_error(s, "NULL object key");
-            goto error;
+            goto out;
         }
 
         next_token(s);
 
         value = json_object_get(root, key);
         if(unpack(s, value, ap))
-            goto error;
+            goto out;
 
-        if(!(s->flags & JSON_UNPACK_ONLY))
-            hashtable_set(key_set, (void *)key, NULL);
-
+        hashtable_set(&key_set, (void *)key, NULL);
         next_token(s);
     }
 
-    if(s->flags & JSON_UNPACK_ONLY)
-        wildcard = 1;
+    if(strict == 0 && (s->flags & JSON_STRICT))
+        strict = 1;
 
-    if(!wildcard && key_set->size != json_object_size(root)) {
-        long diff = (long)json_object_size(root) - (long)key_set->size;
+    if(strict == 1 && key_set.size != json_object_size(root)) {
+        long diff = (long)json_object_size(root) - (long)key_set.size;
         set_error(s, "%li object items left unpacked", diff);
-        goto error;
+        goto out;
     }
 
     ret = 0;
 
-error:
-    if(!(s->flags & JSON_UNPACK_ONLY))
-        hashtable_destroy(key_set);
-
+out:
+    hashtable_close(&key_set);
     return ret;
 }
 
 static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
 {
     size_t i = 0;
-    int wildcard = 0;
+    int strict = 0;
 
     if(!json_is_array(root)) {
         set_error(s, "Expected array, got %s", type_name(root));
@@ -290,8 +284,10 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
     while(s->token != ']') {
         json_t *value;
 
-        if(wildcard) {
-            set_error(s, "Expected ']' after '*', got '%c'", s->token);
+        if(strict != 0) {
+            set_error(s, "Expected ']' after '%c', got '%c'",
+                      (strict == 1 ? '!' : '*'),
+                      s->token);
             return -1;
         }
 
@@ -300,8 +296,8 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
             return -1;
         }
 
-        if(s->token == '*') {
-            wildcard = 1;
+        if(s->token == '!' || s->token == '*') {
+            strict = (s->token == '!' ? 1 : -1);
             next_token(s);
             continue;
         }
@@ -319,10 +315,10 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
         i++;
     }
 
-    if(s->flags & JSON_UNPACK_ONLY)
-        wildcard = 1;
+    if(strict == 0 && (s->flags & JSON_STRICT))
+        strict = 1;
 
-    if(!wildcard && i != json_array_size(root)) {
+    if(strict == 1 && i != json_array_size(root)) {
         long diff = (long)json_array_size(root) - (long)i;
         set_error(s, "%li array items left upacked", diff);
         return -1;

@@ -195,7 +195,7 @@ json_t *json_pack_ex(json_error_t *error, size_t flags, const char *fmt, ...);
 json_t *json_vpack_ex(json_error_t *error, size_t flags, const char *fmt, va_list ap);
 
 #define JSON_VALIDATE_ONLY  0x1
-#define JSON_UNPACK_ONLY    0x2
+#define JSON_STRICT         0x2
 
 int json_unpack(json_t *root, const char *fmt, ...);
 int json_unpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, ...);
