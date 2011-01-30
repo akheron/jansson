@@ -1014,9 +1014,9 @@ Examples::
     /* returns 0 for validation success, nothing is extracted */
 
     /* root is the JSON array [1, 2, 3, 4, 5] */
-    int myint1, myint2, ret;
-    ret = json_unpack(root, "[ii*]", &myint1, &myint2);
-    assert(ret == 0 && myint1 == 1 && myint2 == 2);
+    int myint1, myint2;
+    json_unpack(root, "[ii!]", &myint1, &myint2);
+    /* returns -1 for failed validation */
 
 
 Equality
