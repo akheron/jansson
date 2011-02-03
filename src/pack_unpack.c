@@ -441,6 +441,7 @@ json_t *json_vpack_ex(json_error_t *error, size_t flags,
                       const char *fmt, va_list ap)
 {
     scanner_t s;
+    va_list ap_copy;
     json_t *value;
 
     jsonp_error_init(error, "");
@@ -457,7 +458,9 @@ json_t *json_vpack_ex(json_error_t *error, size_t flags,
     s.column = 0;
 
     next_token(&s);
-    value = pack(&s, &ap);
+    va_copy(ap_copy, ap);
+    value = pack(&s, &ap_copy);
+    va_end(ap_copy);
 
     next_token(&s);
     if(s.token) {
@@ -497,6 +500,7 @@ int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags,
                     const char *fmt, va_list ap)
 {
     scanner_t s;
+    va_list ap_copy;
 
     jsonp_error_init(error, "");
 
@@ -513,8 +517,12 @@ int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags,
 
     next_token(&s);
 
-    if(unpack(&s, root, &ap))
+    va_copy(ap_copy, ap);
+    if(unpack(&s, root, &ap_copy)) {
+        va_end(ap_copy);
         return -1;
+    }
+    va_end(ap_copy);
 
     next_token(&s);
     if(s.token) {
