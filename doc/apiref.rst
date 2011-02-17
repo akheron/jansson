@@ -1084,3 +1084,75 @@ copied in a recursive fashion.
    .. refcounting:: new
 
    Returns a deep copy of *value*, or *NULL* on error.
+
+
+Custom memory allocation
+========================
+
+By default, Jansson uses :func:`malloc()` and :func:`free()` for
+memory allocation. These functions can be overridden if custom
+behavior is needed.
+
+.. type:: json_malloc_t
+
+   A typedef for a function pointer with :func:`malloc()`'s
+   signature::
+
+       typedef void *(*json_malloc_t)(size_t);
+
+.. type:: json_free_t
+
+   A typedef for a function pointer with :func:`free()`'s
+   signature::
+
+       typedef void (*json_free_t)(void *);
+
+.. function:: void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn)
+
+   Use *malloc_fn* instead of :func:`malloc()` and *free_fn* instead
+   of :func:`free()`. This function has to be called before any other
+   Jansson's API functions to ensure that all memory operations use
+   the same functions.
+
+Examples:
+
+Use the `Boehm's conservative garbage collector`_ for memory
+operations::
+
+    json_set_alloc_funcs(GC_malloc, GC_free);
+
+.. _Boehm's conservative garbage collector: http://www.hpl.hp.com/personal/Hans_Boehm/gc/
+
+Allow storing sensitive data (e.g. passwords or encryption keys) in
+JSON structures by zeroing all memory when freed::
+
+    static void *secure_malloc(size_t size)
+    {
+        /* Store the memory area size in the beginning of the block */
+        void *ptr = malloc(size + 8);
+        *((size_t *)ptr) = size;
+        return ptr + 8;
+    }
+
+    static void secure_free(void *ptr)
+    {
+        size_t size;
+
+        ptr -= 8;
+        size = *((size_t *)ptr);
+
+        guaranteed_memset(ptr, 0, size);
+        free(ptr);
+    }
+
+    int main()
+    {
+        json_set_alloc_funcs(secure_malloc, secure_free);
+        /* ... */
+    }
+
+For more information about the issues of storing sensitive data in
+memory, see
+http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO/protect-secrets.html.
+The page also examplains the :func:`guaranteed_memset()` function used
+in the example and gives a sample implementation for it.

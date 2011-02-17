@@ -59,6 +59,7 @@ json_vpack_ex
 json_unpack
 json_unpack_ex
 json_vunpack_ex
+json_set_alloc_funcs
 EOF
 
 # The list of functions are not exported in the library because they

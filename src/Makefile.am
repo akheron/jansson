@@ -8,6 +8,7 @@ libjansson_la_SOURCES = \
 	hashtable.h \
 	jansson_private.h \
 	load.c \
+	memory.c \
 	pack_unpack.c \
 	strbuffer.c \
 	strbuffer.h \

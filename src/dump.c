@@ -313,7 +313,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 int (*cmp_func)(const void *, const void *);
 
                 size = json_object_size(json);
-                keys = malloc(size * sizeof(object_key_t *));
+                keys = jsonp_malloc(size * sizeof(object_key_t *));
                 if(!keys)
                     goto object_error;
 
@@ -346,7 +346,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                     if(dump(separator, separator_length, data) ||
                        do_dump(value, flags, depth + 1, dump, data))
                     {
-                        free(keys);
+                        jsonp_free(keys);
                         goto object_error;
                     }
 
@@ -355,7 +355,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                         if(dump(",", 1, data) ||
                            dump_indent(flags, depth + 1, 1, dump, data))
                         {
-                            free(keys);
+                            jsonp_free(keys);
                             goto object_error;
                         }
                     }
@@ -363,13 +363,13 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                     {
                         if(dump_indent(flags, depth, 0, dump, data))
                         {
-                            free(keys);
+                            jsonp_free(keys);
                             goto object_error;
                         }
                     }
                 }
 
-                free(keys);
+                jsonp_free(keys);
             }
             else
             {
@@ -432,7 +432,7 @@ char *json_dumps(const json_t *json, size_t flags)
         return NULL;
     }
 
-    result = strdup(strbuffer_value(&strbuff));
+    result = jsonp_strdup(strbuffer_value(&strbuff));
     strbuffer_close(&strbuff);
 
     return result;

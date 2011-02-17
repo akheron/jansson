@@ -73,4 +73,9 @@ void jsonp_error_set(json_error_t *error, int line, int column,
 void jsonp_error_vset(json_error_t *error, int line, int column,
                       const char *msg, va_list ap);
 
+/* Wrappers for custom memory functions */
+void* jsonp_malloc(size_t size);
+void jsonp_free(void *ptr);
+char *jsonp_strdup(const char *str);
+
 #endif

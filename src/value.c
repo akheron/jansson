@@ -61,16 +61,16 @@ static void value_decref(void *value)
 
 json_t *json_object(void)
 {
-    json_object_t *object = malloc(sizeof(json_object_t));
+    json_object_t *object = jsonp_malloc(sizeof(json_object_t));
     if(!object)
         return NULL;
     json_init(&object->json, JSON_OBJECT);
 
     if(hashtable_init(&object->hashtable,
                       jsonp_hash_key, jsonp_key_equal,
-                      free, value_decref))
+                      jsonp_free, value_decref))
     {
-        free(object);
+        jsonp_free(object);
         return NULL;
     }
 
@@ -83,7 +83,7 @@ json_t *json_object(void)
 static void json_delete_object(json_object_t *object)
 {
     hashtable_close(&object->hashtable);
-    free(object);
+    jsonp_free(object);
 }
 
 size_t json_object_size(const json_t *json)
@@ -126,8 +126,9 @@ int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value)
     /* offsetof(...) returns the size of object_key_t without the
        last, flexible member. This way, the correct amount is
        allocated. */
-    k = malloc(offsetof(object_key_t, key) +
-    strlen(key) + 1); if(!k) return -1;
+    k = jsonp_malloc(offsetof(object_key_t, key) + strlen(key) + 1);
+    if(!k)
+        return -1;
 
     k->serial = object->serial++;
     strcpy(k->key, key);
@@ -351,7 +352,7 @@ static json_t *json_object_deep_copy(json_t *object)
 
 json_t *json_array(void)
 {
-    json_array_t *array = malloc(sizeof(json_array_t));
+    json_array_t *array = jsonp_malloc(sizeof(json_array_t));
     if(!array)
         return NULL;
     json_init(&array->json, JSON_ARRAY);
@@ -359,9 +360,9 @@ json_t *json_array(void)
     array->entries = 0;
     array->size = 8;
 
-    array->table = malloc(array->size * sizeof(json_t *));
+    array->table = jsonp_malloc(array->size * sizeof(json_t *));
     if(!array->table) {
-        free(array);
+        jsonp_free(array);
         return NULL;
     }
 
@@ -377,8 +378,8 @@ static void json_delete_array(json_array_t *array)
     for(i = 0; i < array->entries; i++)
         json_decref(array->table[i]);
 
-    free(array->table);
-    free(array);
+    jsonp_free(array->table);
+    jsonp_free(array);
 }
 
 size_t json_array_size(const json_t *json)
@@ -454,7 +455,7 @@ static json_t **json_array_grow(json_array_t *array,
     old_table = array->table;
 
     new_size = max(array->size + amount, array->size * 2);
-    new_table = malloc(new_size * sizeof(json_t *));
+    new_table = jsonp_malloc(new_size * sizeof(json_t *));
     if(!new_table)
         return NULL;
 
@@ -463,7 +464,7 @@ static json_t **json_array_grow(json_array_t *array,
 
     if(copy) {
         array_copy(array->table, 0, old_table, 0, array->entries);
-        free(old_table);
+        jsonp_free(old_table);
         return array->table;
     }
 
@@ -524,7 +525,7 @@ int json_array_insert_new(json_t *json, size_t index, json_t *value)
         array_copy(array->table, 0, old_table, 0, index);
         array_copy(array->table, index + 1, old_table, index,
                    array->entries - index);
-        free(old_table);
+        jsonp_free(old_table);
     }
     else
         array_move(array, index + 1, index, array->entries - index);
@@ -653,14 +654,14 @@ json_t *json_string_nocheck(const char *value)
     if(!value)
         return NULL;
 
-    string = malloc(sizeof(json_string_t));
+    string = jsonp_malloc(sizeof(json_string_t));
     if(!string)
         return NULL;
     json_init(&string->json, JSON_STRING);
 
-    string->value = strdup(value);
+    string->value = jsonp_strdup(value);
     if(!string->value) {
-        free(string);
+        jsonp_free(string);
         return NULL;
     }
 
@@ -688,12 +689,12 @@ int json_string_set_nocheck(json_t *json, const char *value)
     char *dup;
     json_string_t *string;
 
-    dup = strdup(value);
+    dup = jsonp_strdup(value);
     if(!dup)
         return -1;
 
     string = json_to_string(json);
-    free(string->value);
+    jsonp_free(string->value);
     string->value = dup;
 
     return 0;
@@ -709,8 +710,8 @@ int json_string_set(json_t *json, const char *value)
 
 static void json_delete_string(json_string_t *string)
 {
-    free(string->value);
-    free(string);
+    jsonp_free(string->value);
+    jsonp_free(string);
 }
 
 static int json_string_equal(json_t *string1, json_t *string2)
@@ -728,7 +729,7 @@ static json_t *json_string_copy(json_t *string)
 
 json_t *json_integer(json_int_t value)
 {
-    json_integer_t *integer = malloc(sizeof(json_integer_t));
+    json_integer_t *integer = jsonp_malloc(sizeof(json_integer_t));
     if(!integer)
         return NULL;
     json_init(&integer->json, JSON_INTEGER);
@@ -757,7 +758,7 @@ int json_integer_set(json_t *json, json_int_t value)
 
 static void json_delete_integer(json_integer_t *integer)
 {
-    free(integer);
+    jsonp_free(integer);
 }
 
 static int json_integer_equal(json_t *integer1, json_t *integer2)
@@ -775,7 +776,7 @@ static json_t *json_integer_copy(json_t *integer)
 
 json_t *json_real(double value)
 {
-    json_real_t *real = malloc(sizeof(json_real_t));
+    json_real_t *real = jsonp_malloc(sizeof(json_real_t));
     if(!real)
         return NULL;
     json_init(&real->json, JSON_REAL);
@@ -804,7 +805,7 @@ int json_real_set(json_t *json, double value)
 
 static void json_delete_real(json_real_t *real)
 {
-    free(real);
+    jsonp_free(real);
 }
 
 static int json_real_equal(json_t *real1, json_t *real2)

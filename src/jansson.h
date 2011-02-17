@@ -229,6 +229,14 @@ char *json_dumps(const json_t *json, size_t flags);
 int json_dumpf(const json_t *json, FILE *output, size_t flags);
 int json_dump_file(const json_t *json, const char *path, size_t flags);
 
+
+/* custom memory allocation */
+
+typedef void *(*json_malloc_t)(size_t);
+typedef void (*json_free_t)(void *);
+
+void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn);
+
 #ifdef __cplusplus
 }
 #endif
