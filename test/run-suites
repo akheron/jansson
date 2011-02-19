@@ -20,6 +20,8 @@ if [ -z "$SUITES" ]; then
     done
 fi
 
+[ -z "$STOP" ] && STOP=0
+
 export suites_srcdir=$top_srcdir/test/suites
 export suites_builddir=suites
 export scriptdir=$top_srcdir/test/scripts
@@ -34,6 +36,7 @@ for suite in $SUITES; do
         passed=$(($passed+1))
     else
         failed=$(($failed+1))
+        [ $STOP -eq 1 ] && break
     fi
 done
 

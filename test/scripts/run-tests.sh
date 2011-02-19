@@ -12,6 +12,7 @@ suite_log=$logdir/$suite_name
 
 
 [ -z "$VERBOSE" ] && VERBOSE=0
+[ -z "$STOP" ] && STOP=0
 
 . $scriptdir/valgrind.sh
 
@@ -47,6 +48,8 @@ for test_path in $suite_srcdir/*; do
         else
             echo -n "F"
         fi
+
+        [ $STOP -eq 1 ] && break
     fi
 done
 
