@@ -620,6 +620,62 @@ The iteration protocol can be used for example as follows::
    }
 
 
+Error reporting
+===============
+
+Jansson uses a single struct type to pass error information to the
+user. See sections :ref:`apiref-decoding`, :ref:`apiref-pack` and
+:ref:`apiref-unpack` for functions that pass error information using
+this struct.
+
+.. type:: json_error_t
+
+   .. member:: char text[]
+
+      The error message (in UTF-8), or an empty string if a message is
+      not available.
+
+   .. member:: char source[]
+
+      Source of the error. This can be (a part of) the file name or a
+      special identifier in angle brackers (e.g. ``<string>``).
+
+   .. member:: int line
+
+      The line number on which the error occurred.
+
+   .. member:: int column
+
+      The column on which the error occurred. Note that this is the
+      *character column*, not the byte column, i.e. a multibyte UTF-8
+      character counts as one column.
+
+   .. member:: size_t position
+
+      The position in bytes from the start of the input. This is
+      useful for debugging Unicode encoding problems.
+
+The normal use of :type:`json_error_t` is to allocate it on the stack,
+and pass a pointer to a function. Example::
+
+   int main() {
+       json_t *json;
+       json_error_t error;
+
+       json = json_load_file("/path/to/file.json", 0, &error);
+       if(!json) {
+           /* the error variable contains error information */
+       }
+       ...
+   }
+
+Also note that if the call succeeded (``json != NULL`` in the above
+example), the contents of ``error`` are unspecified.
+
+All functions also accept *NULL* as the :type:`json_error_t` pointer,
+in which case no error information is returned to the caller.
+
+
 Encoding
 ========
 
@@ -690,6 +746,8 @@ is in UTF-8.
    above. Returns 0 on success and -1 on error.
 
 
+.. _apiref-decoding:
+
 Decoding
 ========
 
@@ -710,9 +768,8 @@ affect especially the behavior of the decoder.
 
    Decodes the JSON string *input* and returns the array or object it
    contains, or *NULL* on error, in which case *error* is filled with
-   information about the error. See above for discussion on the
-   *error* parameter. *flags* is currently unused, and should be set
-   to 0.
+   information about the error. *flags* is currently unused, and
+   should be set to 0.
 
 .. function:: json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 
@@ -720,9 +777,8 @@ affect especially the behavior of the decoder.
 
    Decodes the JSON text in stream *input* and returns the array or
    object it contains, or *NULL* on error, in which case *error* is
-   filled with information about the error. See above for discussion
-   on the *error* parameter. *flags* is currently unused, and should
-   be set to 0.
+   filled with information about the error. *flags* is currently
+   unused, and should be set to 0.
 
 .. function:: json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 
@@ -730,64 +786,11 @@ affect especially the behavior of the decoder.
 
    Decodes the JSON text in file *path* and returns the array or
    object it contains, or *NULL* on error, in which case *error* is
-   filled with information about the error. See above for discussion
-   on the *error* parameter. *flags* is currently unused, and should
-   be set to 0.
-
-.. type:: json_error_t
-
-   This data structure is used to return information on decoding
-   errors from the decoding functions.
-
-   .. member:: char text[]
-
-      The error message (in UTF-8), or an empty string if a message is
-      not available.
-
-   .. member:: char source[]
-
-      Source of the error. This is (a part of) the file name when
-      using :func:`json_load_file()`, or a special identifier in angle
-      brackets otherwise (e.g. ``<string>``).
-
-   .. member:: int line
-
-      The line number on which the error occurred.
-
-   .. member:: int column
-
-      The character column on which the error occurred. Note that this
-      is the *character column*, not the byte column, i.e. a non-ASCII
-      UTF-8 character counts as one column.
-
-   .. member:: size_t position
-
-      The position in bytes from the start of the input. This is
-      useful for debugging Unicode encoding problems.
-
-   The normal use of :type:`json_error_t` is to allocate it on the
-   stack, and pass a pointer to a decoding function. Example::
-
-      int main() {
-          json_t *json;
-          json_error_t error;
-
-          json = json_load_file("/path/to/file.json", 0, &error);
-          if(!json) {
-              /* the error variable contains error information */
-          }
-          ...
-      }
-
-   Also note that if the decoding succeeded (``json != NULL`` in the
-   above example), the contents of ``error`` are unspecified.
-
-   All decoding functions also accept *NULL* as the
-   :type:`json_error_t` pointer, in which case no error information
-   is returned to the caller.
+   filled with information about the error. *flags* is currently
+   unused, and should be set to 0.
 
 
-.. _apiref-building-values:
+.. _apiref-pack:
 
 Building values
 ===============
@@ -893,12 +896,14 @@ More examples::
   json_pack("[[i,i],{s:b]]", 1, 2, "cool", 1);
 
 
+.. _apiref-unpack:
+
 Parsing and validating values
 =============================
 
 This sectinon describes functions that help to validate complex values
 and extract, or *unpack*, data from them. Like :ref:`building values
-<apiref-building-values>`, this is also based on format strings.
+<apiref-pack>`, this is also based on format strings.
 
 While a JSON value is unpacked, the type specified in the format
 string is checked to match that of the JSON value. This is the
