@@ -10,6 +10,7 @@
 #include "jansson_private.h"
 
 typedef struct {
+    const char *start;
     const char *fmt;
     char token;
     json_error_t *error;
@@ -57,8 +58,12 @@ static void next_token(scanner_t *s)
 static void set_error(scanner_t *s, const char *fmt, ...)
 {
     va_list ap;
+    size_t pos;
     va_start(ap, fmt);
-    jsonp_error_vset(s->error, s->line, s->column, fmt, ap);
+
+    pos = (size_t)(s->fmt - s->start);
+    jsonp_error_vset(s->error, s->line, s->column, pos, fmt, ap);
+
     va_end(ap);
 }
 
@@ -447,13 +452,13 @@ json_t *json_vpack_ex(json_error_t *error, size_t flags,
     jsonp_error_init(error, "");
 
     if(!fmt || !*fmt) {
-        jsonp_error_set(error, 1, 1, "Null or empty format string");
+        jsonp_error_set(error, -1, -1, 0, "Null or empty format string");
         return NULL;
     }
 
     s.error = error;
     s.flags = flags;
-    s.fmt = fmt;
+    s.fmt = s.start = fmt;
     s.line = 1;
     s.column = 0;
 
@@ -505,13 +510,13 @@ int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags,
     jsonp_error_init(error, "");
 
     if(!fmt || !*fmt) {
-        jsonp_error_set(error, 1, 1, "Null or empty format string");
+        jsonp_error_set(error, -1, -1, 0, "Null or empty format string");
         return -1;
     }
 
     s.error = error;
     s.flags = flags;
-    s.fmt = fmt;
+    s.fmt = s.start = fmt;
     s.line = 1;
     s.column = 0;
 

@@ -1,2 +1,2 @@
-1
-invalid escape near '"\'
+1 4 4
+invalid escape near '"\a'

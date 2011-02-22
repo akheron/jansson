@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include <jansson.h>
 
 static int getenv_int(const char *name)
@@ -23,6 +25,26 @@ static int getenv_int(const char *name)
         return 0;
 
     return (int)result;
+}
+
+/* Return a pointer to the first non-whitespace character of str.
+   Modifies str so that all trailing whitespace characters are
+   replaced by '\0'. */
+static const char *strip(char *str)
+{
+    size_t length;
+    char *result = str;
+    while(*result && isspace(*result))
+        result++;
+
+    length = strlen(result);
+    if(length == 0)
+        return result;
+
+    while(isspace(result[length - 1]))
+        result[--length] = '\0';
+
+    return result;
 }
 
 int main(int argc, char *argv[])
@@ -59,9 +81,39 @@ int main(int argc, char *argv[])
     if(getenv_int("JSON_SORT_KEYS"))
         flags |= JSON_SORT_KEYS;
 
-    json = json_loadf(stdin, 0, &error);
+    if(getenv_int("STRIP")) {
+        /* Load to memory, strip leading and trailing whitespace */
+        size_t size = 0, used = 0;
+        char *buffer = NULL;
+
+        while(1) {
+            int count;
+
+            size = (size == 0 ? 128 : size * 2);
+            buffer = realloc(buffer, size);
+            if(!buffer) {
+                fprintf(stderr, "Unable to allocate %d bytes\n", (int)size);
+                return 1;
+            }
+
+            count = fread(buffer + used, 1, size - used, stdin);
+            if(count < size - used) {
+                buffer[used + count] = '\0';
+                break;
+            }
+            used += count;
+        }
+
+        json = json_loads(strip(buffer), 0, &error);
+        free(buffer);
+    }
+    else
+        json = json_loadf(stdin, 0, &error);
+
     if(!json) {
-        fprintf(stderr, "%d\n%s\n", error.line, error.text);
+        fprintf(stderr, "%d %d %d\n%s\n",
+                error.line, error.column, error.position,
+                error.text);
         return 1;
     }
 

@@ -180,7 +180,7 @@ int main()
     /* NULL format */
     if(json_pack_ex(&error, 0, NULL))
         fail("json_pack failed to catch NULL format string");
-    if(error.line != 1 || error.column != 1)
+    if(error.line != -1 || error.column != -1)
         fail("json_pack didn't get the error coordinates right!");
 
     /* More complicated checks for row/columns */

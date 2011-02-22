@@ -1,2 +1,2 @@
--1
-unable to decode byte 0xf4 at position 2
+1 2 2
+unable to decode byte 0xf4 near '"'

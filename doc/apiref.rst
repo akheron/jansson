@@ -739,26 +739,31 @@ affect especially the behavior of the decoder.
    This data structure is used to return information on decoding
    errors from the decoding functions.
 
-   .. member:: const char *text
+   .. member:: char text[]
 
       The error message (in UTF-8), or an empty string if a message is
       not available.
 
-   .. member:: int line
-
-      The line number on which the error occurred, or -1 if this
-      information is not available.
-
-   .. member:: int column
-
-      The character column on which the error occurred, or -1 if this
-      information is not available.
-
-   .. member:: const char *source
+   .. member:: char source[]
 
       Source of the error. This is (a part of) the file name when
       using :func:`json_load_file()`, or a special identifier in angle
       brackets otherwise (e.g. ``<string>``).
+
+   .. member:: int line
+
+      The line number on which the error occurred.
+
+   .. member:: int column
+
+      The character column on which the error occurred. Note that this
+      is the *character column*, not the byte column, i.e. a non-ASCII
+      UTF-8 character counts as one column.
+
+   .. member:: size_t position
+
+      The position in bytes from the start of the input. This is
+      useful for debugging Unicode encoding problems.
 
    The normal use of :type:`json_error_t` is to allocate it on the
    stack, and pass a pointer to a decoding function. Example::

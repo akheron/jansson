@@ -109,10 +109,11 @@ void json_decref(json_t *json)
 #define JSON_ERROR_SOURCE_LENGTH   80
 
 typedef struct {
-    char text[JSON_ERROR_TEXT_LENGTH];
     int line;
     int column;
+    int position;
     char source[JSON_ERROR_SOURCE_LENGTH];
+    char text[JSON_ERROR_TEXT_LENGTH];
 } json_error_t;
 
 
