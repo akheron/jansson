@@ -1,3 +1,61 @@
+Version 2.0 (in development)
+============================
+
+This release is backwards incompatible with the 1.x release series.
+See the documentation for instructions on how to port existing code to
+Jansson 2.0.
+
+* Backwards incompatible changes:
+
+  - Unify unsigned integer usage in the API: All occurences of
+    unsigned int and unsigned long have been replaced with size_t.
+
+  - Change JSON integer's underlying type to the widest signed integer
+    type available, i.e. long long if it's supported, otherwise long.
+    Add a typedef json_int_t that defines the type.
+
+  - Change the maximum indentation depth to 32 spaces in encoder. This
+    frees up bits from the flags parameter of encoding functions
+    `json_dumpf()`, `json_dumps()` and `json_dump_file()`.
+
+  - For future needs, add a flags parameter to all decoding functions
+    `json_loadf()`, `json_loads()` and `json_load_file()`.
+
+* New features
+
+  - `json_pack()`, `json_pack_ex()`, `json_vpack_ex()`: Create complex
+    JSON values based on a format string.
+
+  - `json_unpack()`, `json_unpack_ex()`, `json_vunpack_ex()`: Simple
+    value extraction and validation functionality based on a format
+    string.
+
+  - Add column, position and source fields to the ``json_error_t``
+    struct.
+
+  - Report the error context for UTF-8 decoding errors in the decoder.
+
+  - Add preprocessor constants that define the library version.
+
+  - Add API for setting custom memory allocation functions:
+    `json_set_alloc_funcs()`.
+
+* Fix many portability issues, especially on Windows.
+
+* Configuration
+
+  - Add file ``jansson_config.h`` that contains site specific
+    configuration. It's created automatically by the configure script,
+    or can be created by hand if the configure script cannot be used.
+    The file ``jansson_config.h.win32`` can be used without
+    modifications on Windows systems.
+
+  - Add a section to documentation describing how to build Jansson on
+    Windows.
+
+  - Documentation now requires Sphinx 1.0 or newer.
+
+
 Version 1.3
 ===========
 
