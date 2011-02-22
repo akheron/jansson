@@ -6,6 +6,7 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
+#include <string.h>
 #include <jansson.h>
 #include "jansson_private.h"
 
@@ -32,6 +33,19 @@ static const char *type_names[] = {
 
 #define type_name(x) type_names[json_typeof(x)]
 
+static const char *unpack_value_starters = "{[siIbfFOon";
+
+
+static void scanner_init(scanner_t *s, json_error_t *error,
+                         size_t flags, const char *fmt)
+{
+    s->error = error;
+    s->flags = flags;
+    s->fmt = s->start = fmt;
+    s->line = 1;
+    s->column = 0;
+}
+
 static void next_token(scanner_t *s)
 {
     const char *t = s->fmt;
@@ -55,7 +69,7 @@ static void next_token(scanner_t *s)
     s->fmt = t;
 }
 
-static void set_error(scanner_t *s, const char *fmt, ...)
+static void set_error(scanner_t *s, const char *source, const char *fmt, ...)
 {
     va_list ap;
     size_t pos;
@@ -63,6 +77,8 @@ static void set_error(scanner_t *s, const char *fmt, ...)
 
     pos = (size_t)(s->fmt - s->start);
     jsonp_error_vset(s->error, s->line, s->column, pos, fmt, ap);
+
+    jsonp_error_set_source(s->error, source);
 
     va_end(ap);
 }
@@ -79,18 +95,18 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
         json_t *value;
 
         if(!s->token) {
-            set_error(s, "Unexpected end of format string");
+            set_error(s, "<format>", "Unexpected end of format string");
             goto error;
         }
 
         if(s->token != 's') {
-            set_error(s, "Expected format 's', got '%c'\n", *s->fmt);
+            set_error(s, "<format>", "Expected format 's', got '%c'", s->token);
             goto error;
         }
 
         key = va_arg(*ap, const char *);
         if(!key) {
-            set_error(s, "NULL object key");
+            set_error(s, "<args>", "NULL object key");
             goto error;
         }
 
@@ -101,7 +117,7 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
             goto error;
 
         if(json_object_set_new(object, key, value)) {
-            set_error(s, "Unable to add key \"%s\"", key);
+            set_error(s, "<internal>", "Unable to add key \"%s\"", key);
             goto error;
         }
 
@@ -124,7 +140,7 @@ static json_t *pack_array(scanner_t *s, va_list *ap)
         json_t *value;
 
         if(!s->token) {
-            set_error(s, "Unexpected end of format string");
+            set_error(s, "<format>", "Unexpected end of format string");
             goto error;
         }
 
@@ -133,7 +149,7 @@ static json_t *pack_array(scanner_t *s, va_list *ap)
             goto error;
 
         if(json_array_append_new(array, value)) {
-            set_error(s, "Unable to append to array");
+            set_error(s, "<internal>", "Unable to append to array");
             goto error;
         }
 
@@ -159,7 +175,7 @@ static json_t *pack(scanner_t *s, va_list *ap)
         {
             const char *str = va_arg(*ap, const char *);
             if(!str) {
-                set_error(s, "NULL string");
+                set_error(s, "<args>", "NULL string argument");
                 return NULL;
             }
             return json_string(str);
@@ -187,7 +203,8 @@ static json_t *pack(scanner_t *s, va_list *ap)
             return va_arg(*ap, json_t *);
 
         default:
-            set_error(s, "Unrecognized format character '%c'", s->token);
+            set_error(s, "<format>", "Unexpected format character '%c'",
+                      s->token);
             return NULL;
     }
 }
@@ -207,12 +224,13 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
     hashtable_t key_set;
 
     if(hashtable_init(&key_set, jsonp_hash_key, jsonp_key_equal, NULL, NULL)) {
-        set_error(s, "Out of memory");
+        set_error(s, "<internal>", "Out of memory");
         return -1;
     }
 
     if(!json_is_object(root)) {
-        set_error(s, "Expected object, got %s", type_name(root));
+        set_error(s, "<validation>", "Expected object, got %s",
+                  type_name(root));
         goto out;
     }
     next_token(s);
@@ -222,13 +240,13 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
         json_t *value;
 
         if(strict != 0) {
-            set_error(s, "Expected '}' after '%c', got '%c'",
+            set_error(s, "<format>", "Expected '}' after '%c', got '%c'",
                       (strict == 1 ? '!' : '*'), s->token);
             goto out;
         }
 
         if(!s->token) {
-            set_error(s, "Unexpected end of format string");
+            set_error(s, "<format>", "Unexpected end of format string");
             goto out;
         }
 
@@ -239,19 +257,24 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
         }
 
         if(s->token != 's') {
-            set_error(s, "Expected format 's', got '%c'\n", *s->fmt);
+            set_error(s, "<format>", "Expected format 's', got '%c'", s->token);
             goto out;
         }
 
         key = va_arg(*ap, const char *);
         if(!key) {
-            set_error(s, "NULL object key");
+            set_error(s, "<args>", "NULL object key");
             goto out;
         }
 
         next_token(s);
 
         value = json_object_get(root, key);
+        if(!value) {
+            set_error(s, "<validation>", "Object item not found: %s", key);
+            goto out;
+        }
+
         if(unpack(s, value, ap))
             goto out;
 
@@ -264,7 +287,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
 
     if(strict == 1 && key_set.size != json_object_size(root)) {
         long diff = (long)json_object_size(root) - (long)key_set.size;
-        set_error(s, "%li object items left unpacked", diff);
+        set_error(s, "<validation>", "%li object item(s) left unpacked", diff);
         goto out;
     }
 
@@ -281,7 +304,7 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
     int strict = 0;
 
     if(!json_is_array(root)) {
-        set_error(s, "Expected array, got %s", type_name(root));
+        set_error(s, "<validation>", "Expected array, got %s", type_name(root));
         return -1;
     }
     next_token(s);
@@ -290,14 +313,14 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
         json_t *value;
 
         if(strict != 0) {
-            set_error(s, "Expected ']' after '%c', got '%c'",
+            set_error(s, "<format>", "Expected ']' after '%c', got '%c'",
                       (strict == 1 ? '!' : '*'),
                       s->token);
             return -1;
         }
 
         if(!s->token) {
-            set_error(s, "Unexpected end of format string");
+            set_error(s, "<format>", "Unexpected end of format string");
             return -1;
         }
 
@@ -307,9 +330,16 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
             continue;
         }
 
+        if(!strchr(unpack_value_starters, s->token)) {
+            set_error(s, "<format>", "Unexpected format character '%c'",
+                      s->token);
+            return -1;
+        }
+
         value = json_array_get(root, i);
         if(!value) {
-            set_error(s, "Array index %lu out of range", (unsigned long)i);
+            set_error(s, "<validation>", "Array index %lu out of range",
+                      (unsigned long)i);
             return -1;
         }
 
@@ -325,7 +355,7 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
 
     if(strict == 1 && i != json_array_size(root)) {
         long diff = (long)json_array_size(root) - (long)i;
-        set_error(s, "%li array items left upacked", diff);
+        set_error(s, "<validation>", "%li array item(s) left unpacked", diff);
         return -1;
     }
 
@@ -344,7 +374,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
         case 's':
             if(!json_is_string(root)) {
-                set_error(s, "Expected string, got %s", type_name(root));
+                set_error(s, "<validation>", "Expected string, got %s",
+                          type_name(root));
                 return -1;
             }
 
@@ -353,7 +384,7 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
                 str = va_arg(*ap, const char **);
                 if(!str) {
-                    set_error(s, "NULL string");
+                    set_error(s, "<args>", "NULL string argument");
                     return -1;
                 }
 
@@ -363,7 +394,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
         case 'i':
             if(!json_is_integer(root)) {
-                set_error(s, "Expected integer, got %s", type_name(root));
+                set_error(s, "<validation>", "Expected integer, got %s",
+                          type_name(root));
                 return -1;
             }
 
@@ -374,7 +406,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
         case 'I':
             if(!json_is_integer(root)) {
-                set_error(s, "Expected integer, got %s", type_name(root));
+                set_error(s, "<validation>", "Expected integer, got %s",
+                          type_name(root));
                 return -1;
             }
 
@@ -385,7 +418,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
         case 'b':
             if(!json_is_boolean(root)) {
-                set_error(s, "Expected true or false, got %s", type_name(root));
+                set_error(s, "<validation>", "Expected true or false, got %s",
+                          type_name(root));
                 return -1;
             }
 
@@ -396,7 +430,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
         case 'f':
             if(!json_is_real(root)) {
-                set_error(s, "Expected real, got %s", type_name(root));
+                set_error(s, "<validation>", "Expected real, got %s",
+                          type_name(root));
                 return -1;
             }
 
@@ -407,7 +442,7 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
         case 'F':
             if(!json_is_number(root)) {
-                set_error(s, "Expected real or integer, got %s",
+                set_error(s, "<validation>", "Expected real or integer, got %s",
                           type_name(root));
                 return -1;
             }
@@ -431,13 +466,15 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
         case 'n':
             /* Never assign, just validate */
             if(!json_is_null(root)) {
-                set_error(s, "Expected null, got %s", type_name(root));
+                set_error(s, "<validation>", "Expected null, got %s",
+                          type_name(root));
                 return -1;
             }
             return 0;
 
         default:
-            set_error(s, "Unknown format character '%c'", s->token);
+            set_error(s, "<format>", "Unexpected format character '%c'",
+                      s->token);
             return -1;
     }
 }
@@ -449,28 +486,27 @@ json_t *json_vpack_ex(json_error_t *error, size_t flags,
     va_list ap_copy;
     json_t *value;
 
-    jsonp_error_init(error, "");
-
     if(!fmt || !*fmt) {
-        jsonp_error_set(error, -1, -1, 0, "Null or empty format string");
+        jsonp_error_init(error, "<format>");
+        jsonp_error_set(error, -1, -1, 0, "NULL or empty format string");
         return NULL;
     }
+    jsonp_error_init(error, NULL);
 
-    s.error = error;
-    s.flags = flags;
-    s.fmt = s.start = fmt;
-    s.line = 1;
-    s.column = 0;
-
+    scanner_init(&s, error, flags, fmt);
     next_token(&s);
+
     va_copy(ap_copy, ap);
     value = pack(&s, &ap_copy);
     va_end(ap_copy);
 
+    if(!value)
+        return NULL;
+
     next_token(&s);
     if(s.token) {
         json_decref(value);
-        set_error(&s, "Garbage after format string");
+        set_error(&s, "<format>", "Garbage after format string");
         return NULL;
     }
 
@@ -507,19 +543,20 @@ int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags,
     scanner_t s;
     va_list ap_copy;
 
-    jsonp_error_init(error, "");
-
-    if(!fmt || !*fmt) {
-        jsonp_error_set(error, -1, -1, 0, "Null or empty format string");
+    if(!root) {
+        jsonp_error_init(error, "<root>");
+        jsonp_error_set(error, -1, -1, 0, "NULL root value");
         return -1;
     }
 
-    s.error = error;
-    s.flags = flags;
-    s.fmt = s.start = fmt;
-    s.line = 1;
-    s.column = 0;
+    if(!fmt || !*fmt) {
+        jsonp_error_init(error, "<format>");
+        jsonp_error_set(error, -1, -1, 0, "NULL or empty format string");
+        return -1;
+    }
+    jsonp_error_init(error, NULL);
 
+    scanner_init(&s, error, flags, fmt);
     next_token(&s);
 
     va_copy(ap_copy, ap);
@@ -531,7 +568,7 @@ int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags,
 
     next_token(&s);
     if(s.token) {
-        set_error(&s, "Garbage after format string");
+        set_error(&s, "<format>", "Garbage after format string");
         return -1;
     }
 

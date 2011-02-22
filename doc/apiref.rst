@@ -841,8 +841,8 @@ denotes the C type that is expected as the corresponding argument.
 
 ``O`` (any value) [json_t \*]
     Like ``o``, but the argument's reference count is incremented.
-    This is useful if you pack and array an array or object and want
-    to keep the reference for the JSON value consumed by ``O`` to
+    This is useful if you pack into an array or object and want to
+    keep the reference for the JSON value consumed by ``O`` to
     yourself.
 
 ``[fmt]`` (array)

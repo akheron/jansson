@@ -68,6 +68,7 @@ typedef struct {
 const object_key_t *jsonp_object_iter_fullkey(void *iter);
 
 void jsonp_error_init(json_error_t *error, const char *source);
+void jsonp_error_set_source(json_error_t *error, const char *source);
 void jsonp_error_set(json_error_t *error, int line, int column,
                      size_t position, const char *msg, ...);
 void jsonp_error_vset(json_error_t *error, int line, int column,

@@ -5,21 +5,29 @@ void jsonp_error_init(json_error_t *error, const char *source)
 {
     if(error)
     {
-        size_t length;
-
         error->text[0] = '\0';
         error->line = -1;
         error->column = -1;
         error->position = 0;
+        if(source)
+            jsonp_error_set_source(error, source);
+        else
+            error->source[0] = '\0';
+    }
+}
 
-        length = strlen(source);
-        if(length < JSON_ERROR_SOURCE_LENGTH)
-            strcpy(error->source, source);
-        else {
-            size_t extra = length - JSON_ERROR_SOURCE_LENGTH + 4;
-            strcpy(error->source, "...");
-            strcpy(error->source + 3, source + extra);
-        }
+void jsonp_error_set_source(json_error_t *error, const char *source)
+{
+    if(!error || !source)
+        return;
+
+    size_t length = strlen(source);
+    if(length < JSON_ERROR_SOURCE_LENGTH)
+        strcpy(error->source, source);
+    else {
+        size_t extra = length - JSON_ERROR_SOURCE_LENGTH + 4;
+        strcpy(error->source, "...");
+        strcpy(error->source + 3, source + extra);
     }
 }
 
