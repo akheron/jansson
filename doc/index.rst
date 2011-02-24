@@ -33,6 +33,7 @@ Contents
    :maxdepth: 2
 
    gettingstarted
+   upgrading
    tutorial
    conformance
    apiref
