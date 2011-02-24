@@ -40,7 +40,7 @@ please report them.
 
 If you obtained the source from a Git repository (or any other source
 control system), there's no ``./configure`` script as it's not kept in
-version control. To create the script, Autotools needs to be
+version control. To create the script, the build system needs to be
 bootstrapped. There are many ways to do this, but the easiest one is
 to use ``autoreconf``::
 
@@ -54,16 +54,22 @@ used as described above.
 .. _libtool: http://www.gnu.org/software/libtool/
 
 
-Windows
--------
+Other Systems
+-------------
 
-On Windows (and other non-Unix-like systems), you may be unable to run
+On Windows and other non Unix-like systems, you may be unable to run
 the ``./configure`` script. In this case, follow these steps. All the
 files mentioned can be found in the ``src/`` directory.
 
-1. Rename ``jansson_config.h.win32`` to ``jansson_config.h``. This
-   file has some platform-specific parameters that are normally filled
-   in by the ``./configure`` script.
+1. Create ``jansson_config.h``. This file has some platform-specific
+   parameters that are normally filled in by the ``./configure``
+   script:
+
+   - On Windows, rename ``jansson_config.h.win32`` to ``jansson_config.h``.
+
+   - On other systems, edit ``jansson_config.h.in``, replacing all
+     ``@variable@`` placeholders, and rename the file to
+     ``jansson_config.h``.
 
 2. Make ``jansson.h`` and ``jansson_config.h`` available to the
    compiler, so that they can be found when compiling programs that
@@ -72,20 +78,6 @@ files mentioned can be found in the ``src/`` directory.
 3. Compile all the ``.c`` files (in the ``src/`` directory) into a
    library file. Make the library available to the compiler, as in
    step 2.
-
-
-Installing Prebuilt Binary Packages
------------------------------------
-
-Binary ``.deb`` packages for Ubuntu Linux are available in `this PPA`_
-at Launchpad_. Follow the instructions in the PPA ("Technical details
-about this PPA" link) to take the PPA into use. Then install the -dev
-package::
-
-  sudo apt-get install libjansson-dev
-
-.. _this PPA: http://launchpad.net/~petri/+archive/ppa
-.. _Launchpad: http://launchpad.net/
 
 
 Building the Documentation
@@ -100,14 +92,14 @@ documentation, invoke::
 
    make html
 
-and point your browser to ``doc/_build/html/index.html``. Sphinx_ is
-required to generate the documentation.
+and point your browser to ``doc/_build/html/index.html``. Sphinx_ 1.0
+or newer is required to generate the documentation.
 
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://sphinx.pocoo.org/
 
 
-Compiling Programs That Use Jansson
+Compiling Programs that Use Jansson
 ===================================
 
 Jansson involves one C header file, :file:`jansson.h`, so it's enough

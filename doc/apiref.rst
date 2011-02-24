@@ -792,7 +792,7 @@ affect especially the behavior of the decoder.
 
 .. _apiref-pack:
 
-Building values
+Building Values
 ===============
 
 This sectinon describes functions that help to create, or *pack*,
@@ -898,7 +898,7 @@ More examples::
 
 .. _apiref-unpack:
 
-Parsing and validating values
+Parsing and Validating Values
 =============================
 
 This sectinon describes functions that help to validate complex values
@@ -1096,7 +1096,7 @@ copied in a recursive fashion.
    Returns a deep copy of *value*, or *NULL* on error.
 
 
-Custom memory allocation
+Custom Memory Allocation
 ========================
 
 By default, Jansson uses :func:`malloc()` and :func:`free()` for

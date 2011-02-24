@@ -1,7 +1,7 @@
 .. highlight:: c
 
 *****************************
-Upgrading from older versions
+Upgrading from Older Versions
 *****************************
 
 This chapter lists the backwards incompatible changes introduced in
@@ -28,7 +28,7 @@ both ABI and API, so no recompilation or source changes are needed
 when upgrading from 2.x to 2.y.
 
 
-List of incompatible changes
+List of Incompatible Changes
 ============================
 
 **Decoding flags**
