@@ -1,8 +1,8 @@
 .. highlight:: c
 
-*****************************
-Upgrading from Older Versions
-*****************************
+******************
+Upgrading from 1.x
+******************
 
 This chapter lists the backwards incompatible changes introduced in
 Jansson 2.0, and the steps that are needed for upgrading your code.
