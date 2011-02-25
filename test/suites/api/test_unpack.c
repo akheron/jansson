@@ -134,6 +134,7 @@ int main()
     if(!json_unpack_ex(NULL, &error, 0, "[i]"))
         fail("json_unpack succeeded with NULL root");
     check_error("NULL root value", "<root>", -1, -1, 0);
+    json_decref(j);
 
     /* mismatched open/close array/object */
     j = json_pack("[]");
@@ -167,11 +168,13 @@ int main()
     if(!json_unpack_ex(j, &error, 0, "[i]a", &i1))
         fail("json_unpack failed to catch garbage after format string");
     check_error("Garbage after format string", "<format>", 1, 4, 4);
+    json_decref(j);
 
     j = json_integer(12345);
     if(!json_unpack_ex(j, &error, 0, "ia", &i1))
         fail("json_unpack failed to catch garbage after format string");
     check_error("Garbage after format string", "<format>", 1, 2, 2);
+    json_decref(j);
 
     /* NULL format string */
     j = json_pack("[]");
