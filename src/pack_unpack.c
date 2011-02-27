@@ -9,6 +9,7 @@
 #include <string.h>
 #include <jansson.h>
 #include "jansson_private.h"
+#include "utf.h"
 
 typedef struct {
     const char *start;
@@ -110,13 +111,18 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
             goto error;
         }
 
+        if(!utf8_check_string(key, -1)) {
+            set_error(s, "<args>", "Invalid UTF-8 in object key");
+            goto error;
+        }
+
         next_token(s);
 
         value = pack(s, ap);
         if(!value)
             goto error;
 
-        if(json_object_set_new(object, key, value)) {
+        if(json_object_set_new_nocheck(object, key, value)) {
             set_error(s, "<internal>", "Unable to add key \"%s\"", key);
             goto error;
         }
@@ -178,7 +184,11 @@ static json_t *pack(scanner_t *s, va_list *ap)
                 set_error(s, "<args>", "NULL string argument");
                 return NULL;
             }
-            return json_string(str);
+            if(!utf8_check_string(str, -1)) {
+                set_error(s, "<args>", "Invalid UTF-8 string");
+                return NULL;
+            }
+            return json_string_nocheck(str);
         }
 
         case 'n': /* null */

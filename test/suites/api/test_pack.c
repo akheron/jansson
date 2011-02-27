@@ -208,14 +208,25 @@ int main()
         fail("json_pack failed to catch object as key");
     check_error("Expected format 's', got '{'", "<format>", 1, 3, 3);
 
-
+    /* Complex object */
     if(json_pack_ex(&error, 0, "{ s: {},  s:[ii{} }", "foo", "bar", 12, 13))
         fail("json_pack failed to catch missing ]");
     check_error("Unexpected format character '}'", "<format>", 1, 19, 19);
 
+    /* Complex array */
     if(json_pack_ex(&error, 0, "[[[[[   [[[[[  [[[[ }]]]] ]]]] ]]]]]"))
         fail("json_pack failed to catch extra }");
     check_error("Unexpected format character '}'", "<format>", 1, 21, 21);
+
+    /* Invalid UTF-8 in object key */
+    if(json_pack_ex(&error, 0, "{s:i}", "\xff\xff", 42))
+        fail("json_pack failed to catch invalid UTF-8 in an object key");
+    check_error("Invalid UTF-8 in object key", "<args>", 1, 2, 2);
+
+    /* Invalid UTF-8 in a string */
+    if(json_pack_ex(&error, 0, "{s:s}", "foo", "\xff\xff"))
+        fail("json_pack failed to catch invalid UTF-8 in a string");
+    check_error("Invalid UTF-8 string", "<args>", 1, 4, 4);
 
     return 0;
 }
