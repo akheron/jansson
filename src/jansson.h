@@ -20,12 +20,12 @@ extern "C" {
 
 /* version */
 
-#define JANSSON_MAJOR_VERSION  1
-#define JANSSON_MINOR_VERSION  3
+#define JANSSON_MAJOR_VERSION  2
+#define JANSSON_MINOR_VERSION  0
 #define JANSSON_MICRO_VERSION  0
 
 /* Micro version is omitted if it's 0 */
-#define JANSSON_VERSION  "1.3"
+#define JANSSON_VERSION  "2.0"
 
 /* Version as a 3-byte hex number, e.g. 0x010201 == 1.2.1. Use this
    for numeric comparisons, e.g. #if JANSSON_VERSION_HEX >= ... */

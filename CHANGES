@@ -1,5 +1,7 @@
-Version 2.0 (in development)
-============================
+Version 2.0
+===========
+
+Released 2011-02-28
 
 This release is backwards incompatible with the 1.x release series.
 See the chapter "Upgrading from older versions" in documentation for
