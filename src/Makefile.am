@@ -21,5 +21,5 @@ libjansson_la_LDFLAGS = \
 
 if GCC
 # These flags are gcc specific
-AM_CFLAGS = -Wall -Wextra -Werror
+AM_CFLAGS = -Wall -Wextra -Wdeclaration-after-statement -Werror
 endif
