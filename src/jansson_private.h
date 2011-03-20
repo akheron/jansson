@@ -9,7 +9,6 @@
 #define JANSSON_PRIVATE_H
 
 #include <stddef.h>
-#include <stdarg.h>
 #include "jansson.h"
 #include "hashtable.h"
 
@@ -19,6 +18,16 @@
 /* On some platforms, max() may already be defined */
 #ifndef max
 #define max(a, b)  ((a) > (b) ? (a) : (b))
+#endif
+
+/* va_copy is a C99 feature. In C89 implementations, it's sometimes
+   available as __va_copy. If not, memcpy() should do the trick. */
+#ifndef va_copy
+#ifdef __va_copy
+#define va_copy __va_copy
+#else
+#define va_copy(a, b)  memcpy(&(a), &(b), sizeof(va_list))
+#endif
 #endif
 
 typedef struct {
