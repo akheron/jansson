@@ -31,7 +31,7 @@ extern "C" {
    for numeric comparisons, e.g. #if JANSSON_VERSION_HEX >= ... */
 #define JANSSON_VERSION_HEX  ((JANSSON_MAJOR_VERSION << 16) |   \
                               (JANSSON_MINOR_VERSION << 8)  |   \
-                              (JANSSON_MICRO_VERSION << 0)))
+                              (JANSSON_MICRO_VERSION << 0))
 
 
 /* types */
