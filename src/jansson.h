@@ -22,7 +22,7 @@ extern "C" {
 
 #define JANSSON_MAJOR_VERSION  2
 #define JANSSON_MINOR_VERSION  0
-#define JANSSON_MICRO_VERSION  0
+#define JANSSON_MICRO_VERSION  255
 
 /* Micro version is omitted if it's 0 */
 #define JANSSON_VERSION  "2.0"
