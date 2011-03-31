@@ -17,7 +17,7 @@ libjansson_la_SOURCES = \
 	value.c
 libjansson_la_LDFLAGS = \
 	-export-symbols-regex '^json_' \
-	-version-info 4:0:0
+	-version-info 4:1:0
 
 if GCC
 # These flags are gcc specific
