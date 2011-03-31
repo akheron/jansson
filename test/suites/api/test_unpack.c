@@ -122,6 +122,13 @@ int main()
         fail("json_unpack simple array failed");
     json_decref(j);
 
+    /* object with many items & strict checking */
+    j = json_pack("{s:i, s:i, s:i}", "a", 1, "b", 2, "c", 3);
+    rv = json_unpack(j, "{s:i, s:i, s:i}", "a", &i1, "b", &i2, "c", &i3);
+    if(rv || i1 != 1 || i2 != 2 || i3 != 3)
+        fail("json_unpack object with many items failed");
+    json_decref(j);
+
     /*
      * Invalid cases
      */
@@ -285,7 +292,7 @@ int main()
     /* Unpack the same item twice */
     j = json_pack("{s:s, s:i}", "foo", "bar", "baz", 42);
     if(!json_unpack_ex(j, &error, 0, "{s:s,s:s!}", "foo", &s, "foo", &s))
-       fail("json_unpack object with strict validation failed");
+        fail("json_unpack object with strict validation failed");
     check_error("1 object item(s) left unpacked", "<validation>", 1, 10, 10);
     json_decref(j);
 
