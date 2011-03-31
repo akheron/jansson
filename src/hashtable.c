@@ -126,7 +126,7 @@ static int hashtable_do_del(hashtable_t *hashtable,
     if(hashtable->free_value)
         hashtable->free_value(pair->value);
 
-    free(pair);
+    jsonp_free(pair);
     hashtable->size--;
 
     return 0;
