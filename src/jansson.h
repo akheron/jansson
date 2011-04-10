@@ -217,6 +217,7 @@ json_t *json_deep_copy(json_t *value);
 /* loading, printing */
 
 json_t *json_loads(const char *input, size_t flags, json_error_t *error);
+json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error);
 json_t *json_loadf(FILE *input, size_t flags, json_error_t *error);
 json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
 

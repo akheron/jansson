@@ -867,6 +867,58 @@ out:
     return result;
 }
 
+typedef struct
+{
+    const char *data;
+    size_t len;
+    size_t pos;
+} buffer_data_t;
+
+static int buffer_get(void *data)
+{
+    char c;
+    buffer_data_t *stream = data;
+    if(stream->pos >= stream->len)
+      return EOF;
+
+    c = stream->data[stream->pos];
+    stream->pos++;
+    return (unsigned char)c;
+}
+
+json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error)
+{
+    lex_t lex;
+    json_t *result;
+    buffer_data_t stream_data;
+
+    (void)flags; /* unused */
+
+    stream_data.data = buffer;
+    stream_data.pos = 0;
+    stream_data.len = buflen;
+
+    if(lex_init(&lex, buffer_get, (void *)&stream_data))
+        return NULL;
+
+    jsonp_error_init(error, "<buffer>");
+
+    result = parse_json(&lex, error);
+    if(!result)
+        goto out;
+
+    lex_scan(&lex, error);
+    if(lex.token != TOKEN_EOF) {
+        error_set(error, &lex, "end of file expected");
+        json_decref(result);
+        result = NULL;
+    }
+
+out:
+    lex_close(&lex);
+    return result;
+}
+
 json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 {
     lex_t lex;

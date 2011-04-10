@@ -6,6 +6,7 @@ suites/api/test_cpp
 suites/api/test_dump
 suites/api/test_equal
 suites/api/test_load
+suites/api/test_loadb
 suites/api/test_memory_funcs
 suites/api/test_number
 suites/api/test_object

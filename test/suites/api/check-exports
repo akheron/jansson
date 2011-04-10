@@ -50,6 +50,7 @@ json_dump_file
 json_loads
 json_loadf
 json_load_file
+json_loadb
 json_equal
 json_copy
 json_deep_copy

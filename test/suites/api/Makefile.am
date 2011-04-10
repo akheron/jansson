@@ -6,6 +6,7 @@ check_PROGRAMS = \
 	test_dump \
 	test_equal \
 	test_load \
+	test_loadb \
 	test_memory_funcs \
 	test_number \
 	test_object \
@@ -17,6 +18,7 @@ test_array_SOURCES = test_array.c util.h
 test_copy_SOURCES = test_copy.c util.h
 test_dump_SOURCES = test_dump.c util.h
 test_load_SOURCES = test_load.c util.h
+test_loadb_SOURCES = test_loadb.c util.h
 test_memory_funcs_SOURCES = test_memory_funcs.c util.h
 test_number_SOURCES = test_number.c util.h
 test_object_SOURCES = test_object.c util.h

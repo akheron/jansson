@@ -771,6 +771,17 @@ affect especially the behavior of the decoder.
    information about the error. *flags* is currently unused, and
    should be set to 0.
 
+.. function:: json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error)
+
+   .. refcounting:: new
+
+   Decodes the JSON string *buffer*, whose length is *buflen*, and
+   returns the array or object it contains, or *NULL* on error, in
+   which case *error* is filled with information about the error. This
+   is similar to :func:`json_loads()` except that the string doesn't
+   need to be null-terminated. *flags* is currently unused, and should
+   be set to 0.
+
 .. function:: json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 
    .. refcounting:: new
