@@ -30,6 +30,12 @@ error::
 
 All other Unicode codepoints U+0001 through U+10FFFF are allowed.
 
+Unicode normalization or any other transformation is never performed
+on any strings (string values or object keys). When checking for
+equivalence of strings or object keys, the comparison is performed
+byte by byte between the original UTF-8 representations of the
+strings.
+
 Numbers
 =======
 
