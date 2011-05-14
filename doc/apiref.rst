@@ -563,7 +563,10 @@ Unicode string and the value is any JSON value.
    existing keys. Returns 0 on success or -1 on error.
 
 
-The following functions implement an iteration protocol for objects:
+The following functions implement an iteration protocol for objects,
+allowing to iterate through all key-value pairs in an object. The
+items are not returned in any particular order, as this would require
+sorting due to the internal object representation.
 
 .. function:: void *json_object_iter(json_t *object)
 
