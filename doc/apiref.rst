@@ -680,8 +680,10 @@ Encoding
 ========
 
 This sections describes the functions that can be used to encode
-values to JSON. Only objects and arrays can be encoded, since they are
-the only valid "root" values of a JSON text.
+values to JSON. By default, only objects and arrays can be encoded
+directly, since they are the only valid *root* values of a JSON text.
+To encode any JSON value, use the ``JSON_ENCODE_ANY`` flag (see
+below).
 
 By default, the output has no newlines, and spaces are used between
 array and object elements for a readable output. This behavior can be
@@ -721,6 +723,17 @@ can be ORed together to obtain *flags*.
    same order in which they were first inserted to the object. For
    example, decoding a JSON text and then encoding with this flag
    preserves the order of object keys.
+
+``JSON_ENCODE_ANY``
+   Specifying this flag makes it possible to encode any JSON value on
+   its own. Without it, only objects and arrays can be passed as the
+   *root* value to the encoding functions.
+
+   **Note:** Encoding any value may be useful in some scenarios, but
+   it's generally discouraged as it violates strict compatiblity with
+   :rfc:`4627`. If you use this flag, don't expect interoperatibility
+   with other JSON systems. Even Jansson itself doesn't have any means
+   to decode JSON texts whose root value is not object or array.
 
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.

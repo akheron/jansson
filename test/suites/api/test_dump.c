@@ -9,12 +9,12 @@
 #include <string.h>
 #include "util.h"
 
-int main()
+static void encode_twice()
 {
+    /* Encode an empty object/array, add an item, encode again */
+
     json_t *json;
     char *result;
-
-    /* Encode an empty object/array, add an item, encode again */
 
     json = json_object();
     result = json_dumps(json, 0);
@@ -43,7 +43,10 @@ int main()
     free(result);
 
     json_decref(json);
+}
 
+static void circular_references()
+{
     /* Construct a JSON object/array with a circular reference:
 
        object: {"a": {"b": {"c": <circular reference to $.a>}}}
@@ -51,6 +54,10 @@ int main()
 
        Encode it, remove the circular reference and encode again.
     */
+
+    json_t *json;
+    char *result;
+
     json = json_object();
     json_object_set_new(json, "a", json_object());
     json_object_set_new(json_object_get(json, "a"), "b", json_object());
@@ -86,6 +93,50 @@ int main()
     free(result);
 
     json_decref(json);
+}
 
+static void encode_other_than_array_or_object()
+{
+    /* Encoding anything other than array or object should only
+     * succeed if the JSON_ENCODE_ANY flag is used */
+
+    json_t *json;
+    FILE *fp = NULL;
+    char *result;
+
+    json = json_string("foo");
+    if(json_dumps(json, 0) != NULL)
+        fail("json_dumps encoded a string!");
+    if(json_dumpf(json, fp, 0) == 0)
+        fail("json_dumpf encoded a string!");
+
+    result = json_dumps(json, JSON_ENCODE_ANY);
+    if(!result || strcmp(result, "\"foo\"") != 0)
+        fail("json_dumps failed to encode a string with JSON_ENCODE_ANY");
+
+    free(result);
+    json_decref(json);
+
+    json = json_integer(42);
+    if(json_dumps(json, 0) != NULL)
+        fail("json_dumps encoded an integer!");
+    if(json_dumpf(json, fp, 0) == 0)
+        fail("json_dumpf encoded an integer!");
+
+    result = json_dumps(json, JSON_ENCODE_ANY);
+    if(!result || strcmp(result, "42") != 0)
+        fail("json_dumps failed to encode an integer with JSON_ENCODE_ANY");
+
+    free(result);
+    json_decref(json);
+
+
+}
+
+int main()
+{
+    encode_twice();
+    circular_references();
+    encode_other_than_array_or_object();
     return 0;
 }

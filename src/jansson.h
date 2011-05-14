@@ -226,6 +226,7 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
 #define JSON_ENSURE_ASCII   0x40
 #define JSON_SORT_KEYS      0x80
 #define JSON_PRESERVE_ORDER 0x100
+#define JSON_ENCODE_ANY     0x200
 
 char *json_dumps(const json_t *json, size_t flags);
 int json_dumpf(const json_t *json, FILE *output, size_t flags);
