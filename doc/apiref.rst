@@ -738,6 +738,8 @@ can be ORed together to obtain *flags*.
    with other JSON systems. Even Jansson itself doesn't have any means
    to decode JSON texts whose root value is not object or array.
 
+   .. versionadded:: 2.1
+
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
 
@@ -797,6 +799,8 @@ affect especially the behavior of the decoder.
    is similar to :func:`json_loads()` except that the string doesn't
    need to be null-terminated. *flags* is currently unused, and should
    be set to 0.
+
+   .. versionadded:: 2.1
 
 .. function:: json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 
