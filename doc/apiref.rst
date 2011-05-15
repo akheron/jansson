@@ -780,14 +780,28 @@ See :ref:`rfc-conformance` for a discussion on Jansson's conformance
 to the JSON specification. It explains many design decisions that
 affect especially the behavior of the decoder.
 
+Each function takes a *flags* parameter that can be used to control
+the behavior of the decoder. Its default value is 0. The following
+macros can be ORed together to obtain *flags*.
+
+``JSON_REJECT_DUPLICATES``
+   Issue a decoding error if any JSON object in the input text
+   contains duplicate keys. Without this flag, the value of the last
+   occurence of each key ends up in the result. Key equivalence is
+   checked byte-by-byte, without special Unicode comparison
+   algorithms.
+
+   .. versionadded:: 2.1
+
+The following functions perform the actual JSON decoding.
+
 .. function:: json_t *json_loads(const char *input, size_t flags, json_error_t *error)
 
    .. refcounting:: new
 
    Decodes the JSON string *input* and returns the array or object it
    contains, or *NULL* on error, in which case *error* is filled with
-   information about the error. *flags* is currently unused, and
-   should be set to 0.
+   information about the error. *flags* is described above.
 
 .. function:: json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error)
 
@@ -797,8 +811,7 @@ affect especially the behavior of the decoder.
    returns the array or object it contains, or *NULL* on error, in
    which case *error* is filled with information about the error. This
    is similar to :func:`json_loads()` except that the string doesn't
-   need to be null-terminated. *flags* is currently unused, and should
-   be set to 0.
+   need to be null-terminated. *flags* is described above.
 
    .. versionadded:: 2.1
 
@@ -808,8 +821,8 @@ affect especially the behavior of the decoder.
 
    Decodes the JSON text in stream *input* and returns the array or
    object it contains, or *NULL* on error, in which case *error* is
-   filled with information about the error. *flags* is currently
-   unused, and should be set to 0.
+   filled with information about the error. *flags* is described
+   above.
 
 .. function:: json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 
@@ -817,8 +830,8 @@ affect especially the behavior of the decoder.
 
    Decodes the JSON text in file *path* and returns the array or
    object it contains, or *NULL* on error, in which case *error* is
-   filled with information about the error. *flags* is currently
-   unused, and should be set to 0.
+   filled with information about the error. *flags* is described
+   above.
 
 
 .. _apiref-pack:

@@ -642,9 +642,9 @@ static void lex_close(lex_t *lex)
 
 /*** parser ***/
 
-static json_t *parse_value(lex_t *lex, json_error_t *error);
+static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error);
 
-static json_t *parse_object(lex_t *lex, json_error_t *error)
+static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
 {
     json_t *object = json_object();
     if(!object)
@@ -667,6 +667,14 @@ static json_t *parse_object(lex_t *lex, json_error_t *error)
         if(!key)
             return NULL;
 
+        if(flags & JSON_REJECT_DUPLICATES) {
+            if(json_object_get(object, key)) {
+                jsonp_free(key);
+                error_set(error, lex, "duplicate object key");
+                goto error;
+            }
+        }
+
         lex_scan(lex, error);
         if(lex->token != ':') {
             jsonp_free(key);
@@ -675,7 +683,7 @@ static json_t *parse_object(lex_t *lex, json_error_t *error)
         }
 
         lex_scan(lex, error);
-        value = parse_value(lex, error);
+        value = parse_value(lex, flags, error);
         if(!value) {
             jsonp_free(key);
             goto error;
@@ -709,7 +717,7 @@ error:
     return NULL;
 }
 
-static json_t *parse_array(lex_t *lex, json_error_t *error)
+static json_t *parse_array(lex_t *lex, size_t flags, json_error_t *error)
 {
     json_t *array = json_array();
     if(!array)
@@ -720,7 +728,7 @@ static json_t *parse_array(lex_t *lex, json_error_t *error)
         return array;
 
     while(lex->token) {
-        json_t *elem = parse_value(lex, error);
+        json_t *elem = parse_value(lex, flags, error);
         if(!elem)
             goto error;
 
@@ -749,7 +757,7 @@ error:
     return NULL;
 }
 
-static json_t *parse_value(lex_t *lex, json_error_t *error)
+static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
 {
     json_t *json;
 
@@ -782,11 +790,11 @@ static json_t *parse_value(lex_t *lex, json_error_t *error)
             break;
 
         case '{':
-            json = parse_object(lex, error);
+            json = parse_object(lex, flags, error);
             break;
 
         case '[':
-            json = parse_array(lex, error);
+            json = parse_array(lex, flags, error);
             break;
 
         case TOKEN_INVALID:
@@ -804,7 +812,7 @@ static json_t *parse_value(lex_t *lex, json_error_t *error)
     return json;
 }
 
-static json_t *parse_json(lex_t *lex, json_error_t *error)
+static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
 {
     lex_scan(lex, error);
     if(lex->token != '[' && lex->token != '{') {
@@ -812,7 +820,7 @@ static json_t *parse_json(lex_t *lex, json_error_t *error)
         return NULL;
     }
 
-    return parse_value(lex, error);
+    return parse_value(lex, flags, error);
 }
 
 typedef struct
@@ -841,8 +849,6 @@ json_t *json_loads(const char *string, size_t flags, json_error_t *error)
     json_t *result;
     string_data_t stream_data;
 
-    (void)flags; /* unused */
-
     stream_data.data = string;
     stream_data.pos = 0;
 
@@ -851,7 +857,7 @@ json_t *json_loads(const char *string, size_t flags, json_error_t *error)
 
     jsonp_error_init(error, "<string>");
 
-    result = parse_json(&lex, error);
+    result = parse_json(&lex, flags, error);
     if(!result)
         goto out;
 
@@ -892,8 +898,6 @@ json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t
     json_t *result;
     buffer_data_t stream_data;
 
-    (void)flags; /* unused */
-
     stream_data.data = buffer;
     stream_data.pos = 0;
     stream_data.len = buflen;
@@ -903,7 +907,7 @@ json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t
 
     jsonp_error_init(error, "<buffer>");
 
-    result = parse_json(&lex, error);
+    result = parse_json(&lex, flags, error);
     if(!result)
         goto out;
 
@@ -924,7 +928,6 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
     lex_t lex;
     const char *source;
     json_t *result;
-    (void)flags; /* unused */
 
     if(lex_init(&lex, (get_func)fgetc, input))
         return NULL;
@@ -936,7 +939,7 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 
     jsonp_error_init(error, source);
 
-    result = parse_json(&lex, error);
+    result = parse_json(&lex, flags, error);
     if(!result)
         goto out;
 

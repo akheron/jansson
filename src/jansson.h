@@ -214,12 +214,17 @@ json_t *json_copy(json_t *value);
 json_t *json_deep_copy(json_t *value);
 
 
-/* loading, printing */
+/* decoding */
+
+#define JSON_REJECT_DUPLICATES 0x1
 
 json_t *json_loads(const char *input, size_t flags, json_error_t *error);
 json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error);
 json_t *json_loadf(FILE *input, size_t flags, json_error_t *error);
 json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
+
+
+/* encoding */
 
 #define JSON_INDENT(n)      (n & 0x1F)
 #define JSON_COMPACT        0x20
