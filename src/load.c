@@ -815,13 +815,26 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
 
 static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
 {
+    json_t *result;
+
     lex_scan(lex, error);
     if(lex->token != '[' && lex->token != '{') {
         error_set(error, lex, "'[' or '{' expected");
         return NULL;
     }
 
-    return parse_value(lex, flags, error);
+    result = parse_value(lex, flags, error);
+    if(!result)
+        return NULL;
+
+    lex_scan(lex, error);
+    if(lex->token != TOKEN_EOF) {
+        error_set(error, lex, "end of file expected");
+        json_decref(result);
+        result = NULL;
+    }
+
+    return result;
 }
 
 typedef struct
@@ -857,19 +870,8 @@ json_t *json_loads(const char *string, size_t flags, json_error_t *error)
         return NULL;
 
     jsonp_error_init(error, "<string>");
-
     result = parse_json(&lex, flags, error);
-    if(!result)
-        goto out;
 
-    lex_scan(&lex, error);
-    if(lex.token != TOKEN_EOF) {
-        error_set(error, &lex, "end of file expected");
-        json_decref(result);
-        result = NULL;
-    }
-
-out:
     lex_close(&lex);
     return result;
 }
@@ -907,19 +909,8 @@ json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t
         return NULL;
 
     jsonp_error_init(error, "<buffer>");
-
     result = parse_json(&lex, flags, error);
-    if(!result)
-        goto out;
 
-    lex_scan(&lex, error);
-    if(lex.token != TOKEN_EOF) {
-        error_set(error, &lex, "end of file expected");
-        json_decref(result);
-        result = NULL;
-    }
-
-out:
     lex_close(&lex);
     return result;
 }
@@ -939,19 +930,8 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
         source = "<stream>";
 
     jsonp_error_init(error, source);
-
     result = parse_json(&lex, flags, error);
-    if(!result)
-        goto out;
 
-    lex_scan(&lex, error);
-    if(lex.token != TOKEN_EOF) {
-        error_set(error, &lex, "end of file expected");
-        json_decref(result);
-        result = NULL;
-    }
-
-out:
     lex_close(&lex);
     return result;
 }
