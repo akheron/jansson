@@ -217,6 +217,7 @@ json_t *json_deep_copy(json_t *value);
 /* decoding */
 
 #define JSON_REJECT_DUPLICATES 0x1
+#define JSON_DISABLE_EOF_CHECK 0x2
 
 json_t *json_loads(const char *input, size_t flags, json_error_t *error);
 json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error);

@@ -793,6 +793,15 @@ macros can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.1
 
+``JSON_DISABLE_EOF_CHECK``
+   By default, the decoder expects that its whole input constitutes a
+   valid JSON text, and issues an error if there's extra data after
+   the otherwise valid JSON input. With this flag enabled, the decoder
+   stops after decoding a valid JSON array or object, and thus allows
+   extra data after the JSON text.
+
+   .. versionadded:: 2.1
+
 The following functions perform the actual JSON decoding.
 
 .. function:: json_t *json_loads(const char *input, size_t flags, json_error_t *error)

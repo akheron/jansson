@@ -827,11 +827,13 @@ static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
     if(!result)
         return NULL;
 
-    lex_scan(lex, error);
-    if(lex->token != TOKEN_EOF) {
-        error_set(error, lex, "end of file expected");
-        json_decref(result);
-        result = NULL;
+    if(!(flags & JSON_DISABLE_EOF_CHECK)) {
+        lex_scan(lex, error);
+        if(lex->token != TOKEN_EOF) {
+            error_set(error, lex, "end of file expected");
+            json_decref(result);
+            result = NULL;
+        }
     }
 
     return result;

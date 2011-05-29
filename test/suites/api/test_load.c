@@ -32,10 +32,29 @@ static void reject_duplicates()
     check_error("duplicate object key near '\"foo\"'", "<string>", 1, 16, 16);
 }
 
+static void disable_eof_check()
+{
+    json_error_t error;
+    json_t *json;
+
+    const char *text = "{\"foo\": 1} garbage";
+
+    if(json_loads(text, 0, &error))
+        fail("json_loads did not detect garbage after JSON text");
+    check_error("end of file expected near 'garbage'", "<string>", 1, 18, 18);
+
+    json = json_loads(text, JSON_DISABLE_EOF_CHECK, &error);
+    if(!json)
+        fail("json_loads failed with JSON_DISABLE_EOF_CHECK");
+
+    json_decref(json);
+}
+
 int main()
 {
     file_not_found();
     reject_duplicates();
+    disable_eof_check();
 
     return 0;
 }
