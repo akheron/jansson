@@ -6,13 +6,13 @@ Version 2.1 (in development)
   - `json_loadb()`: Decode a string with a given size, useful if the
     string is not null terminated.
 
-  - Add JSON_ENCODE_ANY encoding flag to allow encoding any JSON
+  - Add ``JSON_ENCODE_ANY`` encoding flag to allow encoding any JSON
     value. By default, only arrays and objects can be encoded. (#19)
 
-  - Add JSON_REJECT_DUPLICATES decoding flag to issue a decoding error
-    if any JSON object in the input contins duplicate keys. (#3)
+  - Add ``JSON_REJECT_DUPLICATES`` decoding flag to issue a decoding
+    error if any JSON object in the input contins duplicate keys. (#3)
 
-  - Add JSON_DISABLE_EOF_CHECK decoding flag to stop decoding after a
+  - Add ``JSON_DISABLE_EOF_CHECK`` decoding flag to stop decoding after a
     valid JSON input. This allows other data after the JSON data.
 
 * Bug fixes:
@@ -43,7 +43,7 @@ Released 2011-03-31
 
   - Fix object key hashing in json_unpack() strict checking mode.
 
-  - Fix the parentheses in JANSSON_VERSION_HEX macro.
+  - Fix the parentheses in ``JANSSON_VERSION_HEX`` macro.
 
   - Fix `json_object_size()` return value.
 
