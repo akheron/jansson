@@ -481,12 +481,13 @@ A JSON array is an ordered collection of other JSON values.
 
    Removes the element in *array* at position *index*, shifting the
    elements after *index* one position towards the start of the array.
-   Returns 0 on success and -1 on error.
+   Returns 0 on success and -1 on error. The reference count of the
+   removed value is decremented.
 
 .. function:: int json_array_clear(json_t *array)
 
    Removes all elements from *array*. Returns 0 on sucess and -1 on
-   error.
+   error. The reference count of all removed values are decremented.
 
 .. function:: int json_array_extend(json_t *array, json_t *other_array)
 
@@ -549,13 +550,14 @@ Unicode string and the value is any JSON value.
 .. function:: int json_object_del(json_t *object, const char *key)
 
    Delete *key* from *object* if it exists. Returns 0 on success, or
-   -1 if *key* was not found.
-
+   -1 if *key* was not found. The reference count of the removed value
+   is decremented.
 
 .. function:: int json_object_clear(json_t *object)
 
    Remove all elements from *object*. Returns 0 on success and -1 if
-   *object* is not a JSON object.
+   *object* is not a JSON object. The reference count of all removed
+   values are decremented.
 
 .. function:: int json_object_update(json_t *object, json_t *other)
 
@@ -566,7 +568,7 @@ Unicode string and the value is any JSON value.
 The following functions implement an iteration protocol for objects,
 allowing to iterate through all key-value pairs in an object. The
 items are not returned in any particular order, as this would require
-sorting due to the internal object representation.
+sorting due to the internal hashtable implementation.
 
 .. function:: void *json_object_iter(json_t *object)
 
