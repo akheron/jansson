@@ -765,6 +765,26 @@ is in UTF-8.
    *path* already exists, it is overwritten. *flags* is described
    above. Returns 0 on success and -1 on error.
 
+.. type:: json_dump_callback_t
+
+   A typedef for a function that's called by
+   :func:`json_dump_callback()`::
+
+       typedef int (*json_dump_callback_t)(const char *buffer, size_t size, void *data);
+
+   *buffer* points to a buffer containing a chunk of output, *size* is
+   the length of the buffer, and *data* is the corresponding
+   :func:`json_dump_callback()` argument passed through.
+
+   On error, the function should return -1 to stop the encoding
+   process. On success, it should return 0.
+
+.. function:: int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags)
+
+   Call *callback* repeatedly, passing a chunk of the JSON
+   representation of *root* each time. *flags* is described above.
+   Returns 0 on success and -1 on error.
+
 
 .. _apiref-decoding:
 

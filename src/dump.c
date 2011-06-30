@@ -19,8 +19,6 @@
 #define MAX_INTEGER_STR_LENGTH  100
 #define MAX_REAL_STR_LENGTH     100
 
-typedef int (*dump_func)(const char *buffer, int size, void *data);
-
 struct string
 {
     char *buffer;
@@ -28,12 +26,12 @@ struct string
     int size;
 };
 
-static int dump_to_strbuffer(const char *buffer, int size, void *data)
+static int dump_to_strbuffer(const char *buffer, size_t size, void *data)
 {
     return strbuffer_append_bytes((strbuffer_t *)data, buffer, size);
 }
 
-static int dump_to_file(const char *buffer, int size, void *data)
+static int dump_to_file(const char *buffer, size_t size, void *data)
 {
     FILE *dest = (FILE *)data;
     if(fwrite(buffer, size, 1, dest) != 1)
@@ -44,7 +42,7 @@ static int dump_to_file(const char *buffer, int size, void *data)
 /* 32 spaces (the maximum indentation size) */
 static char whitespace[] = "                                ";
 
-static int dump_indent(size_t flags, int depth, int space, dump_func dump, void *data)
+static int dump_indent(size_t flags, int depth, int space, json_dump_callback_t dump, void *data)
 {
     if(JSON_INDENT(flags) > 0)
     {
@@ -66,7 +64,7 @@ static int dump_indent(size_t flags, int depth, int space, dump_func dump, void 
     return 0;
 }
 
-static int dump_string(const char *str, int ascii, dump_func dump, void *data)
+static int dump_string(const char *str, int ascii, json_dump_callback_t dump, void *data)
 {
     const char *pos, *end;
     int32_t codepoint;
@@ -166,7 +164,7 @@ static int object_key_compare_serials(const void *key1, const void *key2)
 }
 
 static int do_dump(const json_t *json, size_t flags, int depth,
-                   dump_func dump, void *data)
+                   json_dump_callback_t dump, void *data)
 {
     int ascii = flags & JSON_ENSURE_ASCII ? 1 : 0;
 
@@ -462,4 +460,14 @@ int json_dump_file(const json_t *json, const char *path, size_t flags)
 
     fclose(output);
     return result;
+}
+
+int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags)
+{
+    if(!(flags & JSON_ENCODE_ANY)) {
+        if(!json_is_array(json) && !json_is_object(json))
+           return -1;
+    }
+
+    return do_dump(json, flags, 0, callback, data);
 }

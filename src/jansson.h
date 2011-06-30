@@ -234,10 +234,12 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
 #define JSON_PRESERVE_ORDER 0x100
 #define JSON_ENCODE_ANY     0x200
 
+typedef int (*json_dump_callback_t)(const char *buffer, size_t size, void *data);
+
 char *json_dumps(const json_t *json, size_t flags);
 int json_dumpf(const json_t *json, FILE *output, size_t flags);
 int json_dump_file(const json_t *json, const char *path, size_t flags);
-
+int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags);
 
 /* custom memory allocation */
 
