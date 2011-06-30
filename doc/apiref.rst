@@ -850,14 +850,14 @@ The following functions perform the actual JSON decoding.
 Building Values
 ===============
 
-This sectinon describes functions that help to create, or *pack*,
+This section describes functions that help to create, or *pack*,
 complex JSON values, especially nested objects and arrays. Value
 building is based on a *format string* that is used to tell the
 functions about the expected arguments.
 
 For example, the format string ``"i"`` specifies a single integer
 value, while the format string ``"[ssb]"`` or the equivalent ``"[s, s,
-b]"`` specifies an array value with two integers and a boolean as its
+b]"`` specifies an array value with two strings and a boolean as its
 items::
 
     /* Create the JSON integer 42 */
@@ -892,7 +892,7 @@ denotes the C type that is expected as the corresponding argument.
 ``o`` (any value) [json_t \*]
     Output any given JSON value as-is. If the value is added to an
     array or object, the reference to the value passed to ``o`` is
-    stealed by the container.
+    stolen by the container.
 
 ``O`` (any value) [json_t \*]
     Like ``o``, but the argument's reference count is incremented.
@@ -942,10 +942,10 @@ More examples::
   json_pack("{}");
 
   /* Build the JSON object {"foo": 42, "bar": 7} */
-  json_pack("{sisb}", "foo", 42, "bar", 7);
+  json_pack("{sisi}", "foo", 42, "bar", 7);
 
   /* Like above, ':', ',' and whitespace are ignored */
-  json_pack("{s:i, s:b}", "foo", 42, "bar", 7);
+  json_pack("{s:i, s:i}", "foo", 42, "bar", 7);
 
   /* Build the JSON array [[1, 2], {"cool": true}] */
   json_pack("[[i,i],{s:b]]", 1, 2, "cool", 1);
