@@ -1067,6 +1067,20 @@ The following functions compose the parsing and validation API:
    behaviour of the unpacker, see below for the flags. Returns 0 on
    success and -1 on failure.
 
+.. note::
+
+   The first argument of all unpack functions is ``json_t *root``
+   instead of ``const json_t *root``, because the use of ``O`` format
+   character causes the reference count of ``root``, or some value
+   reachable from ``root``, to be increased. Furthermore, the ``o``
+   format character may be used to extract a value as-is, which allows
+   modifying the structure or contents of a value reachable from
+   ``root``.
+
+   If the ``O`` and ``o`` format character are not used, it's
+   perfectly safe to cast a ``const json_t *`` variable to plain
+   ``json_t *`` when used with these functions.
+
 The following unpacking flags are available:
 
 ``JSON_STRICT``
