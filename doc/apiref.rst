@@ -779,11 +779,15 @@ is in UTF-8.
    On error, the function should return -1 to stop the encoding
    process. On success, it should return 0.
 
+   .. versionadded:: 2.2
+
 .. function:: int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags)
 
    Call *callback* repeatedly, passing a chunk of the JSON
    representation of *root* each time. *flags* is described above.
    Returns 0 on success and -1 on error.
+
+   .. versionadded:: 2.2
 
 
 .. _apiref-decoding:
