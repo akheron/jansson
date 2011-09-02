@@ -1,7 +1,27 @@
+Version 2.2
+===========
+
+Released 2011-09-03
+
+* New features:
+
+  - `json_dump_callback()`: Pass the encoder output to a callback
+    function in chunks.
+
+* Bug fixes:
+
+  - `json_string_set()`: Check that target is a string and value is
+    not NULL.
+
+* Other:
+
+  - Documentation typo fixes and clarifications.
+
+
 Version 2.1
 ===========
 
-Release 2011-06-10
+Released 2011-06-10
 
 * New features:
 
