@@ -997,7 +997,9 @@ type whose address should be passed.
 
 ``s`` (string) [const char \*]
     Convert a JSON string to a pointer to a NULL terminated UTF-8
-    string.
+    string. The resulting string is extracted by using
+    :func:`json_string_value()` internally, so it exists as long as
+    there are still references to the corresponding JSON string.
 
 ``n`` (null)
     Expect a JSON null value. Nothing is extracted.
