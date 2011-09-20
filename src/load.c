@@ -69,6 +69,7 @@ static void error_set(json_error_t *error, const lex_t *lex,
 {
     va_list ap;
     char msg_text[JSON_ERROR_TEXT_LENGTH];
+    char msg_with_context[JSON_ERROR_TEXT_LENGTH];
 
     int line = -1, col = -1;
     size_t pos = 0;
@@ -84,7 +85,6 @@ static void error_set(json_error_t *error, const lex_t *lex,
     if(lex)
     {
         const char *saved_text = strbuffer_value(&lex->saved_text);
-        char msg_with_context[JSON_ERROR_TEXT_LENGTH];
 
         line = lex->stream.line;
         col = lex->stream.column;
