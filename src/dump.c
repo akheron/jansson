@@ -413,39 +413,26 @@ static int do_dump(const json_t *json, size_t flags, int depth,
     }
 }
 
-
 char *json_dumps(const json_t *json, size_t flags)
 {
     strbuffer_t strbuff;
     char *result;
 
-    if(!(flags & JSON_ENCODE_ANY)) {
-        if(!json_is_array(json) && !json_is_object(json))
-           return NULL;
-    }
-
     if(strbuffer_init(&strbuff))
         return NULL;
 
-    if(do_dump(json, flags, 0, dump_to_strbuffer, (void *)&strbuff)) {
-        strbuffer_close(&strbuff);
-        return NULL;
-    }
+    if(json_dump_callback(json, dump_to_strbuffer, (void *)&strbuff, flags))
+        result = NULL;
+    else
+        result = jsonp_strdup(strbuffer_value(&strbuff));
 
-    result = jsonp_strdup(strbuffer_value(&strbuff));
     strbuffer_close(&strbuff);
-
     return result;
 }
 
 int json_dumpf(const json_t *json, FILE *output, size_t flags)
 {
-    if(!(flags & JSON_ENCODE_ANY)) {
-        if(!json_is_array(json) && !json_is_object(json))
-           return -1;
-    }
-
-    return do_dump(json, flags, 0, dump_to_file, (void *)output);
+    return json_dump_callback(json, dump_to_file, (void *)output, flags);
 }
 
 int json_dump_file(const json_t *json, const char *path, size_t flags)
