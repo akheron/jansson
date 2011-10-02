@@ -26,7 +26,7 @@ static int my_writer(const char *buffer, size_t len, void *data) {
     return 0;
 }
 
-int main(void)
+static void run_tests()
 {
     struct my_sink s;
     json_t *json;
@@ -78,6 +78,4 @@ int main(void)
     json_decref(json);
     free(dumped_to_string);
     free(s.buf);
-    return EXIT_SUCCESS;
 }
-

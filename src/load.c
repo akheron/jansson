@@ -524,12 +524,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 
     lex_unget_unsave(lex, c);
 
-    saved_text = strbuffer_value(&lex->saved_text);
-    errno = 0;
-    value = strtod(saved_text, &end);
-    assert(end == saved_text + lex->saved_text.length);
-
-    if(errno == ERANGE && value != 0) {
+    if(jsonp_strtod(&lex->saved_text, &value)) {
         error_set(error, lex, "real number overflow");
         goto out;
     }
