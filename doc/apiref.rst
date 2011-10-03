@@ -1191,6 +1191,8 @@ copied in a recursive fashion.
    Returns a deep copy of *value*, or *NULL* on error.
 
 
+.. _apiref-custom-memory-allocation:
+
 Custom Memory Allocation
 ========================
 

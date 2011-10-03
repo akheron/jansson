@@ -5,8 +5,7 @@ RFC Conformance
 ***************
 
 JSON is specified in :rfc:`4627`, *"The application/json Media Type
-for JavaScript Object Notation (JSON)"*. This chapter discusses
-Jansson's conformance to this specification.
+for JavaScript Object Notation (JSON)"*.
 
 Character Encoding
 ==================
@@ -110,25 +109,3 @@ types, ``long double``, etc. Obviously, shorter types like ``short``,
 are implicitly handled via the ordinary C type coercion rules (subject
 to overflow semantics). Also, no support or hooks are provided for any
 supplemental "bignum" type add-on packages.
-
-
-Locale
-======
-
-Jansson works fine under any locale.
-
-However, if the host program is multithreaded and uses ``setlocale()``
-to switch the locale in one thread while Jansson is currently encoding
-or decoding JSON data in another thread, the result may be wrong or
-the program may even crash.
-
-Jansson uses locale specific functions for certain string conversions
-in the encoder and decoder, and then converts the locale specific
-values to/from the JSON representation. This fails if the locale
-changes between the string conversion and the locale-to-JSON
-conversion. This can only happen in multithreaded programs that use
-``setlocale()``, that switches the locale for all running threads, not
-only the thread that calls ``setlocale()``.
-
-If your program uses ``setlocale()`` as described above, consider
-using the thread-safe ``uselocale()`` instead.
