@@ -29,7 +29,7 @@ static void to_locale(strbuffer_t *strbuffer)
         return;
     }
 
-    pos = strstr(strbuffer->value, ".");
+    pos = strchr(strbuffer->value, '.');
     if(pos)
         *pos = *point;
 }
@@ -45,7 +45,7 @@ static void from_locale(char *buffer)
         return;
     }
 
-    pos = strstr(buffer, point);
+    pos = strchr(buffer, *point);
     if(pos)
         *pos = '.';
 }
