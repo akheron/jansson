@@ -947,7 +947,7 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 
     jsonp_error_init(error, path);
 
-    fp = fopen(path, "r");
+    fp = fopen(path, "rb");
     if(!fp)
     {
         error_set(error, NULL, "unable to open %s: %s",
