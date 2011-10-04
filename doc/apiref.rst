@@ -703,9 +703,9 @@ can be ORed together to obtain *flags*.
 ``JSON_INDENT(n)``
    Pretty-print the result, using newlines between array and object
    items, and indenting with *n* spaces. The valid range for *n* is
-   between 0 and 32, other values result in an undefined output. If
-   ``JSON_INDENT`` is not used or *n* is 0, no newlines are inserted
-   between array and object items.
+   between 0 and 31 (inclusive), other values result in an undefined
+   output. If ``JSON_INDENT`` is not used or *n* is 0, no newlines are
+   inserted between array and object items.
 
 ``JSON_COMPACT``
    This flag enables a compact representation, i.e. sets the separator
@@ -858,6 +858,16 @@ The following functions perform the actual JSON decoding.
    object it contains, or *NULL* on error, in which case *error* is
    filled with information about the error. *flags* is described
    above.
+
+   This function will start reading the input from whatever position
+   the input file was, without attempting to seek first. If an error
+   occurs, the file position will be left indeterminate. On success,
+   the file position will be at EOF, unless ``JSON_DISABLE_EOF_CHECK``
+   flag was used. In this case, the file position will be at the first
+   character after the last ``]`` or ``}`` in the JSON input. This
+   allows calling :func:`json_loadf()` on the same ``FILE`` object
+   multiple times, if the input consists of consecutive JSON texts,
+   possibly separated by whitespace.
 
 .. function:: json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 
@@ -1261,5 +1271,5 @@ JSON structures by zeroing all memory when freed::
 For more information about the issues of storing sensitive data in
 memory, see
 http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO/protect-secrets.html.
-The page also examplains the :func:`guaranteed_memset()` function used
+The page also explains the :func:`guaranteed_memset()` function used
 in the example and gives a sample implementation for it.
