@@ -425,7 +425,7 @@ int json_dump_file(const json_t *json, const char *path, size_t flags)
 {
     int result;
 
-    FILE *output = fopen(path, "w");
+    FILE *output = fopen(path, "wb");
     if(!output)
         return -1;
 
