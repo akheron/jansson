@@ -19,6 +19,11 @@
 #include <locale.h>
 #endif
 
+#if _WIN32
+#include <io.h>  /* for _setmode() */
+#include <fcntl.h>  /* for _O_BINARY */
+#endif
+
 static int getenv_int(const char *name)
 {
     char *value, *end;
@@ -71,6 +76,13 @@ int main(int argc, char *argv[])
         fprintf(stderr, "usage: %s\n", argv[0]);
         return 2;
     }
+
+#ifdef _WIN32
+    /* On Windows, set stdout and stderr to binary mode to avoid
+       outputting DOS line terminators */
+    _setmode(_fileno(stdout), _O_BINARY);
+    _setmode(_fileno(stderr), _O_BINARY);
+#endif
 
     indent = getenv_int("JSON_INDENT");
     if(indent < 0 || indent > 255) {
