@@ -10,8 +10,8 @@ Compiling and Installing Jansson
 The Jansson source is available at
 http://www.digip.org/jansson/releases/.
 
-Unix-like systems
------------------
+Unix-like systems (including MinGW)
+-----------------------------------
 
 Unpack the source tarball and change to the source directory:
 
