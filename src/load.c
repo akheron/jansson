@@ -674,7 +674,7 @@ static void lex_close(lex_t *lex)
 
 static json_t *parse_value(lex_t *lex, json_error_t *error);
 
-static json_t *parse_object(lex_t *lex, json_error_t *error)
+static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
 {
     json_t *object = json_object();
     if(!object)
@@ -727,9 +727,11 @@ static json_t *parse_object(lex_t *lex, json_error_t *error)
         lex_scan(lex, error);
     }
 
-    if(lex->token != '}') {
-        error_set(error, lex, "'}' expected");
-        goto error;
+    if(!(flags & JSON_ASSUME_OBJECT)) {
+        if(lex->token != '}') {
+            error_set(error, lex, "'}' expected");
+            goto error;
+        }
     }
 
     return object;
@@ -812,7 +814,7 @@ static json_t *parse_value(lex_t *lex, json_error_t *error)
             break;
 
         case '{':
-            json = parse_object(lex, error);
+            json = parse_object(lex, 0, error);
             break;
 
         case '[':
@@ -882,7 +884,11 @@ json_t *json_loads(const char *string, size_t flags, json_error_t *error)
 
     jsonp_error_init(error, "<string>");
 
-    result = parse_json(&lex, error);
+    if(flags & JSON_ASSUME_OBJECT)
+        result = parse_object(&lex, flags, error);
+    else
+        result = parse_json(&lex, error);
+
     if(!result)
         goto out;
 
@@ -915,7 +921,11 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 
     jsonp_error_init(error, source);
 
-    result = parse_json(&lex, error);
+    if(flags & JSON_ASSUME_OBJECT)
+        result = parse_object(&lex, flags, error);
+    else
+        result = parse_json(&lex, error);
+
     if(!result)
         goto out;
 

@@ -91,6 +91,9 @@ int main(int argc, char *argv[])
     if(getenv_int("JSON_SORT_KEYS"))
         flags |= JSON_SORT_KEYS;
 
+    if(getenv_int("JSON_ASSUME_OBJECT"))
+        flags |= JSON_ASSUME_OBJECT;
+
     if(getenv_int("STRIP")) {
         /* Load to memory, strip leading and trailing whitespace */
         size_t size = 0, used = 0;
@@ -114,11 +117,11 @@ int main(int argc, char *argv[])
             used += count;
         }
 
-        json = json_loads(strip(buffer), 0, &error);
+        json = json_loads(strip(buffer), flags, &error);
         free(buffer);
     }
     else
-        json = json_loadf(file, 0, &error);
+        json = json_loadf(file, flags, &error);
 
     if(!json) {
         fprintf(stderr, "%d %d %d\n%s\n",
