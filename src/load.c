@@ -26,6 +26,7 @@
 
 #define TOKEN_INVALID         -1
 #define TOKEN_EOF              0
+#define TOKEN_COMMENT        255
 #define TOKEN_STRING         256
 #define TOKEN_INTEGER        257
 #define TOKEN_REAL           258
@@ -542,6 +543,27 @@ out:
     return -1;
 }
 
+static int lex_scan_comment(lex_t *lex, int c, json_error_t *error)
+{
+    lex->token = TOKEN_INVALID;
+
+    c = lex_get(lex, error);
+    
+    if(c != '/')
+        goto out;
+
+    c = lex_get(lex, error);
+
+    while(c != '\n')
+        c = lex_get(lex, error);
+
+    lex->token = TOKEN_COMMENT;
+    return 0;
+
+out:
+    return -1;
+}
+
 static int lex_scan(lex_t *lex, json_error_t *error)
 {
     int c;
@@ -567,6 +589,12 @@ static int lex_scan(lex_t *lex, json_error_t *error)
         goto out;
     }
 
+    if(c == '/') {
+        if(lex_scan_comment(lex, c, error))
+            goto out;
+        return lex_scan(lex, error);
+    }
+
     lex_save(lex, c);
 
     if(c == '{' || c == '}' || c == '[' || c == ']' || c == ':' || c == ',')
@@ -579,6 +607,7 @@ static int lex_scan(lex_t *lex, json_error_t *error)
         if(lex_scan_number(lex, c, error))
             goto out;
     }
+    
 
     else if(isupper(c) || islower(c)) {
         /* eat up the whole identifier for clearer error messages */
@@ -788,6 +817,10 @@ static json_t *parse_value(lex_t *lex, json_error_t *error)
 
         case '[':
             json = parse_array(lex, error);
+            break;
+
+        case TOKEN_COMMENT:
+            // ignore the comment
             break;
 
         case TOKEN_INVALID:
