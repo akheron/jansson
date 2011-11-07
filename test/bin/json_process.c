@@ -54,9 +54,19 @@ int main(int argc, char *argv[])
 
     json_t *json;
     json_error_t error;
+    FILE* file = stdin;
 
-    if(argc != 1) {
+    if(argc > 2) {
         fprintf(stderr, "usage: %s\n", argv[0]);
+        return 2;
+    }
+
+    if(argc == 2) {
+       file = fopen(argv[1], "r");
+    }
+
+    if( !file ) {
+        perror("invalid file");
         return 2;
     }
 
@@ -108,7 +118,7 @@ int main(int argc, char *argv[])
         free(buffer);
     }
     else
-        json = json_loadf(stdin, 0, &error);
+        json = json_loadf(file, 0, &error);
 
     if(!json) {
         fprintf(stderr, "%d %d %d\n%s\n",
