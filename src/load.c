@@ -597,7 +597,7 @@ static int lex_scan(lex_t *lex, json_error_t *error)
 
     lex_save(lex, c);
 
-    if(c == '{' || c == '}' || c == '[' || c == ']' || c == ':' || c == ',')
+    if(c == '{' || c == '}' || c == '[' || c == ']' || c == ':' || c == '=' || c == ',')
         lex->token = c;
 
     else if(c == '"')
@@ -672,7 +672,7 @@ static void lex_close(lex_t *lex)
 
 /*** parser ***/
 
-static json_t *parse_value(lex_t *lex, json_error_t *error);
+static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error);
 
 static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
 {
@@ -687,6 +687,7 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
     while(1) {
         char *key;
         json_t *value;
+        int equal;
 
         if(lex->token != TOKEN_STRING) {
             error_set(error, lex, "string or '}' expected");
@@ -698,14 +699,15 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
             return NULL;
 
         lex_scan(lex, error);
-        if(lex->token != ':') {
+        equal = (flags & JSON_ALLOW_EQUAL_SIGN) && lex->token == '=';
+        if(lex->token != ':' && !equal) {
             jsonp_free(key);
             error_set(error, lex, "':' expected");
             goto error;
         }
 
         lex_scan(lex, error);
-        value = parse_value(lex, error);
+        value = parse_value(lex, (flags & JSON_ALLOW_EQUAL_SIGN), error);
         if(!value) {
             jsonp_free(key);
             goto error;
@@ -741,7 +743,7 @@ error:
     return NULL;
 }
 
-static json_t *parse_array(lex_t *lex, json_error_t *error)
+static json_t *parse_array(lex_t *lex, size_t flags, json_error_t *error)
 {
     json_t *array = json_array();
     if(!array)
@@ -752,7 +754,7 @@ static json_t *parse_array(lex_t *lex, json_error_t *error)
         return array;
 
     while(lex->token) {
-        json_t *elem = parse_value(lex, error);
+        json_t *elem = parse_value(lex, flags, error);
         if(!elem)
             goto error;
 
@@ -781,7 +783,7 @@ error:
     return NULL;
 }
 
-static json_t *parse_value(lex_t *lex, json_error_t *error)
+static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
 {
     json_t *json;
 
@@ -814,11 +816,11 @@ static json_t *parse_value(lex_t *lex, json_error_t *error)
             break;
 
         case '{':
-            json = parse_object(lex, 0, error);
+            json = parse_object(lex, flags, error);
             break;
 
         case '[':
-            json = parse_array(lex, error);
+            json = parse_array(lex, flags, error);
             break;
 
         case TOKEN_COMMENT:
@@ -840,7 +842,7 @@ static json_t *parse_value(lex_t *lex, json_error_t *error)
     return json;
 }
 
-static json_t *parse_json(lex_t *lex, json_error_t *error)
+static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
 {
     lex_scan(lex, error);
     if(lex->token != '[' && lex->token != '{') {
@@ -848,7 +850,7 @@ static json_t *parse_json(lex_t *lex, json_error_t *error)
         return NULL;
     }
 
-    return parse_value(lex, error);
+    return parse_value(lex, flags, error);
 }
 
 typedef struct
@@ -887,7 +889,7 @@ json_t *json_loads(const char *string, size_t flags, json_error_t *error)
     if(flags & JSON_ASSUME_OBJECT)
         result = parse_object(&lex, flags, error);
     else
-        result = parse_json(&lex, error);
+        result = parse_json(&lex, flags, error);
 
     if(!result)
         goto out;
@@ -924,7 +926,7 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
     if(flags & JSON_ASSUME_OBJECT)
         result = parse_object(&lex, flags, error);
     else
-        result = parse_json(&lex, error);
+        result = parse_json(&lex, flags, error);
 
     if(!result)
         goto out;
