@@ -97,6 +97,9 @@ int main(int argc, char *argv[])
     if(getenv_int("JSON_ALLOW_EQUAL_SIGN"))
         flags |= JSON_ALLOW_EQUAL_SIGN;
 
+    if(getenv_int("JSON_QUOTELESS_KEYS"))
+        flags |= JSON_QUOTELESS_KEYS;
+
     if(getenv_int("STRIP")) {
         /* Load to memory, strip leading and trailing whitespace */
         size_t size = 0, used = 0;
