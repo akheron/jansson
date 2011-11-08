@@ -609,12 +609,12 @@ static int lex_scan(lex_t *lex, size_t flags, json_error_t *error)
     }
     
 
-    else if(isupper(c) || islower(c)) {
+    else if(isalpha(c)) {
         /* eat up the whole identifier for clearer error messages */
         const char *saved_text;
 
         c = lex_get_save(lex, error);
-        while(isupper(c) || islower(c))
+        while(isalnum(c) || (c == '_') || (c == '-'))
             c = lex_get_save(lex, error);
         lex_unget_unsave(lex, c);
 
