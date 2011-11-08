@@ -576,8 +576,13 @@ static int lex_scan(lex_t *lex, size_t flags, json_error_t *error)
     }
 
     c = lex_get(lex, error);
-    while(c == ' ' || c == '\t' || c == '\n' || c == '\r')
+    while(c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+        if(c == '\n' && (flags & JSON_OPTIONAL_COMMA)) {
+            lex->token = ',';
+            goto out;
+        }
         c = lex_get(lex, error);
+    }
 
     if(c == STREAM_STATE_EOF) {
         lex->token = TOKEN_EOF;
@@ -685,7 +690,7 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
     if(!object)
         return NULL;
 
-    lex_scan(lex, flags, error);
+    lex_scan(lex, (flags & (~JSON_OPTIONAL_COMMA)), error);
     if(lex->token == '}')
         return object;
 
@@ -730,11 +735,14 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
         json_decref(value);
         jsonp_free(key);
 
-        lex_scan(lex, 0, error);
+        lex_scan(lex, (flags & JSON_OPTIONAL_COMMA), error);
         if(lex->token != ',')
             break;
 
-        lex_scan(lex, flags, error);
+        lex_scan(lex, (flags & (~JSON_OPTIONAL_COMMA)), error);
+
+        if(lex->token == '}')
+            break;
     }
 
     if(!(flags & JSON_ASSUME_OBJECT)) {
@@ -772,11 +780,14 @@ static json_t *parse_array(lex_t *lex, size_t flags, json_error_t *error)
         }
         json_decref(elem);
 
-        lex_scan(lex, 0, error);
+        lex_scan(lex, (flags & JSON_OPTIONAL_COMMA), error);
         if(lex->token != ',')
             break;
 
         lex_scan(lex, 0, error);
+
+        if(lex->token == ']')
+            break;
     }
 
     if(lex->token != ']') {
