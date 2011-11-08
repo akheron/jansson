@@ -694,6 +694,9 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
         json_t *value;
         int equal;
 
+        if(lex->token == TOKEN_EOF)
+            break;
+
         if(lex->token != TOKEN_STRING) {
             error_set(error, lex, "string or '}' expected");
             goto error;
