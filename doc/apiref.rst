@@ -828,6 +828,16 @@ macros can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.1
 
+``JSON_DECODE_ANY``
+   By default, the decoder expects that its whole input constitutes a
+   valid JSON array or a valid JSON object. With this flag enabled,
+   the decoder accepts any valid JSON value.
+   This can be incompatible with the JSON_DISABLE_EOF_CHECK flag,
+   because the decoder may read up to 4 extra bytes from the input
+   (one utf-8 encoded character).
+
+   .. versionadded:: 2.3
+
 The following functions perform the actual JSON decoding.
 
 .. function:: json_t *json_loads(const char *input, size_t flags, json_error_t *error)
