@@ -820,9 +820,11 @@ static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
     json_t *result;
 
     lex_scan(lex, error);
-    if(lex->token != '[' && lex->token != '{') {
-        error_set(error, lex, "'[' or '{' expected");
-        return NULL;
+    if(!(flags & JSON_DECODE_ANY)) {
+        if(lex->token != '[' && lex->token != '{') {
+            error_set(error, lex, "'[' or '{' expected");
+            return NULL;
+        }
     }
 
     result = parse_value(lex, flags, error);
@@ -867,6 +869,9 @@ json_t *json_loads(const char *string, size_t flags, json_error_t *error)
     json_t *result;
     string_data_t stream_data;
 
+    if (string == NULL)
+        return NULL;
+
     stream_data.data = string;
     stream_data.pos = 0;
 
@@ -905,6 +910,9 @@ json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t
     json_t *result;
     buffer_data_t stream_data;
 
+    if (buffer == NULL)
+        return NULL;
+
     stream_data.data = buffer;
     stream_data.pos = 0;
     stream_data.len = buflen;
@@ -925,6 +933,9 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
     const char *source;
     json_t *result;
 
+    if (input == NULL)
+        return NULL;
+
     if(lex_init(&lex, (get_func)fgetc, input))
         return NULL;
 
@@ -944,6 +955,9 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 {
     json_t *result;
     FILE *fp;
+
+    if (path == NULL)
+        return NULL;
 
     jsonp_error_init(error, path);
 
