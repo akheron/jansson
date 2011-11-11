@@ -50,9 +50,36 @@ static void disable_eof_check()
     json_decref(json);
 }
 
+static void decode_any()
+{
+    json_t *json;
+    json_error_t error;
+
+    json = json_loads("\"foo\"", JSON_DECODE_ANY, &error);
+    if (!json || !json_is_string(json))
+        fail("json_load decoded any failed - string");
+    json_decref(json);
+
+    json = json_loads("42", JSON_DECODE_ANY, &error);
+    if (!json || !json_is_integer(json))
+        fail("json_load decoded any failed - integer");
+    json_decref(json);
+
+    json = json_loads("true", JSON_DECODE_ANY, &error);
+    if (!json || !json_is_true(json))
+        fail("json_load decoded any failed - boolean");
+    json_decref(json);
+
+    json = json_loads("null", JSON_DECODE_ANY, &error);
+    if (!json || !json_is_null(json))
+        fail("json_load decoded any failed - null");
+    json_decref(json);
+}
+
 static void run_tests()
 {
     file_not_found();
     reject_duplicates();
     disable_eof_check();
+    decode_any();
 }

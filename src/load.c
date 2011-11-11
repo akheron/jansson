@@ -820,9 +820,11 @@ static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
     json_t *result;
 
     lex_scan(lex, error);
-    if(lex->token != '[' && lex->token != '{') {
-        error_set(error, lex, "'[' or '{' expected");
-        return NULL;
+    if(!(flags & JSON_DECODE_ANY)) {
+        if(lex->token != '[' && lex->token != '{') {
+            error_set(error, lex, "'[' or '{' expected");
+            return NULL;
+        }
     }
 
     result = parse_value(lex, flags, error);
