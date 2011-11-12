@@ -76,10 +76,33 @@ static void decode_any()
     json_decref(json);
 }
 
+static void load_wrong_args()
+{
+    json_t *json;
+    json_error_t error;
+
+    json = json_loads(NULL, 0, &error);
+    if (json)
+        fail("json_loads should return NULL if the first argument is NULL");
+
+    json = json_loadb(NULL, 0, 0, &error);
+    if (json)
+        fail("json_loadb should return NULL if the first argument is NULL");
+
+    json = json_loadf(NULL, 0, &error);
+    if (json)
+        fail("json_loadf should return NULL if the first argument is NULL");
+
+    json = json_load_file(NULL, 0, &error);
+    if (json)
+        fail("json_loadf should return NULL if the first argument is NULL");
+}
+
 static void run_tests()
 {
     file_not_found();
     reject_duplicates();
     disable_eof_check();
     decode_any();
+    load_wrong_args();
 }
