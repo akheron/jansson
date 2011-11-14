@@ -737,8 +737,7 @@ can be ORed together to obtain *flags*.
    **Note:** Encoding any value may be useful in some scenarios, but
    it's generally discouraged as it violates strict compatiblity with
    :rfc:`4627`. If you use this flag, don't expect interoperatibility
-   with other JSON systems. Even Jansson itself doesn't have any means
-   to decode JSON texts whose root value is not object or array.
+   with other JSON systems.
 
    .. versionadded:: 2.1
 
@@ -800,7 +799,8 @@ text to the Jansson representation of JSON data. The JSON
 specification requires that a JSON text is either a serialized array
 or object, and this requirement is also enforced with the following
 functions. In other words, the top level value in the JSON text being
-decoded must be either array or object.
+decoded must be either array or object. To decode any JSON value, use
+the ``JSON_DECODE_ANY`` flag (see below).
 
 See :ref:`rfc-conformance` for a discussion on Jansson's conformance
 to the JSON specification. It explains many design decisions that
@@ -829,12 +829,13 @@ macros can be ORed together to obtain *flags*.
    .. versionadded:: 2.1
 
 ``JSON_DECODE_ANY``
-   By default, the decoder expects that its whole input constitutes a
-   valid JSON array or a valid JSON object. With this flag enabled,
-   the decoder accepts any valid JSON value.
-   This can be incompatible with the JSON_DISABLE_EOF_CHECK flag,
-   because the decoder may read up to 4 extra bytes from the input
-   (one utf-8 encoded character).
+   By default, the decoder expects an array or object as the input.
+   With this flag enabled, the decoder accepts any valid JSON value.
+
+   **Note:** Decoding any value may be useful in some scenarios, but
+   it's generally discouraged as it violates strict compatiblity with
+   :rfc:`4627`. If you use this flag, don't expect interoperatibility
+   with other JSON systems.
 
    .. versionadded:: 2.3
 
@@ -878,6 +879,14 @@ The following functions perform the actual JSON decoding.
    allows calling :func:`json_loadf()` on the same ``FILE`` object
    multiple times, if the input consists of consecutive JSON texts,
    possibly separated by whitespace.
+
+   If both ``JSON_DISABLE_EOF_CHECK`` and ``JSON_DECODE_ANY`` flags
+   are used, the decoder may read one extra UTF-8 code unit (up to 4
+   bytes of input). For example, decoding ``4true`` correctly decodes
+   the integer 4, but leaves the file position pointing at ``r``
+   instead of ``t``. For this reason, if reading multiple consecutive
+   values that are not arrays and objects, they should be separated by
+   at least one whitespace character.
 
 .. function:: json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 
