@@ -869,13 +869,19 @@ json_t *json_loads(const char *string, size_t flags, json_error_t *error)
     json_t *result;
     string_data_t stream_data;
 
+    jsonp_error_init(error, "<string>");
+
+    if (string == NULL) {
+        error_set(error, NULL, "wrong arguments");
+        return NULL;
+    }
+
     stream_data.data = string;
     stream_data.pos = 0;
 
     if(lex_init(&lex, string_get, (void *)&stream_data))
         return NULL;
 
-    jsonp_error_init(error, "<string>");
     result = parse_json(&lex, flags, error);
 
     lex_close(&lex);
@@ -907,6 +913,13 @@ json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t
     json_t *result;
     buffer_data_t stream_data;
 
+    jsonp_error_init(error, "<buffer>");
+
+    if (buffer == NULL) {
+        error_set(error, NULL, "wrong arguments");
+        return NULL;
+    }
+
     stream_data.data = buffer;
     stream_data.pos = 0;
     stream_data.len = buflen;
@@ -914,7 +927,6 @@ json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t
     if(lex_init(&lex, buffer_get, (void *)&stream_data))
         return NULL;
 
-    jsonp_error_init(error, "<buffer>");
     result = parse_json(&lex, flags, error);
 
     lex_close(&lex);
@@ -927,15 +939,21 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
     const char *source;
     json_t *result;
 
-    if(lex_init(&lex, (get_func)fgetc, input))
-        return NULL;
-
     if(input == stdin)
         source = "<stdin>";
     else
         source = "<stream>";
 
     jsonp_error_init(error, source);
+
+    if (input == NULL) {
+        error_set(error, NULL, "wrong arguments");
+        return NULL;
+    }
+
+    if(lex_init(&lex, (get_func)fgetc, input))
+        return NULL;
+
     result = parse_json(&lex, flags, error);
 
     lex_close(&lex);
@@ -948,6 +966,11 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
     FILE *fp;
 
     jsonp_error_init(error, path);
+
+    if (path == NULL) {
+        error_set(error, NULL, "wrong arguments");
+        return NULL;
+    }
 
     fp = fopen(path, "rb");
     if(!fp)

@@ -159,8 +159,10 @@ static int object_key_compare_keys(const void *key1, const void *key2)
 
 static int object_key_compare_serials(const void *key1, const void *key2)
 {
-    return (*(const object_key_t **)key1)->serial -
-           (*(const object_key_t **)key2)->serial;
+    size_t a = (*(const object_key_t **)key1)->serial;
+    size_t b = (*(const object_key_t **)key2)->serial;
+
+    return a < b ? -1 : a == b ? 0 : 1;
 }
 
 static int do_dump(const json_t *json, size_t flags, int depth,

@@ -186,7 +186,9 @@ int json_object_clear(json_t *json)
         return -1;
 
     object = json_to_object(json);
+
     hashtable_clear(&object->hashtable);
+    object->serial = 0;
 
     return 0;
 }
