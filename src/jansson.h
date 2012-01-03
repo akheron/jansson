@@ -193,6 +193,25 @@ int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
 
 
+/* foreach */
+
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#define json_object_foreach_declare(key, value) ((void)0)
+#define json_object_foreach(key, value, object) const char *key; \
+    json_t *value; \
+    for(void *__json_iterator_ ## key ## _ ## value ## __ = json_object_iter(object); \
+    __json_iterator_ ## key ## _ ## value ## __ && \
+    (key = json_object_iter_key(__json_iterator_ ## key ## _ ## value ## __), value = json_object_iter_value(__json_iterator_ ## key ## _ ## value ## __), 1); \
+    __json_iterator_ ## key ## _ ## value ## __ = json_object_iter_next(object, __json_iterator_ ## key ## _ ## value ## __))
+#else
+#define json_object_foreach_declare(key, value) const char *key; json_t *value; void * __json_iterator_ ## key ## _ ## value ## __
+#define json_object_foreach(key, value, object) for (__json_iterator_ ## key ## _ ## value ## __ = json_object_iter(object); \
+    __json_iterator_ ## key ## _ ## value ## __ && \
+    (key = json_object_iter_key(__json_iterator_ ## key ## _ ## value ## __), value = json_object_iter_value(__json_iterator_ ## key ## _ ## value ## __), 1); \
+    __json_iterator_ ## key ## _ ## value ## __ = json_object_iter_next(object, __json_iterator_ ## key ## _ ## value ## __))
+#endif
+
+
 /* pack, unpack */
 
 json_t *json_pack(const char *fmt, ...);
