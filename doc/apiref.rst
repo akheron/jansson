@@ -568,7 +568,9 @@ Unicode string and the value is any JSON value.
 The following functions implement an iteration protocol for objects,
 allowing to iterate through all key-value pairs in an object. The
 items are not returned in any particular order, as this would require
-sorting due to the internal hashtable implementation.
+sorting due to the internal hashtable implementation. For the sake of
+convenience, the ``json_object_foreach`` macro is also provided for
+iterating through objects.
 
 .. function:: void *json_object_iter(json_t *object)
 
@@ -623,6 +625,61 @@ The iteration protocol can be used for example as follows::
        /* use key and value ... */
        iter = json_object_iter_next(obj, iter);
    }
+
+
+Object and Array Iteration Macros
+=================================
+
+Jansson provides two preprocessor macros for iterating through objects
+and arrays. These are, respectively, ``json_object_foreach`` and
+``json_array_foreach``. Both macros expand to ordinary ``for`` statements
+upon preprocessing, so their execution performance is equivalent to that of
+hand-written iteration code. The main advantage behind using the macros is
+that they abstract away the complexity behind iteration, and make for shorter,
+more concise code. Their usage is as follows:
+
+``json_object_foreach(key, value, object) { /* block-of-code */ }``
+
+    Iterate over every key and value pair of ``object``, running
+    ``block-of-code`` each time with the proper values set to variables ``key``
+    and ``value``, of types ``const char *`` and ``json_t *`` respectively.
+
+``json_array_foreach(element, array) { /* block-of-code */ }``
+
+    Iterate over every element of ``array``, running ``block-of-code`` each time
+    with the proper value set to variable ``element``, of type ``json_t *``.
+
+Additional preprocessor macros are provided to work around limitations
+of the C89 standard: ``json_object_foreach_declare`` and
+``json_array_foreach_declare``. These must be used on the beginning of
+every block that contains an iteration, to ensure that the variables used
+are properly declared. If C89 compliance is not needed, the additional
+macros may be safely omitted.
+
+The following code fragments illustrate the usage of ``json_object_foreach``
+and ``json_array_foreach``:
+
+    /* obj is a JSON object */
+    {
+        /* Only needed on C89 mode. Has no effect on C99 mode or newer,
+        and can be safely omitted */
+        json_object_foreach_declare(key, value);
+        
+        json_object_foreach(key, value, obj) {
+            /* use key and value ... */
+        }
+    }
+
+    /* arr is a JSON array */
+    {
+        /* Only needed on C89 mode. Has no effect on C99 mode or newer,
+        and can be safely omitted */
+        json_array_foreach_declare(element);
+        
+        json_array_foreach(element, arr) {
+            /* use element ... */
+        }
+    }
 
 
 Error reporting
