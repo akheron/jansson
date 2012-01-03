@@ -203,12 +203,18 @@ int json_real_set(json_t *real, double value);
     __json_iterator_ ## key ## _ ## value ## __ && \
     (key = json_object_iter_key(__json_iterator_ ## key ## _ ## value ## __), value = json_object_iter_value(__json_iterator_ ## key ## _ ## value ## __), 1); \
     __json_iterator_ ## key ## _ ## value ## __ = json_object_iter_next(object, __json_iterator_ ## key ## _ ## value ## __))
+#define json_array_foreach_declare(element) ((void) 0)
+#define json_array_foreach(element, object) json_t *element; \
+    for (size_t __json_index_ ## element ## __ = 0; (element = json_array_get(object, __json_index_ ## element ## __)); __json_index_ ## element ## __ ++)
 #else
 #define json_object_foreach_declare(key, value) const char *key; json_t *value; void * __json_iterator_ ## key ## _ ## value ## __
 #define json_object_foreach(key, value, object) for (__json_iterator_ ## key ## _ ## value ## __ = json_object_iter(object); \
     __json_iterator_ ## key ## _ ## value ## __ && \
     (key = json_object_iter_key(__json_iterator_ ## key ## _ ## value ## __), value = json_object_iter_value(__json_iterator_ ## key ## _ ## value ## __), 1); \
     __json_iterator_ ## key ## _ ## value ## __ = json_object_iter_next(object, __json_iterator_ ## key ## _ ## value ## __))
+#define json_array_foreach_declare(element) json_t *element; size_t __json_index_ ## element ## __
+#define json_array_foreach(element, object)  \
+    for (__json_index_ ## element ## __ = 0; (element = json_array_get(object, __json_index_ ## element ## __)); __json_index_ ## element ## __ ++)
 #endif
 
 
