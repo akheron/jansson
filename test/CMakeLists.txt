@@ -1,3 +1,4 @@
+add_definitions(-Wall)
 
 macro(build_testprog name dir)
     add_executable(${name} EXCLUDE_FROM_ALL ${dir}/${name}.c)
@@ -34,12 +35,12 @@ add_test(test_pack test_pack)
 add_test(test_simple test_simple)
 add_test(test_unpack test_unpack)
 
-set(SUITES encoding-flags valid)
+set(SUITES encoding-flags valid invalid invalid-unicode)
 foreach (SUITE ${SUITES})
     file(GLOB TESTDIRS ${jansson_SOURCE_DIR}/test/suites/${SUITE}/*)
     foreach (TESTDIR ${TESTDIRS})
 	get_filename_component(TNAME ${TESTDIR} NAME)
-# 	add_test(${SUITE}_${TNAME} "json_process ${TESTDIR}/input ${TESTDIR}/output")
+	add_test(${SUITE}__${TNAME} json_process ${TESTDIR})
     endforeach()
 endforeach ()
 
