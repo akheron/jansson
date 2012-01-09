@@ -93,4 +93,9 @@ void* jsonp_malloc(size_t size);
 void jsonp_free(void *ptr);
 char *jsonp_strdup(const char *str);
 
+#ifdef _MSC_VER
+#define snprintf(buf, len, fmt, ...) _snprintf_s(buf, len, len-1, fmt, __VA_ARGS__)
+#define strtoll(nptr, endptr, base) _strtoi64(nptr, endptr, base)
+#endif
+
 #endif

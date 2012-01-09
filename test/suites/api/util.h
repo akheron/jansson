@@ -55,12 +55,16 @@
     } while(0)
 
 
-static void run_tests();
+static void run_tests(void);
 
-int main() {
+int main(int argc, char *argv[]) {
     setlocale(LC_ALL, "");
     run_tests();
     return 0;
 }
+
+#ifdef _MSC_VER
+typedef long ssize_t;
+#endif
 
 #endif
