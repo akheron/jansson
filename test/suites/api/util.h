@@ -8,15 +8,9 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
-#if HAVE_LOCALE_H
 #include <locale.h>
-#endif
 
 #include <jansson.h>
 
@@ -64,9 +58,7 @@
 static void run_tests();
 
 int main() {
-#ifdef HAVE_SETLOCALE
     setlocale(LC_ALL, "");
-#endif
     run_tests();
     return 0;
 }

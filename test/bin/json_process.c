@@ -4,20 +4,13 @@
  * Jansson is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
  */
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <jansson.h>
 
-#if HAVE_LOCALE_H
 #include <locale.h>
-#endif
 
 #if _WIN32
 #include <io.h>  /* for _setmode() */
@@ -68,9 +61,7 @@ int main(int argc, char *argv[])
     json_t *json;
     json_error_t error;
 
-#if HAVE_SETLOCALE
     setlocale(LC_ALL, "");
-#endif
 
     if(argc != 1) {
         fprintf(stderr, "usage: %s\n", argv[0]);

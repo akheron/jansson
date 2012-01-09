@@ -5,7 +5,6 @@
 #include "jansson_private.h"
 #include "strbuffer.h"
 
-#if JSON_HAVE_LOCALECONV
 #include <locale.h>
 
 /*
@@ -49,16 +48,13 @@ static void from_locale(char *buffer)
     if(pos)
         *pos = '.';
 }
-#endif
 
 int jsonp_strtod(strbuffer_t *strbuffer, double *out)
 {
     double value;
     char *end;
 
-#if JSON_HAVE_LOCALECONV
     to_locale(strbuffer);
-#endif
 
     errno = 0;
     value = strtod(strbuffer->value, &end);
@@ -87,9 +83,7 @@ int jsonp_dtostr(char *buffer, size_t size, double value)
     if(length >= size)
         return -1;
 
-#if JSON_HAVE_LOCALECONV
     from_locale(buffer);
-#endif
 
     /* Make sure there's a dot or 'e' in the output. Otherwise
        a real is converted to an integer when decoding */
