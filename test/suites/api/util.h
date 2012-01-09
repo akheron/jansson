@@ -8,15 +8,9 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
-#if HAVE_LOCALE_H
 #include <locale.h>
-#endif
 
 #include <jansson.h>
 
@@ -61,14 +55,16 @@
     } while(0)
 
 
-static void run_tests();
+static void run_tests(void);
 
-int main() {
-#ifdef HAVE_SETLOCALE
+int main(int argc, char *argv[]) {
     setlocale(LC_ALL, "");
-#endif
     run_tests();
     return 0;
 }
+
+#ifdef _MSC_VER
+typedef long ssize_t;
+#endif
 
 #endif

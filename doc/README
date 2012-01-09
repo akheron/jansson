@@ -1,5 +1,7 @@
 To build the documentation, invoke
 
-    make html
+    make doc
 
-Then point your browser to _build/html/index.html.
+from your build directory.
+Then point your browser to html/index.html.
+

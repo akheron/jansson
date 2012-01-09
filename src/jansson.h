@@ -12,6 +12,21 @@
 #include <stdlib.h>  /* for size_t */
 #include <stdarg.h>
 
+
+#if defined (jansson_EXPORTS)/* it's defined by cmake while building jansson */
+# if defined (_MSC_VER)
+#  define EXPORT __declspec(dllexport)
+# else /* gcc requires explicit exports with -fvisibility=hidden */
+#  define EXPORT __attribute__((__visibility__("default")))
+# endif
+#else
+# if defined (_MSC_VER)
+#  define EXPORT __declspec(dllimport)
+# else
+#  define EXPORT
+# endif
+#endif
+
 #include <jansson_config.h>
 
 #ifdef __cplusplus
@@ -78,15 +93,15 @@ typedef long json_int_t;
 
 /* construction, destruction, reference counting */
 
-json_t *json_object(void);
-json_t *json_array(void);
-json_t *json_string(const char *value);
-json_t *json_string_nocheck(const char *value);
-json_t *json_integer(json_int_t value);
-json_t *json_real(double value);
-json_t *json_true(void);
-json_t *json_false(void);
-json_t *json_null(void);
+EXPORT json_t *json_object(void);
+EXPORT json_t *json_array(void);
+EXPORT json_t *json_string(const char *value);
+EXPORT json_t *json_string_nocheck(const char *value);
+EXPORT json_t *json_integer(json_int_t value);
+EXPORT json_t *json_real(double value);
+EXPORT json_t *json_true(void);
+EXPORT json_t *json_false(void);
+EXPORT json_t *json_null(void);
 
 static JSON_INLINE
 json_t *json_incref(json_t *json)
@@ -97,7 +112,7 @@ json_t *json_incref(json_t *json)
 }
 
 /* do not call json_delete directly */
-void json_delete(json_t *json);
+EXPORT void json_delete(json_t *json);
 
 static JSON_INLINE
 void json_decref(json_t *json)
@@ -123,19 +138,19 @@ typedef struct {
 
 /* getters, setters, manipulation */
 
-size_t json_object_size(const json_t *object);
-json_t *json_object_get(const json_t *object, const char *key);
-int json_object_set_new(json_t *object, const char *key, json_t *value);
-int json_object_set_new_nocheck(json_t *object, const char *key, json_t *value);
-int json_object_del(json_t *object, const char *key);
-int json_object_clear(json_t *object);
-int json_object_update(json_t *object, json_t *other);
-void *json_object_iter(json_t *object);
-void *json_object_iter_at(json_t *object, const char *key);
-void *json_object_iter_next(json_t *object, void *iter);
-const char *json_object_iter_key(void *iter);
-json_t *json_object_iter_value(void *iter);
-int json_object_iter_set_new(json_t *object, void *iter, json_t *value);
+EXPORT size_t json_object_size(const json_t *object);
+EXPORT json_t *json_object_get(const json_t *object, const char *key);
+EXPORT int json_object_set_new(json_t *object, const char *key, json_t *value);
+EXPORT int json_object_set_new_nocheck(json_t *object, const char *key, json_t *value);
+EXPORT int json_object_del(json_t *object, const char *key);
+EXPORT int json_object_clear(json_t *object);
+EXPORT int json_object_update(json_t *object, json_t *other);
+EXPORT void *json_object_iter(json_t *object);
+EXPORT void *json_object_iter_at(json_t *object, const char *key);
+EXPORT void *json_object_iter_next(json_t *object, void *iter);
+EXPORT const char *json_object_iter_key(void *iter);
+EXPORT json_t *json_object_iter_value(void *iter);
+EXPORT int json_object_iter_set_new(json_t *object, void *iter, json_t *value);
 
 static JSON_INLINE
 int json_object_set(json_t *object, const char *key, json_t *value)
@@ -155,14 +170,14 @@ int json_object_iter_set(json_t *object, void *iter, json_t *value)
     return json_object_iter_set_new(object, iter, json_incref(value));
 }
 
-size_t json_array_size(const json_t *array);
-json_t *json_array_get(const json_t *array, size_t index);
-int json_array_set_new(json_t *array, size_t index, json_t *value);
-int json_array_append_new(json_t *array, json_t *value);
-int json_array_insert_new(json_t *array, size_t index, json_t *value);
-int json_array_remove(json_t *array, size_t index);
-int json_array_clear(json_t *array);
-int json_array_extend(json_t *array, json_t *other);
+EXPORT size_t json_array_size(const json_t *array);
+EXPORT json_t *json_array_get(const json_t *array, size_t index);
+EXPORT int json_array_set_new(json_t *array, size_t index, json_t *value);
+EXPORT int json_array_append_new(json_t *array, json_t *value);
+EXPORT int json_array_insert_new(json_t *array, size_t index, json_t *value);
+EXPORT int json_array_remove(json_t *array, size_t index);
+EXPORT int json_array_clear(json_t *array);
+EXPORT int json_array_extend(json_t *array, json_t *other);
 
 static JSON_INLINE
 int json_array_set(json_t *array, size_t index, json_t *value)
@@ -182,40 +197,40 @@ int json_array_insert(json_t *array, size_t index, json_t *value)
     return json_array_insert_new(array, index, json_incref(value));
 }
 
-const char *json_string_value(const json_t *string);
-json_int_t json_integer_value(const json_t *integer);
-double json_real_value(const json_t *real);
-double json_number_value(const json_t *json);
+EXPORT const char *json_string_value(const json_t *string);
+EXPORT json_int_t json_integer_value(const json_t *integer);
+EXPORT double json_real_value(const json_t *real);
+EXPORT double json_number_value(const json_t *json);
 
-int json_string_set(json_t *string, const char *value);
-int json_string_set_nocheck(json_t *string, const char *value);
-int json_integer_set(json_t *integer, json_int_t value);
-int json_real_set(json_t *real, double value);
+EXPORT int json_string_set(json_t *string, const char *value);
+EXPORT int json_string_set_nocheck(json_t *string, const char *value);
+EXPORT int json_integer_set(json_t *integer, json_int_t value);
+EXPORT int json_real_set(json_t *real, double value);
 
 
 /* pack, unpack */
 
-json_t *json_pack(const char *fmt, ...);
-json_t *json_pack_ex(json_error_t *error, size_t flags, const char *fmt, ...);
-json_t *json_vpack_ex(json_error_t *error, size_t flags, const char *fmt, va_list ap);
+EXPORT json_t *json_pack(const char *fmt, ...);
+EXPORT json_t *json_pack_ex(json_error_t *error, size_t flags, const char *fmt, ...);
+EXPORT json_t *json_vpack_ex(json_error_t *error, size_t flags, const char *fmt, va_list ap);
 
 #define JSON_VALIDATE_ONLY  0x1
 #define JSON_STRICT         0x2
 
-int json_unpack(json_t *root, const char *fmt, ...);
-int json_unpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, ...);
-int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, va_list ap);
+EXPORT int json_unpack(json_t *root, const char *fmt, ...);
+EXPORT int json_unpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, ...);
+EXPORT int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, va_list ap);
 
 
 /* equality */
 
-int json_equal(json_t *value1, json_t *value2);
+EXPORT int json_equal(json_t *value1, json_t *value2);
 
 
 /* copying */
 
-json_t *json_copy(json_t *value);
-json_t *json_deep_copy(json_t *value);
+EXPORT json_t *json_copy(json_t *value);
+EXPORT json_t *json_deep_copy(json_t *value);
 
 
 /* decoding */
@@ -224,11 +239,10 @@ json_t *json_deep_copy(json_t *value);
 #define JSON_DISABLE_EOF_CHECK 0x2
 #define JSON_DECODE_ANY        0x4
 
-json_t *json_loads(const char *input, size_t flags, json_error_t *error);
-json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error);
-json_t *json_loadf(FILE *input, size_t flags, json_error_t *error);
-json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
-
+EXPORT json_t *json_loads(const char *input, size_t flags, json_error_t *error);
+EXPORT json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error);
+EXPORT json_t *json_loadf(FILE *input, size_t flags, json_error_t *error);
+EXPORT json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
 
 /* encoding */
 
@@ -241,20 +255,22 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
 
 typedef int (*json_dump_callback_t)(const char *buffer, size_t size, void *data);
 
-char *json_dumps(const json_t *json, size_t flags);
-int json_dumpf(const json_t *json, FILE *output, size_t flags);
-int json_dump_file(const json_t *json, const char *path, size_t flags);
-int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags);
+EXPORT char *json_dumps(const json_t *json, size_t flags);
+EXPORT int json_dumpf(const json_t *json, FILE *output, size_t flags);
+EXPORT int json_dump_file(const json_t *json, const char *path, size_t flags);
+EXPORT int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags);
 
 /* custom memory allocation */
 
 typedef void *(*json_malloc_t)(size_t);
 typedef void (*json_free_t)(void *);
 
-void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn);
+EXPORT void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn);
 
 #ifdef __cplusplus
 }
 #endif
+
+#undef EXPORT
 
 #endif
