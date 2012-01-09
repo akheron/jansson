@@ -14,6 +14,8 @@ data. Its main features and design principles are:
 
 - Extensive test suite
 
+- Unix and Windows support
+
 Jansson is licensed under the `MIT license`_; see LICENSE in the
 source distribution for details.
 
@@ -21,22 +23,16 @@ source distribution for details.
 Compilation and Installation
 ----------------------------
 
-If you obtained a source tarball, just use the standard autotools
-commands::
+If you obtained a source tarball, just use the standard cmake commands::
 
-   $ ./configure
-   $ make
+   $ mkdir build && cd build
+   $ cmake ..
+   $ ccmake .  # optional; use this to change the build settings
    $ make install
 
 To run the test suite, invoke::
 
    $ make check
-
-If the source has been checked out from a Git repository, the
-./configure script has to be generated fist. The easiest way is to use
-autoreconf::
-
-   $ autoreconf -i
 
 
 Documentation
@@ -45,12 +41,11 @@ Documentation
 Prebuilt HTML documentation is available at
 http://www.digip.org/jansson/doc/.
 
-The documentation source is in the ``doc/`` subdirectory. To generate
-HTML documentation, invoke::
+To generate HTML documentation, invoke::
 
-   $ make html
+   $ make doc
 
-Then, point your browser to ``doc/_build/html/index.html``. Sphinx_
+Then, point your browser to ``html/index.html``. Sphinx_
 1.0 or newer is required to generate the documentation.
 
 
