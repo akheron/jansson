@@ -836,8 +836,13 @@ static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
         if(lex->token != TOKEN_EOF) {
             error_set(error, lex, "end of file expected");
             json_decref(result);
-            result = NULL;
+            return NULL;
         }
+    }
+
+    if(error) {
+        /* Save the position even though there was no error */
+        error->position = lex->stream.position;
     }
 
     return result;

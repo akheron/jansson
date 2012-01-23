@@ -98,6 +98,23 @@ static void load_wrong_args()
         fail("json_loadf should return NULL if the first argument is NULL");
 }
 
+static void position()
+{
+    json_t *json;
+    size_t flags = JSON_DISABLE_EOF_CHECK;
+    json_error_t error;
+
+    json = json_loads("{\"foo\": \"bar\"}", 0, &error);
+    if(error.position != 14)
+        fail("json_loads returned a wrong position");
+    json_decref(json);
+
+    json = json_loads("{\"foo\": \"bar\"} baz quux", flags, &error);
+    if(error.position != 14)
+        fail("json_loads returned a wrong position");
+    json_decref(json);
+}
+
 static void run_tests()
 {
     file_not_found();
@@ -105,4 +122,5 @@ static void run_tests()
     disable_eof_check();
     decode_any();
     load_wrong_args();
+    position();
 }

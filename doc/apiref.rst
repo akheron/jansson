@@ -675,7 +675,9 @@ and pass a pointer to a function. Example::
    }
 
 Also note that if the call succeeded (``json != NULL`` in the above
-example), the contents of ``error`` are unspecified.
+example), the contents of ``error`` are generally left unspecified.
+The decoding functions write to the ``position`` member also on
+success. See :ref:`apiref-decoding` for more info.
 
 All functions also accept *NULL* as the :type:`json_error_t` pointer,
 in which case no error information is returned to the caller.
@@ -819,15 +821,6 @@ macros can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.1
 
-``JSON_DISABLE_EOF_CHECK``
-   By default, the decoder expects that its whole input constitutes a
-   valid JSON text, and issues an error if there's extra data after
-   the otherwise valid JSON input. With this flag enabled, the decoder
-   stops after decoding a valid JSON array or object, and thus allows
-   extra data after the JSON text.
-
-   .. versionadded:: 2.1
-
 ``JSON_DECODE_ANY``
    By default, the decoder expects an array or object as the input.
    With this flag enabled, the decoder accepts any valid JSON value.
@@ -838,6 +831,36 @@ macros can be ORed together to obtain *flags*.
    with other JSON systems.
 
    .. versionadded:: 2.3
+
+``JSON_DISABLE_EOF_CHECK``
+   By default, the decoder expects that its whole input constitutes a
+   valid JSON text, and issues an error if there's extra data after
+   the otherwise valid JSON input. With this flag enabled, the decoder
+   stops after decoding a valid JSON array or object, and thus allows
+   extra data after the JSON text.
+
+   Normally, reading will stop when the last ``]`` or ``}`` in the
+   JSON input is encountered. If both ``JSON_DISABLE_EOF_CHECK`` and
+   ``JSON_DECODE_ANY`` flags are used, the decoder may read one extra
+   UTF-8 code unit (up to 4 bytes of input). For example, decoding
+   ``4true`` correctly decodes the integer 4, but also reads the
+   ``t``. For this reason, if reading multiple consecutive values that
+   are not arrays or objects, they should be separated by at least one
+   whitespace character.
+
+   .. versionadded:: 2.1
+
+Each function also takes an optional :type:`json_error_t` parameter
+that is filled with error information if decoding fails. It's also
+updated on success; the number of bytes of input read is written to
+its ``position`` field. This is especially useful when using
+``JSON_DISABLE_EOF_CHECK`` to read multiple consecutive JSON texts.
+
+.. versionadded:: 2.3
+   Number of bytes of input read is written to the ``position`` field
+   of the :type:`json_error_t` structure.
+
+If no error or position information is needed, you can pass *NULL*.
 
 The following functions perform the actual JSON decoding.
 
@@ -879,14 +902,6 @@ The following functions perform the actual JSON decoding.
    allows calling :func:`json_loadf()` on the same ``FILE`` object
    multiple times, if the input consists of consecutive JSON texts,
    possibly separated by whitespace.
-
-   If both ``JSON_DISABLE_EOF_CHECK`` and ``JSON_DECODE_ANY`` flags
-   are used, the decoder may read one extra UTF-8 code unit (up to 4
-   bytes of input). For example, decoding ``4true`` correctly decodes
-   the integer 4, but leaves the file position pointing at ``r``
-   instead of ``t``. For this reason, if reading multiple consecutive
-   values that are not arrays and objects, they should be separated by
-   at least one whitespace character.
 
 .. function:: json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 
