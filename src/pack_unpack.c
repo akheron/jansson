@@ -233,7 +233,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
     */
     hashtable_t key_set;
 
-    if(hashtable_init(&key_set, jsonp_hash_str, jsonp_str_equal, NULL, NULL)) {
+    if(hashtable_init(&key_set)) {
         set_error(s, "<internal>", "Out of memory");
         return -1;
     }
@@ -288,7 +288,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
         if(unpack(s, value, ap))
             goto out;
 
-        hashtable_set(&key_set, (void *)key, NULL);
+        hashtable_set(&key_set, key, 0, json_null());
         next_token(s);
     }
 

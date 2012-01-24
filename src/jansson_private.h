@@ -67,16 +67,6 @@ typedef struct {
 #define json_to_real(json_)   container_of(json_, json_real_t, json)
 #define json_to_integer(json_) container_of(json_, json_integer_t, json)
 
-size_t jsonp_hash_str(const void *ptr);
-int jsonp_str_equal(const void *ptr1, const void *ptr2);
-
-typedef struct {
-    size_t serial;
-    char key[1];
-} object_key_t;
-
-const object_key_t *jsonp_object_iter_fullkey(void *iter);
-
 void jsonp_error_init(json_error_t *error, const char *source);
 void jsonp_error_set_source(json_error_t *error, const char *source);
 void jsonp_error_set(json_error_t *error, int line, int column,

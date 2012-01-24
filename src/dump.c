@@ -19,11 +19,9 @@
 #define MAX_INTEGER_STR_LENGTH  100
 #define MAX_REAL_STR_LENGTH     100
 
-struct string
-{
-    char *buffer;
-    int length;
-    int size;
+struct object_key {
+    size_t serial;
+    const char *key;
 };
 
 static int dump_to_strbuffer(const char *buffer, size_t size, void *data)
@@ -153,14 +151,14 @@ static int dump_string(const char *str, int ascii, json_dump_callback_t dump, vo
 
 static int object_key_compare_keys(const void *key1, const void *key2)
 {
-    return strcmp((*(const object_key_t **)key1)->key,
-                  (*(const object_key_t **)key2)->key);
+    return strcmp(((const struct object_key *)key1)->key,
+                  ((const struct object_key *)key2)->key);
 }
 
 static int object_key_compare_serials(const void *key1, const void *key2)
 {
-    size_t a = (*(const object_key_t **)key1)->serial;
-    size_t b = (*(const object_key_t **)key2)->serial;
+    size_t a = ((const struct object_key *)key1)->serial;
+    size_t b = ((const struct object_key *)key2)->serial;
 
     return a < b ? -1 : a == b ? 0 : 1;
 }
@@ -294,19 +292,20 @@ static int do_dump(const json_t *json, size_t flags, int depth,
 
             if(flags & JSON_SORT_KEYS || flags & JSON_PRESERVE_ORDER)
             {
-                const object_key_t **keys;
+                struct object_key *keys;
                 size_t size, i;
                 int (*cmp_func)(const void *, const void *);
 
                 size = json_object_size(json);
-                keys = jsonp_malloc(size * sizeof(object_key_t *));
+                keys = jsonp_malloc(size * sizeof(struct object_key));
                 if(!keys)
                     goto object_error;
 
                 i = 0;
                 while(iter)
                 {
-                    keys[i] = jsonp_object_iter_fullkey(iter);
+                    keys[i].serial = hashtable_iter_serial(iter);
+                    keys[i].key = json_object_iter_key(iter);
                     iter = json_object_iter_next((json_t *)json, iter);
                     i++;
                 }
@@ -317,14 +316,14 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 else
                     cmp_func = object_key_compare_serials;
 
-                qsort(keys, size, sizeof(object_key_t *), cmp_func);
+                qsort(keys, size, sizeof(struct object_key), cmp_func);
 
                 for(i = 0; i < size; i++)
                 {
                     const char *key;
                     json_t *value;
 
-                    key = keys[i]->key;
+                    key = keys[i].key;
                     value = json_object_get(json, key);
                     assert(value);
 
