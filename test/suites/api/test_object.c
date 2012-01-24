@@ -139,6 +139,48 @@ static void test_update()
     json_decref(object);
 }
 
+static void test_conditional_updates()
+{
+    json_t *object, *other;
+
+    object = json_pack("{sisi}", "foo", 1, "bar", 2);
+    other = json_pack("{sisi}", "foo", 3, "baz", 4);
+
+    if(json_object_update_existing(object, other))
+        fail("json_object_update_existing failed");
+
+    if(json_object_size(object) != 2)
+        fail("json_object_update_existing added new items");
+
+    if(json_integer_value(json_object_get(object, "foo")) != 3)
+        fail("json_object_update_existing failed to update existing key");
+
+    if(json_integer_value(json_object_get(object, "bar")) != 2)
+        fail("json_object_update_existing updated wrong key");
+
+    json_decref(object);
+
+    object = json_pack("{sisi}", "foo", 1, "bar", 2);
+
+    if(json_object_update_missing(object, other))
+        fail("json_object_update_missing failed");
+
+    if(json_object_size(object) != 3)
+        fail("json_object_update_missing didn't add new items");
+
+    if(json_integer_value(json_object_get(object, "foo")) != 1)
+        fail("json_object_update_missing updated existing key");
+
+    if(json_integer_value(json_object_get(object, "bar")) != 2)
+        fail("json_object_update_missing updated wrong key");
+
+    if(json_integer_value(json_object_get(object, "baz")) != 4)
+        fail("json_object_update_missing didn't add new items");
+
+    json_decref(object);
+    json_decref(other);
+}
+
 static void test_circular()
 {
     json_t *object1, *object2;
@@ -460,6 +502,7 @@ static void run_tests()
     test_misc();
     test_clear();
     test_update();
+    test_conditional_updates();
     test_circular();
     test_set_nocheck();
     test_iterators();

@@ -1,7 +1,6 @@
 #!/bin/sh
 
-# This tests checks that the libjansson.so exports the correct
-# symbols.
+# This test checks that libjansson.so exports the correct symbols.
 
 # The list of symbols that the shared object should export
 sort >$test_log/exports <<EOF
@@ -38,6 +37,8 @@ json_object_set_new_nocheck
 json_object_del
 json_object_clear
 json_object_update
+json_object_update_existing
+json_object_update_missing
 json_object_iter
 json_object_iter_at
 json_object_iter_next

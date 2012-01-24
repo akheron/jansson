@@ -564,6 +564,21 @@ Unicode string and the value is any JSON value.
    Update *object* with the key-value pairs from *other*, overwriting
    existing keys. Returns 0 on success or -1 on error.
 
+.. function:: int json_object_update_existing(json_t *object, json_t *other)
+
+   Like :func:`json_object_update()`, but only the values of existing
+   keys are updated. No new keys are created. Returns 0 on success or
+   -1 on error.
+
+   .. versionadded:: 2.3
+
+.. function:: int json_object_update_missing(json_t *object, json_t *other)
+
+   Like :func:`json_object_update()`, but only new keys are created.
+   The value of any existing key is not changed. Returns 0 on success
+   or -1 on error.
+
+   .. versionadded:: 2.3
 
 The following macro can be used to iterate through all key-value pairs
 in an object.
