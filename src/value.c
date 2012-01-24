@@ -124,10 +124,10 @@ int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value)
     json_object_t *object;
     object_key_t *k;
 
-    if(!key || !value)
+    if(!value)
         return -1;
 
-    if(!json_is_object(json) || json == value)
+    if(!key || !json_is_object(json) || json == value)
     {
         json_decref(value);
         return -1;
