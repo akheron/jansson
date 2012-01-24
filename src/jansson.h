@@ -132,10 +132,16 @@ int json_object_clear(json_t *object);
 int json_object_update(json_t *object, json_t *other);
 void *json_object_iter(json_t *object);
 void *json_object_iter_at(json_t *object, const char *key);
+void *json_object_key_to_iter(const char *key);
 void *json_object_iter_next(json_t *object, void *iter);
 const char *json_object_iter_key(void *iter);
 json_t *json_object_iter_value(void *iter);
 int json_object_iter_set_new(json_t *object, void *iter, json_t *value);
+
+#define json_object_foreach(object, key, value) \
+    for(key = json_object_iter_key(json_object_iter(object)); \
+        key && (value = json_object_iter_value(json_object_key_to_iter(key))); \
+        key = json_object_iter_key(json_object_iter_next(object, json_object_key_to_iter(key))))
 
 static JSON_INLINE
 int json_object_set(json_t *object, const char *key, json_t *value)

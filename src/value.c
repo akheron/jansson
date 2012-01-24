@@ -135,23 +135,15 @@ int json_object_clear(json_t *json)
 
 int json_object_update(json_t *object, json_t *other)
 {
-    void *iter;
+    const char *key;
+    json_t *value;
 
     if(!json_is_object(object) || !json_is_object(other))
         return -1;
 
-    iter = json_object_iter(other);
-    while(iter) {
-        const char *key;
-        json_t *value;
-
-        key = json_object_iter_key(iter);
-        value = json_object_iter_value(iter);
-
+    json_object_foreach(other, key, value) {
         if(json_object_set_nocheck(object, key, value))
             return -1;
-
-        iter = json_object_iter_next(other, iter);
     }
 
     return 0;
@@ -215,27 +207,27 @@ int json_object_iter_set_new(json_t *json, void *iter, json_t *value)
     return 0;
 }
 
+void *json_object_key_to_iter(const char *key)
+{
+    if(!key)
+        return NULL;
+
+    return hashtable_key_to_iter(key);
+}
+
 static int json_object_equal(json_t *object1, json_t *object2)
 {
-    void *iter;
+    const char *key;
+    json_t *value1, *value2;
 
     if(json_object_size(object1) != json_object_size(object2))
         return 0;
 
-    iter = json_object_iter(object1);
-    while(iter)
-    {
-        const char *key;
-        json_t *value1, *value2;
-
-        key = json_object_iter_key(iter);
-        value1 = json_object_iter_value(iter);
+    json_object_foreach(object1, key, value1) {
         value2 = json_object_get(object2, key);
 
         if(!json_equal(value1, value2))
             return 0;
-
-        iter = json_object_iter_next(object1, iter);
     }
 
     return 1;
@@ -244,24 +236,16 @@ static int json_object_equal(json_t *object1, json_t *object2)
 static json_t *json_object_copy(json_t *object)
 {
     json_t *result;
-    void *iter;
+
+    const char *key;
+    json_t *value;
 
     result = json_object();
     if(!result)
         return NULL;
 
-    iter = json_object_iter(object);
-    while(iter)
-    {
-        const char *key;
-        json_t *value;
-
-        key = json_object_iter_key(iter);
-        value = json_object_iter_value(iter);
+    json_object_foreach(object, key, value)
         json_object_set_nocheck(result, key, value);
-
-        iter = json_object_iter_next(object, iter);
-    }
 
     return result;
 }
@@ -269,24 +253,16 @@ static json_t *json_object_copy(json_t *object)
 static json_t *json_object_deep_copy(json_t *object)
 {
     json_t *result;
-    void *iter;
+
+    const char *key;
+    json_t *value;
 
     result = json_object();
     if(!result)
         return NULL;
 
-    iter = json_object_iter(object);
-    while(iter)
-    {
-        const char *key;
-        json_t *value;
-
-        key = json_object_iter_key(iter);
-        value = json_object_iter_value(iter);
+    json_object_foreach(object, key, value)
         json_object_set_new_nocheck(result, key, json_deep_copy(value));
-
-        iter = json_object_iter_next(object, iter);
-    }
 
     return result;
 }

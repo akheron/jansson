@@ -40,6 +40,10 @@ typedef struct hashtable {
     struct hashtable_list list;
 } hashtable_t;
 
+
+#define hashtable_key_to_iter(key_) \
+    (&(container_of(key_, struct hashtable_pair, key)->list))
+
 /**
  * hashtable_init - Initialize a hashtable object
  *

@@ -565,6 +565,36 @@ Unicode string and the value is any JSON value.
    existing keys. Returns 0 on success or -1 on error.
 
 
+The following macro can be used to iterate through all key-value pairs
+in an object.
+
+.. function:: json_object_foreach(object, key, value)
+
+   Iterate over every key-value pair of ``object``, running the block
+   of code that follows each time with the proper values set to
+   variables ``key`` and ``value``, of types :type:`const char *` and
+   :type:`json_t *` respectively. Example::
+
+       /* obj is a JSON object */
+       const char *key;
+       json_t *value;
+
+       json_object_foreach(obj, key, value) {
+           /* block of code that uses key and value */
+       }
+
+   The items are not returned in any particular order.
+
+   This macro expands to an ordinary ``for`` statement upon
+   preprocessing, so its performance is equivalent to that of
+   hand-written iteration code using the object iteration protocol
+   (see below). The main advantage of this macro is that it abstracts
+   away the complexity behind iteration, and makes for shorter, more
+   concise code.
+
+   .. versionadded:: 2.3
+
+
 The following functions implement an iteration protocol for objects,
 allowing to iterate through all key-value pairs in an object. The
 items are not returned in any particular order, as this would require
@@ -610,11 +640,21 @@ sorting due to the internal hashtable implementation.
    *value*. This is useful when *value* is newly created and not used
    after the call.
 
+.. function:: void *json_object_key_to_iter(const char *key)
+
+   Like :func:`json_object_iter_at()`, but much faster. Only works for
+   values returned by :func:`json_object_iter_key()`. Using other keys
+   will lead to segfaults. This function is used internally to
+   implement :func:`json_object_foreach`.
+
+   .. versionadded:: 2.3
+
 The iteration protocol can be used for example as follows::
 
    /* obj is a JSON object */
    const char *key;
    json_t *value;
+
    void *iter = json_object_iter(obj);
    while(iter)
    {
