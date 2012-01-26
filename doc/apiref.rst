@@ -1035,6 +1035,8 @@ denotes the C type that is expected as the corresponding argument.
     fourth, etc. format character represent a value. Any value may be
     an object or array, i.e. recursive value building is supported.
 
+Whitespace, ``:`` and ``,`` are ignored.
+
 The following functions compose the value building API:
 
 .. function:: json_t *json_pack(const char *fmt, ...)
@@ -1142,6 +1144,11 @@ type whose address should be passed.
     ``fmt`` may contain objects and arrays as values, i.e. recursive
     value extraction is supporetd.
 
+    .. versionadded:: 2.3
+       Any ``s`` representing a key may be suffixed with a ``?`` to
+       make the key optional. If the key is not found, nothing is
+       extracted. See below for an example.
+
 ``!``
     This special format character is used to enable the check that
     all object and array items are accessed, on a per-value basis. It
@@ -1155,6 +1162,8 @@ type whose address should be passed.
     strict check on a per-value basis. It must appear inside an array
     or object as the last format character before the closing bracket
     or brace.
+
+Whitespace, ``:`` and ``,`` are ignored.
 
 The following functions compose the parsing and validation API:
 
@@ -1221,6 +1230,13 @@ Examples::
     int myint1, myint2;
     json_unpack(root, "[ii!]", &myint1, &myint2);
     /* returns -1 for failed validation */
+
+    /* root is an empty JSON object */
+    int myint = 0, myint2 = 0;
+    json_unpack(root, "{s?i, s?[ii]}",
+                "foo", &myint1,
+                "bar", &myint2, &myint3);
+    /* myint1, myint2 or myint3 is no touched as "foo" and "bar" don't exist */
 
 
 Equality
