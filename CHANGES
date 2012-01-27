@@ -1,3 +1,51 @@
+Version 2.3
+===========
+
+Released 2012-01-27
+
+* New features:
+
+  - `json_unpack()` and friends: Add support for optional object keys
+    with the ``{s?o}`` syntax.
+
+  - Add `json_object_update_existing()` and
+    `json_object_update_missing()`, for updating only existing keys or
+    only adding missing keys to an object. (#37)
+
+  - Add `json_object_foreach()` for more convenient iteration over
+    objects. (#45, #46)
+
+  - When decoding JSON, write the number of bytes that were read from
+    input to ``error.position`` also on success. This is handy with
+    ``JSON_DISABLE_EOF_CHECK``.
+
+  - Add support for decoding any JSON value, not just arrays or
+    objects. The support is enabled with the new ``JSON_DECODE_ANY``
+    flag. Patch by Andrea Marchesini. (#4)
+
+* Bug fixes
+
+  - Avoid problems with object's serial number growing too big. (#40,
+    #41)
+
+  - Decoding functions now return NULL if the first argument is NULL.
+    Patch by Andrea Marchesini.
+
+  - Include ``jansson_config.h.win32`` in the distribution tarball.
+
+  - Remove ``+`` and leading zeros from exponents in the encoder.
+    (#39)
+
+  - Make Jansson build and work on MinGW. (#39, #38)
+
+* Documentation
+
+  - Note that the same JSON values must not be encoded in parallel by
+    separate threads. (#42)
+
+  - Document MinGW support.
+
+
 Version 2.2.1
 =============
 

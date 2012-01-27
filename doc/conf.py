@@ -48,7 +48,7 @@ copyright = u'2009-2011, Petri Lehtinen'
 # built documents.
 #
 # The short X.Y version.
-version = '2.2.1'
+version = '2.3'
 # The full version, including alpha/beta/rc tags.
 release = version
 
