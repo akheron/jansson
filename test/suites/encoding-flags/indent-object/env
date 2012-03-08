@@ -1,1 +1,2 @@
-export JSON_INDENT=4
+JSON_INDENT=4
+export JSON_INDENT
