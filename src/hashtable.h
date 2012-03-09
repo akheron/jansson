@@ -23,6 +23,7 @@ struct hashtable_list {
 struct hashtable_pair {
     size_t hash;
     struct hashtable_list list;
+    struct hashtable_list iter; /* insertion-order iteration */
     json_t *value;
     size_t serial;
     char key[1];
@@ -33,16 +34,22 @@ struct hashtable_bucket {
     struct hashtable_list *last;
 };
 
+struct hashtable_iter {
+    struct hashtable_list *first;
+    struct hashtable_list *last;
+};
+
 typedef struct hashtable {
     size_t size;
     struct hashtable_bucket *buckets;
+    struct hashtable_iter iter;
     size_t num_buckets;  /* index to primes[] */
     struct hashtable_list list;
 } hashtable_t;
 
 
 #define hashtable_key_to_iter(key_) \
-    (&(container_of(key_, struct hashtable_pair, key)->list))
+    (&(container_of(key_, struct hashtable_pair, key)->iter))
 
 /**
  * hashtable_init - Initialize a hashtable object
