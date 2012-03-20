@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2009-2011 Petri Lehtinen <petri@digip.org>
- * Copyright (c) 2011 Graeme Smecher <graeme.smecher@mail.mcgill.ca>
+ * Copyright (c) 2009-2012 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2011-2012 Graeme Smecher <graeme.smecher@mail.mcgill.ca>
  *
  * Jansson is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
