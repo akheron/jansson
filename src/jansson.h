@@ -232,7 +232,7 @@ json_t *json_deep_copy(json_t *value);
 #define JSON_DISABLE_EOF_CHECK 0x2
 #define JSON_DECODE_ANY        0x4
 
-typedef int (*json_load_callback_t)(void *);
+typedef int (*json_load_callback_t)(const char **buffer, size_t *buflen, void *data); /* return 0 if failed */
 
 json_t *json_loads(const char *input, size_t flags, json_error_t *error);
 json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error);

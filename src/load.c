@@ -991,10 +991,43 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
     return result;
 }
 
-json_t *json_load_callback(json_load_callback_t callback, void *data, size_t flags, json_error_t *error)
+typedef struct
+{
+    const char *data;
+    size_t len;
+    size_t pos;
+    json_load_callback_t callback;
+    void *arg;
+} callback_data_t;
+
+static int callback_get(void *data)
+{
+    char c;
+    callback_data_t *stream = data;
+    
+    if(stream->pos >= stream->len) {
+        stream->data = NULL;
+        stream->len = 0;
+        stream->pos = 0;
+        if (!stream->callback(&stream->data, &stream->len, stream->arg) || stream->len == 0)
+            return EOF;
+    }
+
+    c = stream->data[stream->pos];
+    stream->pos++;
+    return (unsigned char)c;
+}
+
+json_t *json_load_callback(json_load_callback_t callback, void *arg, size_t flags, json_error_t *error)
 {
     lex_t lex;
     json_t *result;
+
+    callback_data_t stream_data;
+
+    memset(&stream_data, 0, sizeof(stream_data));
+    stream_data.callback = callback;
+    stream_data.arg = arg;
 
     jsonp_error_init(error, "<callback>");
 
@@ -1003,7 +1036,7 @@ json_t *json_load_callback(json_load_callback_t callback, void *data, size_t fla
         return NULL;
     }
 
-    if(lex_init(&lex, (get_func)callback, data))
+    if(lex_init(&lex, (get_func)callback_get, &stream_data))
         return NULL;
 
     result = parse_json(&lex, flags, error);
