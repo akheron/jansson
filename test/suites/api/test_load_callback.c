@@ -18,13 +18,18 @@ struct my_source {
 
 static const char my_str[] = "[\"A\", {\"B\": \"C\", \"e\": false}, 1, null, \"foo\"]";
 
-static int my_reader(void *data)
+static int greedy_reader(void *buf, size_t buflen, void *arg)
 {
-    struct my_source *s = data;
-    if (s->off < s->cap)
-        return s->buf[s->off++];
-    else
-        return EOF;
+    struct my_source *s = arg;
+    if (buflen > s->cap - s->off)
+        buflen = s->cap - s->off;
+    if (buflen > 0) {
+        memcpy(buf, s->buf + s->off, buflen);
+        s->off += buflen;
+        return buflen;
+    } else {
+        return 0;
+    }
 }
 
 static void run_tests()
@@ -37,7 +42,7 @@ static void run_tests()
     s.cap = strlen(my_str);
     s.buf = my_str;
 
-    json = json_load_callback(my_reader, &s, 0, &error);
+    json = json_load_callback(greedy_reader, &s, 0, &error);
 
     if (!json)
         fail("json_load_callback failed on a valid callback");
@@ -47,7 +52,7 @@ static void run_tests()
     s.cap = strlen(my_str) - 1;
     s.buf = my_str;
 
-    json = json_load_callback(my_reader, &s, 0, &error);
+    json = json_load_callback(greedy_reader, &s, 0, &error);
     if (json) {
         json_decref(json);
         fail("json_load_callback should have failed on an incomplete stream, but it didn't");

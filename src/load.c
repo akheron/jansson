@@ -991,9 +991,11 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
     return result;
 }
 
+#define MAX_BUF_LEN 1024
+
 typedef struct
 {
-    const char *data;
+    char data[MAX_BUF_LEN];
     size_t len;
     size_t pos;
     json_load_callback_t callback;
@@ -1006,10 +1008,9 @@ static int callback_get(void *data)
     callback_data_t *stream = data;
     
     if(stream->pos >= stream->len) {
-        stream->data = NULL;
-        stream->len = 0;
         stream->pos = 0;
-        if (!stream->callback(&stream->data, &stream->len, stream->arg) || stream->len == 0)
+        stream->len = stream->callback(stream->data, MAX_BUF_LEN, stream->arg);
+        if (stream->len <=0)
             return EOF;
     }
 
