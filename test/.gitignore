@@ -14,3 +14,4 @@ suites/api/test_object
 suites/api/test_pack
 suites/api/test_simple
 suites/api/test_unpack
+suites/api/test_load_callback
