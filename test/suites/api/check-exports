@@ -58,6 +58,7 @@ json_load_callback
 json_equal
 json_copy
 json_deep_copy
+json_merge
 json_pack
 json_pack_ex
 json_vpack_ex

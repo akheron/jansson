@@ -266,6 +266,22 @@ int hashtable_set(hashtable_t *hashtable,
     return 0;
 }
 
+void *hashtable_getp(hashtable_t *hashtable, const char *key)
+{
+    pair_t *pair;
+    size_t hash;
+    bucket_t *bucket;
+
+    hash = hash_str(key);
+    bucket = &hashtable->buckets[hash % num_buckets(hashtable)];
+
+    pair = hashtable_find_pair(hashtable, bucket, key, hash);
+    if(!pair)
+        return NULL;
+
+    return &pair->value;
+}
+
 void *hashtable_get(hashtable_t *hashtable, const char *key)
 {
     pair_t *pair;

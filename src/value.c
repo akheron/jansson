@@ -62,6 +62,16 @@ size_t json_object_size(const json_t *json)
     return object->hashtable.size;
 }
 
+static json_t **json_object_getp(const json_t *json, const char *key)
+{
+    json_object_t *object;
+    if(!json_is_object(json))
+        return NULL;
+
+    object = json_to_object(json);
+    return hashtable_getp(&object->hashtable, key);
+}
+
 json_t *json_object_get(const json_t *json, const char *key)
 {
     json_object_t *object;
@@ -299,6 +309,21 @@ static json_t *json_object_deep_copy(json_t *object)
     return result;
 }
 
+static int json_object_merge(json_t *object, json_t *other, size_t flags)
+{
+    const char *key;
+    json_t *value;
+
+    json_object_foreach(object, key, value) {
+        if (json_object_get(other, key))
+            json_merge(json_object_getp(object, key), json_object_getp(other, key), flags);
+    }
+
+    if (!(flags & JSON_SKIP_MISSING))
+        json_object_update_missing(object, other);
+
+    return 0;
+}
 
 /*** array ***/
 
@@ -340,6 +365,19 @@ size_t json_array_size(const json_t *json)
         return 0;
 
     return json_to_array(json)->entries;
+}
+
+static json_t **json_array_getp(const json_t *json, size_t index)
+{
+    json_array_t *array;
+    if(!json_is_array(json))
+        return NULL;
+    array = json_to_array(json);
+
+    if(index >= array->entries)
+        return NULL;
+
+    return &array->table[index];
 }
 
 json_t *json_array_get(const json_t *json, size_t index)
@@ -596,6 +634,7 @@ static json_t *json_array_deep_copy(json_t *array)
 
     return result;
 }
+
 
 /*** string ***/
 
@@ -865,6 +904,65 @@ int json_equal(json_t *json1, json_t *json2)
     return 0;
 }
 
+
+/*** merging ***/
+
+static int json_is_conflict(const json_t *ours, const json_t *theirs)
+{
+    if (!ours || !theirs)
+        return -1;
+
+    if(json_typeof(ours) == json_typeof(theirs)
+            || (json_is_boolean(ours) && json_is_boolean(theirs))
+            || (json_is_null(ours) && json_is_null(theirs)))
+        return 0;
+    else
+        return 1;
+}
+
+int json_merge(json_t **ours, json_t **theirs, size_t flags)
+{
+    if(!ours || !theirs || json_is_conflict(*ours, *theirs))
+        return -1;
+
+    switch (json_typeof(*ours))
+    {
+        case JSON_OBJECT:
+            return json_object_merge(*ours, *theirs, flags);
+        case JSON_ARRAY:
+            if (flags & JSON_DEEP_IN_ARRAY) {
+                if (json_array_size(*ours) == json_array_size(*theirs)) {
+                    size_t i;
+                    for (i = 0; i < json_array_size(*ours); i++)
+                         json_merge(json_array_getp(*ours, i), json_array_getp(*theirs, i), flags);
+                }
+                return 0;
+            } else if (flags & JSON_SKIP_MISSING) {
+                return 0;
+            } else if (flags & JSON_SKIP_EXISTING) {
+                return json_array_extend(*ours, *theirs);
+            } else {
+                json_decref(*ours);
+                json_incref(*theirs);
+                *ours = *theirs;
+                return 0;
+            }
+        case JSON_STRING:
+        case JSON_INTEGER:
+        case JSON_REAL:
+        case JSON_TRUE:
+        case JSON_FALSE:
+        case JSON_NULL:
+            if (!(flags & JSON_SKIP_EXISTING)) {
+                json_decref(*ours);
+                json_incref(*theirs);
+                *ours = *theirs;
+            }
+            return 0;
+        default:
+            return -1;
+    }
+}
 
 /*** copying ***/
 

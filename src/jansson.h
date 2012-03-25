@@ -225,6 +225,13 @@ int json_equal(json_t *value1, json_t *value2);
 json_t *json_copy(json_t *value);
 json_t *json_deep_copy(json_t *value);
 
+/* merging */
+
+#define JSON_SKIP_MISSING   0x1
+#define JSON_SKIP_EXISTING  0x2
+#define JSON_DEEP_IN_ARRAY  0x4
+
+int json_merge(json_t **ours, json_t **theirs, size_t flags);
 
 /* decoding */
 
