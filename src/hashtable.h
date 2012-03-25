@@ -80,6 +80,19 @@ int hashtable_set(hashtable_t *hashtable,
                   const char *key, size_t serial,
                   json_t *value);
 
+
+
+/**
+ * hashtable_getp - Get the pointer to a value associated with a key
+ *
+ * @hashtable: The hashtable object
+ * @key: The key
+ *
+ * Returns pointer if it is found, or NULL otherwise.
+ */
+void *hashtable_getp(hashtable_t *hashtable, const char *key);
+
+
 /**
  * hashtable_get - Get a value associated with a key
  *
@@ -89,6 +102,7 @@ int hashtable_set(hashtable_t *hashtable,
  * Returns value if it is found, or NULL otherwise.
  */
 void *hashtable_get(hashtable_t *hashtable, const char *key);
+
 
 /**
  * hashtable_del - Remove a value from the hashtable

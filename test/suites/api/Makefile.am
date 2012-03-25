@@ -1,6 +1,7 @@
 EXTRA_DIST = run check-exports
 
 check_PROGRAMS = \
+	test_merge \
 	test_array \
 	test_copy \
 	test_dump \
@@ -28,6 +29,7 @@ test_object_SOURCES = test_object.c util.h
 test_pack_SOURCES = test_pack.c util.h
 test_simple_SOURCES = test_simple.c util.h
 test_unpack_SOURCES = test_unpack.c util.h
+test_merge_SOURCES = test_merge.c util.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_CFLAGS = -Wall -Werror
