@@ -18,7 +18,7 @@ struct my_source {
 
 static const char my_str[] = "[\"A\", {\"B\": \"C\", \"e\": false}, 1, null, \"foo\"]";
 
-static int greedy_reader(void *buf, size_t buflen, void *arg)
+static size_t greedy_reader(void *buf, size_t buflen, void *arg)
 {
     struct my_source *s = arg;
     if (buflen > s->cap - s->off)

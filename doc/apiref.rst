@@ -967,6 +967,34 @@ The following functions perform the actual JSON decoding.
    filled with information about the error. *flags* is described
    above.
 
+.. type:: json_load_callback_t
+
+   A typedef for a function that's called by
+   :func:`json_load_callback()` to read a chunk of input data::
+
+       typedef size_t (*json_load_callback_t)(void *buffer, size_t buflen, void *data);
+
+   *buffer* points to a buffer of *buflen* bytes, and *data* is the
+   corresponding :func:`json_load_callback()` argument passed through.
+
+   On error, the function should return ``(size_t)-1`` to abort the
+   decoding process. When there's no data left, it should return 0 to
+   report that the end of input has been reached.
+
+   .. versionadded:: 2.4
+
+.. function:: json_t *json_load_callback(json_load_callback_t callback, void *data, size_t flags, json_error_t *error)
+
+   .. refcounting:: new
+
+   Decodes the JSON text produced by repeated calls to *callback*, and
+   returns the array or object it contains, or *NULL* on error, in
+   which case *error* is filled with information about the error.
+   *data* is passed through to *callback* on each call. *flags* is
+   described above.
+
+   .. versionadded:: 2.4
+
 
 .. _apiref-pack:
 
