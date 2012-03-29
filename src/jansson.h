@@ -132,6 +132,14 @@ int json_object_clear(json_t *object);
 int json_object_update(json_t *object, json_t *other);
 int json_object_update_existing(json_t *object, json_t *other);
 int json_object_update_missing(json_t *object, json_t *other);
+
+#define JSON_SKIP_NEW_KEYS  0x01
+#define JSON_SKIP_OLD_KEYS  0x02
+#define JSON_SAME_TYPE_ONLY 0x04
+#define JSON_EXTEND_ARRAY   0x08
+#define JSON_DEEP_IN_ARRAY  0x10
+
+int json_object_deep_update(json_t *object, json_t *other, size_t flags);
 void *json_object_iter(json_t *object);
 void *json_object_iter_at(json_t *object, const char *key);
 void *json_object_key_to_iter(const char *key);
@@ -171,6 +179,7 @@ int json_array_insert_new(json_t *array, size_t index, json_t *value);
 int json_array_remove(json_t *array, size_t index);
 int json_array_clear(json_t *array);
 int json_array_extend(json_t *array, json_t *other);
+int json_array_deep_update(json_t *array, json_t *other, size_t flags);
 
 static JSON_INLINE
 int json_array_set(json_t *array, size_t index, json_t *value)
