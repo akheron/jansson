@@ -640,8 +640,7 @@ int json_array_deep_update(json_t *array, json_t *other, size_t flags)
     size_t i;
     json_t *value, *other_value;
 
-    if(!json_is_array(array) || !json_is_array(other) || json_array_size(array) != json_array_size(other)
-        || !(flags & JSON_DEEP_IN_ARRAY))
+    if(!json_is_array(array) || !json_is_array(other) || json_array_size(array) != json_array_size(other))
         return -1;
 
     for(i = 0; i < json_array_size(array); i++) {
