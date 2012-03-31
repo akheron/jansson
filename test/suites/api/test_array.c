@@ -340,6 +340,44 @@ static void test_extend(void)
     json_decref(array2);
 }
 
+static void test_update()
+{
+    json_t *origin, *theirs, *ours, *updated, *shorter, *longer;
+
+    origin = json_pack("[{si}{si}]", "o", 11, "o", 21);
+    theirs = json_pack("[{si}{si}]", "n", 12, "n", 22);
+    shorter = json_pack("[{si}]", "n", 12);
+    longer = json_pack("[{si}{si}{si}]", "n", 12, "n", 22, "n", 32);
+
+    ours = json_deep_copy(origin);
+    updated = json_pack("[{sisi}{sisi}]", "o", 11, "n", 12, "o", 21, "n", 22);
+    if(json_array_deep_update(ours, theirs, JSON_DEEP_IN_ARRAY) || !json_equal(ours, updated)) {
+        compare(ours, updated);
+        fail("array update failed");
+    }
+    json_decref(ours);
+
+    ours = json_deep_copy(origin);
+    if(json_array_deep_update(ours, shorter, JSON_DEEP_IN_ARRAY) != -1) {
+        compare(ours, theirs);
+        fail("array update fails to reject shorter one");
+    }
+    json_decref(ours);
+
+
+    ours = json_deep_copy(origin);
+    if(json_array_deep_update(ours, longer, JSON_DEEP_IN_ARRAY) != -1) {
+        compare(ours, theirs);
+        fail("array update fails to reject longer one");
+    }
+    json_decref(ours);
+
+    json_decref(theirs);
+    json_decref(origin);
+    json_decref(shorter);
+    json_decref(longer);
+}
+
 static void test_circular()
 {
     json_t *array1, *array2;
@@ -394,5 +432,6 @@ static void run_tests()
     test_remove();
     test_clear();
     test_extend();
+    test_update();
     test_circular();
 }

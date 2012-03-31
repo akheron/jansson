@@ -139,6 +139,115 @@ static void test_update()
     json_decref(object);
 }
 
+static void test_deep_update()
+{
+    json_t *ours, *updated, *conflict;
+    json_t *origin = json_pack("{s:{si},s:{sisi}}", "o", "o.o", 10101, "b", "b.o", 30101, "b.b", 30301);
+    json_t *theirs = json_pack("{s:{si},s:{sisi}}", "n", "n.n", 20202, "b", "b.n", 30202, "b.b", 30302);
+
+    ours = json_deep_copy(origin);
+    updated = json_pack("{s:{si},s:{sisisi},s:{si}}"
+        , "o", "o.o", 10101, "b", "b.o", 30101, "b.n", 30202, "b.b", 30302, "n", "n.n", 20202);
+    if (json_object_deep_update(ours, theirs, 0) || !json_equal(ours, updated)){
+        compare(ours, updated);
+        fail("json_object_deep_udpate() fails to merge recursively");
+    }
+    json_decref(ours);
+    json_decref(updated);
+
+    ours = json_deep_copy(origin);
+    updated = json_pack("{s:{si},s:{sisi}}"
+        , "o", "o.o", 10101, "b", "b.o", 30101, "b.b", 30302);
+    if (json_object_deep_update(ours, theirs, JSON_SKIP_NEW_KEYS) || !json_equal(ours, updated)){
+        compare(ours, updated);
+        fail("json_object_deep_udpate() fails to skip missing recursively");
+    }
+    json_decref(ours);
+    json_decref(updated);
+
+    ours = json_deep_copy(origin);
+    updated = json_pack("{s:{si},s:{sisisi},s:{si}}"
+        , "o", "o.o", 10101, "b", "b.o", 30101, "b.n", 30202, "b.b", 30301, "n", "n.n", 20202);
+    if (json_object_deep_update(ours, theirs, JSON_SKIP_OLD_KEYS) || !json_equal(ours, updated)){
+        compare(ours, updated);
+        fail("json_object_deep_udpate() fails to skip existing recursively");
+    }
+    json_decref(ours);
+    json_decref(updated);
+
+    ours = json_deep_copy(origin);
+    if (json_object_deep_update(ours, theirs, JSON_SKIP_NEW_KEYS | JSON_SKIP_OLD_KEYS) || !json_equal(ours, origin)){
+        compare(ours, origin);
+        fail("json_object_deep_udpate() fails to skip all recursively");
+    }
+    json_decref(ours);
+
+    conflict = json_pack("{s:{ss}}", "b", "b.b", "type change");
+
+    ours = json_deep_copy(origin);
+    updated = json_pack("{s:{si},s:{siss}}", "o", "o.o", 10101, "b", "b.o", 30101, "b.b", "type change");
+    if (json_object_deep_update(ours, conflict, 0) || !json_equal(ours, updated)) {
+        compare(ours, updated);
+        fail("json_object_deep_update() fails to accept type change");
+    }
+    json_decref(updated);
+    json_decref(ours);
+
+    ours = json_deep_copy(origin);    
+    if (json_object_deep_update(ours, conflict, JSON_SAME_TYPE_ONLY) || !json_equal(ours, origin)) {
+        compare(ours, origin);
+        fail("json_object_deep_update() fails to reject type change");
+    }
+    json_decref(ours);
+
+    json_decref(origin);
+    json_decref(theirs);
+}
+
+static void test_deep_update_with_array()
+{
+    json_t *origin, *ours, *theirs, *narrow, *updated, *conflict;
+
+    origin = json_pack("{s:[{si},{si}]}", "b", "b.b", 30301, "b.b", 30301);
+    theirs = json_pack("{s:[{si},{si}]}", "b", "b.b", 30302, "b.b", 30302);
+    narrow = json_pack("{s:[{si},{si}]}", "b", "b.n", 30202, "b.n", 30202);
+    conflict = json_pack("{s:[{si},i]}", "b", "b.b", 30302, 30302);
+
+    ours = json_deep_copy(origin);
+    if(json_object_deep_update(ours, narrow, 0) || !json_equal(ours, narrow)){
+        compare(ours, theirs);
+        fail("json_object_deep_update() fails to do normal update");
+    }
+    json_decref(ours);
+        
+    ours = json_deep_copy(origin);
+    updated = json_pack("{s:[{si},{si},{si},{si}]}", "b", "b.b", 30301, "b.b", 30301, "b.b", 30302, "b.b", 30302);
+    if(json_object_deep_update(ours, theirs, JSON_EXTEND_ARRAY) || !json_equal(ours, updated)){
+        compare(ours, updated);
+        fail("json_object_deep_update() fails to extend array");
+    }
+    json_decref(ours);
+    json_decref(updated);
+
+    ours = json_deep_copy(origin);
+    if(json_object_deep_update(ours, theirs, JSON_DEEP_IN_ARRAY) || !json_equal(ours, theirs)){
+        compare(ours, theirs);
+        fail("json_object_deep_update() fails to deep in array");
+    }
+    json_decref(ours);
+
+    ours = json_deep_copy(origin);
+    updated = json_pack("{s:[{si},{si}]}", "b", "b.b", 30302, "b.b", 30301);
+    if(json_object_deep_update(ours, conflict, JSON_DEEP_IN_ARRAY) || !json_equal(ours, updated)){
+        compare(ours, updated);
+        fail("json_object_deep_update() fails to reject conflict when deep in array");
+    }
+    json_decref(updated);
+    json_decref(ours);
+
+    json_decref(origin);
+}
+
 static void test_conditional_updates()
 {
     json_t *object, *other;
@@ -502,6 +611,8 @@ static void run_tests()
     test_misc();
     test_clear();
     test_update();
+    test_deep_update();
+    test_deep_update_with_array();
     test_conditional_updates();
     test_circular();
     test_set_nocheck();

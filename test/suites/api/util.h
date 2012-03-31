@@ -60,6 +60,14 @@
         }                                                               \
     } while(0)
 
+#define compare(result, expect) \
+    do { \
+        char *r = json_dumps(result, JSON_INDENT(2)); \
+        char *e = json_dumps(expect, JSON_INDENT(2)); \
+        fprintf(stderr, "result:\n%s\nexpect:\n%s\n", r, e); \
+        free(r); \
+        free(e); \
+    } while(0)
 
 static void run_tests();
 

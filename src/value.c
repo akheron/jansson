@@ -181,6 +181,44 @@ int json_object_update_missing(json_t *object, json_t *other)
     return 0;
 }
 
+int json_object_deep_update(json_t *object, json_t *other, size_t flags)
+{
+    const char *key;
+    json_t *value;
+    json_t *other_value;
+
+    if(!json_is_object(object) || !json_is_object(other))
+        return -1;
+
+
+    json_object_foreach(object, key, value) {
+        other_value = json_object_get(other, key);
+        if (json_is_object(value) && json_is_object(other_value)) {
+            json_object_deep_update(value, other_value, flags);
+        } else if (json_is_array(value) && json_is_array(other_value)) {
+            if (flags & JSON_EXTEND_ARRAY)
+                json_array_extend(value, other_value);
+            else if (flags & JSON_DEEP_IN_ARRAY)
+                json_array_deep_update(value, other_value, flags);
+            else
+                json_object_set_nocheck(object, key, other_value);
+        } else if (flags & JSON_SAME_TYPE_ONLY) {
+            if ((json_is_boolean(value) && json_is_boolean(other_value))
+                    || (json_is_string(value) && json_is_string(other_value))
+                    || (json_is_number(value) && json_is_number(other_value)))
+                json_object_set_nocheck(object, key, other_value);
+        } else if (other_value && !(flags & JSON_SKIP_OLD_KEYS)){
+            json_object_set_nocheck(object, key, other_value);
+        }
+    }
+
+    if (!(flags & JSON_SKIP_NEW_KEYS)) {
+        json_object_update_missing(object, other);
+    }
+
+    return 0;
+}
+
 void *json_object_iter(json_t *json)
 {
     json_object_t *object;
@@ -597,6 +635,26 @@ static json_t *json_array_deep_copy(json_t *array)
     return result;
 }
 
+int json_array_deep_update(json_t *array, json_t *other, size_t flags)
+{
+    size_t i;
+    json_t *value, *other_value;
+
+    if(!json_is_array(array) || !json_is_array(other) || json_array_size(array) != json_array_size(other))
+        return -1;
+
+    for(i = 0; i < json_array_size(array); i++) {
+        value = json_array_get(array, i);
+        other_value = json_array_get(other, i);
+        if (json_is_object(value) && json_is_object(other_value))
+            json_object_deep_update(value, other_value, flags);
+        else if (json_is_array(value) && json_is_array(other_value))
+            json_array_deep_update(value, other_value, flags);
+    }
+
+    return 0;
+}
+
 /*** string ***/
 
 json_t *json_string_nocheck(const char *value)
@@ -922,3 +980,4 @@ json_t *json_deep_copy(json_t *json)
 
     return NULL;
 }
+

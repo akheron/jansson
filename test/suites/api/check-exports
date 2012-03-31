@@ -29,6 +29,7 @@ json_array_insert_new
 json_array_remove
 json_array_clear
 json_array_extend
+json_array_deep_update
 json_object
 json_object_size
 json_object_get
@@ -46,6 +47,7 @@ json_object_iter_key
 json_object_iter_value
 json_object_iter_set_new
 json_object_key_to_iter
+json_object_deep_update
 json_dumps
 json_dumpf
 json_dump_file
