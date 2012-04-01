@@ -29,12 +29,13 @@ static const char *type_names[] = {
     "real",
     "true",
     "false",
-    "null"
+    "null",
+    "bignum"
 };
 
 #define type_name(x) type_names[json_typeof(x)]
 
-static const char *unpack_value_starters = "{[siIbfFOon";
+static const char *unpack_value_starters = "{[siIbfFOonN";
 
 
 static void scanner_init(scanner_t *s, json_error_t *error,
@@ -211,6 +212,9 @@ static json_t *pack(scanner_t *s, va_list *ap)
 
         case 'o': /* a json_t object; doesn't increment refcount */
             return va_arg(*ap, json_t *);
+            
+        case 'N': /* Bignum from mp_int* */
+            return json_bignum(va_arg(*ap, mp_int *));
 
         default:
             set_error(s, "<format>", "Unexpected format character '%c'",
@@ -519,6 +523,21 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             }
             return 0;
 
+        case 'N':
+            if (root && !json_is_bignum(root)) {
+                set_error(s, "<validation>", "Expected bignum, got %s",
+                          type_name(root));
+                return -1;
+            }
+            if(!(s->flags & JSON_VALIDATE_ONLY)) {
+                mp_int *target = va_arg(*ap, mp_int *);
+                if (root)
+                {
+                    mp_copy(target, json_bignum_value(root));
+                }
+            }
+            return 0;
+            
         default:
             set_error(s, "<format>", "Unexpected format character '%c'",
                       s->token);

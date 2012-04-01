@@ -14,6 +14,8 @@
 
 #include <jansson_config.h>
 
+#include <tommath.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,14 +46,15 @@ typedef enum {
     JSON_REAL,
     JSON_TRUE,
     JSON_FALSE,
-    JSON_NULL
+    JSON_NULL,
+    JSON_BIGNUM
 } json_type;
 
 typedef struct {
     json_type type;
     size_t refcount;
 } json_t;
-
+    
 #if JSON_INTEGER_IS_LONG_LONG
 #ifdef _WIN32
 #define JSON_INTEGER_FORMAT "I64d"
@@ -70,11 +73,12 @@ typedef long json_int_t;
 #define json_is_string(json)   (json && json_typeof(json) == JSON_STRING)
 #define json_is_integer(json)  (json && json_typeof(json) == JSON_INTEGER)
 #define json_is_real(json)     (json && json_typeof(json) == JSON_REAL)
-#define json_is_number(json)   (json_is_integer(json) || json_is_real(json))
+#define json_is_number(json)   (json_is_integer(json) || json_is_real(json) || json_is_bignum(json))
 #define json_is_true(json)     (json && json_typeof(json) == JSON_TRUE)
 #define json_is_false(json)    (json && json_typeof(json) == JSON_FALSE)
 #define json_is_boolean(json)  (json_is_true(json) || json_is_false(json))
 #define json_is_null(json)     (json && json_typeof(json) == JSON_NULL)
+#define json_is_bignum(json)   (json && json_typeof(json) == JSON_BIGNUM)
 
 /* construction, destruction, reference counting */
 
@@ -87,7 +91,8 @@ json_t *json_real(double value);
 json_t *json_true(void);
 json_t *json_false(void);
 json_t *json_null(void);
-
+json_t *json_bignum(mp_int *value);
+    
 static JSON_INLINE
 json_t *json_incref(json_t *json)
 {
@@ -194,12 +199,13 @@ const char *json_string_value(const json_t *string);
 json_int_t json_integer_value(const json_t *integer);
 double json_real_value(const json_t *real);
 double json_number_value(const json_t *json);
+mp_int *json_bignum_value(const json_t *json);
 
 int json_string_set(json_t *string, const char *value);
 int json_string_set_nocheck(json_t *string, const char *value);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
-
+int json_bignum_set(json_t *bignum, mp_int *value);
 
 /* pack, unpack */
 
