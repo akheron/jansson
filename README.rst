@@ -22,7 +22,7 @@ Compilation and Installation
 ----------------------------
 
 If you obtained a source tarball, just use the standard autotools
-commands::
+commands
 
    $ ./configure
    $ make
@@ -52,6 +52,26 @@ HTML documentation, invoke::
 
 Then, point your browser to ``doc/_build/html/index.html``. Sphinx_
 1.0 or newer is required to generate the documentation.
+
+csm's Changes
+-------------
+
+My fork of this library currently adds two features to jansson that I
+needed for my usage:
+
+1. Preservation of insertion order in JSON objects, which also means that
+jansson will now preserve the order of object properties from objects it
+reads.
+
+2. Adds bignum support for integers larger than json_int_t via the libtommath
+library.
+
+The addendum to the compilation section above is that you'll need to set up
+libtommath by using the "boottrap_libtommath.sh" script.
+
+We did send a pull request for these features, but aren't bullish about
+getting them merged into master (and, relying on libtommath *does* add
+a dependency to this library, which some may dislike).
 
 
 .. _Jansson: http://www.digip.org/jansson/
