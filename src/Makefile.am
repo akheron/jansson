@@ -21,8 +21,11 @@ libjansson_la_SOURCES = \
 libjansson_la_LDFLAGS = \
 	-export-symbols-regex '^json_' \
 	-version-info 7:0:3
+libjansson_la_LIBADD = ../libtommath/libtommath.la
 
+AM_CFLAGS = -I${top_srcdir}/libtommath
 if GCC
 # These flags are gcc specific
-AM_CFLAGS = -Wall -Wextra -Wdeclaration-after-statement -Werror
+AM_CFLAGS += -Wall -Wextra -Wdeclaration-after-statement -Werror
 endif
+
