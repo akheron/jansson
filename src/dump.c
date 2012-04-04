@@ -65,24 +65,25 @@ static int dump_indent(size_t flags, int depth, int space, json_dump_callback_t 
     return 0;
 }
 
-static int dump_string(const char *str, json_dump_callback_t dump, void *data, size_t flags)
+static int dump_string(const char *str, size_t len, json_dump_callback_t dump, void *data, size_t flags)
 {
-    const char *pos, *end;
+    const char *pos, *end, *lim;
     int32_t codepoint;
 
     if(dump("\"", 1, data))
         return -1;
 
     end = pos = str;
+    lim = str + len;
     while(1)
     {
         const char *text;
         char seq[13];
         int length;
 
-        while(*end)
+        while(end < lim)
         {
-            end = utf8_iterate(pos, &codepoint);
+            end = utf8_iterate(pos, lim - pos, &codepoint);
             if(!end)
                 return -1;
 
@@ -215,7 +216,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
         }
 
         case JSON_STRING:
-            return dump_string(json_string_value(json), dump, data, flags);
+            return dump_string(json_string_value(json), json_string_length(json), dump, data, flags);
 
         case JSON_ARRAY:
         {
@@ -336,7 +337,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                     value = json_object_get(json, key);
                     assert(value);
 
-                    dump_string(key, dump, data, flags);
+                    dump_string(key, strlen(key), dump, data, flags);
                     if(dump(separator, separator_length, data) ||
                        do_dump(value, flags, depth + 1, dump, data))
                     {
@@ -372,8 +373,9 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 while(iter)
                 {
                     void *next = json_object_iter_next((json_t *)json, iter);
+                    const char *key = json_object_iter_key(iter);
 
-                    dump_string(json_object_iter_key(iter), dump, data, flags);
+                    dump_string(key, strlen(key), dump, data, flags);
                     if(dump(separator, separator_length, data) ||
                        do_dump(json_object_iter_value(iter), flags, depth + 1,
                                dump, data))
