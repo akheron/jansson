@@ -290,20 +290,23 @@ static json_t *pack(scanner_t *s, va_list *ap)
         case '[':
             return pack_array(s, ap);
 
-        case 's': { /* string */
-            char *str;
+        case 's': /* string */
+        case 'S': /* string and length */
+        {
+            const char *str;
+            size_t len;
             int ours;
-            json_t *result;
 
-            str = read_string(s, ap, "string", &ours);
+            str = read_string(s, *ap, "string", &ours);
             if(!str)
                 return NULL;
 
-            result = json_string_nocheck(str);
-            if(ours)
-                jsonp_free(str);
+            if(s->token == 'S')
+                len = va_arg(*ap, size_t);
+            else
+                len = strlen(str);
 
-            return result;
+            return json_string_nocheck_ex(str, len, ours ? JSON_STEAL : 0);
         }
 
         case 'n': /* null */
@@ -516,6 +519,7 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             return unpack_array(s, root, ap);
 
         case 's':
+        case 'S':
             if(root && !json_is_string(root)) {
                 set_error(s, "<validation>", "Expected string, got %s",
                           type_name(root));
@@ -523,16 +527,28 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             }
 
             if(!(s->flags & JSON_VALIDATE_ONLY)) {
-                const char **target;
+                const char **str_target;
+                size_t *len_target = NULL;
 
-                target = va_arg(*ap, const char **);
-                if(!target) {
+                str_target = va_arg(*ap, const char **);
+                if(!str_target) {
                     set_error(s, "<args>", "NULL string argument");
                     return -1;
                 }
 
-                if(root)
-                    *target = json_string_value(root);
+                if(s->token == 'S') {
+                    len_target = va_arg(*ap, size_t *);
+                    if(!len_target) {
+                        set_error(s, "<args>", "NULL string length argument");
+                        return -1;
+                    }
+                }
+
+                if(root) {
+                    *str_target = json_string_value(root);
+                    if(len_target)
+                        *len_target = json_string_len(root);
+                }
             }
             return 0;
 
