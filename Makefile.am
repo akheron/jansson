@@ -1,5 +1,5 @@
 EXTRA_DIST = CHANGES LICENSE README.rst
-SUBDIRS = doc src test
+SUBDIRS = doc libtommath src test
 
 # "make distcheck" builds the dvi target, so use it to check that the
 # documentation is built correctly.

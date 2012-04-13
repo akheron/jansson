@@ -773,6 +773,59 @@ static json_t *json_real_copy(json_t *real)
     return json_real(json_real_value(real));
 }
 
+/*** bignum ***/
+
+json_t *json_bignum(mp_int *value)
+{
+    json_bignum_t *num = (json_bignum_t *) jsonp_malloc(sizeof(json_bignum_t));
+    if (!num)
+        return NULL;
+    json_init(&num->json, JSON_BIGNUM);
+    mp_init(&num->value);
+    mp_copy(value, &num->value);
+    return &num->json;
+}
+
+mp_int *json_bignum_value(const json_t *num)
+{
+    if (!json_is_bignum(num))
+        return NULL;
+    
+    return &json_to_bignum(num)->value;
+}
+
+int json_bignum_set(json_t *num, mp_int *value)
+{
+    if (!json_is_bignum(num))
+        return -1;
+    
+    mp_copy(value, &json_to_bignum(num)->value);
+    
+    return 0;
+}
+
+static void json_delete_bignum(json_t *num)
+{
+    mp_clear(json_bignum_value(num));
+    jsonp_free(num);
+}
+
+static int json_bignum_equal(json_t *num1, json_t *num2)
+{
+    mp_int *a = json_bignum_value(num1);
+    mp_int *b = json_bignum_value(num2);
+    if (a == NULL || b == NULL)
+        return 0;
+    return mp_cmp(a, b) == 0;
+}
+
+static json_t *json_bignum_copy(const json_t *num)
+{
+    mp_int *i = json_bignum_value(num);
+    if (i == NULL)
+        return NULL;
+    return json_bignum(i);
+}
 
 /*** number ***/
 
@@ -782,6 +835,8 @@ double json_number_value(const json_t *json)
         return json_integer_value(json);
     else if(json_is_real(json))
         return json_real_value(json);
+    else if (json_is_bignum(json))
+        return mp_get_int(json_bignum_value(json)); /* may truncate the value */
     else
         return 0.0;
 }
@@ -829,6 +884,9 @@ void json_delete(json_t *json)
     else if(json_is_real(json))
         json_delete_real(json_to_real(json));
 
+    else if (json_is_bignum(json))
+        json_delete_bignum(json);
+    
     /* json_delete is not called for true, false or null */
 }
 
@@ -862,6 +920,9 @@ int json_equal(json_t *json1, json_t *json2)
     if(json_is_real(json1))
         return json_real_equal(json1, json2);
 
+    if (json_is_bignum(json1))
+        return json_bignum_equal(json1, json2);
+    
     return 0;
 }
 
@@ -891,6 +952,9 @@ json_t *json_copy(json_t *json)
     if(json_is_true(json) || json_is_false(json) || json_is_null(json))
         return json;
 
+    if (json_is_bignum(json))
+        return json_bignum_copy(json);
+    
     return NULL;
 }
 
@@ -920,5 +984,8 @@ json_t *json_deep_copy(json_t *json)
     if(json_is_true(json) || json_is_false(json) || json_is_null(json))
         return json;
 
+    if (json_is_bignum(json))
+        return json_bignum_copy(json);
+    
     return NULL;
 }

@@ -191,6 +191,27 @@ static int do_dump(const json_t *json, size_t flags, int depth,
 
             return dump(buffer, size, data);
         }
+            
+        case JSON_BIGNUM:
+        {
+            int size, ret;
+            char *decimal;
+            mp_int *value = json_bignum_value(json);
+            
+            if (mp_radix_size(value, 10, &size) != MP_OKAY)
+                return -1;
+            decimal = (char *) jsonp_malloc(size);
+            if (decimal == NULL)
+                return -1;
+            if (mp_toradix(value, decimal, 10) != MP_OKAY)
+            {
+                jsonp_free(decimal);
+                return -1;
+            }
+            ret = dump(decimal, size - 1, data);
+            free(decimal);
+            return ret;
+        }
 
         case JSON_REAL:
         {

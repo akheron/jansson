@@ -30,6 +30,7 @@
 #define TOKEN_TRUE           259
 #define TOKEN_FALSE          260
 #define TOKEN_NULL           261
+#define TOKEN_BIGNUM         262
 
 /* Locale independent versions of isxxx() functions */
 #define l_isupper(c)  ('A' <= c && c <= 'Z')
@@ -63,6 +64,7 @@ typedef struct {
         char *string;
         json_int_t integer;
         double real;
+        mp_int bignum;
     } value;
 } lex_t;
 
@@ -486,12 +488,23 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 
         errno = 0;
         value = json_strtoint(saved_text, &end, 10);
-        if(errno == ERANGE) {
-            if(value < 0)
-                error_set(error, lex, "too big negative integer");
-            else
-                error_set(error, lex, "too big integer");
-            goto out;
+        if(errno == ERANGE)
+        {
+            // Bignum
+            mp_int bignum;
+            mp_err bigerr;
+            mp_init(&bignum);
+            if ((bigerr = mp_read_radix(&bignum, saved_text, 10)) != MP_OKAY)
+            {
+                mp_clear(&bignum);
+                error_set(error, lex, mp_error_to_string(bigerr));
+                goto out;
+            }
+            lex->token = TOKEN_BIGNUM;
+            mp_init(&lex->value.bignum);
+            mp_copy(&bignum, &lex->value.bignum);
+            mp_clear(&bignum);
+            return 0;
         }
 
         assert(end == saved_text + lex->saved_text.length);
@@ -772,6 +785,12 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
 
         case TOKEN_INTEGER: {
             json = json_integer(lex->value.integer);
+            break;
+        }
+            
+        case TOKEN_BIGNUM: {
+            json = json_bignum(&lex->value.bignum);
+            mp_clear(&lex->value.bignum);
             break;
         }
 

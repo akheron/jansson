@@ -53,5 +53,6 @@ AC_CONFIG_FILES([
         test/bin/Makefile
         test/suites/Makefile
         test/suites/api/Makefile
+        libtommath/Makefile
 ])
 AC_OUTPUT

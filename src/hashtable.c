@@ -16,6 +16,9 @@ typedef struct hashtable_pair pair_t;
 typedef struct hashtable_bucket bucket_t;
 
 #define list_to_pair(list_)  container_of(list_, pair_t, list)
+#define iter_to_pair(iter_)  container_of(iter_, pair_t, iter)
+
+#define iter_init(iter_) ((iter_).first = (iter_).last = NULL)
 
 /* From http://www.cse.yorku.ca/~oz/hash.html */
 static size_t hash_str(const void *ptr)
@@ -48,10 +51,22 @@ static JSON_INLINE void list_insert(list_t *list, list_t *node)
     list->prev = node;
 }
 
+static JSON_INLINE void list_append(list_t *list, list_t *node)
+{
+    list_t *next = list->next;
+    list->next = node;
+    node->prev = list;
+    node->next = next;
+    if (next != NULL)
+        next->prev = node;
+}
+
 static JSON_INLINE void list_remove(list_t *list)
 {
-    list->prev->next = list->next;
-    list->next->prev = list->prev;
+    if (list->prev)
+        list->prev->next = list->next;
+    if (list->next)
+        list->next->prev = list->prev;
 }
 
 static JSON_INLINE int bucket_is_empty(hashtable_t *hashtable, bucket_t *bucket)
@@ -71,6 +86,25 @@ static void insert_to_bucket(hashtable_t *hashtable, bucket_t *bucket,
     {
         list_insert(bucket->first, list);
         bucket->first = list;
+    }
+}
+
+static JSON_INLINE int iter_is_empty(hashtable_t *hashtable)
+{
+    return hashtable->iter.first == NULL;
+}
+
+static void insert_to_iter(hashtable_t *hashtable, list_t *list)
+{
+    if (iter_is_empty(hashtable))
+    {
+        list->next = list->prev = NULL;
+        hashtable->iter.first = hashtable->iter.last = list;
+    }
+    else
+    {
+        list_append(hashtable->iter.last, list);
+        hashtable->iter.last = list;
     }
 }
 
@@ -135,8 +169,18 @@ static int hashtable_do_del(hashtable_t *hashtable,
 
     else if(&pair->list == bucket->last)
         bucket->last = pair->list.prev;
+    
+    if (&pair->iter == hashtable->iter.first && &pair->iter == hashtable->iter.last)
+        hashtable->iter.first = hashtable->iter.last = NULL;
+
+    else if (&pair->iter == hashtable->iter.first)
+        hashtable->iter.first = pair->iter.next;
+
+    else if (&pair->iter == hashtable->iter.last)
+        hashtable->iter.last = pair->iter.prev;
 
     list_remove(&pair->list);
+    list_remove(&pair->iter);
     json_decref(pair->value);
 
     jsonp_free(pair);
@@ -157,6 +201,8 @@ static void hashtable_do_clear(hashtable_t *hashtable)
         json_decref(pair->value);
         jsonp_free(pair);
     }
+
+    iter_init(hashtable->iter);
 }
 
 static int hashtable_do_rehash(hashtable_t *hashtable)
@@ -205,13 +251,13 @@ int hashtable_init(hashtable_t *hashtable)
         return -1;
 
     list_init(&hashtable->list);
+    iter_init(hashtable->iter);
 
     for(i = 0; i < num_buckets(hashtable); i++)
     {
         hashtable->buckets[i].first = hashtable->buckets[i].last =
             &hashtable->list;
     }
-
     return 0;
 }
 
@@ -258,11 +304,14 @@ int hashtable_set(hashtable_t *hashtable,
         strcpy(pair->key, key);
         pair->value = value;
         list_init(&pair->list);
+        list_init(&pair->iter);
 
         insert_to_bucket(hashtable, bucket, &pair->list);
+        insert_to_iter(hashtable, &pair->iter);
 
         hashtable->size++;
     }
+
     return 0;
 }
 
@@ -301,12 +350,13 @@ void hashtable_clear(hashtable_t *hashtable)
     }
 
     list_init(&hashtable->list);
+    hashtable->iter.first = hashtable->iter.last = NULL;
     hashtable->size = 0;
 }
 
 void *hashtable_iter(hashtable_t *hashtable)
 {
-    return hashtable_iter_next(hashtable, &hashtable->list);
+    return hashtable->iter.first;
 }
 
 void *hashtable_iter_at(hashtable_t *hashtable, const char *key)
@@ -322,39 +372,41 @@ void *hashtable_iter_at(hashtable_t *hashtable, const char *key)
     if(!pair)
         return NULL;
 
-    return &pair->list;
+    return &pair->iter;
 }
 
 void *hashtable_iter_next(hashtable_t *hashtable, void *iter)
 {
     list_t *list = (list_t *)iter;
-    if(list->next == &hashtable->list)
+    (void) hashtable;
+    if(list->next == NULL)
         return NULL;
     return list->next;
 }
 
 void *hashtable_iter_key(void *iter)
 {
-    pair_t *pair = list_to_pair((list_t *)iter);
+    pair_t *pair = iter_to_pair((list_t *)iter);
     return pair->key;
 }
 
 size_t hashtable_iter_serial(void *iter)
 {
-    pair_t *pair = list_to_pair((list_t *)iter);
+    pair_t *pair = iter_to_pair((list_t *)iter);
     return pair->serial;
 }
 
 void *hashtable_iter_value(void *iter)
 {
-    pair_t *pair = list_to_pair((list_t *)iter);
+    pair_t *pair = iter_to_pair((list_t *)iter);
     return pair->value;
 }
 
 void hashtable_iter_set(void *iter, json_t *value)
 {
-    pair_t *pair = list_to_pair((list_t *)iter);
+    pair_t *pair = iter_to_pair((list_t *)iter);
 
     json_decref(pair->value);
     pair->value = value;
+
 }
