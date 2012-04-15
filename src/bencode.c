@@ -10,6 +10,8 @@
 #include "jansson_private.h"
 #include "strbuffer.h"
 
+#define json_isdigit(c) ('0' <= (c) && (c) <= '9')
+
 typedef ssize_t (*fill_func)(void *buf, size_t len, void *data);
 
 #define MAX_BUF_LEN     1024
@@ -123,6 +125,17 @@ static ssize_t search(stream_t *stream, int c)
     return ptr - stream->buffer;
 }
 
+static int validate_number(stream_t *stream, json_error_t *error)
+{
+    /* strtol functions allow extra spaces before the number */
+    int c = stream_peek(stream);
+    if (c != '-' && !json_isdigit(c)) {
+        error_set(error, stream, "invalid number: %c", c);
+        return -1;
+    }
+    return 0;
+}
+
 static char *parse_string(stream_t *stream, size_t flags,
                           json_error_t *error)
 {
@@ -139,6 +152,11 @@ static char *parse_string(stream_t *stream, size_t flags,
         error_set(error, stream, "unterminated string length");
         return NULL;
     }
+
+    if (validate_number(stream, error))
+        return NULL;
+
+    /* can overflow, but who cares? */
     length = strtoul(&stream->buffer[stream->pos], &endptr, 10);
     if (endptr != &stream->buffer[colon]) {
         error_set(error, stream, "invalid string length");
@@ -207,9 +225,21 @@ static json_t *parse_integer(stream_t *stream, size_t flags,
         error_set(error, stream, "unterminated integer");
         return NULL;
     }
+
+    if (validate_number(stream, error))
+        return NULL;
+
+    errno = 0;
     value = json_strtoint(&stream->buffer[stream->pos], &endptr, 10);
     if (endptr != &stream->buffer[end]) {
         error_set(error, stream, "invalid integer");
+        return NULL;
+    }
+    if(errno == ERANGE) {
+        if(value < 0)
+            error_set(error, stream, "too big negative integer");
+        else
+            error_set(error, stream, "too big integer");
         return NULL;
     }
     stream->pos = end + 1;
@@ -338,7 +368,7 @@ static json_t *parse_bencode(stream_t *stream, size_t flags,
         error_set(error, stream, "unexpected EOF");
         break;
     default:
-        if ('0' <= c && c <= '9') {
+        if (json_isdigit(c)) {
             string = parse_string(stream, flags, error);
             if (string) {
                 result = json_string_nocheck(string);
