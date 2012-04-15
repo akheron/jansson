@@ -130,11 +130,18 @@ int main(int argc, char *argv[])
             used += count;
         }
 
-        json = json_loads(strip(buffer), 0, &error);
+        if(getenv_int("JSON_LOAD_BENCODE"))
+            json = json_bencode_loads(strip(buffer), 0, &error);
+        else
+            json = json_loads(strip(buffer), 0, &error);
         free(buffer);
     }
-    else
-        json = json_loadf(stdin, 0, &error);
+    else {
+        if(getenv_int("JSON_LOAD_BENCODE"))
+            json = json_bencode_loadf(stdin, 0, &error);
+        else
+            json = json_loadf(stdin, 0, &error);
+    }
 
     if(!json) {
         fprintf(stderr, "%d %d %d\n%s\n",

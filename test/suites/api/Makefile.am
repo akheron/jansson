@@ -14,7 +14,8 @@ check_PROGRAMS = \
 	test_object \
 	test_pack \
 	test_simple \
-	test_unpack
+	test_unpack \
+	test_bencode
 
 test_array_SOURCES = test_array.c util.h
 test_copy_SOURCES = test_copy.c util.h

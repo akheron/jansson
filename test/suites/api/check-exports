@@ -56,6 +56,9 @@ json_loadf
 json_load_file
 json_load_callback
 json_equal
+json_bencode_loadf
+json_bencode_loadb
+json_bencode_loads
 json_copy
 json_deep_copy
 json_pack

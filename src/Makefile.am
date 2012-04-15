@@ -17,7 +17,8 @@ libjansson_la_SOURCES = \
 	strconv.c \
 	utf.c \
 	utf.h \
-	value.c
+	value.c \
+	bencode.c
 libjansson_la_LDFLAGS = \
 	-export-symbols-regex '^json_' \
 	-version-info 7:0:3
