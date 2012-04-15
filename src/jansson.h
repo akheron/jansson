@@ -241,6 +241,12 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
 json_t *json_load_callback(json_load_callback_t callback, void *data, size_t flags, json_error_t *error);
 
 
+/* bencode */
+
+json_t *json_bencode_loads(const char *input, size_t flags, json_error_t *error);
+json_t *json_bencode_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error);
+json_t *json_bencode_loadf(FILE *input, size_t flags, json_error_t *error);
+
 /* encoding */
 
 #define JSON_INDENT(n)      (n & 0x1F)
