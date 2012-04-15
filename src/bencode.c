@@ -247,8 +247,7 @@ static json_t *parse_integer(stream_t *stream, size_t flags,
     return json_integer(value);
 }
 
-static json_t *parse_bencode(stream_t *stream, size_t flags,
-                             json_error_t *error);
+static json_t *parse_value(stream_t *stream, size_t flags, json_error_t *error);
 
 static json_t *parse_dict(stream_t *stream, size_t flags,
                           json_error_t *error)
@@ -284,7 +283,7 @@ static json_t *parse_dict(stream_t *stream, size_t flags,
             }
         }
 
-        value = parse_bencode(stream, flags, error);
+        value = parse_value(stream, flags, error);
         if (!value) {
             jsonp_free(key);
             goto error;
@@ -328,7 +327,7 @@ static json_t *parse_list(stream_t *stream, size_t flags,
         if (c == 'e')
             break;
 
-        elem = parse_bencode(stream, flags, error);
+        elem = parse_value(stream, flags, error);
         if (!elem)
             goto error;
 
@@ -346,8 +345,7 @@ error:
     return NULL;
 }
 
-static json_t *parse_bencode(stream_t *stream, size_t flags,
-                             json_error_t *error)
+static json_t *parse_value(stream_t *stream, size_t flags, json_error_t *error)
 {
     json_t *result = NULL;
     char *string;
@@ -376,6 +374,23 @@ static json_t *parse_bencode(stream_t *stream, size_t flags,
             }
         } else {
             error_set(error, stream, "invalid character: %c", c);
+        }
+    }
+    return result;
+}
+
+static json_t *parse_bencode(stream_t *stream, size_t flags,
+                             json_error_t *error)
+{
+    json_t *result = parse_value(stream, flags, error);
+    if (!result)
+        return NULL;
+
+    if (!(flags & JSON_DISABLE_EOF_CHECK)) {
+        if (stream_peek(stream) != EOF) {
+            error_set(error, stream, "end of file expected");
+            json_decref(result);
+            return NULL;
         }
     }
     return result;
