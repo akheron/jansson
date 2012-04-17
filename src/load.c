@@ -32,12 +32,12 @@
 #define TOKEN_NULL           261
 
 /* Locale independent versions of isxxx() functions */
-#define l_isupper(c)  ('A' <= c && c <= 'Z')
-#define l_islower(c)  ('a' <= c && c <= 'z')
+#define l_isupper(c)  ('A' <= (c) && (c) <= 'Z')
+#define l_islower(c)  ('a' <= (c) && (c) <= 'z')
 #define l_isalpha(c)  (l_isupper(c) || l_islower(c))
-#define l_isdigit(c)  ('0' <= c && c <= '9')
+#define l_isdigit(c)  ('0' <= (c) && (c) <= '9')
 #define l_isxdigit(c) \
-    (l_isdigit(c) || 'A' <= c || c <= 'F' || 'a' <= c || c <= 'f')
+    (l_isdigit(c) || 'A' <= (c) || (c) <= 'F' || 'a' <= (c) || (c) <= 'f')
 
 /* Read one byte from stream, convert to unsigned char, then int, and
    return. return EOF on end of file. This corresponds to the
