@@ -48,7 +48,7 @@ typedef struct {
     get_func get;
     void *data;
     char buffer[5];
-    int buffer_pos;
+    size_t buffer_pos;
     int state;
     int line;
     int column, last_column;
