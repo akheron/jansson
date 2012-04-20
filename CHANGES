@@ -1,3 +1,28 @@
+Version 2.3.1
+=============
+
+Released 2012-04-20
+
+* Build issues:
+
+  - Only use ``long long`` if ``strtoll()`` is also available.
+
+* Documentation:
+
+  - Fix the names of library version constants in documentation. (#52)
+
+  - Change the tutorial to use GitHub API v3. (#65)
+
+* Tests:
+
+  - Make some tests locale independent. (#51)
+
+  - Distribute the library exports test in the tarball.
+
+  - Make test run on shells that don't support the ``export FOO=bar``
+    syntax.
+
+
 Version 2.3
 ===========
 
