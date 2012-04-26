@@ -1101,7 +1101,7 @@ More examples::
   json_pack("{s:i, s:i}", "foo", 42, "bar", 7);
 
   /* Build the JSON array [[1, 2], {"cool": true}] */
-  json_pack("[[i,i],{s:b]]", 1, 2, "cool", 1);
+  json_pack("[[i,i],{s:b}]", 1, 2, "cool", 1);
 
 
 .. _apiref-unpack:
