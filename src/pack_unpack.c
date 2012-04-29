@@ -7,7 +7,7 @@
  */
 
 #include <string.h>
-#include <jansson.h>
+#include "jansson.h"
 #include "jansson_private.h"
 #include "utf.h"
 
@@ -431,7 +431,7 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             if(!(s->flags & JSON_VALIDATE_ONLY)) {
                 int *target = va_arg(*ap, int*);
                 if(root)
-                    *target = json_integer_value(root);
+                    *target = (int)json_integer_value(root);
             }
 
             return 0;

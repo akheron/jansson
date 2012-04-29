@@ -83,4 +83,10 @@ void* jsonp_malloc(size_t size);
 void jsonp_free(void *ptr);
 char *jsonp_strdup(const char *str);
 
+/* Windows compatibility */
+#ifdef _WIN32
+#define snprintf _snprintf
+#define vsnprintf _vsnprintf
+#endif
+
 #endif
