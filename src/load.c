@@ -443,10 +443,12 @@ out:
     jsonp_free(lex->value.string);
 }
 
+#ifndef JANSSON_USING_CMAKE /* disabled if using cmake */
 #if JSON_INTEGER_IS_LONG_LONG
 #define json_strtoint     strtoll
 #else
 #define json_strtoint     strtol
+#endif
 #endif
 
 static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
