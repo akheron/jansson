@@ -55,14 +55,14 @@ static void *secure_malloc(size_t size)
     /* Store the memory area size in the beginning of the block */
     void *ptr = malloc(size + 8);
     *((size_t *)ptr) = size;
-    return ptr + 8;
+    return (char *)ptr + 8;
 }
 
 static void secure_free(void *ptr)
 {
     size_t size;
 
-    ptr -= 8;
+    ptr = (char *)ptr - 8;
     size = *((size_t *)ptr);
 
     /*guaranteed_*/memset(ptr, 0, size);
