@@ -798,6 +798,11 @@ can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.1
 
+``JSON_ESCAPE_SLASH``
+   Escape the ``/`` characters in strings with ``\/``.
+
+   .. versionadded:: 2.4
+
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
 
