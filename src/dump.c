@@ -62,7 +62,7 @@ static int dump_indent(size_t flags, int depth, int space, json_dump_callback_t 
     return 0;
 }
 
-static int dump_string(const char *str, int ascii, json_dump_callback_t dump, void *data)
+static int dump_string(const char *str, int ascii, json_dump_callback_t dump, void *data, size_t flags)
 {
     const char *pos, *end;
     int32_t codepoint;
@@ -107,13 +107,20 @@ static int dump_string(const char *str, int ascii, json_dump_callback_t dump, vo
         switch(codepoint)
         {
             case '\\': text = "\\\\"; break;
-            case '/': text = "\\/"; break;
             case '\"': text = "\\\""; break;
             case '\b': text = "\\b"; break;
             case '\f': text = "\\f"; break;
             case '\n': text = "\\n"; break;
             case '\r': text = "\\r"; break;
             case '\t': text = "\\t"; break;
+            case '/':
+                if (flags & JSON_ESCAPE_SLASH)
+                    text = "\\/";
+                else {
+                    text = "/";
+                    length = 1;
+                }
+                break;
             default:
             {
                 /* codepoint is in BMP */
@@ -207,7 +214,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
         }
 
         case JSON_STRING:
-            return dump_string(json_string_value(json), ascii, dump, data);
+            return dump_string(json_string_value(json), ascii, dump, data, flags);
 
         case JSON_ARRAY:
         {
@@ -328,7 +335,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                     value = json_object_get(json, key);
                     assert(value);
 
-                    dump_string(key, ascii, dump, data);
+                    dump_string(key, ascii, dump, data, flags);
                     if(dump(separator, separator_length, data) ||
                        do_dump(value, flags, depth + 1, dump, data))
                     {
@@ -365,7 +372,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 {
                     void *next = json_object_iter_next((json_t *)json, iter);
 
-                    dump_string(json_object_iter_key(iter), ascii, dump, data);
+                    dump_string(json_object_iter_key(iter), ascii, dump, data, flags);
                     if(dump(separator, separator_length, data) ||
                        do_dump(json_object_iter_value(iter), flags, depth + 1,
                                dump, data))
