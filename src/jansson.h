@@ -249,6 +249,7 @@ json_t *json_load_callback(json_load_callback_t callback, void *data, size_t fla
 #define JSON_SORT_KEYS      0x80
 #define JSON_PRESERVE_ORDER 0x100
 #define JSON_ENCODE_ANY     0x200
+#define JSON_ESCAPE_SLASH   0x400
 
 typedef int (*json_dump_callback_t)(const char *buffer, size_t size, void *data);
 
