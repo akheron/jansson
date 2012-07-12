@@ -139,7 +139,7 @@ static void comments()
     json_t *json;
     json_error_t error;
 
-    json = json_loads(text, 0, &error);
+    json = json_loads(text, JSON_COMMENTS_ALLOWED, &error);
     if(!json)
         fail("json_load comments failed");
     json_decref(json);

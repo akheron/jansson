@@ -64,6 +64,7 @@ typedef struct {
         json_int_t integer;
         double real;
     } value;
+    int comments_allowed;
 } lex_t;
 
 #define stream_to_lex(stream) container_of(stream, lex_t, stream)
@@ -555,7 +556,6 @@ static int lex_skip_to_token(lex_t *lex, json_error_t *error)
 {
     while (1) {
         int c = lex_get(lex, error);
-
         switch(c) {
             /* skip space chars */
             case ' ': case '\t': case '\n': case '\r':
@@ -563,12 +563,13 @@ static int lex_skip_to_token(lex_t *lex, json_error_t *error)
 
             case '/':
             {
-                c = lex_get(lex, error);
+                if (!lex->comments_allowed)
+                    return c;
 
+                c = lex_get(lex, error);
                 if (c == '/') {
                     /* single-line comment */
                     int no = lex->stream.line;
-
                     /* skip to next line */
                     while (lex->stream.line == no) {
                         c = lex_get(lex, error);
@@ -581,10 +582,8 @@ static int lex_skip_to_token(lex_t *lex, json_error_t *error)
                     /* multi-line comment */
                     do {
                         c = lex_get(lex, error);
-
                         if (c == '*') {
                             c = lex_get(lex, error);
-
                             if (c == '/')
                                 break;
                         } else if (c == STREAM_STATE_EOF ||
@@ -595,7 +594,6 @@ static int lex_skip_to_token(lex_t *lex, json_error_t *error)
                     lex_unget(lex, c);
                     return '/';
                 }
-
                 break;
             }
 
@@ -684,13 +682,14 @@ static char *lex_steal_string(lex_t *lex)
     return result;
 }
 
-static int lex_init(lex_t *lex, get_func get, void *data)
+static int lex_init(lex_t *lex, get_func get, void *data, int comments)
 {
     stream_init(&lex->stream, get, data);
     if(strbuffer_init(&lex->saved_text))
         return -1;
 
     lex->token = TOKEN_INVALID;
+    lex->comments_allowed = comments;
     return 0;
 }
 
@@ -943,7 +942,8 @@ json_t *json_loads(const char *string, size_t flags, json_error_t *error)
     stream_data.data = string;
     stream_data.pos = 0;
 
-    if(lex_init(&lex, string_get, (void *)&stream_data))
+    if(lex_init(&lex, string_get, (void *)&stream_data,
+                flags & JSON_COMMENTS_ALLOWED))
         return NULL;
 
     result = parse_json(&lex, flags, error);
@@ -988,7 +988,8 @@ json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t
     stream_data.pos = 0;
     stream_data.len = buflen;
 
-    if(lex_init(&lex, buffer_get, (void *)&stream_data))
+    if(lex_init(&lex, buffer_get, (void *)&stream_data,
+                flags & JSON_COMMENTS_ALLOWED))
         return NULL;
 
     result = parse_json(&lex, flags, error);
@@ -1015,7 +1016,7 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
         return NULL;
     }
 
-    if(lex_init(&lex, (get_func)fgetc, input))
+    if(lex_init(&lex, (get_func)fgetc, input, flags & JSON_COMMENTS_ALLOWED))
         return NULL;
 
     result = parse_json(&lex, flags, error);
@@ -1096,7 +1097,8 @@ json_t *json_load_callback(json_load_callback_t callback, void *arg, size_t flag
         return NULL;
     }
 
-    if(lex_init(&lex, (get_func)callback_get, &stream_data))
+    if(lex_init(&lex, (get_func)callback_get, &stream_data,
+                flags & JSON_COMMENTS_ALLOWED))
         return NULL;
 
     result = parse_json(&lex, flags, error);
