@@ -126,6 +126,25 @@ static void position()
     json_decref(json);
 }
 
+static void comments()
+{
+    const char text[] = "/*\n"
+                        " * test * /\n"
+                        " */ { // bar\n"
+                        "/* first */\"foo\": \"bar\",// /*\n"
+                        "// second \n"
+                        "\"baz\": 42\n"
+                        "}/*end*///end";
+
+    json_t *json;
+    json_error_t error;
+
+    json = json_loads(text, 0, &error);
+    if(!json)
+        fail("json_load comments failed");
+    json_decref(json);
+}
+
 static void run_tests()
 {
     file_not_found();
@@ -134,4 +153,5 @@ static void run_tests()
     decode_any();
     load_wrong_args();
     position();
+    comments();
 }
