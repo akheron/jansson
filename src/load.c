@@ -551,6 +551,60 @@ out:
     return -1;
 }
 
+static int lex_skip_to_token(lex_t *lex, json_error_t *error)
+{
+    while (1) {
+        int c = lex_get(lex, error);
+
+        switch(c) {
+            /* skip space chars */
+            case ' ': case '\t': case '\n': case '\r':
+                continue;
+
+            case '/':
+            {
+                c = lex_get(lex, error);
+
+                if (c == '/') {
+                    /* single-line comment */
+                    int no = lex->stream.line;
+
+                    /* skip to next line */
+                    while (lex->stream.line == no) {
+                        c = lex_get(lex, error);
+
+                        if (c == STREAM_STATE_EOF ||
+                            c == STREAM_STATE_ERROR)
+                            return c;
+                    }
+                } else if (c == '*') {
+                    /* multi-line comment */
+                    do {
+                        c = lex_get(lex, error);
+
+                        if (c == '*') {
+                            c = lex_get(lex, error);
+
+                            if (c == '/')
+                                break;
+                        } else if (c == STREAM_STATE_EOF ||
+                                   c == STREAM_STATE_ERROR)
+                            return c;
+                    } while (1);
+                } else {
+                    lex_unget(lex, c);
+                    return '/';
+                }
+
+                break;
+            }
+
+            default:
+                return c;
+        }
+    }
+}
+
 static int lex_scan(lex_t *lex, json_error_t *error)
 {
     int c;
@@ -562,9 +616,7 @@ static int lex_scan(lex_t *lex, json_error_t *error)
         lex->value.string = NULL;
     }
 
-    c = lex_get(lex, error);
-    while(c == ' ' || c == '\t' || c == '\n' || c == '\r')
-        c = lex_get(lex, error);
+    c = lex_skip_to_token(lex, error);
 
     if(c == STREAM_STATE_EOF) {
         lex->token = TOKEN_EOF;
