@@ -205,7 +205,7 @@ Next we'll extract the commit ID (a hexadecimal SHA-1 sum),
 intermediate commit info object, and the commit message from that
 object. We also do proper type checks::
 
-        sha = json_object_get(commit, "sha");
+        sha = json_object_get(data, "sha");
         if(!json_is_string(sha))
         {
             fprintf(stderr, "error: commit %d: sha is not a string\n", i + 1);
