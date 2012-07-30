@@ -14,6 +14,22 @@ static void run_tests()
 {
     json_t *value;
 
+    value = json_boolean(1);
+    if(!json_is_true(value))
+        fail("json_boolean(1) failed");
+    json_decref(value);
+
+    value = json_boolean(-123);
+    if(!json_is_true(value))
+        fail("json_boolean(-123) failed");
+    json_decref(value);
+
+    value = json_boolean(0);
+    if(!json_is_false(value))
+        fail("json_boolean(0) failed");
+    json_decref(value);
+
+
     value = json_integer(1);
     if(json_typeof(value) != JSON_INTEGER)
         fail("json_typeof failed");

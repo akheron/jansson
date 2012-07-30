@@ -255,8 +255,8 @@ returns an error status.
 True, False and Null
 ====================
 
-These values are implemented as singletons, so each of these functions
-returns the same value each time.
+These three values are implemented as singletons, so the returned
+pointers won't change between invocations of these functions.
 
 .. function:: json_t *json_true(void)
 
@@ -269,6 +269,15 @@ returns the same value each time.
    .. refcounting:: new
 
    Returns the JSON false value.
+
+.. function:: json_t *json_boolean(val)
+
+   .. refcounting:: new
+
+   Returns JSON false if ``val`` is zero, and JSON true otherwise.
+   This is a macro, and equivalent to ``val ? json_true() :
+   json_false()``.
+
 
 .. function:: json_t *json_null(void)
 

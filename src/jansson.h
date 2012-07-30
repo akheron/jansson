@@ -86,6 +86,7 @@ json_t *json_integer(json_int_t value);
 json_t *json_real(double value);
 json_t *json_true(void);
 json_t *json_false(void);
+#define json_boolean(val)      ((val) ? json_true() : json_false())
 json_t *json_null(void);
 
 static JSON_INLINE
