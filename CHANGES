@@ -1,3 +1,32 @@
+Version 2.4 (in development)
+============================
+
+Released 2012-XX-XX
+
+* New features:
+
+  - Add `json_boolean()` macro that returns the JSON true or false
+    value based on its argument (#86).
+
+  - Add `json_load_callback()` that calls a callback function
+    repeatedly to read the JSON input (#57).
+
+  - Add JSON_ESCAPE_SLASH encoding flag to escape all occurences of
+    ``/`` with ``\/``.
+
+* Build:
+
+  - Jansson now builds on Windows with Visual Studio 2010, and
+    includes solution and project files in ``win32/vs2010/``
+    directory.
+
+  - Fix build warnings (#77, #78).
+
+* Documentation:
+
+  - Fix typos (#73, #84).
+
+
 Version 2.3.1
 =============
 
