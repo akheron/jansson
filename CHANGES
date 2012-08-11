@@ -22,6 +22,10 @@ Released 2012-XX-XX
 
   - Fix build warnings (#77, #78).
 
+* Tests:
+
+  - Fix the symbol exports test on Linux/PPC64 (#88).
+
 * Documentation:
 
   - Fix typos (#73, #84).
