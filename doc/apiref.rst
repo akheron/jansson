@@ -1233,7 +1233,7 @@ The following functions compose the parsing and validation API:
    modifying the structure or contents of a value reachable from
    ``root``.
 
-   If the ``O`` and ``o`` format character are not used, it's
+   If the ``O`` and ``o`` format characters are not used, it's
    perfectly safe to cast a ``const json_t *`` variable to plain
    ``json_t *`` when used with these functions.
 
