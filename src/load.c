@@ -490,7 +490,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         lex_unget_unsave(lex, c);
 
         saved_text = strbuffer_value(&lex->saved_text);
-
+#if JSON_HAVE_ERRNO
         errno = 0;
         value = json_strtoint(saved_text, &end, 10);
         if(errno == ERANGE) {
@@ -500,7 +500,9 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
                 error_set(error, lex, "too big integer");
             goto out;
         }
-
+#else
+		value = json_strtoint(saved_text, &end, 10);
+#endif
         assert(end == saved_text + lex->saved_text.length);
 
         lex->token = TOKEN_INTEGER;
@@ -987,9 +989,14 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
     fp = fopen(path, "rb");
     if(!fp)
     {
+#if JSON_HAVE_ERRNO
         error_set(error, NULL, "unable to open %s: %s",
                   path, strerror(errno));
-        return NULL;
+#else
+        error_set(error, NULL, "unable to open %s: %s",
+                  path, "");
+#endif
+		return NULL;
     }
 
     result = json_loadf(fp, flags, error);
