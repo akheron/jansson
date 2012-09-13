@@ -751,7 +751,7 @@ double json_real_value(const json_t *json)
 int json_real_set(json_t *json, double value)
 {
     if(!json_is_real(json))
-        return 0;
+        return -1;
 
     json_to_real(json)->value = value;
 
