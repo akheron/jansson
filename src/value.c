@@ -10,12 +10,20 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "jansson.h"
 #include "hashtable.h"
 #include "jansson_private.h"
 #include "utf.h"
 
+/* Work around nonstandard isnan() and isinf() implementations */
+#ifndef isnan
+static JSON_INLINE int isnan(double x) { return x != x; }
+#endif
+#ifndef isinf
+static JSON_INLINE int isinf(double x) { return !isnan(x) && isnan(x - x); }
+#endif
 
 static JSON_INLINE void json_init(json_t *json, json_type type)
 {
@@ -731,7 +739,12 @@ static json_t *json_integer_copy(json_t *integer)
 
 json_t *json_real(double value)
 {
-    json_real_t *real = jsonp_malloc(sizeof(json_real_t));
+    json_real_t *real;
+
+    if(isnan(value) || isinf(value))
+        return NULL;
+
+    real = jsonp_malloc(sizeof(json_real_t));
     if(!real)
         return NULL;
     json_init(&real->json, JSON_REAL);
@@ -750,7 +763,7 @@ double json_real_value(const json_t *json)
 
 int json_real_set(json_t *json, double value)
 {
-    if(!json_is_real(json))
+    if(!json_is_real(json) || isnan(value) || isinf(value))
         return -1;
 
     json_to_real(json)->value = value;
