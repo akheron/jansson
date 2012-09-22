@@ -278,6 +278,8 @@ pointers won't change between invocations of these functions.
    This is a macro, and equivalent to ``val ? json_true() :
    json_false()``.
 
+   .. versionadded:: 2.4
+
 
 .. function:: json_t *json_null(void)
 
