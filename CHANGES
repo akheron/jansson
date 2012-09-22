@@ -14,6 +14,13 @@ Released 2012-XX-XX
   - Add JSON_ESCAPE_SLASH encoding flag to escape all occurences of
     ``/`` with ``\/``.
 
+* Bug fixes:
+
+  - Check for and reject NaN and Inf values for reals. Encoding these
+    values resulted in invalid JSON.
+
+  - Fix `json_real_set()` to return -1 on error.
+
 * Build:
 
   - Jansson now builds on Windows with Visual Studio 2010, and
@@ -21,6 +28,8 @@ Released 2012-XX-XX
     directory.
 
   - Fix build warnings (#77, #78).
+
+  - Add ``-no-undefined`` to LDFLAGS (#90).
 
 * Tests:
 
