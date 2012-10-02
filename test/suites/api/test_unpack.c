@@ -134,9 +134,9 @@ static void run_tests()
      */
 
     j = json_integer(42);
-    if(!json_unpack_ex(j, &error, 0, "z"))
+    if(!json_unpack_ex(j, &error, 0, "g"))
         fail("json_unpack succeeded with invalid format character");
-    check_error("Unexpected format character 'z'", "<format>", 1, 1, 1);
+    check_error("Unexpected format character 'g'", "<format>", 1, 1, 1);
 
     if(!json_unpack_ex(NULL, &error, 0, "[i]"))
         fail("json_unpack succeeded with NULL root");

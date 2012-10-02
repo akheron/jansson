@@ -8,6 +8,7 @@
 #define _GNU_SOURCE
 #include <errno.h>
 #include <limits.h>
+#include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,6 +31,13 @@
 #define TOKEN_TRUE           259
 #define TOKEN_FALSE          260
 #define TOKEN_NULL           261
+#define TOKEN_BIGINTEGER     262
+#define TOKEN_BIGREAL        263
+
+/* big number functions */
+json_bigint_funcs_t* jsonp_biginteger_funcs = NULL;
+json_bigreal_funcs_t* jsonp_bigreal_funcs = NULL;
+ 
 
 /* Locale independent versions of isxxx() functions */
 #define l_isupper(c)  ('A' <= (c) && (c) <= 'Z')
@@ -63,10 +71,17 @@ typedef struct {
         char *string;
         json_int_t integer;
         double real;
+        json_bigz_t bigz;
+        json_bigr_t bigr;
     } value;
 } lex_t;
 
 #define stream_to_lex(stream) container_of(stream, lex_t, stream)
+
+/* forward references */
+static int lex_init(lex_t *, get_func, void *);
+static void lex_clear(lex_t *);
+static void lex_close(lex_t *);
 
 
 /*** error reporting ***/
@@ -456,12 +471,14 @@ out:
 #define json_strtoint     strtol
 #endif
 
-static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
+static int lex_scan_number(lex_t *lex, int c, size_t flags, json_error_t *error)
 {
+    json_context_t *ctx;
     const char *saved_text;
     char *end;
-    double value;
+    int significand_digits;
 
+    ctx = jsonp_context();
     lex->token = TOKEN_INVALID;
 
     if(c == '-')
@@ -471,6 +488,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         c = lex_get_save(lex, error);
         if(l_isdigit(c)) {
             lex_unget_unsave(lex, c);
+            error_set(error, lex, "invalid token");
             goto out;
         }
     }
@@ -485,26 +503,45 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
     }
 
     if(c != '.' && c != 'E' && c != 'e') {
-        json_int_t value;
 
         lex_unget_unsave(lex, c);
 
         saved_text = strbuffer_value(&lex->saved_text);
 
         errno = 0;
-        value = json_strtoint(saved_text, &end, 10);
-        if(errno == ERANGE) {
-            if(value < 0)
-                error_set(error, lex, "too big negative integer");
-            else
-                error_set(error, lex, "too big integer");
-            goto out;
+        
+        if( flags & JSON_USE_BIGINT_ALWAYS ) {
+            json_bigz_t bigvalue;
+            bigvalue = ctx->bigint.from_string_fn( saved_text );
+            lex->token = TOKEN_BIGINTEGER;
+            lex->value.bigz = bigvalue;
+        }
+        else {
+            json_int_t value;
+            
+            value = json_strtoint(saved_text, &end, 10);
+            if(errno == ERANGE) {
+                if( flags & JSON_USE_BIGINT ) {
+                    json_bigz_t bigvalue;
+                    bigvalue = ctx->bigint.from_string_fn( saved_text );
+                    lex->token = TOKEN_BIGINTEGER;
+                    lex->value.bigz = bigvalue;
+                }
+                else {
+                    if(value < 0)
+                        error_set(error, lex, "too big negative integer");
+                    else
+                        error_set(error, lex, "too big integer");
+                    goto out;
+                }
+            }
+            else {
+                assert(end == saved_text + lex->saved_text.length);
+                lex->token = TOKEN_INTEGER;
+                lex->value.integer = value;
+            }
         }
 
-        assert(end == saved_text + lex->saved_text.length);
-
-        lex->token = TOKEN_INTEGER;
-        lex->value.integer = value;
         return 0;
     }
 
@@ -519,6 +556,13 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         c = lex_get_save(lex, error);
         while(l_isdigit(c))
             c = lex_get_save(lex, error);
+    }
+
+    if( (flags & JSON_USE_BIGREAL) && ! (flags & JSON_USE_BIGREAL_ALWAYS) ) {
+    /* Determine digits of precision needed to store number before
+     * a partial loss of precision occurs.
+     */
+    significand_digits = jsonp_count_significand_digits(&lex->saved_text);
     }
 
     if(c == 'E' || c == 'e') {
@@ -538,29 +582,47 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 
     lex_unget_unsave(lex, c);
 
-    if(jsonp_strtod(&lex->saved_text, &value)) {
-        error_set(error, lex, "real number overflow");
-        goto out;
+    if( (flags & JSON_USE_BIGREAL_ALWAYS) ||
+        ((flags & JSON_USE_BIGREAL) && significand_digits+1 >= DBL_DIG) ) {
+        json_bigr_t bigvalue = NULL;
+        saved_text = strbuffer_value(&lex->saved_text);
+        bigvalue = ctx->bigreal.from_string_fn( saved_text );
+        lex->token = TOKEN_BIGREAL;
+        lex->value.bigr = bigvalue;
     }
-
-    lex->token = TOKEN_REAL;
-    lex->value.real = value;
+    else {
+        double value;
+        int rc;
+        rc = jsonp_strtod(&lex->saved_text, &value);
+        if( errno == ERANGE && (flags & JSON_USE_BIGREAL) ) {
+            /* overflow or underflow */
+            json_bigr_t bigvalue;
+            saved_text = strbuffer_value(&lex->saved_text);
+            bigvalue = ctx->bigreal.from_string_fn( saved_text );
+            lex->token = TOKEN_BIGREAL;
+            lex->value.bigr = bigvalue;
+        }
+        else if(rc != 0) {
+            error_set(error, lex, "real number overflow");
+            goto out;
+        }
+        else {
+            lex->token = TOKEN_REAL;
+            lex->value.real = value;
+        }
+    }
+    
     return 0;
 
 out:
     return -1;
 }
 
-static int lex_scan(lex_t *lex, json_error_t *error)
+static int lex_scan(lex_t *lex, size_t flags, json_error_t *error)
 {
     int c;
-
-    strbuffer_clear(&lex->saved_text);
-
-    if(lex->token == TOKEN_STRING) {
-        jsonp_free(lex->value.string);
-        lex->value.string = NULL;
-    }
+    
+    lex_clear(lex);
 
     c = lex_get(lex, error);
     while(c == ' ' || c == '\t' || c == '\n' || c == '\r')
@@ -585,7 +647,7 @@ static int lex_scan(lex_t *lex, json_error_t *error)
         lex_scan_string(lex, error);
 
     else if(l_isdigit(c) || c == '-') {
-        if(lex_scan_number(lex, c, error))
+        if(lex_scan_number(lex, c, flags, error))
             goto out;
     }
 
@@ -642,10 +704,31 @@ static int lex_init(lex_t *lex, get_func get, void *data)
     return 0;
 }
 
+static void lex_clear(lex_t *lex)
+{
+    if(lex->token == TOKEN_STRING) {
+        jsonp_free(lex->value.string);
+        lex->value.string = NULL;
+    }
+    else if(lex->token == TOKEN_BIGINTEGER) {
+        json_context_t *ctx = jsonp_context();
+        if( ctx->have_bigint )
+            ctx->bigint.delete_fn(lex->value.bigz);
+        lex->value.bigz = NULL;
+    }
+    else if(lex->token == TOKEN_BIGREAL) {
+        json_context_t *ctx = jsonp_context();
+        if( ctx->have_bigreal )
+            ctx->bigreal.delete_fn(lex->value.bigr);
+        lex->value.bigr = NULL;
+    }
+    
+    strbuffer_clear(&lex->saved_text);
+}
+
 static void lex_close(lex_t *lex)
 {
-    if(lex->token == TOKEN_STRING)
-        jsonp_free(lex->value.string);
+    lex_clear(lex);
     strbuffer_close(&lex->saved_text);
 }
 
@@ -660,7 +743,7 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
     if(!object)
         return NULL;
 
-    lex_scan(lex, error);
+    lex_scan(lex, flags, error);
     if(lex->token == '}')
         return object;
 
@@ -685,14 +768,14 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
             }
         }
 
-        lex_scan(lex, error);
+        lex_scan(lex, flags, error);
         if(lex->token != ':') {
             jsonp_free(key);
             error_set(error, lex, "':' expected");
             goto error;
         }
 
-        lex_scan(lex, error);
+        lex_scan(lex, flags, error);
         value = parse_value(lex, flags, error);
         if(!value) {
             jsonp_free(key);
@@ -708,11 +791,11 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
         json_decref(value);
         jsonp_free(key);
 
-        lex_scan(lex, error);
+        lex_scan(lex, flags, error);
         if(lex->token != ',')
             break;
 
-        lex_scan(lex, error);
+        lex_scan(lex, flags, error);
     }
 
     if(lex->token != '}') {
@@ -733,7 +816,7 @@ static json_t *parse_array(lex_t *lex, size_t flags, json_error_t *error)
     if(!array)
         return NULL;
 
-    lex_scan(lex, error);
+    lex_scan(lex, flags, error);
     if(lex->token == ']')
         return array;
 
@@ -748,11 +831,11 @@ static json_t *parse_array(lex_t *lex, size_t flags, json_error_t *error)
         }
         json_decref(elem);
 
-        lex_scan(lex, error);
+        lex_scan(lex, flags, error);
         if(lex->token != ',')
             break;
 
-        lex_scan(lex, error);
+        lex_scan(lex, flags, error);
     }
 
     if(lex->token != ']') {
@@ -779,6 +862,16 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
 
         case TOKEN_INTEGER: {
             json = json_integer(lex->value.integer);
+            break;
+        }
+
+        case TOKEN_BIGINTEGER: {
+            json = json_biginteger(lex->value.bigz);
+            break;
+        }
+        
+        case TOKEN_BIGREAL: {
+            json = json_bigreal(lex->value.bigr);
             break;
         }
 
@@ -824,9 +917,25 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
 
 static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
 {
+    json_context_t *ctx = jsonp_context();
     json_t *result;
-
-    lex_scan(lex, error);
+    
+    if( flags & JSON_USE_BIGINT_ALWAYS )
+        flags |= JSON_USE_BIGINT;
+    if( flags & JSON_USE_BIGREAL_ALWAYS )
+        flags |= JSON_USE_BIGREAL;
+    
+    if( (flags & JSON_USE_BIGINT) && !ctx->have_bigint ) {
+        error_set(error, lex, "Programming error: Not prepared to decode big integers");
+        return NULL;
+    }
+    if( (flags & JSON_USE_BIGREAL) && !ctx->have_bigreal ) {
+        error_set(error, lex, "Programming error: Not prepared to decode big reals");
+        return NULL;
+    }
+    
+    lex_scan(lex, flags, error);
+    
     if(!(flags & JSON_DECODE_ANY)) {
         if(lex->token != '[' && lex->token != '{') {
             error_set(error, lex, "'[' or '{' expected");
@@ -839,7 +948,7 @@ static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
         return NULL;
 
     if(!(flags & JSON_DISABLE_EOF_CHECK)) {
-        lex_scan(lex, error);
+        lex_scan(lex, flags, error);
         if(lex->token != TOKEN_EOF) {
             error_set(error, lex, "end of file expected");
             json_decref(result);

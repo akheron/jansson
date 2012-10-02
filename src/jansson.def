@@ -13,9 +13,15 @@ EXPORTS
     json_integer
     json_integer_value
     json_integer_set
+    json_biginteger
+    json_biginteger_set
+    json_biginteger_value
     json_real
     json_real_value
     json_real_set
+    json_bigreal
+    json_bigreal_set
+    json_bigreal_value
     json_number_value
     json_array
     json_array_size
@@ -62,4 +68,5 @@ EXPORTS
     json_unpack_ex
     json_vunpack_ex
     json_set_alloc_funcs
-
+    json_set_biginteger_funcs
+    json_set_bigreal_funcs

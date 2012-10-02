@@ -185,27 +185,103 @@ static int do_dump(const json_t *json, size_t flags, int depth,
         {
             char buffer[MAX_INTEGER_STR_LENGTH];
             int size;
+            int rc;
 
             size = snprintf(buffer, MAX_INTEGER_STR_LENGTH,
                             "%" JSON_INTEGER_FORMAT,
                             json_integer_value(json));
-            if(size < 0 || size >= MAX_INTEGER_STR_LENGTH)
-                return -1;
-
-            return dump(buffer, size, data);
+            if(size < 0 || size >= MAX_INTEGER_STR_LENGTH) {
+                rc = -1;
+            }
+            else {
+                rc = dump(buffer, size, data);
+            }
+            jsonp_overwrite(buffer, sizeof(buffer));
+            return rc;
         }
-
+        
+        case JSON_BIGINTEGER:
+        {
+            json_context_t *ctx;
+            json_bigz_const_t z;
+            int size;
+            int rc;
+            char buffer[MAX_INTEGER_STR_LENGTH * 5];
+            
+            ctx = jsonp_context();
+            if(!ctx->have_bigint)
+                return -1;
+            z = json_biginteger_value(json);
+            size = ctx->bigint.to_string_fn( z, buffer, sizeof(buffer));
+            
+            if(size >= (int)sizeof(buffer)) {
+                /* Buffer was too small, allocate a bigger one */
+                char* bigbuffer;
+                bigbuffer = jsonp_malloc( size + 4 /*extra for safety*/ );
+                if(!bigbuffer)
+                    return -1;
+                size = ctx->bigint.to_string_fn( z, bigbuffer, size);
+                rc = dump(bigbuffer, size, data);
+                jsonp_free( bigbuffer );
+            }
+            else {
+                rc = dump(buffer, size, data);
+            }
+            
+            jsonp_overwrite( buffer, sizeof(buffer) );
+            return rc;
+        }
+        
         case JSON_REAL:
         {
             char buffer[MAX_REAL_STR_LENGTH];
+            int rc;
             int size;
             double value = json_real_value(json);
 
             size = jsonp_dtostr(buffer, MAX_REAL_STR_LENGTH, value);
-            if(size < 0)
+            if(size < 0) {
+                rc = -1;
+            }
+            else {
+                rc = dump(buffer, size, data);
+            }
+            
+            jsonp_overwrite(buffer, sizeof(buffer));
+            value = 0.0;
+            return rc;
+        }
+        
+        case JSON_BIGREAL:
+        {
+            json_context_t *ctx;
+            json_bigr_const_t r;
+            int size;
+            int rc;
+            char buffer[MAX_REAL_STR_LENGTH * 5];
+            
+            ctx = jsonp_context();
+            if(!ctx->have_bigreal)
                 return -1;
-
-            return dump(buffer, size, data);
+            r = json_bigreal_value(json);
+            size = ctx->bigreal.to_string_fn(r, buffer, sizeof(buffer));
+            
+            if(size >= (int)sizeof(buffer)) {
+                /* Buffer was too small, allocate a bigger one */
+                char* bigbuffer;
+                bigbuffer = jsonp_malloc( size + 4 /*extra for safety*/ );
+                if(!bigbuffer)
+                    return -1;
+                size = ctx->bigreal.to_string_fn(r, bigbuffer, size);
+                rc = dump(bigbuffer, size, data);
+                jsonp_free( bigbuffer );
+            }
+            else {
+                rc = dump(buffer, size, data);
+            }
+            
+            jsonp_overwrite(buffer, sizeof(buffer));
+            return rc;
         }
 
         case JSON_STRING:
