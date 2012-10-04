@@ -78,11 +78,8 @@ typedef long json_int_t;
 #define JSON_BIGR_TYPE void
 #endif
 
-typedef JSON_BIGZ_TYPE * json_bigz_t;
-typedef JSON_BIGR_TYPE * json_bigr_t;
-typedef JSON_BIGZ_TYPE const * json_bigz_const_t;
-typedef JSON_BIGR_TYPE const * json_bigr_const_t;
-
+typedef JSON_BIGZ_TYPE json_bigz_t;
+typedef JSON_BIGR_TYPE json_bigr_t;
 
 #define json_typeof(json)      ((json)->type)
 #define json_is_object(json)   (json && json_typeof(json) == JSON_OBJECT)
@@ -114,8 +111,8 @@ json_t *json_true(void);
 json_t *json_false(void);
 #define json_boolean(val)      ((val) ? json_true() : json_false())
 json_t *json_null(void);
-json_t *json_biginteger(json_bigz_const_t value);
-json_t *json_bigreal(json_bigr_const_t value);
+json_t *json_biginteger(const json_bigz_t *value);
+json_t *json_bigreal(const json_bigr_t *value);
 
 static JSON_INLINE
 json_t *json_incref(json_t *json)
@@ -229,11 +226,11 @@ int json_string_set_nocheck(json_t *string, const char *value);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
 
-json_bigz_const_t json_biginteger_value(const json_t *biginteger);
-int json_biginteger_set(json_t *biginteger, json_bigz_const_t mpz);
+const json_bigz_t *json_biginteger_value(const json_t *biginteger);
+int json_biginteger_set(json_t *biginteger, const json_bigz_t *mpz);
 
-json_bigr_const_t json_bigreal_value(const json_t *bigreal);
-int json_bigreal_set(json_t *bigreal, json_bigr_const_t mpf);
+const json_bigr_t *json_bigreal_value(const json_t *bigreal);
+int json_bigreal_set(json_t *bigreal, const json_bigr_t *mpf);
 
 
 /* pack, unpack */
@@ -306,14 +303,14 @@ void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn);
 
 /* big integers */
 
-typedef json_bigz_t (*json_bigint_copy_t)(json_bigz_const_t bignum);
-typedef void (*json_bigint_del_t)(json_bigz_t bignum);
-typedef int (*json_bigint_cmp_t)(json_bigz_const_t bignum1,
-                                     json_bigz_const_t bignum2);
-typedef int (*json_bigint_to_str_t)(json_bigz_const_t bignum,
+typedef json_bigz_t *(*json_bigint_copy_t)(const json_bigz_t *bignum);
+typedef void (*json_bigint_del_t)(json_bigz_t *bignum);
+typedef int (*json_bigint_cmp_t)(const json_bigz_t *bignum1,
+                                     const json_bigz_t *bignum2);
+typedef int (*json_bigint_to_str_t)(const json_bigz_t *bignum,
                                      char *buffer, size_t size);
-typedef json_bigz_t (*json_bigint_from_str_t)(const char *value);
-typedef json_bigz_t (*json_bigint_from_int_t)(json_int_t value);
+typedef json_bigz_t *(*json_bigint_from_str_t)(const char *value);
+typedef json_bigz_t *(*json_bigint_from_int_t)(json_int_t value);
 
 typedef struct {
     json_bigint_copy_t copy_fn;
@@ -329,14 +326,14 @@ void json_set_biginteger_funcs(const json_bigint_funcs_t* functions);
 
 /* big reals */
 
-typedef json_bigr_t (*json_bigreal_copy_t)(json_bigr_const_t bigreal);
-typedef void (*json_bigreal_del_t)(json_bigr_t bigreal);
-typedef int (*json_bigreal_cmp_t)(json_bigr_const_t bigreal1,
-                 json_bigr_const_t bigreal2);
-typedef int (*json_bigreal_to_str_t)(json_bigr_const_t bigreal,
+typedef json_bigr_t *(*json_bigreal_copy_t)(const json_bigr_t *bigreal);
+typedef void (*json_bigreal_del_t)(json_bigr_t *bigreal);
+typedef int (*json_bigreal_cmp_t)(const json_bigr_t *bigreal1,
+                 const json_bigr_t *bigreal2);
+typedef int (*json_bigreal_to_str_t)(const json_bigr_t *bigreal,
                  char *buffer, size_t size);
-typedef json_bigr_t (*json_bigreal_from_str_t)(const char *value);
-typedef json_bigr_t (*json_bigreal_from_real_t)(double value);
+typedef json_bigr_t *(*json_bigreal_from_str_t)(const char *value);
+typedef json_bigr_t *(*json_bigreal_from_real_t)(double value);
 
 typedef struct {
     json_bigreal_copy_t copy_fn;

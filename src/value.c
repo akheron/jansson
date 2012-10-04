@@ -736,7 +736,7 @@ static json_t *json_integer_copy(json_t *integer)
 
 /*** big integer ***/
 
-json_t *json_biginteger(json_bigz_const_t value)
+json_t *json_biginteger(const json_bigz_t *value)
 {
     json_biginteger_t *bigint;
     json_context_t* ctx = jsonp_context();
@@ -753,7 +753,7 @@ json_t *json_biginteger(json_bigz_const_t value)
     return &bigint->json;
 }
 
-json_bigz_const_t json_biginteger_value(const json_t *json)
+const json_bigz_t *json_biginteger_value(const json_t *json)
 {
     if(!json_is_biginteger(json))
         return NULL;
@@ -761,7 +761,7 @@ json_bigz_const_t json_biginteger_value(const json_t *json)
     return json_to_biginteger(json)->value;
 }
 
-int json_biginteger_set(json_t* json, json_bigz_const_t value)
+int json_biginteger_set(json_t* json, const json_bigz_t *value)
 {
     json_context_t *ctx = jsonp_context();
 
@@ -813,8 +813,8 @@ static int json_anyinteger_equal(json_t* int1, json_t* int2)
 
     {
         json_context_t *ctx = jsonp_context();
-        json_bigz_const_t i1;
-        json_bigz_t i2;
+        const json_bigz_t *i1;
+        json_bigz_t *i2;
         int eq;
 
         if(!ctx->have_bigint)
@@ -889,7 +889,7 @@ static json_t *json_real_copy(json_t *real)
 
 /*** big real ***/
 
-json_t *json_bigreal(json_bigr_const_t value)
+json_t *json_bigreal(const json_bigr_t *value)
 {
     json_bigreal_t *bigreal;
     json_context_t *ctx = jsonp_context();
@@ -906,7 +906,7 @@ json_t *json_bigreal(json_bigr_const_t value)
     return &bigreal->json;
 }
 
-json_bigr_const_t json_bigreal_value(const json_t *json)
+const json_bigr_t *json_bigreal_value(const json_t *json)
 {
     if(!json_is_bigreal(json))
         return NULL;
@@ -914,7 +914,7 @@ json_bigr_const_t json_bigreal_value(const json_t *json)
     return json_to_bigreal(json)->value;
 }
 
-int json_bigreal_set(json_t* json, json_bigr_const_t value)
+int json_bigreal_set(json_t* json, const json_bigr_t *value)
 {
     json_context_t *ctx = jsonp_context();
 
@@ -966,8 +966,8 @@ static int json_anyreal_equal(json_t* real1, json_t* real2)
     
     {
         json_context_t *ctx = jsonp_context();
-        json_bigr_const_t r1;
-        json_bigr_t r2;
+        const json_bigr_t *r1;
+        json_bigr_t *r2;
         int eq;
         
         if(!ctx->have_bigreal)

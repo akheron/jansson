@@ -58,7 +58,7 @@ typedef struct {
 
 typedef struct {
     json_t json;
-    json_bigr_t value;
+    json_bigr_t *value;
 } json_bigreal_t;
 
 typedef struct {
@@ -68,7 +68,7 @@ typedef struct {
 
 typedef struct {
     json_t json;
-    json_bigz_t value;
+    json_bigz_t *value;
 } json_biginteger_t;
 
 

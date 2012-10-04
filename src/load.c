@@ -71,8 +71,8 @@ typedef struct {
         char *string;
         json_int_t integer;
         double real;
-        json_bigz_t bigz;
-        json_bigr_t bigr;
+        json_bigz_t *bigz;
+        json_bigr_t *bigr;
     } value;
 } lex_t;
 
@@ -511,7 +511,7 @@ static int lex_scan_number(lex_t *lex, int c, size_t flags, json_error_t *error)
         errno = 0;
         
         if( flags & JSON_USE_BIGINT_ALWAYS ) {
-            json_bigz_t bigvalue;
+            json_bigz_t *bigvalue;
             bigvalue = ctx->bigint.from_string_fn( saved_text );
             lex->token = TOKEN_BIGINTEGER;
             lex->value.bigz = bigvalue;
@@ -522,7 +522,7 @@ static int lex_scan_number(lex_t *lex, int c, size_t flags, json_error_t *error)
             value = json_strtoint(saved_text, &end, 10);
             if(errno == ERANGE) {
                 if( flags & JSON_USE_BIGINT ) {
-                    json_bigz_t bigvalue;
+                    json_bigz_t *bigvalue;
                     bigvalue = ctx->bigint.from_string_fn( saved_text );
                     lex->token = TOKEN_BIGINTEGER;
                     lex->value.bigz = bigvalue;
@@ -584,7 +584,7 @@ static int lex_scan_number(lex_t *lex, int c, size_t flags, json_error_t *error)
 
     if( (flags & JSON_USE_BIGREAL_ALWAYS) ||
         ((flags & JSON_USE_BIGREAL) && significand_digits+1 >= DBL_DIG) ) {
-        json_bigr_t bigvalue = NULL;
+        json_bigr_t *bigvalue = NULL;
         saved_text = strbuffer_value(&lex->saved_text);
         bigvalue = ctx->bigreal.from_string_fn( saved_text );
         lex->token = TOKEN_BIGREAL;
@@ -596,7 +596,7 @@ static int lex_scan_number(lex_t *lex, int c, size_t flags, json_error_t *error)
         rc = jsonp_strtod(&lex->saved_text, &value);
         if( errno == ERANGE && (flags & JSON_USE_BIGREAL) ) {
             /* overflow or underflow */
-            json_bigr_t bigvalue;
+            json_bigr_t *bigvalue;
             saved_text = strbuffer_value(&lex->saved_text);
             bigvalue = ctx->bigreal.from_string_fn( saved_text );
             lex->token = TOKEN_BIGREAL;

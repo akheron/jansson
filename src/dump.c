@@ -203,7 +203,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
         case JSON_BIGINTEGER:
         {
             json_context_t *ctx;
-            json_bigz_const_t z;
+            const json_bigz_t *z;
             int size;
             int rc;
             char buffer[MAX_INTEGER_STR_LENGTH * 5];
@@ -255,7 +255,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
         case JSON_BIGREAL:
         {
             json_context_t *ctx;
-            json_bigr_const_t r;
+            const json_bigr_t *r;
             int size;
             int rc;
             char buffer[MAX_REAL_STR_LENGTH * 5];
