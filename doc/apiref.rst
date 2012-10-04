@@ -177,6 +177,7 @@ functions:
 
    Returns true for values of types ``JSON_REAL`` and
    ``JSON_BIGREAL``, and false for other types and for *NULL*.
+
 .. function:: json_is_boolean(const json_t *json)
 
    Returns true for types ``JSON_TRUE`` and ``JSON_FALSE``, and false
@@ -916,34 +917,6 @@ is in UTF-8.
    On error, the function should return -1 to stop the encoding
    process. On success, it should return 0.
 
-   .. versionadded:: 2.4
-
-``JSON_USE_BIGINT``
-   This will enable the use of a big number package to be used to
-   store large integer values, assuming a suitable big number package
-   has been registered.  Only those JSON integers whose values can not
-   be stored in a :type:`json_int_t` will use the big number
-   extension.
-
-``JSON_USE_BIGINT_ALWAYS``
-   This flag implies ``JSON_USE_BIGINT`` and differs by using the big
-   number extension to store all JSON integers, even those that could
-   have otherwise been stored in a :type:`json_int_t`.
-
-``JSON_USE_BIGREAL``
-   This will enable the use of a big number package to be used to
-   store large real values, assuming a suitable big number package has
-   been registered.  Only those JSON reals whose values can not be
-   accurately stored in a :type:`json_real_t`, either because their
-   values or exponents are out of range or there would be a loss of
-   precision (dropped significant digits), will use the big number
-   extension.
-
-``JSON_USE_BIGREAL_ALWAYS``
-   This flag implies ``JSON_USE_BIGREAL`` and differs by using the big
-   number extension to store all JSON reals, even those that could
-   have otherwise been accurately stored in a :type:`json_real_t`.
-
    .. versionadded:: 2.2
 
 .. function:: int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags)
@@ -1013,6 +986,34 @@ macros can be ORed together to obtain *flags*.
    whitespace character.
 
    .. versionadded:: 2.1
+
+``JSON_USE_BIGINT``
+   This will enable the use of a big number package to be used to
+   store large integer values, assuming a suitable big number package
+   has been registered.  Only those JSON integers whose values can not
+   be stored in a :type:`json_int_t` will use the big number
+   extension.
+
+``JSON_USE_BIGINT_ALWAYS``
+   This flag implies ``JSON_USE_BIGINT`` and differs by using the big
+   number extension to store all JSON integers, even those that could
+   have otherwise been stored in a :type:`json_int_t`.
+
+``JSON_USE_BIGREAL``
+   This will enable the use of a big number package to be used to
+   store large real values, assuming a suitable big number package has
+   been registered.  Only those JSON reals whose values can not be
+   accurately stored in a :type:`json_real_t`, either because their
+   values or exponents are out of range or there would be a loss of
+   precision (dropped significant digits), will use the big number
+   extension.
+
+``JSON_USE_BIGREAL_ALWAYS``
+   This flag implies ``JSON_USE_BIGREAL`` and differs by using the big
+   number extension to store all JSON reals, even those that could
+   have otherwise been accurately stored in a :type:`json_real_t`.
+
+   .. versionadded:: 2.5
 
 Each function also takes an optional :type:`json_error_t` parameter
 that is filled with error information if decoding fails. It's also
@@ -1526,9 +1527,6 @@ behavior is needed.
    of :func:`free()`. This function has to be called before any other
    Jansson's API functions to ensure that all memory operations use
    the same functions.
-
-   Supplying *NULL* as the function pointer will restore the default
-   of using an internal :func:`memset()` based wrapper.
 
 Examples:
 
