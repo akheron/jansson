@@ -106,7 +106,11 @@ functions:
    +--------------------+
    | ``JSON_INTEGER``   |
    +--------------------+
+   | ``JSON_BIGINTEGER``|
+   +--------------------+
    | ``JSON_REAL``      |
+   +--------------------+
+   | ``JSON_BIGREAL``   |
    +--------------------+
    | ``JSON_TRUE``      |
    +--------------------+
@@ -116,10 +120,16 @@ functions:
    +--------------------+
 
    These correspond to JSON object, array, string, number, boolean and
-   null. A number is represented by either a value of the type
-   ``JSON_INTEGER`` or of the type ``JSON_REAL``. A true boolean value
-   is represented by a value of the type ``JSON_TRUE`` and false by a
-   value of the type ``JSON_FALSE``.
+   null. A number is represented by one of the values of type
+   ``JSON_INTEGER``, ``JSON_BIGINTEGER``, ``JSON_REAL``, or ``JSON_BIGREAL``.
+   A true boolean value is represented by a value of the type ``JSON_TRUE``
+   and false by a value of the type ``JSON_FALSE``.
+
+   The two big-number types, ``JSON_BIGINTEGER`` and ``JSON_BIGREAL``,
+   are used with add-on extensions to allow arbitrarily large or
+   high-precision numbers to be represented. Unless an extension is
+   provided and enabled using the big number extension API, these
+   types will not be used.
 
 .. function:: int json_typeof(const json_t *json)
 
@@ -131,7 +141,9 @@ functions:
                json_is_array(const json_t *json)
                json_is_string(const json_t *json)
                json_is_integer(const json_t *json)
+               json_is_biginteger(const json_t *json)
                json_is_real(const json_t *json)
+               json_is_bigreal(const json_t *json)
                json_is_true(const json_t *json)
                json_is_false(const json_t *json)
                json_is_null(const json_t *json)
@@ -144,6 +156,27 @@ functions:
 
    Returns true for values of types ``JSON_INTEGER`` and
    ``JSON_REAL``, and false for other types and for *NULL*.
+
+.. function:: json_is_bignumber(const json_t *json)
+
+   Returns true for values of types ``JSON_BIGINTEGER`` and
+   ``JSON_BIGREAL``, and false for other types and for *NULL*.
+
+.. function:: json_is_anynumber(const json_t *json)
+
+   Returns true for values of types ``JSON_INTEGER``,
+   ``JSON_BIGINTEGER``, ``JSON_REAL`` and ``JSON_BIGREAL``, and false
+   for other types and for *NULL*.
+
+.. function:: json_is_anyinteger(const json_t *json)
+
+   Returns true for values of types ``JSON_INTEGER`` and
+   ``JSON_BIGINTEGER``, and false for other types and for *NULL*.
+
+.. function:: json_is_anyreal(const json_t *json)
+
+   Returns true for values of types ``JSON_REAL`` and
+   ``JSON_BIGREAL``, and false for other types and for *NULL*.
 
 .. function:: json_is_boolean(const json_t *json)
 
@@ -341,20 +374,48 @@ Number
 The JSON specification only contains one numeric type, "number". The C
 programming language has distinct types for integer and floating-point
 numbers, so for practical reasons Jansson also has distinct types for
-the two. They are called "integer" and "real", respectively. For more
-information, see :ref:`rfc-conformance`.
+the two. They are called "integer" and "real", respectively.
+Additionally, Jansson provides an extension API to allow external
+packages to be used to represent arbitrarily large integers or
+arbitrarily high-precision real numbers.  So a JSON number may be
+represented by any of four different C types.
+
+For more information, see :ref:`rfc-conformance`.
 
 .. type:: json_int_t
 
-   This is the C type that is used to store JSON integer values. It
-   represents the widest integer type available on your system. In
-   practice it's just a typedef of ``long long`` if your compiler
-   supports it, otherwise ``long``.
+   This is the C type that is used to store JSON integer values in the
+   absence of a big number extension. It represents the widest integer
+   type available on your system. In practice it's just a typedef of
+   ``long long`` if your compiler supports it, otherwise ``long``.
 
    Usually, you can safely use plain ``int`` in place of
    ``json_int_t``, and the implicit C integer conversion handles the
    rest. Only when you know that you need the full 64-bit range, you
    should use ``json_int_t`` explicitly.
+
+.. type:: double
+
+   The C type ``double`` is used to store JSON real values in the
+   absence of a big number extension.
+
+   Note that the C type ``long double`` is only supported by using the
+   big number extension API.
+
+.. type:: json_bigz_t
+
+   This is an unspecified C type used to reference JSON
+   integer values that are stored using an external big number
+   package.
+
+.. type:: json_bigr_t
+
+   This is an unspecified C type used to reference JSON real
+   values that are stored using an external big number package.
+
+All of the functions and macros for dealing with the big number types
+:type:`json_bigz_t` and :type:`json_bigr_t` are documented separately
+in the section :ref:`apiref-big-number-extension`.
 
 ``JSON_INTEGER_IS_LONG_LONG``
 
@@ -374,7 +435,7 @@ information, see :ref:`rfc-conformance`.
    specifier that corresponds to :type:`json_int_t`, without the
    leading ``%`` sign, i.e. either ``"lld"`` or ``"ld"``. This macro
    is required because the actual type of :type:`json_int_t` can be
-   either ``long`` or ``long long``, and :func:`printf()` reuiqres
+   either ``long`` or ``long long``, and :func:`printf()` requires
    different length modifiers for the two.
 
    Example::
@@ -921,6 +982,34 @@ macros can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.1
 
+``JSON_USE_BIGINT``
+   This will enable the use of a big number package to be used to
+   store large integer values, assuming a suitable big number package
+   has been registered.  Only those JSON integers whose values can not
+   be stored in a :type:`json_int_t` will use the big number
+   extension.
+
+``JSON_USE_BIGINT_ALWAYS``
+   This flag implies ``JSON_USE_BIGINT`` and differs by using the big
+   number extension to store all JSON integers, even those that could
+   have otherwise been stored in a :type:`json_int_t`.
+
+``JSON_USE_BIGREAL``
+   This will enable the use of a big number package to be used to
+   store large real values, assuming a suitable big number package has
+   been registered.  Only those JSON reals whose values can not be
+   accurately stored in a :type:`json_real_t`, either because their
+   values or exponents are out of range or there would be a loss of
+   precision (dropped significant digits), will use the big number
+   extension.
+
+``JSON_USE_BIGREAL_ALWAYS``
+   This flag implies ``JSON_USE_BIGREAL`` and differs by using the big
+   number extension to store all JSON reals, even those that could
+   have otherwise been accurately stored in a :type:`json_real_t`.
+
+   .. versionadded:: 2.5
+
 Each function also takes an optional :type:`json_error_t` parameter
 that is filled with error information if decoding fails. It's also
 updated on success; the number of bytes of input read is written to
@@ -1053,8 +1142,20 @@ denotes the C type that is expected as the corresponding argument.
 ``I`` (integer) [json_int_t]
     Convert a C :type:`json_int_t` to JSON integer.
 
+``z`` (big integer) [json_bigz_t]
+    Convert a C :type:`json_bigz_const_t` (a constant-pointer version
+    of a :type:`json_bigz_t`) to a JSON integer. The provided value
+    will be copied, no reference to it will be maintained. You must
+    have already registered a suitable big number package extension.
+
 ``f`` (real) [double]
     Convert a C :type:`double` to JSON real.
+
+``r`` (big real) [json_bigr_t]
+    Convert a C :type:`json_bigr_const_t` (a constant-pointer version
+    of a :type:`json_bigr_t`) to a JSON real. The provided value will
+    be copied, no reference to it will be maintained. You must have
+    already registered a suitable big number package extension.
 
 ``o`` (any value) [json_t \*]
     Output any given JSON value as-is. If the value is added to an
@@ -1159,11 +1260,33 @@ type whose address should be passed.
 ``I`` (integer) [json_int_t]
     Convert a JSON integer to C :type:`json_int_t`.
 
+``z`` (big integer) [json_bigz_t]
+    Convert a JSON big integer to a C :type:`json_bigz_t`. The
+    returned pointer will reference a newly allocated big number; you
+    are responsible for eventually freeing it. You must have already
+    registered a suitable big number package extension.
+
+``Z`` (any integer) [json_bigz_t]
+    Like ``z``, except that both plain integers and big integers will
+    be accepted. When extracting values, a big integer will always be
+    returned.
+
 ``f`` (real) [double]
     Convert a JSON real to C :type:`double`.
 
 ``F`` (integer or real) [double]
     Convert a JSON number (integer or real) to C :type:`double`.
+
+``r`` (big real) [json_bigr_t]
+    Convert a JSON big real to a C :type:`json_bigr_t` pointer. The returned
+    pointer will reference newly allocated big number; you are
+    responsible for eventually freeing it. You must have already
+    registered a suitable big number package extension.
+
+``R`` (any real) [json_bigr_t]
+    Like``r``, except that both plain reals and big reals will be
+    accepted. When extracting values, a big real will always be
+    returned.
 
 ``o`` (any value) [json_t \*]
     Store a JSON value with no conversion to a :type:`json_t` pointer.
@@ -1224,6 +1347,17 @@ The following functions compose the parsing and validation API:
    error information to *error*. *flags* can be used to control the
    behaviour of the unpacker, see below for the flags. Returns 0 on
    success and -1 on failure.
+
+.. note::
+
+   The unpacking will halt at the first error, which may leave some of
+   the variables that you designated to hold unpacked values in an
+   uninitialized state.  In partciular, as the big number formats
+   (``z``, ``Z``, ``r``, and ``R``) return pointers to newly allocated
+   memory, it is good practice to always initialize those
+   corresponding variables to *NULL* prior to unpacking, and to
+   remember to free the memory for those (if not null) afterwards,
+   regardless if the unpacking succeeded or resulted in an error.
 
 .. note::
 
@@ -1293,10 +1427,12 @@ exactly the same JSON value. However, two JSON values can be equal not
 only if they are exactly the same value, but also if they have equal
 "contents":
 
-* Two integer or real values are equal if their contained numeric
-  values are equal. An integer value is never equal to a real value,
-  though.
-
+* Two integer or two real values are equal if their contained numeric
+  values are equal. Comparisons between big number and corresponding
+  regular number types are allowable, and are likewise determined based
+  upon their equivalent numeric values. However, an integer value is
+  never equal to a real value.
+ 
 * Two strings are equal if their contained UTF-8 strings are equal,
   byte by byte. Unicode comparison algorithms are not implemented.
 
@@ -1422,3 +1558,388 @@ memory, see
 http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO/protect-secrets.html.
 The page also explains the :func:`guaranteed_memset()` function used
 in the example and gives a sample implementation for it.
+
+.. _apiref-big-number-extension:
+
+Big Number Extensions
+=====================
+
+It is possible to extend Jansson so that it may support numeric values
+that are larger or more precise than may be represented by the native
+C types. Big number extensions may be independently provided for
+integer values and real values.
+
+The extension API is designed to be generic so that many different big
+number packages may be used.  Each extension is enabled by registering
+a set of user-supplied callback functions that perform basic
+operations on a big number.  These callbacks will often be thin
+wrapper functions around the routines provided by the big number
+package being used.
+
+For more information on big numbers and a list of some software
+packages which support them see
+http://en.wikipedia.org/wiki/Arbitrary-precision_arithmetic
+
+
+Big number types and functions
+------------------------------
+
+Within Jansson, a big number type is represented as an opaque variable
+type of ``json_bigz_t`` and ``json_bigr_t`` for big integers and big
+reals respectively. 
+
+By default these variable types are declared as ``void``.  
+To allow for better type safety, the user may provide a
+more specific type name for these variables by defining a macro prior
+to including the Jansson header file; for example if using GMP::
+
+    #define JSON_BIGZ_TYPE mpz_t
+    #define JSON_BIGR_TYPE mpf_t
+    #include <jansson.h>
+
+Then the ``json_bigz_t`` type will be equivalent to ``mpz_t``,
+and similar for the real types.
+
+.. note:: Jansson adopts the convention of using the letter *Z* to mean
+    integer and *R* to mean a real number. Do not let this cause you
+    confusion, as some big number packages may use *F* for reals
+    instead.
+
+.. function:: json_t *json_biginteger(const json_bigz_t *value);
+
+   .. refcounting:: new
+
+   Returns a new JSON big integer, or *NULL* on error. The passed-in
+   value is copied.
+
+.. function:: const json_bigz_t *json_biginteger_value(const json_t *biginteger)
+
+   Returns the pointer to the value of *biginteger*, or *NULL* if it
+   is not a JSON big integer. Note that the returned pointer is a
+   reference to the existing value and not a copy; use caution if
+   retaining this reference.
+
+.. function:: int json_biginteger_set(json_t *integer, const json_bigz_t *value)
+
+   Sets the associated value of *biginteger* to *value*. Returns 0 on
+   success and -1 if *biginteger* is not a JSON big integer. A copy is
+   made of *value*.
+
+.. function:: json_t *json_bigreal(const json_bigr_t *value);
+
+   .. refcounting:: new
+
+   Returns a new JSON big real, or *NULL* on error. The passed-in
+   value is copied.
+
+.. function:: const json_bigr_t *json_bigreal_value(const json_t *bigreal)
+
+   Returns the pointer to the value of *bigreal*, or *NULL* if it is
+   not a JSON big real. Note that the returned pointer is a reference
+   to the existing value and not a copy; use caution if retaining this
+   reference.
+
+.. function:: int json_bigreal_set(json_t *bigreal, const json_bigr_t *value)
+
+   Sets the associated value of *bigreal* to *value*. Returns 0 on
+   success and -1 if *bigreal* is not a JSON big real. A copy is
+   made of *value*.
+
+Sample bignum packages
+----------------------
+
+Included with the Jansson distribution are a sampling of extensions
+for supporting several popular big number formats. These samples are C
+code files which may be included and compiled into your own
+application.
+
+*C long double:* The C standard provides a native type ``long double``
+which may have greater range and precision than a plain ``double``
+for real numbers. To use it add the sample file ``json_bignum_ldbl.c``
+into your project sources. Then arrange your own source similar to::
+
+    #define JSON_BIGR_TYPE long double
+    #include <jansson.h>
+
+    int main()
+    {
+        json_use_ldbl_for_bigreals();
+        ...
+    }
+
+*GNU Quadmath:* The GNU libquadmath library provides support for
+quad-precision floating-point numbers, which may have even greater
+range and precision than a ``long double``. Quadmath is built into
+newer versions of the GCC compiler on some platforms, so that it acts
+like a native type. To use it add the sample file
+``json_bignum_quad.c`` into your project sources. Then arrange your
+own source similar to::
+
+    #include <quadmath.h>
+    #define JSON_BIGR_TYPE __float128
+    #include <jansson.h>
+
+    int main()
+    {
+        json_use_quad_for_bigreals();
+        ...
+    }
+
+Note that you may need to link your project with an additional system
+library typically named *libquadmath* (use the ``-lquadmath`` linker option
+in Unix-like environments).  For more information see
+http://gcc.gnu.org/onlinedocs/libquadmath/
+
+
+*GNU Multiprecision Library (GMP):* The GMP package supports arbitrary
+sized integers and arbitrary precision real numbers.  To use it add
+the sample file ``json_bignum_gmp.c`` into your project sources. Then
+arrange your own source similar to::
+
+    #include <gmp.h>
+    #define JSON_BIGZ_TYPE mpz_t
+    #define JSON_BIGR_TYPE mpf_t
+    #include <jansson.h>
+
+    int main()
+    {
+        json_use_gmp_for_bigintegers();
+        json_use_gmp_for_bigreals();
+        mpf_set_default_prec( 1024 ); /* precision in bits */
+        ...
+    }
+
+Notice that you may wish to call the GMP function
+`mpf_set_default_prec` to set up the default number of bits
+of precision that are kept. Jansson will always attempt to preserve
+all of the digits, but this GMP default if not set appropriately may
+still result in loss of significant digits.
+
+You will need to link your project with the GMP library (use the
+``-lgmp`` linker option in Unix-like environments).  For more
+information see http://gmplib.org/
+
+*OpenSSL Big Numbers (BN):* The OpenSSL cryptographic library provides
+generic support for arbitrary sized integers.  To use it add the
+sample file ``json_bignum_openssl.c`` into your project sources. Then
+arrange your own source similar to::
+
+    #include <openssl/bn.h>
+    #define JSON_BIGZ_TYPE BIGNUM
+    #include <jansson.h>
+
+    int main()
+    {
+        json_use_openssl_for_bigintegers();
+        ...
+    }
+
+You will need to link your project with the OpenSSL *crypto* library
+(use the ``-lcrypto`` linker option in Unix-like environments).  For
+more information see http://www.openssl.org/docs/crypto/bn.html
+
+
+The callback functions
+----------------------
+
+To use a big number package you must provide a set of callback
+functions that manipulate big number values. There are six callbacks
+needed: copy, delete, compare, convert to string, convert from string,
+and up-convert from a native number type.  The callbacks are generally
+the same for both big integers and big reals except for the specific
+type signatures.
+
+
+When invoked by Jansson, function dealing with big integer or big real
+should be created by the user. 
+Each big number package must provide the following callback functions,
+shown here for big integers:
+
+.. type:: json_bigint_copy_t
+
+   A typedef for a function pointer that will make a copy of a big integer value. It has a signature::
+
+       typedef json_bigz_t *(*json_bigint_copy_t)(const json_bigz_t *bignum)
+
+.. type:: json_bigint_del_t
+
+   A typedef for a function pointer that will delete a big integer value. It has a signature::
+
+       typedef void (*json_bigint_del_t)(json_bigz_t *bignum)
+
+.. type:: json_bigint_cmp_t
+
+    A typedef for a function pointer that will numerically compare two big integer values, returning -1 (less-than), 0 (equal), or +1 (greater-than). It has a signature::
+
+        typedef int (*json_bigint_cmp_t)(const json_bigz_t *bignum1, const json_bigz_t *bignum2)
+
+.. type:: json_bigint_to_str_t
+
+    A typedef for a function pointer that will convert a big number
+    value into a decimal string format. The resulting format must
+    adhere strictly to the JSON standard syntax, e.g., "+0" or ".3"
+    are invalid. It has a signature::
+
+        typedef int (*json_bigint_to_str_t)(const json_bigz_t *bignum, char *buffer, size_t size)
+
+    The function will be provided a buffer, identified with ``buffer``
+    and ``size``, into which it should write the string. The string
+    must be null terminated.  The length of the string excluding the
+    null byte must be returned.
+
+    If the resulting string is too large to fit into the provided
+    buffer, then the function should return the number of bytes needed
+    (excluding the null terminator), after which the function will be
+    called again with a larger buffer. In this case it is not
+    necessary to write into the buffer or insure it is null
+    terminated.
+
+.. type:: json_bigint_from_str_t
+
+    A typedef for a function pointer that will convert a decimal
+    string repreentation of a number (in standard JSON syntax) into a
+    big number value. It has the signature::
+
+        typedef json_bigz_t *(*json_bigint_from_str_t)(const char *value)
+
+    The returned value should be a newly-allocated big number type. If
+    the string value can not be converted then *NULL* should be
+    returned.
+
+.. type:: json_bigint_from_int_t
+
+    A typedef for a function pointer that will convert a standard
+    native type of :type:`json_int_t` into a big number value. It has the signture::
+
+        typedef json_bigz_t *(*json_bigint_from_int_t)(json_int_t value)
+
+    The returned value should be a newly-allocated big number type.
+
+To register the callback functions, they must first be assembled into a structure of type :type:`json_bigint_funcs_t` or :type:`json_bigreal_funcs_t`, for example::
+
+    json_bigint_funcs_t callbacks;
+    callbacks.copy_fn = my_copy_function;
+    callbacks.delete_fn = my_delete_function;
+    callbacks.compare_fn = my_compare_function;
+    callbacks.to_string_fn = my_to_string_function;
+    callbacks.from_string_fn = my_from_string_function;
+    callbacks.from_int_fn = my_from_int_function;
+
+Callbacks for big reals are similar except the last member is named ``from_real_fn`` instead of ``from_int_fn``.
+
+Then the whole set of callbacks are registered with a single API call.
+
+.. function:: void json_set_biginteger_funcs(const json_bigint_funcs_t *functions)
+
+     Registers the set of callback functions to use for manipulating
+     big integer values. Passing *NULL* will unregister any callback
+     functions and disable the use of big integers.  This function
+     should be called before any other functions that may involve big
+     integers, such as loading JSON.
+
+.. function:: void json_set_bigreal_funcs(const json_bigreal_funcs_t* functions)
+
+     Registers the set of callback functions to use for manipulating
+     big real values. Passing *NULL* will unregister any callback
+     functions and disable the use of big reals.  This function should
+     be called before any other functions that may involve big
+     integers, such as loading JSON.
+
+Example using long double
+-------------------------
+
+The following example code shows how to use the big number extensions
+to support the native C type of ``long double`` for big real numbers.
+This is essentially the same as what is in the supplied
+``json_bignum_ldbl.c`` sample::
+
+    #include <string.h>
+    #include <stdlib.h>
+    #include <float.h>
+    #include <errno.h>
+
+    #define JSON_BIGR_TYPE long double
+    #include <jansson.h>
+
+    static int json_bigreal_ldbl_compare(const json_bigr_t *r1, const json_bigr_t *r2)
+    {
+        const long double *f1 = r1;
+        const long double *f2 = r2;
+
+        if( *f1 == *f2 ) return 0;
+        if( *f1 < *f2 )  return -1;
+        return 1;
+    }
+
+    static json_bigr_t *json_bigreal_ldbl_copy(const json_bigr_t *r)
+    {
+        const long double *f1 = r;
+        long double *f2;
+
+        f2 = (long double *)malloc( sizeof(long double) );
+        if(!f2)
+            return NULL;
+        *f2 = *f1;
+        return f2;
+    }
+
+    static void json_bigreal_ldbl_delete(json_bigr_t *r)
+    {
+        long double *f = r;
+
+        free( f );
+        return;
+    }
+
+    static json_bigr_t *json_bigreal_ldbl_from_real(double value)
+    {
+        long double *f;
+
+        f = (long double *)malloc( sizeof(long double) );
+        if(!f)
+            return NULL;
+        *f = value;
+        return f;
+    }
+
+    static json_bigr_t *json_bigreal_ldbl_from_str(const char *value)
+    {
+        long double f0;
+        long double *f1;
+
+        errno = 0;
+        f0 = strtold( value, NULL );
+
+        f1 = json_bigreal_ldbl_copy( &f0 );
+        memset( &f0, 0, sizeof(long double) );
+        return f1;
+    }
+
+    static int json_bigreal_ldbl_to_str(const json_bigr_t *r, char *buffer, size_t size)
+    {
+        const long double *f = r;
+        int outsize;
+
+        outsize = snprintf( buffer, size, "%.*Lg", LDBL_DIG, *f );
+        return outsize;
+    }
+
+    int json_use_ldbl_for_bigreals()
+    {
+        static json_bigreal_funcs_t funcs;
+        funcs.copy_fn        = json_bigreal_ldbl_copy;
+        funcs.delete_fn      = json_bigreal_ldbl_delete;
+        funcs.compare_fn     = json_bigreal_ldbl_compare;
+        funcs.to_string_fn   = json_bigreal_ldbl_to_str;
+        funcs.from_string_fn = json_bigreal_ldbl_from_str;
+        funcs.from_real_fn   = json_bigreal_ldbl_from_real;
+
+        json_set_bigreal_funcs( &funcs );
+        return 0;
+    }
+
+    int main()
+    {
+        json_use_ldbl_for_bigreals();
+        ...
+    }

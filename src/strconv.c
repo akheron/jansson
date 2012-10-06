@@ -127,3 +127,36 @@ int jsonp_dtostr(char *buffer, size_t size, double value)
 
     return (int)length;
 }
+
+#define l_isdigit(c)    ('0' <= (c) && (c) <= '9')
+#define l_isdigit19(c)  ('1' <= (c) && (c) <= '9')
+
+int jsonp_count_significand_digits(strbuffer_t *strbuffer)
+{
+	int digits = 0;
+	const char* c;
+	/* Skip leading zeros and signs */
+	for( c=strbuffer->value; *c=='0' || *c=='-' || *c=='.'; c++ );
+	
+	/* Count digits */
+	while( l_isdigit(*c) || *c == '.' ) {
+		if( l_isdigit19(*c) )
+			digits++;
+		else if( *c=='0' ) {
+			const char* d;
+			int zerorun=0;
+			for( d=c; *d=='0' || *d=='.'; d++ ) {
+				if( *d=='0' ) {
+					zerorun++;
+				}
+			}
+			if( l_isdigit19(*d) ) {
+				digits += zerorun + 1;
+				c = d;
+			}
+		}
+		c++;
+	}
+	
+	return digits;
+}

@@ -13,6 +13,9 @@
 #include <stdarg.h>
 
 #include <jansson_config.h>
+#if USE_GNU_MP
+#include <gmp.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,6 +39,8 @@ extern "C" {
 
 /* types */
 
+struct json_context; /* forward reference */
+
 typedef enum {
     JSON_OBJECT,
     JSON_ARRAY,
@@ -44,7 +49,9 @@ typedef enum {
     JSON_REAL,
     JSON_TRUE,
     JSON_FALSE,
-    JSON_NULL
+    JSON_NULL,
+    JSON_BIGINTEGER,
+    JSON_BIGREAL
 } json_type;
 
 typedef struct {
@@ -64,13 +71,29 @@ typedef long long json_int_t;
 typedef long json_int_t;
 #endif /* JSON_INTEGER_IS_LONG_LONG */
 
+#ifndef JSON_BIGZ_TYPE
+#define JSON_BIGZ_TYPE void
+#endif
+#ifndef JSON_BIGR_TYPE
+#define JSON_BIGR_TYPE void
+#endif
+
+typedef JSON_BIGZ_TYPE json_bigz_t;
+typedef JSON_BIGR_TYPE json_bigr_t;
+
 #define json_typeof(json)      ((json)->type)
 #define json_is_object(json)   (json && json_typeof(json) == JSON_OBJECT)
 #define json_is_array(json)    (json && json_typeof(json) == JSON_ARRAY)
 #define json_is_string(json)   (json && json_typeof(json) == JSON_STRING)
 #define json_is_integer(json)  (json && json_typeof(json) == JSON_INTEGER)
+#define json_is_biginteger(json) (json && json_typeof(json) == JSON_BIGINTEGER)
+#define json_is_anyinteger(json) (json_is_integer(json) || json_is_biginteger(json))
 #define json_is_real(json)     (json && json_typeof(json) == JSON_REAL)
+#define json_is_bigreal(json)  (json && json_typeof(json) == JSON_BIGREAL)
+#define json_is_anyreal(json)  (json_is_real(json) || json_is_bigreal(json))
 #define json_is_number(json)   (json_is_integer(json) || json_is_real(json))
+#define json_is_bignumber(json) (json_is_biginteger(json) || json_is_bigreal(json))
+#define json_is_anynumber(json) (json_is_number(json) || json_is_bignumber(json))
 #define json_is_true(json)     (json && json_typeof(json) == JSON_TRUE)
 #define json_is_false(json)    (json && json_typeof(json) == JSON_FALSE)
 #define json_is_boolean(json)  (json_is_true(json) || json_is_false(json))
@@ -88,6 +111,8 @@ json_t *json_true(void);
 json_t *json_false(void);
 #define json_boolean(val)      ((val) ? json_true() : json_false())
 json_t *json_null(void);
+json_t *json_biginteger(const json_bigz_t *value);
+json_t *json_bigreal(const json_bigr_t *value);
 
 static JSON_INLINE
 json_t *json_incref(json_t *json)
@@ -201,6 +226,12 @@ int json_string_set_nocheck(json_t *string, const char *value);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
 
+const json_bigz_t *json_biginteger_value(const json_t *biginteger);
+int json_biginteger_set(json_t *biginteger, const json_bigz_t *mpz);
+
+const json_bigr_t *json_bigreal_value(const json_t *bigreal);
+int json_bigreal_set(json_t *bigreal, const json_bigr_t *mpf);
+
 
 /* pack, unpack */
 
@@ -251,6 +282,10 @@ json_t *json_load_callback(json_load_callback_t callback, void *data, size_t fla
 #define JSON_PRESERVE_ORDER 0x100
 #define JSON_ENCODE_ANY     0x200
 #define JSON_ESCAPE_SLASH   0x400
+#define JSON_USE_BIGINT         0x800
+#define JSON_USE_BIGINT_ALWAYS  0x1000
+#define JSON_USE_BIGREAL        0x2000
+#define JSON_USE_BIGREAL_ALWAYS 0x4000
 
 typedef int (*json_dump_callback_t)(const char *buffer, size_t size, void *data);
 
@@ -265,6 +300,53 @@ typedef void *(*json_malloc_t)(size_t);
 typedef void (*json_free_t)(void *);
 
 void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn);
+
+/* big integers */
+
+typedef json_bigz_t *(*json_bigint_copy_t)(const json_bigz_t *bignum);
+typedef void (*json_bigint_del_t)(json_bigz_t *bignum);
+typedef int (*json_bigint_cmp_t)(const json_bigz_t *bignum1,
+                                     const json_bigz_t *bignum2);
+typedef int (*json_bigint_to_str_t)(const json_bigz_t *bignum,
+                                     char *buffer, size_t size);
+typedef json_bigz_t *(*json_bigint_from_str_t)(const char *value);
+typedef json_bigz_t *(*json_bigint_from_int_t)(json_int_t value);
+
+typedef struct {
+    json_bigint_copy_t copy_fn;
+    json_bigint_del_t delete_fn;
+    json_bigint_cmp_t compare_fn;
+    json_bigint_to_str_t to_string_fn;
+    json_bigint_from_str_t from_string_fn;
+    json_bigint_from_int_t from_int_fn;
+} json_bigint_funcs_t;
+
+void json_set_biginteger_funcs(const json_bigint_funcs_t* functions);
+
+
+/* big reals */
+
+typedef json_bigr_t *(*json_bigreal_copy_t)(const json_bigr_t *bigreal);
+typedef void (*json_bigreal_del_t)(json_bigr_t *bigreal);
+typedef int (*json_bigreal_cmp_t)(const json_bigr_t *bigreal1,
+                 const json_bigr_t *bigreal2);
+typedef int (*json_bigreal_to_str_t)(const json_bigr_t *bigreal,
+                 char *buffer, size_t size);
+typedef json_bigr_t *(*json_bigreal_from_str_t)(const char *value);
+typedef json_bigr_t *(*json_bigreal_from_real_t)(double value);
+
+typedef struct {
+    json_bigreal_copy_t copy_fn;
+    json_bigreal_del_t delete_fn;
+    json_bigreal_cmp_t compare_fn;
+    json_bigreal_to_str_t to_string_fn;
+    json_bigreal_from_str_t from_string_fn;
+    json_bigreal_from_real_t from_real_fn;
+} json_bigreal_funcs_t;
+
+void json_set_bigreal_funcs(const json_bigreal_funcs_t* functions);
+
+
 
 #ifdef __cplusplus
 }

@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <math.h>
 
 #include "jansson.h"
@@ -687,7 +688,6 @@ static json_t *json_string_copy(json_t *string)
     return json_string_nocheck(json_string_value(string));
 }
 
-
 /*** integer ***/
 
 json_t *json_integer(json_int_t value)
@@ -734,6 +734,107 @@ static json_t *json_integer_copy(json_t *integer)
     return json_integer(json_integer_value(integer));
 }
 
+/*** big integer ***/
+
+json_t *json_biginteger(const json_bigz_t *value)
+{
+    json_biginteger_t *bigint;
+    json_context_t* ctx = jsonp_context();
+
+    if(!ctx->have_bigint)
+        return NULL;
+
+    bigint = jsonp_malloc(sizeof(json_biginteger_t));
+    if(!bigint)
+        return NULL;
+    json_init(&bigint->json, JSON_BIGINTEGER);
+
+    bigint->value = ctx->bigint.copy_fn(value);
+    return &bigint->json;
+}
+
+const json_bigz_t *json_biginteger_value(const json_t *json)
+{
+    if(!json_is_biginteger(json))
+        return NULL;
+
+    return json_to_biginteger(json)->value;
+}
+
+int json_biginteger_set(json_t* json, const json_bigz_t *value)
+{
+    json_context_t *ctx = jsonp_context();
+
+    if(!ctx->have_bigint)
+        return -1;
+
+    if(!json_is_biginteger(json))
+        return -1;
+
+    json_to_biginteger(json)->value = ctx->bigint.copy_fn(value);
+
+    return 0;
+}
+
+static void json_delete_biginteger(json_biginteger_t *bigint)
+{
+    json_context_t *ctx = jsonp_context();
+
+    if(ctx->have_bigint)
+        ctx->bigint.delete_fn(bigint->value);
+    jsonp_free(bigint);
+}
+
+static int json_biginteger_equal(const json_t* bigint1, const json_t* bigint2)
+{
+    json_context_t *ctx = jsonp_context();
+
+    if(!ctx->have_bigint)
+        return bigint1 == bigint2;
+    return ctx->bigint.compare_fn( json_biginteger_value(bigint1),
+        json_biginteger_value(bigint2)) == 0;
+}
+
+static json_t* json_biginteger_copy(json_t *bigint)
+{
+    json_context_t *ctx = jsonp_context();
+
+    if(!ctx->have_bigint)
+        return NULL;
+    return ctx->bigint.copy_fn(json_biginteger_value(bigint));
+}
+
+static int json_anyinteger_equal(json_t* int1, json_t* int2)
+{
+    if( json_is_integer(int1) && json_is_integer(int2) )
+        return json_integer_equal(int1, int2);
+    else if( json_is_biginteger(int1) && json_is_biginteger(int2) )
+        return json_biginteger_equal(int1, int2);
+
+    {
+        json_context_t *ctx = jsonp_context();
+        const json_bigz_t *i1;
+        json_bigz_t *i2;
+        int eq;
+
+        if(!ctx->have_bigint)
+            return int1 == int2;
+
+        if( json_is_biginteger(int1) ) {
+            assert( json_is_integer(int2) );
+            i1 = json_biginteger_value(int1);
+            i2 = ctx->bigint.from_int_fn(json_integer_value(int2));
+        }
+        else {
+            assert( json_is_integer(int1) );
+            i1 = json_biginteger_value(int2);
+            i2 = ctx->bigint.from_int_fn(json_integer_value(int1));
+        }
+        eq = ctx->bigint.compare_fn(i1, i2) == 0;
+        ctx->bigint.delete_fn(i2);
+        return eq;
+    }
+}
 
 /*** real ***/
 
@@ -786,6 +887,107 @@ static json_t *json_real_copy(json_t *real)
     return json_real(json_real_value(real));
 }
 
+/*** big real ***/
+
+json_t *json_bigreal(const json_bigr_t *value)
+{
+    json_bigreal_t *bigreal;
+    json_context_t *ctx = jsonp_context();
+
+    if(!ctx->have_bigreal)
+        return NULL;
+
+    bigreal = jsonp_malloc(sizeof(json_bigreal_t));
+    if(!bigreal)
+        return NULL;
+    json_init(&bigreal->json, JSON_BIGREAL);
+
+    bigreal->value = ctx->bigreal.copy_fn(value);
+    return &bigreal->json;
+}
+
+const json_bigr_t *json_bigreal_value(const json_t *json)
+{
+    if(!json_is_bigreal(json))
+        return NULL;
+        
+    return json_to_bigreal(json)->value;
+}
+
+int json_bigreal_set(json_t* json, const json_bigr_t *value)
+{
+    json_context_t *ctx = jsonp_context();
+
+    if(!ctx->have_bigreal)
+        return -1;
+
+    if(!json_is_bigreal(json))
+        return -1;
+
+    json_to_bigreal(json)->value = ctx->bigreal.copy_fn(value);
+
+    return 0;
+}
+
+static void json_delete_bigreal(json_bigreal_t *bigreal)
+{
+    json_context_t *ctx = jsonp_context();
+
+    if(ctx->have_bigreal)
+        ctx->bigreal.delete_fn(bigreal->value);
+    jsonp_free(bigreal);
+}
+
+static int json_bigreal_equal(const json_t* bigreal1, const json_t* bigreal2)
+{
+    json_context_t *ctx = jsonp_context();
+
+    if(!ctx->have_bigreal)
+        return bigreal1 == bigreal2;
+    return ctx->bigreal.compare_fn( json_bigreal_value(bigreal1),
+    			    json_bigreal_value(bigreal2)) == 0;
+}
+
+static json_t* json_bigreal_copy(json_t *bigreal)
+{
+    json_context_t *ctx = jsonp_context();
+
+    if(!ctx->have_bigreal)
+        return NULL;
+    return ctx->bigreal.copy_fn(json_bigreal_value(bigreal));
+}
+
+static int json_anyreal_equal(json_t* real1, json_t* real2)
+{
+    if( json_is_real(real1) && json_is_real(real2) )
+        return json_real_equal(real1, real2);
+    else if( json_is_bigreal(real1) && json_is_bigreal(real2) )
+        return json_bigreal_equal(real1, real2);
+    
+    {
+        json_context_t *ctx = jsonp_context();
+        const json_bigr_t *r1;
+        json_bigr_t *r2;
+        int eq;
+        
+        if(!ctx->have_bigreal)
+            return real1 == real2;
+            
+        if( json_is_bigreal(real1) ) {
+            assert( json_is_real(real2) );
+            r1 = json_bigreal_value(real1);
+            r2 = ctx->bigreal.from_real_fn(json_real_value(real2));
+        }
+        else {
+            assert( json_is_real(real1) );
+            r1 = json_bigreal_value(real2);
+            r2 = ctx->bigreal.from_real_fn(json_real_value(real1));
+        }
+        eq = ctx->bigreal.compare_fn(r1, r2) == 0;
+        ctx->bigreal.delete_fn(r2);
+        return eq;
+    }
+}
 
 /*** number ***/
 
@@ -842,6 +1044,12 @@ void json_delete(json_t *json)
     else if(json_is_real(json))
         json_delete_real(json_to_real(json));
 
+    else if(json_is_biginteger(json))
+        json_delete_biginteger(json_to_biginteger(json));
+
+    else if(json_is_bigreal(json))
+        json_delete_bigreal(json_to_bigreal(json));
+
     /* json_delete is not called for true, false or null */
 }
 
@@ -853,8 +1061,18 @@ int json_equal(json_t *json1, json_t *json2)
     if(!json1 || !json2)
         return 0;
 
-    if(json_typeof(json1) != json_typeof(json2))
-        return 0;
+    if(json_typeof(json1) != json_typeof(json2)) {
+        /* Types not equal, see if they are convertable */
+        if( json_is_anyinteger(json1) && json_is_anyinteger(json2) ) {
+            return json_anyinteger_equal(json1, json2);
+        }
+        else if( json_is_anyreal(json1) && json_is_anyreal(json2) ) {
+            return json_anyreal_equal(json1, json2);
+        }
+        else
+            return 0;
+    }
+
 
     /* this covers true, false and null as they are singletons */
     if(json1 == json2)
@@ -874,6 +1092,12 @@ int json_equal(json_t *json1, json_t *json2)
 
     if(json_is_real(json1))
         return json_real_equal(json1, json2);
+
+    if(json_is_biginteger(json1))
+        return json_biginteger_equal(json1, json2);
+
+    if(json_is_bigreal(json2))
+        return json_bigreal_equal(json1, json2);
 
     return 0;
 }
@@ -900,6 +1124,12 @@ json_t *json_copy(json_t *json)
 
     if(json_is_real(json))
         return json_real_copy(json);
+
+    if(json_is_biginteger(json))
+        return json_biginteger_copy(json);
+
+    if(json_is_bigreal(json))
+        return json_bigreal_copy(json);
 
     if(json_is_true(json) || json_is_false(json) || json_is_null(json))
         return json;
@@ -929,6 +1159,12 @@ json_t *json_deep_copy(json_t *json)
 
     if(json_is_real(json))
         return json_real_copy(json);
+
+    if(json_is_biginteger(json))
+        return json_biginteger_copy(json);
+
+    if(json_is_bigreal(json))
+        return json_bigreal_copy(json);
 
     if(json_is_true(json) || json_is_false(json) || json_is_null(json))
         return json;
