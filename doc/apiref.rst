@@ -403,20 +403,15 @@ For more information, see :ref:`rfc-conformance`.
    big number extension API.
 
 .. type:: json_bigz_t
-.. type:: json_bigz_const_t
 
-   This is an unspecified C pointer type used to reference JSON
+   This is an unspecified C type used to reference JSON
    integer values that are stored using an external big number
-   package.  The ``_const_t`` type is the same only it is used to
-   point to a constant value.
+   package.
 
 .. type:: json_bigr_t
-.. type:: json_bigr_const_t
 
-   This is an unspecified C pointer type used to reference JSON real
-   values that are stored using an external big number package.  The
-   ``_const_t`` type is the same only it is used to point to a
-   constant value.
+   This is an unspecified C type used to reference JSON real
+   values that are stored using an external big number package.
 
 All of the functions and macros for dealing with the big number types
 :type:`json_bigz_t` and :type:`json_bigr_t` are documented separately
@@ -1283,12 +1278,12 @@ type whose address should be passed.
     Convert a JSON number (integer or real) to C :type:`double`.
 
 ``r`` (big real) [json_bigr_t]
-    Convert a JSON big real to a C :type:`json_bigr_t`. The returned
+    Convert a JSON big real to a C :type:`json_bigr_t` pointer. The returned
     pointer will reference newly allocated big number; you are
     responsible for eventually freeing it. You must have already
     registered a suitable big number package extension.
 
-``R`` (any integer) [json_bigr_t]
+``R`` (any real) [json_bigr_t]
     Like``r``, except that both plain reals and big reals will be
     accepted. When extracting values, a big real will always be
     returned.
@@ -1298,13 +1293,6 @@ type whose address should be passed.
 
 ``O`` (any value) [json_t \*]
     Like ``O``, but the JSON value's reference count is incremented.
-
-``v`` (any scalar) [json_t \*]
-    Store any JSON scalar value (any type except lists or objects)
-    with no conversion to a :type:`json_t` pointer.
-
-``V`` (any scalar) [json_t \*]
-    Like ``v``, but the JSON value's reference count is incremented.
 
 ``[fmt]`` (array)
     Convert each item in the JSON array according to the inner format
@@ -1596,21 +1584,20 @@ http://en.wikipedia.org/wiki/Arbitrary-precision_arithmetic
 Big number types and functions
 ------------------------------
 
-Within Jansson, a big number type is represented as an opaque pointer
+Within Jansson, a big number type is represented as an opaque variable
 type of ``json_bigz_t`` and ``json_bigr_t`` for big integers and big
-reals respectively.  There are corresponding constant-pointer types
-as well, ``json_bigz_const_t`` and ``json_bigr_const_t``.
+reals respectively. 
 
-By default these pointer types are declared as ``void *`` or ``void
-const *``.  To allow for better type safety, the user may provide a
-more specific type name for these pointers by defining a macro prior
+By default these variable types are declared as ``void``.  
+To allow for better type safety, the user may provide a
+more specific type name for these variables by defining a macro prior
 to including the Jansson header file; for example if using GMP::
 
     #define JSON_BIGZ_TYPE mpz_t
     #define JSON_BIGR_TYPE mpf_t
     #include <jansson.h>
 
-Then the ``json_bigz_t`` type will be equivalent to ``mpz_t *``,
+Then the ``json_bigz_t`` type will be equivalent to ``mpz_t``,
 and similar for the real types.
 
 .. note:: Jansson adopts the convention of using the letter *Z* to mean
@@ -1618,41 +1605,41 @@ and similar for the real types.
     confusion, as some big number packages may use *F* for reals
     instead.
 
-.. function:: json_t *json_biginteger(json_bigz_const_t value);
+.. function:: json_t *json_biginteger(const json_bigz_t *value);
 
    .. refcounting:: new
 
    Returns a new JSON big integer, or *NULL* on error. The passed-in
    value is copied.
 
-.. function:: json_bigz_const_t json_biginteger_value(const json_t *biginteger)
+.. function:: const json_bigz_t *json_biginteger_value(const json_t *biginteger)
 
    Returns the pointer to the value of *biginteger*, or *NULL* if it
    is not a JSON big integer. Note that the returned pointer is a
    reference to the existing value and not a copy; use caution if
    retaining this reference.
 
-.. function:: int json_biginteger_set(json_t *integer, json_bigz_const_t value)
+.. function:: int json_biginteger_set(json_t *integer, const json_bigz_t *value)
 
    Sets the associated value of *biginteger* to *value*. Returns 0 on
    success and -1 if *biginteger* is not a JSON big integer. A copy is
    made of *value*.
 
-.. function:: json_t *json_bigreal(json_bigr_const_t value);
+.. function:: json_t *json_bigreal(const json_bigr_t *value);
 
    .. refcounting:: new
 
    Returns a new JSON big real, or *NULL* on error. The passed-in
    value is copied.
 
-.. function:: json_bigr_const_t json_bigreal_value(const json_t *bigreal)
+.. function:: const json_bigr_t *json_bigreal_value(const json_t *bigreal)
 
    Returns the pointer to the value of *bigreal*, or *NULL* if it is
    not a JSON big real. Note that the returned pointer is a reference
    to the existing value and not a copy; use caution if retaining this
    reference.
 
-.. function:: int json_bigreal_set(json_t *bigreal, json_bigr_const_t value)
+.. function:: int json_bigreal_set(json_t *bigreal, const json_bigr_t *value)
 
    Sets the associated value of *bigreal* to *value*. Returns 0 on
    success and -1 if *bigreal* is not a JSON big real. A copy is
@@ -1772,19 +1759,19 @@ shown here for big integers:
 
    A typedef for a function pointer that will make a copy of a big integer value. It has a signature::
 
-       typedef json_bigz_t (*json_bigint_copy_t)(json_bigz_const_t bignum)
+       typedef json_bigz_t *(*json_bigint_copy_t)(const json_bigz_t *bignum)
 
 .. type:: json_bigint_del_t
 
    A typedef for a function pointer that will delete a big integer value. It has a signature::
 
-       typedef void (*json_bigint_del_t)(json_bigz_t bignum)
+       typedef void (*json_bigint_del_t)(json_bigz_t *bignum)
 
 .. type:: json_bigint_cmp_t
 
     A typedef for a function pointer that will numerically compare two big integer values, returning -1 (less-than), 0 (equal), or +1 (greater-than). It has a signature::
 
-        typedef int (*json_bigint_cmp_t)(json_bigz_const_t bignum1, json_bigz_const_t bignum2)
+        typedef int (*json_bigint_cmp_t)(const json_bigz_t *bignum1, const json_bigz_t *bignum2)
 
 .. type:: json_bigint_to_str_t
 
@@ -1793,7 +1780,7 @@ shown here for big integers:
     adhere strictly to the JSON standard syntax, e.g., "+0" or ".3"
     are invalid. It has a signature::
 
-        typedef int (*json_bigint_to_str_t)(json_bigz_const_t bignum, char *buffer, size_t size)
+        typedef int (*json_bigint_to_str_t)(const json_bigz_t *bignum, char *buffer, size_t size)
 
     The function will be provided a buffer, identified with ``buffer``
     and ``size``, into which it should write the string. The string
@@ -1813,7 +1800,7 @@ shown here for big integers:
     string repreentation of a number (in standard JSON syntax) into a
     big number value. It has the signature::
 
-        typedef json_bigz_t (*json_bigint_from_str_t)(const char *value)
+        typedef json_bigz_t *(*json_bigint_from_str_t)(const char *value)
 
     The returned value should be a newly-allocated big number type. If
     the string value can not be converted then *NULL* should be
@@ -1824,7 +1811,7 @@ shown here for big integers:
     A typedef for a function pointer that will convert a standard
     native type of :type:`json_int_t` into a big number value. It has the signture::
 
-        typedef json_bigz_t (*json_bigint_from_int_t)(json_int_t value)
+        typedef json_bigz_t *(*json_bigint_from_int_t)(json_int_t value)
 
     The returned value should be a newly-allocated big number type.
 
@@ -1842,7 +1829,7 @@ Callbacks for big reals are similar except the last member is named ``from_real_
 
 Then the whole set of callbacks are registered with a single API call.
 
-.. function:: void json_set_biginteger_funcs(const json_bigint_funcs_t* functions)
+.. function:: void json_set_biginteger_funcs(const json_bigint_funcs_t *functions)
 
      Registers the set of callback functions to use for manipulating
      big integer values. Passing *NULL* will unregister any callback
@@ -1874,25 +1861,20 @@ This is essentially the same as what is in the supplied
     #define JSON_BIGR_TYPE long double
     #include <jansson.h>
 
-    /* These typedefs are now in effect:
-         json_bigr_t        =>  long double *
-         json_bigr_const_t  =>  long double const *
-    */
-
-    static int json_bigreal_ldbl_compare(json_bigr_const_t r1, json_bigr_const_t r2)
+    static int json_bigreal_ldbl_compare(const json_bigr_t *r1, const json_bigr_t *r2)
     {
-        const long double * f1 = r1;
-        const long double * f2 = r2;
+        const long double *f1 = r1;
+        const long double *f2 = r2;
 
         if( *f1 == *f2 ) return 0;
         if( *f1 < *f2 )  return -1;
         return 1;
     }
 
-    static json_bigr_t json_bigreal_ldbl_copy(json_bigr_const_t r)
+    static json_bigr_t *json_bigreal_ldbl_copy(const json_bigr_t *r)
     {
-        const long double * f1 = r;
-        long double * f2;
+        const long double *f1 = r;
+        long double *f2;
 
         f2 = (long double *)malloc( sizeof(long double) );
         if(!f2)
@@ -1901,17 +1883,17 @@ This is essentially the same as what is in the supplied
         return f2;
     }
 
-    static void json_bigreal_ldbl_delete(json_bigr_t r)
+    static void json_bigreal_ldbl_delete(json_bigr_t *r)
     {
-        long double * f = r;
+        long double *f = r;
 
         free( f );
         return;
     }
 
-    static json_bigr_t json_bigreal_ldbl_from_real(double value)
+    static json_bigr_t *json_bigreal_ldbl_from_real(double value)
     {
-        long double * f;
+        long double *f;
 
         f = (long double *)malloc( sizeof(long double) );
         if(!f)
@@ -1920,7 +1902,7 @@ This is essentially the same as what is in the supplied
         return f;
     }
 
-    static json_bigr_t json_bigreal_ldbl_from_str(const char *value)
+    static json_bigr_t *json_bigreal_ldbl_from_str(const char *value)
     {
         long double f0;
         long double *f1;
@@ -1933,7 +1915,7 @@ This is essentially the same as what is in the supplied
         return f1;
     }
 
-    static int json_bigreal_ldbl_to_str(json_bigr_const_t r, char *buffer, size_t size)
+    static int json_bigreal_ldbl_to_str(const json_bigr_t *r, char *buffer, size_t size)
     {
         const long double *f = r;
         int outsize;
