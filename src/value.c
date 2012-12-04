@@ -509,7 +509,10 @@ int json_array_remove(json_t *json, size_t index)
 
     json_decref(array->table[index]);
 
-    array_move(array, index, index + 1, array->entries - index);
+    /* If we're removing the last element, nothing has to be moved */
+    if(index < array->entries - 1)
+        array_move(array, index, index + 1, array->entries - index);
+
     array->entries--;
 
     return 0;

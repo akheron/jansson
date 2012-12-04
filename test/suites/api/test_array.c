@@ -206,6 +206,7 @@ static void test_insert(void)
 static void test_remove(void)
 {
     json_t *array, *five, *seven;
+    int i;
 
     array = json_array();
     five = json_integer(5);
@@ -252,6 +253,19 @@ static void test_remove(void)
        json_array_get(array, 1) != seven ||
        json_array_get(array, 2) != seven)
         fail("remove works incorrectly");
+
+    json_decref(array);
+
+    array = json_array();
+    for(i = 0; i < 4; i++) {
+        json_array_append(array, five);
+        json_array_append(array, seven);
+    }
+    if(json_array_size(array) != 8)
+        fail("unable to append 8 items to array");
+
+    /* Remove the last element from a "full" array. */
+    json_array_remove(array, 7);
 
     json_decref(five);
     json_decref(seven);
