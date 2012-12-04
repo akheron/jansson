@@ -264,8 +264,8 @@ static void test_remove(void)
     if(json_array_size(array) != 8)
         fail("unable to append 8 items to array");
 
-    /* Remove the last element from a "full" array. */
-    json_array_remove(array, 7);
+    /* Remove an element from a "full" array. */
+    json_array_remove(array, 5);
 
     json_decref(five);
     json_decref(seven);
