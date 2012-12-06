@@ -30,14 +30,16 @@
 #define TOKEN_TRUE           259
 #define TOKEN_FALSE          260
 #define TOKEN_NULL           261
+#define TOKEN_NAME           262
 
 /* Locale independent versions of isxxx() functions */
 #define l_isupper(c)  ('A' <= (c) && (c) <= 'Z')
 #define l_islower(c)  ('a' <= (c) && (c) <= 'z')
 #define l_isalpha(c)  (l_isupper(c) || l_islower(c))
 #define l_isdigit(c)  ('0' <= (c) && (c) <= '9')
+#define l_isodigit(c) ('0' <= (c) && (c) <= '7')
 #define l_isxdigit(c) \
-    (l_isdigit(c) || 'A' <= (c) || (c) <= 'F' || 'a' <= (c) || (c) <= 'f')
+    (l_isdigit(c) || ('A' <= (c) && (c) <= 'F') || ('a' <= (c) && (c) <= 'f'))
 
 /* Read one byte from stream, convert to unsigned char, then int, and
    return. return EOF on end of file. This corresponds to the
@@ -461,25 +463,61 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
     const char *saved_text;
     char *end;
     double value;
+    char base;
 
+    base = 10;
     lex->token = TOKEN_INVALID;
 
-    if(c == '-')
+    if(c == '-' || c == '+')
         c = lex_get_save(lex, error);
 
     if(c == '0') {
-        c = lex_get_save(lex, error);
-        if(l_isdigit(c)) {
+        int c2;
+        c2 = lex_get_save(lex, error);
+        if(c2 == 'x') {
+            c = lex_get_save(lex, error);
+            base = 16;
+        } else if(l_isdigit(c2)) {
+            c = c2;
+            base = 8;
+        } else {
+            lex_unget_unsave(lex, c2);
+        }
+    }
+
+    if(base == 16) {
+        if(l_isxdigit(c)) {
+            c = lex_get_save(lex, error);
+            while(l_isxdigit(c)) {
+                c = lex_get_save(lex, error);
+            }
+        }
+        else {
             lex_unget_unsave(lex, c);
             goto out;
         }
-    }
-    else if(l_isdigit(c)) {
-        c = lex_get_save(lex, error);
-        while(l_isdigit(c))
+    } else if(base == 10) {
+        if(l_isdigit(c)) {
             c = lex_get_save(lex, error);
-    }
-    else {
+            while(l_isdigit(c)) {
+                c = lex_get_save(lex, error);
+            }
+        }
+        else {
+            lex_unget_unsave(lex, c);
+            goto out;
+        }
+    } else if(base == 8) {
+        if(l_isodigit(c)) {
+            c = lex_get_save(lex, error);
+            while(l_isodigit(c))
+                c = lex_get_save(lex, error);
+        }
+        else {
+            lex_unget_unsave(lex, c);
+            goto out;
+        }
+    } else {
         lex_unget_unsave(lex, c);
         goto out;
     }
@@ -492,7 +530,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         saved_text = strbuffer_value(&lex->saved_text);
 
         errno = 0;
-        value = json_strtoint(saved_text, &end, 10);
+        value = json_strtoint(saved_text, &end, base);
         if(errno == ERANGE) {
             if(value < 0)
                 error_set(error, lex, "too big negative integer");
@@ -506,6 +544,9 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         lex->token = TOKEN_INTEGER;
         lex->value.integer = value;
         return 0;
+    } else if (base != 10) {
+        lex_unget_unsave(lex, c);
+        goto out;
     }
 
     if(c == '.') {
@@ -592,24 +633,35 @@ static int lex_scan(lex_t *lex, json_error_t *error)
     else if(l_isalpha(c)) {
         /* eat up the whole identifier for clearer error messages */
         const char *saved_text;
+        char is_pure;
 
+        is_pure = 1;
         c = lex_get_save(lex, error);
-        while(l_isalpha(c))
+        while(l_isalpha(c) || c == '_') {
+            if (c == '_') is_pure = 0;
             c = lex_get_save(lex, error);
+        }
         lex_unget_unsave(lex, c);
 
         saved_text = strbuffer_value(&lex->saved_text);
 
-        if(strcmp(saved_text, "true") == 0)
+        if(is_pure && strcmp(saved_text, "true") == 0)
             lex->token = TOKEN_TRUE;
-        else if(strcmp(saved_text, "false") == 0)
+        else if(is_pure && strcmp(saved_text, "false") == 0)
             lex->token = TOKEN_FALSE;
-        else if(strcmp(saved_text, "null") == 0)
+        else if(is_pure && strcmp(saved_text, "null") == 0)
             lex->token = TOKEN_NULL;
-        else
-            lex->token = TOKEN_INVALID;
-    }
+        else {
+            unsigned int i;
+            lex->token = TOKEN_NAME;
+            lex->value.string = jsonp_malloc(lex->saved_text.length + 1);
+            for (i = 0; i < lex->saved_text.length; i++) {
+                lex->value.string[i] = lex->saved_text.value[i];
+            }
+            lex->value.string[i] = '\0';
+        }
 
+    }
     else {
         /* save the rest of the input UTF-8 sequence to get an error
            message of valid UTF-8 */
@@ -621,10 +673,10 @@ out:
     return lex->token;
 }
 
-static char *lex_steal_string(lex_t *lex)
+static char *lex_steal_name(lex_t *lex)
 {
     char *result = NULL;
-    if(lex->token == TOKEN_STRING)
+    if(lex->token == TOKEN_STRING || lex->token == TOKEN_NAME)
     {
         result = lex->value.string;
         lex->value.string = NULL;
@@ -668,12 +720,12 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
         char *key;
         json_t *value;
 
-        if(lex->token != TOKEN_STRING) {
+        if(lex->token != TOKEN_STRING && lex->token != TOKEN_NAME) {
             error_set(error, lex, "string or '}' expected");
             goto error;
         }
 
-        key = lex_steal_string(lex);
+        key = lex_steal_name(lex);
         if(!key)
             return NULL;
 
