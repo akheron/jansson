@@ -74,7 +74,7 @@ static void insert_to_bucket(hashtable_t *hashtable, bucket_t *bucket,
     }
 }
 
-static size_t primes[] = {
+static const size_t primes[] = {
     5, 13, 23, 53, 97, 193, 389, 769, 1543, 3079, 6151, 12289, 24593,
     49157, 98317, 196613, 393241, 786433, 1572869, 3145739, 6291469,
     12582917, 25165843, 50331653, 100663319, 201326611, 402653189,
