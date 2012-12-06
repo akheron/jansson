@@ -38,7 +38,7 @@ static int dump_to_file(const char *buffer, size_t size, void *data)
 }
 
 /* 32 spaces (the maximum indentation size) */
-static char whitespace[] = "                                ";
+static const char whitespace[] = "                                ";
 
 static int dump_indent(size_t flags, int depth, int space, json_dump_callback_t dump, void *data)
 {

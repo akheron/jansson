@@ -21,7 +21,7 @@ typedef struct {
     int column;
 } scanner_t;
 
-static const char *type_names[] = {
+static const char * const type_names[] = {
     "object",
     "array",
     "string",
@@ -34,7 +34,7 @@ static const char *type_names[] = {
 
 #define type_name(x) type_names[json_typeof(x)]
 
-static const char *unpack_value_starters = "{[siIbfFOon";
+static const char * const unpack_value_starters = "{[siIbfFOon";
 
 
 static void scanner_init(scanner_t *s, json_error_t *error,
