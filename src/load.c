@@ -37,6 +37,7 @@
 #define l_islower(c)  ('a' <= (c) && (c) <= 'z')
 #define l_isalpha(c)  (l_isupper(c) || l_islower(c))
 #define l_isdigit(c)  ('0' <= (c) && (c) <= '9')
+#define l_isodigit(c) ('0' <= (c) && (c) <= '7')
 #define l_isxdigit(c) \
     (l_isdigit(c) || ('A' <= (c) && (c) <= 'F') || ('a' <= (c) && (c) <= 'f'))
 
@@ -462,25 +463,61 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
     const char *saved_text;
     char *end;
     double value;
+    char base;
 
+    base = 10;
     lex->token = TOKEN_INVALID;
 
-    if(c == '-')
+    if(c == '-' || c == '+')
         c = lex_get_save(lex, error);
 
     if(c == '0') {
-        c = lex_get_save(lex, error);
-        if(l_isdigit(c)) {
+        int c2;
+        c2 = lex_get_save(lex, error);
+        if(c2 == 'x') {
+            c = lex_get_save(lex, error);
+            base = 16;
+        } else if(l_isdigit(c2)) {
+            c = c2;
+            base = 8;
+        } else {
+            lex_unget_unsave(lex, c2);
+        }
+    }
+
+    if(base == 16) {
+        if(l_isxdigit(c)) {
+            c = lex_get_save(lex, error);
+            while(l_isxdigit(c)) {
+                c = lex_get_save(lex, error);
+            }
+        }
+        else {
             lex_unget_unsave(lex, c);
             goto out;
         }
-    }
-    else if(l_isdigit(c)) {
-        c = lex_get_save(lex, error);
-        while(l_isdigit(c))
+    } else if(base == 10) {
+        if(l_isdigit(c)) {
             c = lex_get_save(lex, error);
-    }
-    else {
+            while(l_isdigit(c)) {
+                c = lex_get_save(lex, error);
+            }
+        }
+        else {
+            lex_unget_unsave(lex, c);
+            goto out;
+        }
+    } else if(base == 8) {
+        if(l_isodigit(c)) {
+            c = lex_get_save(lex, error);
+            while(l_isodigit(c))
+                c = lex_get_save(lex, error);
+        }
+        else {
+            lex_unget_unsave(lex, c);
+            goto out;
+        }
+    } else {
         lex_unget_unsave(lex, c);
         goto out;
     }
@@ -493,7 +530,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         saved_text = strbuffer_value(&lex->saved_text);
 
         errno = 0;
-        value = json_strtoint(saved_text, &end, 10);
+        value = json_strtoint(saved_text, &end, base);
         if(errno == ERANGE) {
             if(value < 0)
                 error_set(error, lex, "too big negative integer");
@@ -507,6 +544,9 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         lex->token = TOKEN_INTEGER;
         lex->value.integer = value;
         return 0;
+    } else if (base != 10) {
+        lex_unget_unsave(lex, c);
+        goto out;
     }
 
     if(c == '.') {
