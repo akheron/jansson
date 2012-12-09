@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
 
 #include "jansson.h"
 #include "hashtable.h"
@@ -31,6 +32,113 @@ static JSON_INLINE void json_init(json_t *json, json_type type)
     json->refcount = 1;
 }
 
+
+/*** generic ***/
+
+json_t *json_get(json_t *root, const char *path)
+{
+	char root_isObject;
+	char root_isArray;
+	const char *d, *s, *e;
+	const char *t;
+	json_t *r;
+
+	if(!root)
+		return NULL;
+
+	root_isObject = json_is_object(root);
+	root_isArray = json_is_array(root);
+
+	if(!root_isObject && !root_isArray)
+		return NULL;
+
+	if(!path)
+		return root;
+
+	d = NULL;
+	s = NULL;
+	e = NULL;
+
+	for(t = path; *t != '\0'; t++)
+	{
+		if(*t == '\\') {
+			t++;
+			if (*t == '\0') return NULL;
+			continue;
+		}
+		else if(root_isObject) {
+			if (*t == '.' || *t == '[') {
+				d = t;
+				break;
+			}
+		}
+		else if(root_isArray) {
+			if(*t == '[') {
+				if(s != NULL)
+					return NULL;
+				s = t + 1;
+				t++;
+				if(*t == '\0')
+					return NULL;
+				continue;
+			}
+			else if(*t == ']') {
+				if(s == NULL)
+					return NULL;
+				e = t;
+				break;
+			}
+		}
+	}
+	if(root_isObject && *t == '\0')
+		d = t;
+
+	if(d) {
+		char tmpName[4096];
+		unsigned int len;
+
+		while(isspace(*path))
+			path++;
+
+		len = d - path;
+		if(len >= sizeof(tmpName))
+			len = sizeof(tmpName) - 1;
+		memcpy(tmpName, path, len);
+		tmpName[len] = '\0';
+
+		r = json_object_get(root, tmpName);
+
+		path = d;
+		if(*path == '.')
+			path++;
+	}
+	else if(s && e) {
+		long int index;
+		char *e2;
+
+		index = strtol(s, &e2, 10);
+		if(e != e2)
+			return NULL;
+
+		r = json_array_get(root, index);
+
+		path = e + 1;
+	}
+	else {
+		return NULL;
+	}
+
+	while(isspace(*path))
+		path++;
+	if(*path == '.') {
+		path++;
+		while (isspace(*path)) path++;
+	}
+	if (*path != '\0')
+		r = json_get(r, path);
+
+	return r;
+}
 
 /*** object ***/
 
