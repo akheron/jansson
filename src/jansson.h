@@ -124,6 +124,8 @@ typedef struct {
 
 /* getters, setters, manipulation */
 
+json_t *json_get(json_t *root, const char *path);
+
 size_t json_object_size(const json_t *object);
 json_t *json_object_get(const json_t *object, const char *key);
 int json_object_set_new(json_t *object, const char *key, json_t *value);
