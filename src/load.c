@@ -447,7 +447,7 @@ out:
 }
 
 #if JSON_INTEGER_IS_LONG_LONG
-#ifdef _MSC_VER // Microsoft Visual Studio
+#ifdef _MSC_VER  /* Microsoft Visual Studio */
 #define json_strtoint     _strtoi64
 #else
 #define json_strtoint     strtoll
