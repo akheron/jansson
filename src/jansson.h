@@ -47,7 +47,7 @@ typedef enum {
     JSON_NULL
 } json_type;
 
-typedef struct {
+typedef struct json_t {
     json_type type;
     size_t refcount;
 } json_t;
