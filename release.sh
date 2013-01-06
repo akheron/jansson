@@ -61,7 +61,9 @@ mv doc/_build/html jansson-$v-doc
 
 # Make and sign documentation tarballs
 for s in gz bz2; do
-    tar czf jansson-$v-doc.tar.$s jansson-$v-doc
+    [ $s = gz ] && compress=gzip
+    [ $s = bz2 ] && compress=bzip2
+    tar cf - jansson-$v-doc | $compress -9 -c > jansson-$v-doc.tar.$s
     gpg --detach-sign --armor jansson-$v-doc.tar.$s
 done
 
