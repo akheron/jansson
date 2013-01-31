@@ -5,7 +5,6 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#define _GNU_SOURCE
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -16,14 +15,6 @@
 #include "hashtable.h"
 #include "jansson_private.h"
 #include "utf.h"
-
-/* Work around nonstandard isnan() and isinf() implementations */
-#ifndef isnan
-static JSON_INLINE int isnan(double x) { return x != x; }
-#endif
-#ifndef isinf
-static JSON_INLINE int isinf(double x) { return !isnan(x) && isnan(x - x); }
-#endif
 
 static JSON_INLINE void json_init(json_t *json, json_type type)
 {
