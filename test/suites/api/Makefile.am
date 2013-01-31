@@ -1,4 +1,4 @@
-EXTRA_DIST = run check-exports
+EXTRA_DIST = run
 
 check_PROGRAMS = \
 	test_array \

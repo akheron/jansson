@@ -7,7 +7,7 @@
 
 is_test() {
     case "$test_name" in
-        *.c|check-exports)
+        *.c)
             return 0
             ;;
         *)
@@ -17,15 +17,11 @@ is_test() {
 }
 
 run_test() {
-    if [ "$test_name" = "check-exports" ]; then
-        test_log=$test_log $test_path >$test_log/stdout 2>$test_log/stderr
-    else
-        $test_runner $suite_builddir/${test_name%.c} \
-            >$test_log/stdout \
-            2>$test_log/stderr \
-            || return 1
-        valgrind_check $test_log/stderr || return 1
-    fi
+    $test_runner $suite_builddir/${test_name%.c} \
+        >$test_log/stdout \
+        2>$test_log/stderr \
+        || return 1
+    valgrind_check $test_log/stderr || return 1
 }
 
 show_error() {
