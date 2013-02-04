@@ -8,3 +8,8 @@ dvi:
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = jansson.pc
+
+if GCC
+# These flags are gcc specific
+export AM_CFLAGS = -Wall -Wextra -Wdeclaration-after-statement
+endif
