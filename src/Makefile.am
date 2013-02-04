@@ -22,8 +22,3 @@ libjansson_la_LDFLAGS = \
 	-no-undefined \
 	-export-symbols-regex '^json_' \
 	-version-info 8:0:4
-
-if GCC
-# These flags are gcc specific
-AM_CFLAGS = -Wall -Wextra -Wdeclaration-after-statement -Werror
-endif

@@ -11,7 +11,7 @@
 static void test_misc(void)
 {
     json_t *array, *five, *seven, *value;
-    int i;
+    size_t i;
 
     array = json_array();
     five = json_integer(5);

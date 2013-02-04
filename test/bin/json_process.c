@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
         char *buffer = NULL;
 
         while(1) {
-            int count;
+            size_t count;
 
             size = (size == 0 ? 128 : size * 2);
             buffer = realloc(buffer, size);
