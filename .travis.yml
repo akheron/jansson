@@ -2,4 +2,4 @@ language: c
 compiler:
   - gcc
   - clang
-script: autoreconf -f -i && ./configure && make check
+script: autoreconf -f -i && CFLAGS=-Werror ./configure && make check
