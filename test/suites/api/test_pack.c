@@ -26,7 +26,6 @@ static void run_tests()
     /*
      * Simple, valid json_pack cases
      */
-
     /* true */
     value = json_pack("b", 1);
     if(!json_is_true(value))
