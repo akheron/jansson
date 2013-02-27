@@ -30,6 +30,12 @@
 #  define int32_t @JSON_INT32@
 #endif
 
+#cmakedefine HAVE_SSIZE_T 1
+
+#ifndef HAVE_SSIZE_T
+#  define ssize_t @JSON_SSIZE@
+#endif
+
 #ifndef HAVE_SNPRINTF
 #  define snprintf @JSON_SNPRINTF@
 #endif
