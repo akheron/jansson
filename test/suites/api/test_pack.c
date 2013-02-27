@@ -26,12 +26,11 @@ static void run_tests()
     /*
      * Simple, valid json_pack cases
      */
-
     /* true */
     value = json_pack("b", 1);
     if(!json_is_true(value))
         fail("json_pack boolean failed");
-    if(value->refcount != (ssize_t)-1)
+    if(value->refcount != (size_t)-1)
         fail("json_pack boolean refcount failed");
     json_decref(value);
 
@@ -39,7 +38,7 @@ static void run_tests()
     value = json_pack("b", 0);
     if(!json_is_false(value))
         fail("json_pack boolean failed");
-    if(value->refcount != (ssize_t)-1)
+    if(value->refcount != (size_t)-1)
         fail("json_pack boolean refcount failed");
     json_decref(value);
 
@@ -47,7 +46,7 @@ static void run_tests()
     value = json_pack("n");
     if(!json_is_null(value))
         fail("json_pack null failed");
-    if(value->refcount != (ssize_t)-1)
+    if(value->refcount != (size_t)-1)
         fail("json_pack null refcount failed");
     json_decref(value);
 
@@ -55,7 +54,7 @@ static void run_tests()
     value = json_pack("i", 1);
     if(!json_is_integer(value) || json_integer_value(value) != 1)
         fail("json_pack integer failed");
-    if(value->refcount != (ssize_t)1)
+    if(value->refcount != (size_t)1)
         fail("json_pack integer refcount failed");
     json_decref(value);
 
@@ -63,7 +62,7 @@ static void run_tests()
     value = json_pack("I", (json_int_t)555555);
     if(!json_is_integer(value) || json_integer_value(value) != 555555)
         fail("json_pack json_int_t failed");
-    if(value->refcount != (ssize_t)1)
+    if(value->refcount != (size_t)1)
         fail("json_pack integer refcount failed");
     json_decref(value);
 
@@ -71,7 +70,7 @@ static void run_tests()
     value = json_pack("f", 1.0);
     if(!json_is_real(value) || json_real_value(value) != 1.0)
         fail("json_pack real failed");
-    if(value->refcount != (ssize_t)1)
+    if(value->refcount != (size_t)1)
         fail("json_pack real refcount failed");
     json_decref(value);
 
@@ -79,7 +78,7 @@ static void run_tests()
     value = json_pack("s", "test");
     if(!json_is_string(value) || strcmp("test", json_string_value(value)))
         fail("json_pack string failed");
-    if(value->refcount != (ssize_t)1)
+    if(value->refcount != (size_t)1)
         fail("json_pack string refcount failed");
     json_decref(value);
 
@@ -87,7 +86,7 @@ static void run_tests()
     value = json_pack("{}", 1.0);
     if(!json_is_object(value) || json_object_size(value) != 0)
         fail("json_pack empty object failed");
-    if(value->refcount != (ssize_t)1)
+    if(value->refcount != (size_t)1)
         fail("json_pack empty object refcount failed");
     json_decref(value);
 
@@ -95,7 +94,7 @@ static void run_tests()
     value = json_pack("[]", 1.0);
     if(!json_is_array(value) || json_array_size(value) != 0)
         fail("json_pack empty list failed");
-    if(value->refcount != (ssize_t)1)
+    if(value->refcount != (size_t)1)
         fail("json_pack empty list failed");
     json_decref(value);
 
@@ -103,7 +102,7 @@ static void run_tests()
     value = json_pack("o", json_integer(1));
     if(!json_is_integer(value) || json_integer_value(value) != 1)
         fail("json_pack object failed");
-    if(value->refcount != (ssize_t)1)
+    if(value->refcount != (size_t)1)
         fail("json_pack integer refcount failed");
     json_decref(value);
 
@@ -111,7 +110,7 @@ static void run_tests()
     value = json_pack("O", json_integer(1));
     if(!json_is_integer(value) || json_integer_value(value) != 1)
         fail("json_pack object failed");
-    if(value->refcount != (ssize_t)2)
+    if(value->refcount != (size_t)2)
         fail("json_pack integer refcount failed");
     json_decref(value);
     json_decref(value);
@@ -122,7 +121,7 @@ static void run_tests()
         fail("json_pack array failed");
     if(!json_is_array(json_object_get(value, "foo")))
         fail("json_pack array failed");
-    if(json_object_get(value, "foo")->refcount != (ssize_t)1)
+    if(json_object_get(value, "foo")->refcount != (size_t)1)
         fail("json_pack object refcount failed");
     json_decref(value);
 
