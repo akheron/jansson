@@ -6,6 +6,12 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <jansson_config.h>
+
 #include <string.h>
 #include <jansson.h>
 #include <stdio.h>

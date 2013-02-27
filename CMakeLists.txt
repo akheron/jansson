@@ -40,6 +40,11 @@ project (jansson C)
 # Options
 OPTION (BUILD_SHARED_LIBS "Build shared libraries." OFF)
 
+# Set some nicer output dirs.
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+
 # This is how I thought it should go
 # set (JANSSON_VERSION "2.3.1")
 # set (JANSSON_SOVERSION 2)
@@ -56,6 +61,10 @@ include (CheckFunctionKeywords)
 include (CheckIncludeFiles)
 include (CheckTypeSize)
 
+# Turn off Microsofts "security" warnings.
+if (MSVC)
+   add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo" )
+endif()
 
 # Check for the int-type includes
 check_include_files (sys/types.h HAVE_SYS_TYPES_H)
@@ -86,9 +95,17 @@ else ()
    message (FATAL_ERROR "Could not detect a valid 32 bit integer type")
 endif ()
 
-# Check if we have int32_t, if not then we will use long (in config.h.cmake)
-check_type_size (int32_t INT32_T)
-
+# Check for ssize_t and SSIZE_T existance.
+check_type_size(ssize_t SSIZE_T)
+check_type_size(SSIZE_T UPPERCASE_SSIZE_T)
+if(NOT HAVE_SSIZE_T)
+   if(HAVE_UPPERCASE_SSIZE_T)
+      set(JSON_SSIZE SSIZE_T)
+   else()
+      set(JSON_SSIZE int)
+   endif()
+endif()
+set(CMAKE_EXTRA_INCLUDE_FILES "")
 
 # Check for all the variants of strtoll
 check_function_exists (strtoll HAVE_STRTOLL)
@@ -207,7 +224,31 @@ add_definitions (-DHAVE_CONFIG_H)
 include_directories (${CMAKE_CURRENT_BINARY_DIR}/include)
 include_directories (${CMAKE_CURRENT_BINARY_DIR}/private_include)
 
-add_subdirectory (src)
+# Add the lib sources.
+file (GLOB C_FILES src/*.c)
+
+if (BUILD_SHARED_LIBS)
+
+   add_library (jansson SHARED ${C_FILES} jansson.def)
+
+   set_target_properties (jansson PROPERTIES
+      VERSION ${JANSSON_VERSION}
+      SOVERSION ${JANSSON_SOVERSION})
+
+else ()
+
+   add_library (jansson ${C_FILES})
+
+endif ()
+
+# LIBRARY for linux
+# RUNTIME for windows (when building shared)
+install (TARGETS jansson
+   ARCHIVE DESTINATION lib
+   LIBRARY DESTINATION lib
+   RUNTIME DESTINATION bin
+)
+
 
 install (FILES ${CMAKE_CURRENT_BINARY_DIR}/include/jansson_config.h DESTINATION include)
 install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/jansson.h DESTINATION include)
@@ -263,14 +304,75 @@ if (BUILD_TESTS)
    ENABLE_TESTING()
 
    if (TEST_WITH_VALGRIND)
+      # TODO: Add FindValgrind.cmake instead of having a hardcoded path.
+      
       # enable valgrind
-      set (CMAKE_MEMORYCHECK_COMMAND /usr/bin/valgrind)
-      set (CMAKE_MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --show-reachable=yes --track-origins=yes -q")
+      set(CMAKE_MEMORYCHECK_COMMAND /usr/bin/valgrind)
+      set(CMAKE_MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --show-reachable=yes --track-origins=yes -q")
 
       set(MEMCHECK_COMMAND "${CMAKE_MEMORYCHECK_COMMAND} ${CMAKE_MEMORYCHECK_COMMAND_OPTIONS}")
       separate_arguments(MEMCHECK_COMMAND)
    endif ()
 
-   add_subdirectory (test/suites/api)
+   #
+   # Test suites.
+   #
+   if (CMAKE_COMPILER_IS_GNUCC)
+      add_definitions(-Wall -Wextra -Wdeclaration-after-statement -Werror)
+   endif()
+
+   set(api_tests 
+         test_array
+         test_copy
+         test_dump
+         test_dump_callback
+         test_equal
+         test_load
+         test_loadb
+         test_number
+         test_object
+         test_pack
+         test_simple
+         test_unpack)
+
+   # Doing arithmetic on void pointers is not allowed by Microsofts compiler
+   # such as secure_malloc and secure_free is doing, so exclude it for now.
+   if (NOT MSVC)
+      list(APPEND api_tests test_memory_funcs)
+   endif()
+
+   # Helper macro for building and linking a test program.
+   macro(build_testprog name dir)
+       add_executable(${name} EXCLUDE_FROM_ALL ${dir}/${name}.c)
+       add_dependencies(${name} jansson)
+       target_link_libraries(${name} jansson)
+   endmacro(build_testprog)
+
+   # Create executables and tests/valgrind tests for API tests.
+   foreach (test ${api_tests})
+      build_testprog(${test} ${PROJECT_SOURCE_DIR}/test/suites/api)
+      add_test(${test} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
+
+      if (TEST_WITH_VALGRIND)
+         add_test(memcheck_${test} ${MEMCHECK_COMMAND} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
+      endif()
+   endforeach()
+
+   # Test harness for the suites tests.
+   build_testprog(json_process ${PROJECT_SOURCE_DIR}/test/bin)
+
+   set(SUITES encoding-flags valid invalid invalid-unicode)
+   foreach (SUITE ${SUITES})
+       file(GLOB TESTDIRS ${jansson_SOURCE_DIR}/test/suites/${SUITE}/*)
+       foreach (TESTDIR ${TESTDIRS})
+         if (IS_DIRECTORY ${TESTDIR})
+            get_filename_component(TNAME ${TESTDIR} NAME)
+            add_test(${SUITE}__${TNAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process ${TESTDIR})
+         endif()
+       endforeach()
+   endforeach ()
+
+   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}
+                     DEPENDS ${api_tests} json_process)
 endif ()
 
