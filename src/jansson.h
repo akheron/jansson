@@ -52,6 +52,7 @@ typedef struct json_t {
     size_t refcount;
 } json_t;
 
+#ifndef JANSSON_USING_CMAKE /* disabled if using cmake */
 #if JSON_INTEGER_IS_LONG_LONG
 #ifdef _WIN32
 #define JSON_INTEGER_FORMAT "I64d"
@@ -63,6 +64,7 @@ typedef long long json_int_t;
 #define JSON_INTEGER_FORMAT "ld"
 typedef long json_int_t;
 #endif /* JSON_INTEGER_IS_LONG_LONG */
+#endif
 
 #define json_typeof(json)      ((json)->type)
 #define json_is_object(json)   (json && json_typeof(json) == JSON_OBJECT)
