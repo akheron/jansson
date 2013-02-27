@@ -1,34 +1,47 @@
 # Notes:
 # 
 # Author: Paul Harris, June 2012
+# Additions: Joakim Soderberg, Febuary 2013
 # 
-# Supports: building static/shared, release/debug/etc, can also build html docs and some of the tests.
-# Note that its designed for out-of-tree builds, so it will not pollute your source tree.
+# Supports: building static/shared, release/debug/etc, can also build html docs 
+# and some of the tests.
+# Note that its designed for out-of-tree builds, so it will not pollute your 
+# source tree.
 # 
-# TODO 1: Finish implementing tests. api tests are working, but the valgrind variants are not flagging problems.
+# TODO 1: Finish implementing tests. api tests are working, but the valgrind 
+# variants are not flagging problems.
 # 
 # TODO 2: There is a check_exports script that would try and incorporate.
 # 
-# TODO 3: Consolidate version numbers, currently the version number is written into: * cmake (here) * autotools (the configure) * source code header files.  Should not be written directly into header files, autotools/cmake can do that job.
+# TODO 3: Consolidate version numbers, currently the version number is written 
+# into: * cmake (here) * autotools (the configure) * source code header files.  
+# Should not be written directly into header files, autotools/cmake can do
+# that job.
 # 
 # Brief intro on how to use cmake:
 # > mkdir build (somewhere - we do out-of-tree builds)
-# > use cmake, ccmake, or cmake-gui to configure the project. for linux, you can only choose one variant: release,debug,etc... and static or shared.
+# > use cmake, ccmake, or cmake-gui to configure the project. for linux, you
+# can only choose one variant: release,debug,etc... and static or shared.
 # >> example:
 # >> cd build
 # >> ccmake -i ../path_to_jansson_dir
-# >>  inside, configure your options. press C until there are no lines with * next to them.
-# >>  note, I like to configure the 'install' path to ../install, so I get self-contained clean installs I can point other projects to.
+# >>  inside, configure your options. press C until there are no lines 
+#     with * next to them.
+# >>  note, I like to configure the 'install' path to ../install, so I get 
+#     self-contained clean installs I can point other projects to.
 # >>  press G to 'generate' the project files.
 # >> make (to build the project)
 # >> make install
 # >> make test (to run the tests, if you enabled them)
 # 
 # Brief description on how it works:
-# There is a small heirachy of CMakeLists.txt files which define how the project is built.
-# Header file detection etc is done, and the results are written into config.h and jansson_config.h,
-# which are generated from the corresponding config.h.cmake and jansson_config.h.cmake template files.
-# The generated header files end up in the build directory - not in the source directory.
+# There is a small heirachy of CMakeLists.txt files which define how the 
+# project is built.
+# Header file detection etc is done, and the results are written into config.h 
+# and jansson_config.h, which are generated from the corresponding 
+# config.h.cmake and jansson_config.h.cmake template files.
+# The generated header files end up in the build directory - not in 
+# the source directory.
 # The rest is down to the usual make process.
 
 
@@ -54,7 +67,7 @@ set (JANSSON_VERSION "4.3.1")
 set (JANSSON_SOVERSION 4)
 
 # for CheckFunctionKeywords
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include (CheckFunctionExists)
 include (CheckFunctionKeywords)
@@ -174,8 +187,6 @@ check_function_exists (setlocale HAVE_SETLOCALE)
 check_function_keywords("inline")
 check_function_keywords("__inline")
 check_function_keywords("__inline__")
-# check_function_keywords("__declspec(dllexport)")
-# check_function_keywords("__declspec(dllimport)")
 
 if (HAVE_INLINE)
    set (JSON_INLINE inline)
@@ -190,13 +201,10 @@ endif (HAVE_INLINE)
 
 # Find our snprintf
 check_function_exists (snprintf HAVE_SNPRINTF)
-# check_function_exists (_snprintf_s HAVE__SNPRINTF_s)
 check_function_exists (_snprintf HAVE__SNPRINTF)
 
 if (HAVE_SNPRINTF)
    set (JSON_SNPRINTF snprintf)
-# elseif (HAVE__SNPRINTF_s)
-   # set (JSON_SNPRINTF _snprintf_s)
 elseif (HAVE__SNPRINTF)
    set (JSON_SNPRINTF _snprintf)
 endif ()
@@ -229,7 +237,7 @@ file (GLOB C_FILES src/*.c)
 
 if (BUILD_SHARED_LIBS)
 
-   add_library (jansson SHARED ${C_FILES} jansson.def)
+   add_library (jansson SHARED ${C_FILES} src/jansson.def)
 
    set_target_properties (jansson PROPERTIES
       VERSION ${JANSSON_VERSION}
@@ -249,9 +257,10 @@ install (TARGETS jansson
    RUNTIME DESTINATION bin
 )
 
-
-install (FILES ${CMAKE_CURRENT_BINARY_DIR}/include/jansson_config.h DESTINATION include)
-install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/jansson.h DESTINATION include)
+install (FILES 
+         ${CMAKE_CURRENT_BINARY_DIR}/include/jansson_config.h 
+         ${CMAKE_CURRENT_SOURCE_DIR}/src/jansson.h 
+         DESTINATION include)
 
 # For building Documentation (uses Sphinx)
 OPTION (BUILD_DOCS "Build documentation (uses python-sphinx)." OFF)
@@ -296,10 +305,10 @@ if (BUILD_DOCS)
 endif ()
 
 
-OPTION (BUILD_TESTS "Build tests ('make test' to execute tests)" OFF)
+OPTION (WITHOUT_TESTS "Don't build tests ('make test' to execute tests)" OFF)
 
-if (BUILD_TESTS)
-   OPTION (TEST_WITH_VALGRIND "Enable valgrind tests (TODO flag when something is wrong, currently will always pass)" OFF)
+if (NOT WITHOUT_TESTS)
+   OPTION (TEST_WITH_VALGRIND "Enable valgrind tests." OFF)
 
    ENABLE_TESTING()
 
@@ -307,10 +316,12 @@ if (BUILD_TESTS)
       # TODO: Add FindValgrind.cmake instead of having a hardcoded path.
       
       # enable valgrind
-      set(CMAKE_MEMORYCHECK_COMMAND /usr/bin/valgrind)
-      set(CMAKE_MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --show-reachable=yes --track-origins=yes -q")
+      set(CMAKE_MEMORYCHECK_COMMAND valgrind)
+      set(CMAKE_MEMORYCHECK_COMMAND_OPTIONS 
+         "--leak-check=full --show-reachable=yes --track-origins=yes -q")
 
-      set(MEMCHECK_COMMAND "${CMAKE_MEMORYCHECK_COMMAND} ${CMAKE_MEMORYCHECK_COMMAND_OPTIONS}")
+      set(MEMCHECK_COMMAND 
+         "${CMAKE_MEMORYCHECK_COMMAND} ${CMAKE_MEMORYCHECK_COMMAND_OPTIONS}")
       separate_arguments(MEMCHECK_COMMAND)
    endif ()
 
@@ -319,7 +330,7 @@ if (BUILD_TESTS)
    #
    if (CMAKE_COMPILER_IS_GNUCC)
       add_definitions(-Wall -Wextra -Wdeclaration-after-statement -Werror)
-   endif()
+   endif ()
 
    set(api_tests 
          test_array
@@ -343,7 +354,7 @@ if (BUILD_TESTS)
 
    # Helper macro for building and linking a test program.
    macro(build_testprog name dir)
-       add_executable(${name} EXCLUDE_FROM_ALL ${dir}/${name}.c)
+       add_executable(${name} ${dir}/${name}.c)
        add_dependencies(${name} jansson)
        target_link_libraries(${name} jansson)
    endmacro(build_testprog)
@@ -354,9 +365,10 @@ if (BUILD_TESTS)
       add_test(${test} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
 
       if (TEST_WITH_VALGRIND)
-         add_test(memcheck_${test} ${MEMCHECK_COMMAND} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
-      endif()
-   endforeach()
+         add_test(memcheck_${test} ${MEMCHECK_COMMAND} 
+                  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
+      endif ()
+   endforeach ()
 
    # Test harness for the suites tests.
    build_testprog(json_process ${PROJECT_SOURCE_DIR}/test/bin)
@@ -367,12 +379,10 @@ if (BUILD_TESTS)
        foreach (TESTDIR ${TESTDIRS})
          if (IS_DIRECTORY ${TESTDIR})
             get_filename_component(TNAME ${TESTDIR} NAME)
-            add_test(${SUITE}__${TNAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process ${TESTDIR})
-         endif()
-       endforeach()
+            add_test(${SUITE}__${TNAME} 
+                     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process ${TESTDIR})
+         endif ()
+       endforeach ()
    endforeach ()
-
-   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}
-                     DEPENDS ${api_tests} json_process)
 endif ()
 
