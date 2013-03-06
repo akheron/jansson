@@ -221,11 +221,6 @@ elseif (HAVE__VSNPRINTF)
    set (JSON_VSNPRINTF _vsnprintf)
 endif ()
 
-
-if (MSVC)
-   set (CMAKE_DEBUG_POSTFIX "_d")
-endif (MSVC)
-
 # configure the public config file
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/jansson_config.h.cmake
                 ${CMAKE_CURRENT_BINARY_DIR}/include/jansson_config.h)
