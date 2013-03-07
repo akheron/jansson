@@ -210,7 +210,7 @@ elseif (HAVE__SNPRINTF)
 endif ()
 
 # configure the public config file
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/jansson_config.h.cmake
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/jansson_config.h.cmake
                 ${CMAKE_CURRENT_BINARY_DIR}/include/jansson_config.h)
 
 # Copy the jansson.h file to the public include folder
@@ -219,7 +219,7 @@ file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/jansson.h
 
 
 # configure the private config file
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.cmake
                 ${CMAKE_CURRENT_BINARY_DIR}/private_include/config.h)
 
 # and tell the source code to include it
