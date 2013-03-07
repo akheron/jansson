@@ -54,7 +54,7 @@ set (JANSSON_VERSION "4.4.0")
 set (JANSSON_SOVERSION 4)
 
 # for CheckFunctionKeywords
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include (CheckFunctionExists)
 include (CheckFunctionKeywords)
