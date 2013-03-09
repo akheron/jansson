@@ -128,6 +128,7 @@ int main(int argc, char *argv[])
     if(!json_is_array(root))
     {
         fprintf(stderr, "error: root is not an array\n");
+        json_decref(root);
         return 1;
     }
 
@@ -140,6 +141,7 @@ int main(int argc, char *argv[])
         if(!json_is_object(data))
         {
             fprintf(stderr, "error: commit data %d is not an object\n", i + 1);
+            json_decref(root);
             return 1;
         }
 
@@ -154,6 +156,7 @@ int main(int argc, char *argv[])
         if(!json_is_object(commit))
         {
             fprintf(stderr, "error: commit %d: commit is not an object\n", i + 1);
+            json_decref(root);
             return 1;
         }
 
@@ -161,6 +164,7 @@ int main(int argc, char *argv[])
         if(!json_is_string(message))
         {
             fprintf(stderr, "error: commit %d: message is not a string\n", i + 1);
+            json_decref(root);
             return 1;
         }
 

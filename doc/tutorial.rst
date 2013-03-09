@@ -178,6 +178,7 @@ We check that the returned value really is an array::
     if(!json_is_array(root))
     {
         fprintf(stderr, "error: root is not an array\n");
+        json_decref(root);
         return 1;
     }
 
@@ -192,6 +193,7 @@ Then we proceed to loop over all the commits in the array::
         if(!json_is_object(data))
         {
             fprintf(stderr, "error: commit data %d is not an object\n", i + 1);
+            json_decref(root);
             return 1;
         }
     ...
@@ -209,6 +211,7 @@ object. We also do proper type checks::
         if(!json_is_string(sha))
         {
             fprintf(stderr, "error: commit %d: sha is not a string\n", i + 1);
+            json_decref(root);
             return 1;
         }
 
@@ -216,6 +219,7 @@ object. We also do proper type checks::
         if(!json_is_object(commit))
         {
             fprintf(stderr, "error: commit %d: commit is not an object\n", i + 1);
+            json_decref(root);
             return 1;
         }
 
@@ -223,6 +227,7 @@ object. We also do proper type checks::
         if(!json_is_string(message))
         {
             fprintf(stderr, "error: commit %d: message is not a string\n", i + 1);
+            json_decref(root);
             return 1;
         }
     ...
