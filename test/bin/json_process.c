@@ -36,6 +36,7 @@ struct config {
     int ensure_ascii;
     int sort_keys;
     int strip;
+    int use_env;
 } conf;
 
 #define l_isspace(c) ((c) == ' ' || (c) == '\n' || (c) == '\r' || (c) == '\t')
@@ -145,8 +146,7 @@ static int cmpfile(const char *str, const char *path, const char *fname)
     return ret;
 }
 
-
-int main(int argc, char *argv[])
+int use_conf(int argc, char **argv, char *test_path)
 {
     int ret;
     size_t flags = 0;
@@ -156,22 +156,13 @@ int main(int argc, char *argv[])
     json_t *json;
     json_error_t error;
 
-    #ifdef HAVE_SETLOCALE
-    setlocale(LC_ALL, "");
-    #endif
-
-    if (argc != 2) {
-        fprintf(stderr, "usage: %s test_dir\n", argv[0]);
-        return 2;
-    }
-    
-    sprintf(filename, "%s%cinput", argv[1], dir_sep);
+    sprintf(filename, "%s%cinput", test_path, dir_sep);
     if (!(infile = fopen(filename, "rb"))) {
         fprintf(stderr, "Could not open \"%s\"\n", filename);
         return 2;
     }
     
-    sprintf(filename, "%s%cenv", argv[1], dir_sep);
+    sprintf(filename, "%s%cenv", test_path, dir_sep);
     conffile = fopen(filename, "rb");
     if (conffile) {
         read_conf(conffile);
@@ -214,14 +205,144 @@ int main(int argc, char *argv[])
                 error.line, error.column, error.position,
                 error.text);
         
-        ret = cmpfile(errstr, argv[1], "error");
+        ret = cmpfile(errstr, test_path, "error");
         return ret;
     }
 
     buffer = json_dumps(json, flags);
-    ret = cmpfile(buffer, argv[1], "output");
+    ret = cmpfile(buffer, test_path, "output");
     free(buffer);
     json_decref(json);
 
     return ret;
+}
+
+static int getenv_int(const char *name)
+{
+    char *value, *end;
+    long result;
+ 
+    value = getenv(name);
+    if(!value)
+        return 0;
+
+    result = strtol(value, &end, 10);
+    if(*end != '\0')
+        return 0;
+
+    return (int)result;
+}
+
+int use_env(int argc, char **argv)
+{
+    int indent;
+    size_t flags = 0;
+    json_t *json;
+    json_error_t error;
+
+    #ifdef _WIN32
+    /* On Windows, set stdout and stderr to binary mode to avoid
+       outputting DOS line terminators */
+    _setmode(_fileno(stdout), _O_BINARY);
+    _setmode(_fileno(stderr), _O_BINARY);
+    #endif
+
+    indent = getenv_int("JSON_INDENT");
+    if(indent < 0 || indent > 255) {
+        fprintf(stderr, "invalid value for JSON_INDENT: %d\n", indent);
+        return 2;
+    }
+
+    if(indent > 0)
+        flags |= JSON_INDENT(indent);
+
+    if(getenv_int("JSON_COMPACT") > 0)
+        flags |= JSON_COMPACT;
+
+    if(getenv_int("JSON_ENSURE_ASCII"))
+        flags |= JSON_ENSURE_ASCII;
+
+    if(getenv_int("JSON_PRESERVE_ORDER"))
+        flags |= JSON_PRESERVE_ORDER;
+ 
+    if(getenv_int("JSON_SORT_KEYS"))
+         flags |= JSON_SORT_KEYS;
+ 
+    if(getenv_int("STRIP")) {
+        /* Load to memory, strip leading and trailing whitespace */
+        size_t size = 0, used = 0;
+        char *buffer = NULL;
+
+        while(1) {
+            int count;
+
+            size = (size == 0 ? 128 : size * 2);
+            buffer = realloc(buffer, size);
+            if(!buffer) {
+                fprintf(stderr, "Unable to allocate %d bytes\n", (int)size);
+                return 1;
+            }
+
+            count = fread(buffer + used, 1, size - used, stdin);
+            if(count < size - used) {
+                buffer[used + count] = '\0';
+                break;
+            }
+            used += count;
+        }
+        
+        json = json_loads(strip(buffer), 0, &error);
+        free(buffer);
+    }
+    else
+        json = json_loadf(stdin, 0, &error);
+
+    if(!json) {
+        fprintf(stderr, "%d %d %d\n%s\n",
+            error.line, error.column,
+            error.position, error.text);
+        return 1;
+    }
+
+    json_dumpf(json, stdout, flags);
+
+    return 0;
+}
+
+int main(int argc, char *argv[])
+{
+    int i;
+    char *test_path = NULL;
+
+    #ifdef HAVE_SETLOCALE
+    setlocale(LC_ALL, "");
+    #endif
+
+    if (argc < 2) {
+        goto usage;
+    }
+
+    for (i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "--strip"))
+            conf.strip = 1;
+        else if (!strcmp(argv[i], "--env"))
+            conf.use_env = 1;
+        else
+            test_path = argv[i];
+    }
+    
+    if (conf.use_env)
+        return use_env(argc, argv);
+    else
+    {
+        if (!test_path)
+            goto usage;
+
+        return use_conf(argc, argv, test_path);
+    }
+
+usage:
+    fprintf(stderr, "argc =%d\n", argc);
+    fprintf(stderr, "usage: %s [--strip] [--env] test_dir\n", argv[0]);
+    return 2;
 }
