@@ -146,7 +146,7 @@ static int cmpfile(const char *str, const char *path, const char *fname)
     return ret;
 }
 
-int use_conf(int argc, char **argv, char *test_path)
+int use_conf(char *test_path)
 {
     int ret;
     size_t flags = 0;
@@ -233,7 +233,7 @@ static int getenv_int(const char *name)
     return (int)result;
 }
 
-int use_env(int argc, char **argv)
+int use_env()
 {
     int indent;
     size_t flags = 0;
@@ -274,7 +274,7 @@ int use_env(int argc, char **argv)
         char *buffer = NULL;
 
         while(1) {
-            int count;
+            size_t count;
 
             size = (size == 0 ? 128 : size * 2);
             buffer = realloc(buffer, size);
@@ -330,15 +330,15 @@ int main(int argc, char *argv[])
         else
             test_path = argv[i];
     }
-    
+
     if (conf.use_env)
-        return use_env(argc, argv);
+        return use_env();
     else
     {
         if (!test_path)
             goto usage;
 
-        return use_conf(argc, argv, test_path);
+        return use_conf(test_path);
     }
 
 usage:
