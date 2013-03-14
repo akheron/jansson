@@ -1,23 +1,23 @@
 # Notes:
-# 
+#
 # Author: Paul Harris, June 2012
 # Additions: Joakim Soderberg, Febuary 2013
-# 
-# Supports: building static/shared, release/debug/etc, can also build html docs 
+#
+# Supports: building static/shared, release/debug/etc, can also build html docs
 # and some of the tests.
-# Note that its designed for out-of-tree builds, so it will not pollute your 
+# Note that its designed for out-of-tree builds, so it will not pollute your
 # source tree.
-# 
-# TODO 1: Finish implementing tests. api tests are working, but the valgrind 
+#
+# TODO 1: Finish implementing tests. api tests are working, but the valgrind
 # variants are not flagging problems.
-# 
+#
 # TODO 2: There is a check_exports script that would try and incorporate.
-# 
-# TODO 3: Consolidate version numbers, currently the version number is written 
-# into: * cmake (here) * autotools (the configure) * source code header files.  
+#
+# TODO 3: Consolidate version numbers, currently the version number is written
+# into: * cmake (here) * autotools (the configure) * source code header files.
 # Should not be written directly into header files, autotools/cmake can do
 # that job.
-# 
+#
 # Brief intro on how to use cmake:
 # > mkdir build (somewhere - we do out-of-tree builds)
 # > use cmake, ccmake, or cmake-gui to configure the project. for linux, you
@@ -25,22 +25,22 @@
 # >> example:
 # >> cd build
 # >> ccmake -i ../path_to_jansson_dir
-# >>  inside, configure your options. press C until there are no lines 
+# >>  inside, configure your options. press C until there are no lines
 #     with * next to them.
-# >>  note, I like to configure the 'install' path to ../install, so I get 
+# >>  note, I like to configure the 'install' path to ../install, so I get
 #     self-contained clean installs I can point other projects to.
 # >>  press G to 'generate' the project files.
 # >> make (to build the project)
 # >> make install
 # >> make test (to run the tests, if you enabled them)
-# 
+#
 # Brief description on how it works:
-# There is a small heirachy of CMakeLists.txt files which define how the 
+# There is a small heirachy of CMakeLists.txt files which define how the
 # project is built.
-# Header file detection etc is done, and the results are written into config.h 
-# and jansson_config.h, which are generated from the corresponding 
+# Header file detection etc is done, and the results are written into config.h
+# and jansson_config.h, which are generated from the corresponding
 # config.h.cmake and jansson_config.h.cmake template files.
-# The generated header files end up in the build directory - not in 
+# The generated header files end up in the build directory - not in
 # the source directory.
 # The rest is down to the usual make process.
 
@@ -253,9 +253,9 @@ install (TARGETS jansson
    RUNTIME DESTINATION bin
 )
 
-install (FILES 
-         ${CMAKE_CURRENT_BINARY_DIR}/include/jansson_config.h 
-         ${CMAKE_CURRENT_SOURCE_DIR}/src/jansson.h 
+install (FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/include/jansson_config.h
+         ${CMAKE_CURRENT_SOURCE_DIR}/src/jansson.h
          DESTINATION include)
 
 # For building Documentation (uses Sphinx)
@@ -272,7 +272,7 @@ if (BUILD_DOCS)
    # HTML output directory
    set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 
-   # CMake could be used to build the conf.py file too, 
+   # CMake could be used to build the conf.py file too,
    # eg it could automatically write the version of the program or change the theme.
    # if(NOT DEFINED SPHINX_THEME)
    #    set(SPHINX_THEME default)
@@ -310,13 +310,13 @@ if (NOT WITHOUT_TESTS)
 
    if (TEST_WITH_VALGRIND)
       # TODO: Add FindValgrind.cmake instead of having a hardcoded path.
-      
+
       # enable valgrind
       set(CMAKE_MEMORYCHECK_COMMAND valgrind)
-      set(CMAKE_MEMORYCHECK_COMMAND_OPTIONS 
+      set(CMAKE_MEMORYCHECK_COMMAND_OPTIONS
          "--leak-check=full --show-reachable=yes --track-origins=yes -q")
 
-      set(MEMCHECK_COMMAND 
+      set(MEMCHECK_COMMAND
          "${CMAKE_MEMORYCHECK_COMMAND} ${CMAKE_MEMORYCHECK_COMMAND_OPTIONS}")
       separate_arguments(MEMCHECK_COMMAND)
    endif ()
@@ -328,7 +328,7 @@ if (NOT WITHOUT_TESTS)
       add_definitions(-Wall -Wextra -Wdeclaration-after-statement -Werror)
    endif ()
 
-   set(api_tests 
+   set(api_tests
          test_array
          test_copy
          test_dump
@@ -361,7 +361,7 @@ if (NOT WITHOUT_TESTS)
       add_test(${test} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
 
       if (TEST_WITH_VALGRIND)
-         add_test(memcheck_${test} ${MEMCHECK_COMMAND} 
+         add_test(memcheck_${test} ${MEMCHECK_COMMAND}
                   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
       endif ()
    endforeach ()
@@ -375,7 +375,7 @@ if (NOT WITHOUT_TESTS)
        foreach (TESTDIR ${TESTDIRS})
          if (IS_DIRECTORY ${TESTDIR})
             get_filename_component(TNAME ${TESTDIR} NAME)
-            add_test(${SUITE}__${TNAME} 
+            add_test(${SUITE}__${TNAME}
                      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process ${TESTDIR})
             if ((${SUITE} STREQUAL "valid" OR ${SUITE} STREQUAL "invalid") AND NOT EXISTS ${TESTDIR}/nostrip)
                add_test(${SUITE}__${TNAME}__strip

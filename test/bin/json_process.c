@@ -66,17 +66,17 @@ static char *loadfile(FILE *file)
 {
     long fsize, ret;
     char *buf;
-    
+
     fseek(file, 0, SEEK_END);
     fsize = ftell(file);
     fseek(file, 0, SEEK_SET);
-    
+
     buf = malloc(fsize+1);
     ret = fread(buf, 1, fsize, file);
     if (ret != fsize)
         exit(1);
     buf[fsize] = '\0';
-    
+
     return buf;
 }
 
@@ -84,7 +84,7 @@ static char *loadfile(FILE *file)
 static void read_conf(FILE *conffile)
 {
     char *buffer, *line, *val;
-    
+
     buffer = loadfile(conffile);
     line = strtok(buffer, "\r\n");
     while (line) {
@@ -94,7 +94,7 @@ static void read_conf(FILE *conffile)
             break;
         }
         *val++ = '\0';
-        
+
         if (!strcmp(line, "JSON_INDENT"))
             conf.indent = atoi(val);
         if (!strcmp(line, "JSON_COMPACT"))
@@ -107,10 +107,10 @@ static void read_conf(FILE *conffile)
             conf.sort_keys = atoi(val);
         if (!strcmp(line, "STRIP"))
             conf.strip = atoi(val);
-        
+
         line = strtok(NULL, "\r\n");
     }
-    
+
     free(buffer);
 }
 
@@ -120,7 +120,7 @@ static int cmpfile(const char *str, const char *path, const char *fname)
     char filename[1024], *buffer;
     int ret;
     FILE *file;
-    
+
     sprintf(filename, "%s%c%s", path, dir_sep, fname);
     file = fopen(filename, "rb");
     if (!file) {
@@ -142,7 +142,7 @@ static int cmpfile(const char *str, const char *path, const char *fname)
         ret = 0;
     free(buffer);
     fclose(file);
-    
+
     return ret;
 }
 
@@ -161,7 +161,7 @@ int use_conf(char *test_path)
         fprintf(stderr, "Could not open \"%s\"\n", filename);
         return 2;
     }
-    
+
     sprintf(filename, "%s%cenv", test_path, dir_sep);
     conffile = fopen(filename, "rb");
     if (conffile) {
@@ -199,12 +199,12 @@ int use_conf(char *test_path)
         json = json_loadf(infile, 0, &error);
 
     fclose(infile);
-    
+
     if (!json) {
         sprintf(errstr, "%d %d %d\n%s\n",
                 error.line, error.column, error.position,
                 error.text);
-        
+
         ret = cmpfile(errstr, test_path, "error");
         return ret;
     }
@@ -221,7 +221,7 @@ static int getenv_int(const char *name)
 {
     char *value, *end;
     long result;
- 
+
     value = getenv(name);
     if(!value)
         return 0;
@@ -264,10 +264,10 @@ int use_env()
 
     if(getenv_int("JSON_PRESERVE_ORDER"))
         flags |= JSON_PRESERVE_ORDER;
- 
+
     if(getenv_int("JSON_SORT_KEYS"))
          flags |= JSON_SORT_KEYS;
- 
+
     if(getenv_int("STRIP")) {
         /* Load to memory, strip leading and trailing whitespace */
         size_t size = 0, used = 0;
@@ -290,7 +290,7 @@ int use_env()
             }
             used += count;
         }
-        
+
         json = json_loads(strip(buffer), 0, &error);
         free(buffer);
     }
