@@ -305,6 +305,7 @@ int use_env()
     }
 
     json_dumpf(json, stdout, flags);
+    json_decref(json);
 
     return 0;
 }
