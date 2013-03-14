@@ -10,7 +10,7 @@ is_test() {
 }
 
 run_test() {
-    $json_process <$test_path/input >$test_log/stdout 2>$test_log/stderr
+    $json_process --env <$test_path/input >$test_log/stdout 2>$test_log/stderr
     valgrind_check $test_log/stderr || return 1
     cmp -s $test_path/error $test_log/stderr
 }

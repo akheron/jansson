@@ -20,7 +20,7 @@ do_run() {
         strip=1
     fi
 
-    STRIP=$strip $json_process \
+    STRIP=$strip $json_process --env \
         <$test_path/input >$test_log/stdout$s 2>$test_log/stderr$s
     valgrind_check $test_log/stderr$s || return 1
 
