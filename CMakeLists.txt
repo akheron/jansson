@@ -377,6 +377,10 @@ if (NOT WITHOUT_TESTS)
             get_filename_component(TNAME ${TESTDIR} NAME)
             add_test(${SUITE}__${TNAME} 
                      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process ${TESTDIR})
+            if ((${SUITE} STREQUAL "valid" OR ${SUITE} STREQUAL "invalid") AND NOT EXISTS ${TESTDIR}/nostrip)
+               add_test(${SUITE}__${TNAME}__strip
+                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process --strip ${TESTDIR})
+            endif ()
          endif ()
        endforeach ()
    endforeach ()
