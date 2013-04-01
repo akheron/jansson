@@ -1125,7 +1125,7 @@ More examples::
 Parsing and Validating Values
 =============================
 
-This sectinon describes functions that help to validate complex values
+This section describes functions that help to validate complex values
 and extract, or *unpack*, data from them. Like :ref:`building values
 <apiref-pack>`, this is also based on format strings.
 
