@@ -53,6 +53,11 @@ used as described above.
 .. _automake: http://www.gnu.org/software/automake/
 .. _libtool: http://www.gnu.org/software/libtool/
 
+Android
+-------
+Jansson can be built for android platforms. Android.mk is in the
+source root folder. The configuration file is located in the
+``android`` directory in the source distribution.
 
 Windows
 -------
