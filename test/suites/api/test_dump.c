@@ -9,8 +9,11 @@
 #include <string.h>
 #include "util.h"
 
-static int encode_null_callback(char *buffer, size_t size, void *data)
+static int encode_null_callback(const char *buffer, size_t size, void *data)
 {
+    (void)buffer;
+    (void)size;
+    (void)data;
     return 0;
 }
 
