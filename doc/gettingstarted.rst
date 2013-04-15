@@ -54,6 +54,23 @@ used as described above.
 .. _libtool: http://www.gnu.org/software/libtool/
 
 
+.. _build-cmake:
+
+CMake (various platforms, including Windows)
+--------------------------------------------
+
+Jansson can be built using CMake. Create a build directory for an
+out-of-tree build, change to that directory, and run cmake (or ccmake,
+cmake-gui, or similar) to configure the project.
+
+Then proceed to build the source with your system's native build
+tools. For example, on Unix::
+
+    make
+    make test
+    make install
+
+
 Android
 -------
 
@@ -64,6 +81,9 @@ source root directory. The configuration header file is located in the
 
 Windows
 -------
+
+**This method is deprecated**. Using :ref:`CMake <build-cmake>` is now
+preferred.
 
 Jansson can be built with Visual Studio 2010 (and probably newer
 versions, too). The solution and project files are in the
