@@ -9,7 +9,7 @@
 #include <string.h>
 #include "util.h"
 
-static int encode_null_callback(void *ptr, size_t size, void *data)
+static int encode_null_callback(char *buffer, size_t size, void *data)
 {
     return 0;
 }
