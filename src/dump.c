@@ -171,6 +171,9 @@ static int object_key_compare_serials(const void *key1, const void *key2)
 static int do_dump(const json_t *json, size_t flags, int depth,
                    json_dump_callback_t dump, void *data)
 {
+    if(!json)
+        return -1;
+
     switch(json_typeof(json)) {
         case JSON_NULL:
             return dump("null", 4, data);
