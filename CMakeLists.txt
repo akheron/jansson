@@ -79,6 +79,10 @@ if (MSVC)
    add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo" )
 endif()
 
+if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+   set(CMAKE_C_FLAGS "-fPIC")
+endif()
+
 # Check for the int-type includes
 check_include_files (sys/types.h HAVE_SYS_TYPES_H)
 check_include_files (inttypes.h HAVE_INTTYPES_H)
