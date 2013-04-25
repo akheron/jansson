@@ -73,7 +73,7 @@ See the examples below for more detailed information.
 .. _build-cmake-unix:
 
 Unix (Make files)
-.................
+^^^^^^^^^^^^^^^^^
 Generating make files on unix:
 
 .. parsed-literal::
@@ -92,7 +92,7 @@ Then to build::
     make install
 
 Windows (Visual Studio)
-.......................
+^^^^^^^^^^^^^^^^^^^^^^^
 Creating Visual Studio project files from the command line:
 
 .. parsed-literal::
@@ -123,7 +123,7 @@ for the project, run::
     cmake -LH ..
 
 Mac OSX (Xcode)
-...............
+^^^^^^^^^^^^^^^
 If you prefer using Xcode instead of make files on OSX,
 do the following. (Use the same steps as 
 for :ref:`Unix <build-cmake-unix>`)::
@@ -132,10 +132,10 @@ for :ref:`Unix <build-cmake-unix>`)::
     cmake -G "Xcode" ..
 
 Additional CMake settings
-.........................
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Shared library
-~~~~~~~~~~~~~~
+""""""""""""""
 By default the CMake_ project will generate build files for building the
 static library. To build the shared version use::
 
@@ -143,7 +143,7 @@ static library. To build the shared version use::
     cmake -DBUILD_SHARED=1 ..
 
 Changing install directory (same as autoconf --prefix)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
 Just as with the autoconf_ project you can change the destination directory
 for ``make install``. The equivalent for autoconfs ``./configure --prefix`` 
 in CMake_ is::
