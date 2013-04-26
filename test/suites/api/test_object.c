@@ -94,7 +94,7 @@ static void test_update()
     /* perform the same update again */
 
     if(json_object_update(object, other))
-        fail("unable to update an empty object");
+        fail("unable to update a non-empty object");
 
     if(json_object_size(object) != 5)
         fail("invalid size after update");
