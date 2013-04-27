@@ -168,7 +168,7 @@ The following functions are used to manipulate the reference count.
 
 .. function:: json_t *json_incref(json_t *json)
 
-   Increment the reference count of *json* if it's not non-*NULL*.
+   Increment the reference count of *json* if it's not *NULL*.
    Returns *json*.
 
 .. function:: void json_decref(json_t *json)
