@@ -59,17 +59,100 @@ used as described above.
 CMake (various platforms, including Windows)
 --------------------------------------------
 
-Jansson can be built using CMake. Create a build directory for an
-out-of-tree build, change to that directory, and run cmake (or ccmake,
-cmake-gui, or similar) to configure the project.
+Jansson can be built using CMake_. Create a build directory for an
+out-of-tree build, change to that directory, and run ``cmake`` (or ``ccmake``,
+``cmake-gui``, or similar) to configure the project.
 
-Then proceed to build the source with your system's native build
-tools. For example, on Unix::
+See the examples below for more detailed information.
 
+.. note:: In the below examples ``..`` is used as an argument for ``cmake``.
+          This is simply the path to the jansson project root directory.
+          In the example it is assumed you've created a sub-directory ``build``
+          and are using that. You could use any path you want.
+
+.. _build-cmake-unix:
+
+Unix (Make files)
+^^^^^^^^^^^^^^^^^
+Generating make files on unix:
+
+.. parsed-literal::
+
+    bunzip2 -c jansson-|release|.tar.bz2 | tar xf -
+    cd jansson-|release|
+
+    mkdir build
+    cd build
+    cmake .. # or `ccmake ..` for a GUI.
+
+Then to build::
+    
     make
-    make test
+    make check
     make install
 
+Windows (Visual Studio)
+^^^^^^^^^^^^^^^^^^^^^^^
+Creating Visual Studio project files from the command line:
+
+.. parsed-literal::
+
+    <unpack>
+    cd jansson-|release|
+
+    md build
+    cd build
+    cmake -G "Visual Studio 10" ..
+
+You will now have a *Visual Studio Solution* in your build directory.
+To run the unit tests build the ``RUN_TESTS`` project.
+
+If you prefer a GUI the ``cmake`` line in the above example can 
+be replaced with::
+
+    cmake-gui ..
+
+For command line help (including a list of available generators)
+for CMake_ simply run::
+
+    cmake
+
+To list available CMake_ settings (and what they are currently set to) 
+for the project, run::
+
+    cmake -LH ..
+
+Mac OSX (Xcode)
+^^^^^^^^^^^^^^^
+If you prefer using Xcode instead of make files on OSX,
+do the following. (Use the same steps as 
+for :ref:`Unix <build-cmake-unix>`)::
+
+    ...
+    cmake -G "Xcode" ..
+
+Additional CMake settings
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Shared library
+""""""""""""""
+By default the CMake_ project will generate build files for building the
+static library. To build the shared version use::
+
+    ...
+    cmake -DBUILD_SHARED=1 ..
+
+Changing install directory (same as autoconf --prefix)
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Just as with the autoconf_ project you can change the destination directory
+for ``make install``. The equivalent for autoconfs ``./configure --prefix`` 
+in CMake_ is::
+
+    ...
+    cmake -DCMAKE_INSTALL_PREFIX:PATH=/some/other/path ..
+    make install
+
+.. _CMake: http://www.cmake.org
 
 Android
 -------

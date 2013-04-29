@@ -79,6 +79,10 @@ if (MSVC)
    add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo" )
 endif()
 
+if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+   set(CMAKE_C_FLAGS "-fPIC")
+endif()
+
 # Check for the int-type includes
 check_include_files (sys/types.h HAVE_SYS_TYPES_H)
 check_include_files (inttypes.h HAVE_INTTYPES_H)
@@ -259,45 +263,88 @@ install (FILES
          DESTINATION include)
 
 # For building Documentation (uses Sphinx)
-OPTION (BUILD_DOCS "Build documentation (uses python-sphinx)." OFF)
+OPTION (BUILD_DOCS "Build documentation (uses python-sphinx)." ON)
 if (BUILD_DOCS)
-   find_package(Sphinx REQUIRED)
+   find_package(Sphinx)
 
-   # configured documentation tools and intermediate build results
-   set(BINARY_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/_build")
+   if (NOT SPHINX_FOUND)
+      message(WARNING "Sphinx not found. Cannot generate documentation!")
+   else()
+      if (Sphinx_VERSION_STRING VERSION_LESS 1.0)
+         message(WARNING "Your Sphinx version is too old! 
+               This project requires Sphinx v1.0 or above to produce 
+               proper documentation (you have v${Sphinx_VERSION_STRING}).
+               You will get output but it will have errors.")
+      endif()
 
-   # Sphinx cache with pickled ReST documents
-   set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_doctrees")
+      # configured documentation tools and intermediate build results
+      set(BINARY_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/_build")
 
-   # HTML output directory
-   set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
+      # Sphinx cache with pickled ReST documents
+      set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_doctrees")
 
-   # CMake could be used to build the conf.py file too,
-   # eg it could automatically write the version of the program or change the theme.
-   # if(NOT DEFINED SPHINX_THEME)
-   #    set(SPHINX_THEME default)
-   # endif()
-   #
-   # if(NOT DEFINED SPHINX_THEME_DIR)
-   #    set(SPHINX_THEME_DIR)
-   # endif()
-   #
-   # configure_file(
-   #    "${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"
-   #    "${BINARY_BUILD_DIR}/conf.py"
-   #    @ONLY)
+      # CMake could be used to build the conf.py file too,
+      # eg it could automatically write the version of the program or change the theme.
+      # if(NOT DEFINED SPHINX_THEME)
+      #    set(SPHINX_THEME default)
+      # endif()
+      #
+      # if(NOT DEFINED SPHINX_THEME_DIR)
+      #    set(SPHINX_THEME_DIR)
+      # endif()
+      #
+      # configure_file(
+      #    "${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"
+      #    "${BINARY_BUILD_DIR}/conf.py"
+      #    @ONLY)
 
-   add_custom_target(jansson_docs ALL
-      ${SPHINX_EXECUTABLE}
-      # -q   # Enable for quiet mode
-      -b html
-      -d "${SPHINX_CACHE_DIR}"
-      # -c "${BINARY_BUILD_DIR}" # enable if using cmake-generated conf.py
-      "${CMAKE_CURRENT_SOURCE_DIR}/doc"
-      "${SPHINX_HTML_DIR}"
-      COMMENT "Building HTML documentation with Sphinx")
+      # TODO: Add support for all sphinx builders: http://sphinx-doc.org/builders.html
 
-   message (STATUS "Documentation has been built in ${SPHINX_HTML_DIR}")
+      # Add documentation targets.
+      set(DOC_TARGETS html)
+
+      OPTION(BUILD_MAN "Create a target for building man pages." ON)
+
+      if (BUILD_MAN)
+         if (Sphinx_VERSION_STRING VERSION_LESS 1.0)
+            message(WARNING "Sphinx version 1.0 > is required to build man pages. You have v${Sphinx_VERSION_STRING}.")
+         else()
+            list(APPEND DOC_TARGETS man)
+         endif()
+      endif()
+
+      OPTION(BUILD_LATEX "Create a target for building latex docs (to create PDF)." OFF)
+
+      if (BUILD_LATEX)
+         find_package(LATEX)
+
+         if (NOT LATEX_COMPILER)
+            message("Couldn't find Latex, can't build latex docs using Sphinx")
+         else()
+            message("Latex found! If you have problems building, see Sphinx documentation for required Latex packages.")
+            list(APPEND DOC_TARGETS latex)
+         endif()
+      endif()
+      
+      # The doc target will build all documentation targets.
+      add_custom_target(doc)
+
+      foreach (DOC_TARGET ${DOC_TARGETS})
+         add_custom_target(${DOC_TARGET}
+            ${SPHINX_EXECUTABLE}
+            # -q   # Enable for quiet mode
+            -b ${DOC_TARGET}
+            -d "${SPHINX_CACHE_DIR}"
+            # -c "${BINARY_BUILD_DIR}" # enable if using cmake-generated conf.py
+            "${CMAKE_CURRENT_SOURCE_DIR}/doc"
+            "${CMAKE_CURRENT_BINARY_DIR}/doc/${DOC_TARGET}"
+            COMMENT "Building ${DOC_TARGET} documentation with Sphinx")
+
+         add_dependencies(doc ${DOC_TARGET})
+      endforeach()
+
+      message("Building documentation enabled for: ${DOC_TARGETS}")
+   endif()
 endif ()
 
 
@@ -384,5 +431,8 @@ if (NOT WITHOUT_TESTS)
          endif ()
        endforeach ()
    endforeach ()
+
+   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
+                     DEPENDS json_process ${api_tests})
 endif ()
 
