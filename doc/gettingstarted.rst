@@ -100,7 +100,7 @@ Creating Visual Studio project files from the command line:
     <unpack>
     cd jansson-|release|
 
-    md build
+    mkdir build
     cd build
     cmake -G "Visual Studio 10" ..
 
