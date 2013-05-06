@@ -62,6 +62,8 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 # set (JANSSON_VERSION "2.3.1")
 # set (JANSSON_SOVERSION 2)
 
+set(JANSSON_DISPLAY_VERSION "2.5-dev")
+
 # This is what is required to match the same numbers as automake's
 set (JANSSON_VERSION "4.3.1")
 set (JANSSON_SOVERSION 4)
@@ -213,6 +215,19 @@ elseif (HAVE__SNPRINTF)
    set (JSON_SNPRINTF _snprintf)
 endif ()
 
+# Create pkg-conf file.
+# (We use the same files as ./configure does, so we
+#  have to defined the same variables used there).
+if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+  set(CMAKE_INSTALL_LIBDIR lib)
+endif(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+set(prefix      ${CMAKE_INSTALL_PREFIX})
+set(exec_prefix ${CMAKE_INSTALL_PREFIX})
+set(libdir      ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
+set(VERSION     ${JANSSON_DISPLAY_VERSION})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/jansson.pc.in
+               ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc @ONLY)
+
 # configure the public config file
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/jansson_config.h.cmake
                 ${CMAKE_CURRENT_BINARY_DIR}/include/jansson_config.h)
@@ -252,8 +267,8 @@ endif ()
 # LIBRARY for linux
 # RUNTIME for windows (when building shared)
 install (TARGETS jansson
-   ARCHIVE DESTINATION lib
-   LIBRARY DESTINATION lib
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
    RUNTIME DESTINATION bin
 )
 
@@ -262,13 +277,18 @@ install (FILES
          ${CMAKE_CURRENT_SOURCE_DIR}/src/jansson.h
          DESTINATION include)
 
+install (FILES 
+         ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc
+         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
 # For building Documentation (uses Sphinx)
 OPTION (BUILD_DOCS "Build documentation (uses python-sphinx)." ON)
 if (BUILD_DOCS)
    find_package(Sphinx)
 
    if (NOT SPHINX_FOUND)
-      message(WARNING "Sphinx not found. Cannot generate documentation!")
+      message(WARNING "Sphinx not found. Cannot generate documentation! 
+      Set -DBUILD_DOCS=0 to get rid of this message.")
    else()
       if (Sphinx_VERSION_STRING VERSION_LESS 1.0)
          message(WARNING "Your Sphinx version is too old! 
