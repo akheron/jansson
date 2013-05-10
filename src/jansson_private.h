@@ -82,6 +82,7 @@ int jsonp_dtostr(char *buffer, size_t size, double value);
 void* jsonp_malloc(size_t size);
 void jsonp_free(void *ptr);
 char *jsonp_strdup(const char *str);
+char *jsonp_strndup(const char *str, size_t length);
 
 /* Windows compatibility */
 #ifdef _WIN32

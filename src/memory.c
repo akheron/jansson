@@ -44,6 +44,19 @@ char *jsonp_strdup(const char *str)
     return new_str;
 }
 
+char *jsonp_strndup(const char *str, size_t length)
+{
+    char *new_str;
+
+    new_str = jsonp_malloc(length + 1);
+    if(!new_str)
+        return NULL;
+
+    strncpy(new_str, str, length);
+    new_str[length] = '\0';
+    return new_str;
+}
+
 void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn)
 {
     do_malloc = malloc_fn;

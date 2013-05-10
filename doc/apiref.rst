@@ -312,6 +312,19 @@ U+10FFFF are allowed.
    UTF-8. Use this function only if you are certain that this really
    is the case (e.g. you have already checked it by other means).
 
+.. function:: json_t *json_nstring(const char *value, size_t length)
+
+   .. refcounting:: new
+
+   Like :func:`json_string`, but takes a maximum string length. This is
+   helpful for converting strings that are not *NULL* terminated.
+
+.. function:: json_t *json_nstring_nocheck(const char *value, size_t length)
+
+   .. refcounting:: new
+
+   Like :func:`json_string_nocheck`, but takes a maximum string length.
+
 .. function:: const char *json_string_value(const json_t *string)
 
    Returns the associated value of *string* as a null terminated UTF-8
