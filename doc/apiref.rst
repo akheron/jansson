@@ -505,6 +505,35 @@ A JSON array is an ordered collection of other JSON values.
    Appends all elements in *other_array* to the end of *array*.
    Returns 0 on success and -1 on error.
 
+The following macro can be used to iterate through all elements
+in an array.
+
+.. function:: json_array_foreach(array, index, value)
+
+   Iterate over every element of ``array``, running the block
+   of code that follows each time with the proper values set to
+   variables ``index`` and ``value``, of types :type:`int` and
+   :type:`json_t *` respectively. Example::
+
+       /* array is a JSON array */
+       int index;
+       json_t *value;
+
+       json_array_foreach(array, index, value) {
+           /* block of code that uses index and value */
+       }
+
+   The items are returned in increasing index order.
+
+   This macro expands to an ordinary ``for`` statement upon
+   preprocessing, so its performance is equivalent to that of
+   hand-written code using the array access functions.
+   The main advantage of this macro is that it abstracts
+   away the complexity, and makes for shorter, more
+   concise code.
+
+   .. versionadded:: 2.5
+
 
 Object
 ======

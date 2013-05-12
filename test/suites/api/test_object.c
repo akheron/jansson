@@ -479,7 +479,7 @@ static void test_preserve_order()
     json_decref(object);
 }
 
-static void test_foreach()
+static void test_object_foreach()
 {
     const char *key;
     json_t *object1, *object2, *value;
@@ -507,5 +507,5 @@ static void run_tests()
     test_set_nocheck();
     test_iterators();
     test_preserve_order();
-    test_foreach();
+    test_object_foreach();
 }
