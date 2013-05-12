@@ -402,7 +402,7 @@ static void test_circular()
 
 static void test_array_foreach()
 {
-    int index;
+    size_t index;
     json_t *array1, *array2, *value;
 
     array1 = json_pack("[sisisi]", "foo", 1, "bar", 2, "baz", 3);

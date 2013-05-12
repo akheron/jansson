@@ -516,7 +516,7 @@ in an array.
    :type:`json_t *` respectively. Example::
 
        /* array is a JSON array */
-       int index;
+       size_t index;
        json_t *value;
 
        json_array_foreach(array, index, value) {
