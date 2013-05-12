@@ -408,16 +408,10 @@ static void test_array_foreach()
     array1 = json_pack("[sisisi]", "foo", 1, "bar", 2, "baz", 3);
     array2 = json_array();
 
-    printf("before array1: %s\n", json_dumps(array1, 0));
-    printf("before array2: %s\n", json_dumps(array2, 0));
-    
     json_array_foreach(array1, index, value) {
         json_array_append(array2, value);
     }
     
-    printf("after array1: %s\n", json_dumps(array1, 0));
-    printf("after array2: %s\n", json_dumps(array2, 0));
-
     if(!json_equal(array1, array2))
         fail("json_array_foreach failed to iterate all elements");
 
