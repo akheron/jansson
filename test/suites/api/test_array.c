@@ -400,6 +400,25 @@ static void test_circular()
     json_decref(array1);
 }
 
+static void test_array_foreach()
+{
+    size_t index;
+    json_t *array1, *array2, *value;
+
+    array1 = json_pack("[sisisi]", "foo", 1, "bar", 2, "baz", 3);
+    array2 = json_array();
+
+    json_array_foreach(array1, index, value) {
+        json_array_append(array2, value);
+    }
+    
+    if(!json_equal(array1, array2))
+        fail("json_array_foreach failed to iterate all elements");
+
+    json_decref(array1);
+    json_decref(array2);
+}
+
 
 static void run_tests()
 {
@@ -409,4 +428,5 @@ static void run_tests()
     test_clear();
     test_extend();
     test_circular();
+    test_array_foreach();
 }
