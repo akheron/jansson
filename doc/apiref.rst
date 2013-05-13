@@ -317,7 +317,7 @@ U+10FFFF are allowed.
    .. refcounting:: new
 
    Like :func:`json_string`, but takes a maximum string length. This is
-   helpful for converting strings that are not *NULL* terminated.
+   helpful for converting string buffers that are not *NULL* terminated.
 
 .. function:: json_t *json_nstring_nocheck(const char *value, size_t length)
 
@@ -346,6 +346,15 @@ U+10FFFF are allowed.
    valid UTF-8. Use this function only if you are certain that this
    really is the case (e.g. you have already checked it by other
    means).
+
+.. function:: int json_nstring_set(const json_t *string, const char *value, size_t length)
+
+   Like :func:`json_string_set`, but takes a maximum string length. This is
+   helpful for converting string buffers that are not *NULL* terminated.
+
+.. function:: int json_nstring_set_nocheck(const json_t *string, const char *value, size_t length)
+
+   Like :func:`json_string_set_nocheck`, but takes a maximum string length.
 
 
 Number

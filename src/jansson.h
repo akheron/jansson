@@ -202,6 +202,8 @@ double json_number_value(const json_t *json);
 
 int json_string_set(json_t *string, const char *value);
 int json_string_set_nocheck(json_t *string, const char *value);
+int json_nstring_set(json_t *string, const char *value, size_t length);
+int json_nstring_set_nocheck(json_t *string, const char *value, size_t length);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
 

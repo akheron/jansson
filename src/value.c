@@ -706,6 +706,34 @@ int json_string_set(json_t *json, const char *value)
     return json_string_set_nocheck(json, value);
 }
 
+
+int json_nstring_set_nocheck(json_t *json, const char *value, size_t length)
+{
+    char *dup;
+    json_string_t *string;
+
+    if(!json_is_string(json) || !value)
+        return -1;
+
+    dup = jsonp_strndup(value, length);
+    if(!dup)
+        return -1;
+
+    string = json_to_string(json);
+    jsonp_free(string->value);
+    string->value = dup;
+
+    return 0;
+}
+
+int json_nstring_set(json_t *json, const char *value, size_t length)
+{
+    if(!value || !utf8_check_string(value, length))
+        return -1;
+
+    return json_nstring_set_nocheck(json, value, length);
+}
+
 static void json_delete_string(json_string_t *string)
 {
     jsonp_free(string->value);
