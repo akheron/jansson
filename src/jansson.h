@@ -83,7 +83,9 @@ typedef long json_int_t;
 json_t *json_object(void);
 json_t *json_array(void);
 json_t *json_string(const char *value);
+json_t *json_nstring(const char *value, size_t length);
 json_t *json_string_nocheck(const char *value);
+json_t *json_nstring_nocheck(const char *value, size_t length);
 json_t *json_integer(json_int_t value);
 json_t *json_real(double value);
 json_t *json_true(void);
@@ -205,6 +207,8 @@ double json_number_value(const json_t *json);
 
 int json_string_set(json_t *string, const char *value);
 int json_string_set_nocheck(json_t *string, const char *value);
+int json_nstring_set(json_t *string, const char *value, size_t length);
+int json_nstring_set_nocheck(json_t *string, const char *value, size_t length);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
 

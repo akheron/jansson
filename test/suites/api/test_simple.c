@@ -73,9 +73,20 @@ static void run_tests()
     if(strcmp(json_string_value(value), "foo"))
         fail("invalid string value");
 
+    value = json_nstring("foobar", 3);
+    if(!value)
+        fail("json_nstring failed");
+    if(strcmp(json_string_value(value), "foo"))
+        fail("invalid string value");
+
     if(json_string_set(value, "bar"))
         fail("json_string_set failed");
     if(strcmp(json_string_value(value), "bar"))
+        fail("invalid string value");
+
+    if(json_nstring_set(value, "foobar", 3))
+        fail("json_string_set failed");
+    if(strcmp(json_string_value(value), "foo"))
         fail("invalid string value");
 
     json_decref(value);
@@ -95,9 +106,20 @@ static void run_tests()
     if(strcmp(json_string_value(value), "foo"))
         fail("invalid string value");
 
+    value = json_nstring_nocheck("foobar", 3);
+    if(!value)
+        fail("json_nstring_nocheck failed");
+    if(strcmp(json_string_value(value), "foo"))
+        fail("invalid string value");
+
     if(json_string_set_nocheck(value, "bar"))
         fail("json_string_set_nocheck failed");
     if(strcmp(json_string_value(value), "bar"))
+        fail("invalid string value");
+
+    if(json_nstring_set_nocheck(value, "foobar", 3))
+        fail("json_nstring_set_nocheck failed");
+    if(strcmp(json_string_value(value), "foo"))
         fail("invalid string value");
 
     json_decref(value);
