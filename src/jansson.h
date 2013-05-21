@@ -181,9 +181,9 @@ int json_array_clear(json_t *array);
 int json_array_extend(json_t *array, json_t *other);
 
 static JSON_INLINE
-int json_array_set(json_t *array, size_t index, json_t *value)
+int json_array_set(json_t *array, size_t ind, json_t *value)
 {
-    return json_array_set_new(array, index, json_incref(value));
+    return json_array_set_new(array, ind, json_incref(value));
 }
 
 static JSON_INLINE
@@ -193,9 +193,9 @@ int json_array_append(json_t *array, json_t *value)
 }
 
 static JSON_INLINE
-int json_array_insert(json_t *array, size_t index, json_t *value)
+int json_array_insert(json_t *array, size_t ind, json_t *value)
 {
-    return json_array_insert_new(array, index, json_incref(value));
+    return json_array_insert_new(array, ind, json_incref(value));
 }
 
 const char *json_string_value(const json_t *string);
