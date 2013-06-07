@@ -96,14 +96,14 @@ static void run_tests()
     /* non-incref'd object */
     j = json_object();
     rv = json_unpack(j, "o", &j2);
-    if(j2 != j || j->refcount != 1)
+    if(rv || j2 != j || j->refcount != 1)
         fail("json_unpack object failed");
     json_decref(j);
 
     /* incref'd object */
     j = json_object();
     rv = json_unpack(j, "O", &j2);
-    if(j2 != j || j->refcount != 2)
+    if(rv || j2 != j || j->refcount != 2)
         fail("json_unpack object failed");
     json_decref(j);
     json_decref(j);
