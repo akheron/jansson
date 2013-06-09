@@ -87,6 +87,17 @@ static void decode_any()
     json_decref(json);
 }
 
+static void decode_no_int()
+{
+    json_t *json;
+    json_error_t error;
+
+    json = json_loads("42", JSON_DECODE_NO_INT | JSON_DECODE_ANY, &error);
+    if (!json || !json_is_real(json) || json_real_value(json) != 42.0)
+        fail("json_load decode no int failed - int");
+    json_decref(json);
+}
+
 static void load_wrong_args()
 {
     json_t *json;
@@ -132,6 +143,7 @@ static void run_tests()
     reject_duplicates();
     disable_eof_check();
     decode_any();
+    decode_no_int();
     load_wrong_args();
     position();
 }
