@@ -239,6 +239,7 @@ json_t *json_deep_copy(json_t *value);
 #define JSON_REJECT_DUPLICATES 0x1
 #define JSON_DISABLE_EOF_CHECK 0x2
 #define JSON_DECODE_ANY        0x4
+#define JSON_DECODE_NO_INT     0x8
 
 typedef size_t (*json_load_callback_t)(void *buffer, size_t buflen, void *data);
 

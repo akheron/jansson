@@ -783,7 +783,11 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
         }
 
         case TOKEN_INTEGER: {
-            json = json_integer(lex->value.integer);
+            if (flags & JSON_DECODE_NO_INT) {
+                json = json_real(lex->value.integer);
+            } else {
+                json = json_integer(lex->value.integer);
+            }
             break;
         }
 
