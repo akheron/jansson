@@ -956,7 +956,7 @@ macros can be ORed together to obtain *flags*.
    With this flag enabled the decoder interprets all numbers as real
    values.
 
-  .. versionadded:: 2.4.1
+  .. versionadded:: 2.5
 
 Each function also takes an optional :type:`json_error_t` parameter
 that is filled with error information if decoding fails. It's also
