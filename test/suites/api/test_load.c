@@ -92,7 +92,7 @@ static void decode_no_int()
     json_t *json;
     json_error_t error;
 
-    json = json_loads("42", JSON_DECODE_NO_INT | JSON_DECODE_ANY, &error);
+    json = json_loads("42", JSON_DECODE_INT_AS_REAL | JSON_DECODE_ANY, &error);
     if (!json || !json_is_real(json) || json_real_value(json) != 42.0)
         fail("json_load decode no int failed - int");
     json_decref(json);

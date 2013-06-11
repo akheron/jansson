@@ -950,6 +950,14 @@ macros can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.1
 
+``JSON_DECODE_INT_AS_REAL``
+   JSON defines only one number type. Jansson distinguishes between
+   ints and reals. For more information see :ref:`real-vs-integer`.
+   With this flag enabled the decoder interprets all numbers as real
+   values.
+
+  .. versionadded:: 2.4.1
+
 Each function also takes an optional :type:`json_error_t` parameter
 that is filled with error information if decoding fails. It's also
 updated on success; the number of bytes of input read is written to
