@@ -907,7 +907,7 @@ json_t *json_copy(json_t *json)
         return json_real_copy(json);
 
     if(json_is_true(json) || json_is_false(json) || json_is_null(json))
-        return (json_t *)json;
+        return json;
 
     return NULL;
 }
