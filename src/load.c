@@ -775,6 +775,7 @@ error:
 static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
 {
     json_t *json;
+    double value;
 
     switch(lex->token) {
         case TOKEN_STRING: {
@@ -784,7 +785,11 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
 
         case TOKEN_INTEGER: {
             if (flags & JSON_DECODE_INT_AS_REAL) {
-                json = json_real(lex->value.integer);
+                if(jsonp_strtod(&lex->saved_text, &value)) {
+                    error_set(error, lex, "real number overflow");
+                    return NULL;
+                }
+                json = json_real(value);
             } else {
                 json = json_integer(lex->value.integer);
             }

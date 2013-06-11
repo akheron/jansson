@@ -954,7 +954,9 @@ macros can be ORed together to obtain *flags*.
    JSON defines only one number type. Jansson distinguishes between
    ints and reals. For more information see :ref:`real-vs-integer`.
    With this flag enabled the decoder interprets all numbers as real
-   values.
+   values. Integers that do not have an exact double representation
+   will silently result in a loss of precision. Integers that cause
+   a double overflow will cause an error.
 
   .. versionadded:: 2.5
 
