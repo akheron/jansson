@@ -135,10 +135,10 @@ int json_object_clear(json_t *object);
 int json_object_update(json_t *object, json_t *other);
 int json_object_update_existing(json_t *object, json_t *other);
 int json_object_update_missing(json_t *object, json_t *other);
-void *json_object_iter(json_t *object);
+void *json_object_iter(const json_t *object);
 void *json_object_iter_at(json_t *object, const char *key);
 void *json_object_key_to_iter(const char *key);
-void *json_object_iter_next(json_t *object, void *iter);
+void *json_object_iter_next(const json_t *object, void *iter);
 const char *json_object_iter_key(void *iter);
 json_t *json_object_iter_value(void *iter);
 int json_object_iter_set_new(json_t *object, void *iter, json_t *value);
@@ -230,8 +230,8 @@ int json_equal(json_t *value1, json_t *value2);
 
 /* copying */
 
-json_t *json_copy(json_t *value);
-json_t *json_deep_copy(json_t *value);
+json_t *json_copy(const json_t *value);
+json_t *json_deep_copy(const json_t *value);
 
 
 /* decoding */
