@@ -655,7 +655,7 @@ allowing to iterate through all key-value pairs in an object. The
 items are not returned in any particular order, as this would require
 sorting due to the internal hashtable implementation.
 
-.. function:: void *json_object_iter(json_t *object)
+.. function:: void *json_object_iter(const json_t *object)
 
    Returns an opaque iterator which can be used to iterate over all
    key-value pairs in *object*, or *NULL* if *object* is empty.
@@ -668,7 +668,7 @@ sorting due to the internal hashtable implementation.
    *object* only yields all key-value pairs of the object if *key*
    happens to be the first key in the underlying hash table.
 
-.. function:: void *json_object_iter_next(json_t *object, void *iter)
+.. function:: void *json_object_iter_next(const json_t *object, void *iter)
 
    Returns an iterator pointing to the next key-value pair in *object*
    after *iter*, or *NULL* if the whole object has been iterated
