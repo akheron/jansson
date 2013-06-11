@@ -275,7 +275,7 @@ static int json_object_equal(json_t *object1, json_t *object2)
     return 1;
 }
 
-static json_t *json_object_copy(const json_t *object)
+static json_t *json_object_copy(json_t *object)
 {
     json_t *result;
 
@@ -580,7 +580,7 @@ static int json_array_equal(json_t *array1, json_t *array2)
     return 1;
 }
 
-static json_t *json_array_copy(const json_t *array)
+static json_t *json_array_copy(json_t *array)
 {
     json_t *result;
     size_t i;
@@ -886,7 +886,7 @@ int json_equal(json_t *json1, json_t *json2)
 
 /*** copying ***/
 
-json_t *json_copy(const json_t *json)
+json_t *json_copy(json_t *json)
 {
     if(!json)
         return NULL;
