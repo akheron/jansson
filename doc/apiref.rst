@@ -1366,13 +1366,13 @@ the same child values in the copied value. Deep copying makes a fresh
 copy of the child values, too. Moreover, all the child values are deep
 copied in a recursive fashion.
 
-.. function:: json_t *json_copy(json_t *value)
+.. function:: json_t *json_copy(const json_t *value)
 
    .. refcounting:: new
 
    Returns a shallow copy of *value*, or *NULL* on error.
 
-.. function:: json_t *json_deep_copy(json_t *value)
+.. function:: json_t *json_deep_copy(const json_t *value)
 
    .. refcounting:: new
 
