@@ -38,6 +38,8 @@ strings.
 Numbers
 =======
 
+.. _real-vs-integer:
+
 Real vs. Integer
 ----------------
 
@@ -51,7 +53,8 @@ A JSON number is considered to be a real number if its lexical
 representation includes one of ``e``, ``E``, or ``.``; regardless if
 its actual numeric value is a true integer (e.g., all of ``1E6``,
 ``3.0``, ``400E-2``, and ``3.14E3`` are mathematical integers, but
-will be treated as real values).
+will be treated as real values). With the ``JSON_DECODE_INT_AS_REAL``
+decoder flag set all numbers are interpreted as real.
 
 All other JSON numbers are considered integers.
 
