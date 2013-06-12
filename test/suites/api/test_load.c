@@ -92,21 +92,25 @@ static void decode_int_as_real()
     json_t *json;
     json_error_t error;
 
-    // This number cannot be represented exactly by a double
-    const char *imprecise = "9007199254740993";
-    json_int_t expected = 9007199254740992ll;
+    const char *imprecise;
+    json_int_t expected;
 
     json = json_loads("42", JSON_DECODE_INT_AS_REAL | JSON_DECODE_ANY, &error);
     if (!json || !json_is_real(json) || json_real_value(json) != 42.0)
         fail("json_load decode int as real failed - int");
     json_decref(json);
 
-    // Tests that large numbers are handled correctly
+#if JSON_INTEGER_IS_LONG_LONG
+    /* This number cannot be represented exactly by a double */
+    imprecise = "9007199254740993";
+    expected = 9007199254740992ll;
+
     json = json_loads(imprecise, JSON_DECODE_INT_AS_REAL | JSON_DECODE_ANY,
                       &error);
-    if (!json || !json_is_real(json) || expected != json_real_value(json))
-            fail("json_load decode int as real failed - expected imprecision");
+    if (!json || !json_is_real(json) || expected != (json_int_t)json_real_value(json))
+        fail("json_load decode int as real failed - expected imprecision");
     json_decref(json);
+#endif
 }
 
 static void load_wrong_args()
