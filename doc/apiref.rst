@@ -958,7 +958,7 @@ macros can be ORed together to obtain *flags*.
    will silently result in a loss of precision. Integers that cause
    a double overflow will cause an error.
 
-  .. versionadded:: 2.5
+   .. versionadded:: 2.5
 
 Each function also takes an optional :type:`json_error_t` parameter
 that is filled with error information if decoding fails. It's also
