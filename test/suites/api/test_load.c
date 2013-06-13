@@ -92,8 +92,10 @@ static void decode_int_as_real()
     json_t *json;
     json_error_t error;
 
+#if JSON_INTEGER_IS_LONG_LONG
     const char *imprecise;
     json_int_t expected;
+#endif
 
     json = json_loads("42", JSON_DECODE_INT_AS_REAL | JSON_DECODE_ANY, &error);
     if (!json || !json_is_real(json) || json_real_value(json) != 42.0)
