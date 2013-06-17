@@ -1382,7 +1382,7 @@ copied in a recursive fashion.
 
    Returns a shallow copy of *value*, or *NULL* on error.
 
-.. function:: json_t *json_deep_copy(json_t *value)
+.. function:: json_t *json_deep_copy(const json_t *value)
 
    .. refcounting:: new
 
