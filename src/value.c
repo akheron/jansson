@@ -292,19 +292,27 @@ static json_t *json_object_copy(json_t *object)
     return result;
 }
 
-static json_t *json_object_deep_copy(json_t *object)
+static json_t *json_object_deep_copy(const json_t *object)
 {
     json_t *result;
-
-    const char *key;
-    json_t *value;
+    void *iter;
 
     result = json_object();
     if(!result)
         return NULL;
 
-    json_object_foreach(object, key, value)
+    /* Cannot use json_object_foreach because object has to be cast
+       non-const */
+    iter = json_object_iter((json_t *)object);
+    while(iter) {
+        const char *key;
+        const json_t *value;
+        key = json_object_iter_key(iter);
+        value = json_object_iter_value(iter);
+
         json_object_set_new_nocheck(result, key, json_deep_copy(value));
+        iter = json_object_iter_next((json_t *)object, iter);
+    }
 
     return result;
 }
@@ -595,7 +603,7 @@ static json_t *json_array_copy(json_t *array)
     return result;
 }
 
-static json_t *json_array_deep_copy(json_t *array)
+static json_t *json_array_deep_copy(const json_t *array)
 {
     json_t *result;
     size_t i;
@@ -687,7 +695,7 @@ static int json_string_equal(json_t *string1, json_t *string2)
     return strcmp(json_string_value(string1), json_string_value(string2)) == 0;
 }
 
-static json_t *json_string_copy(json_t *string)
+static json_t *json_string_copy(const json_t *string)
 {
     return json_string_nocheck(json_string_value(string));
 }
@@ -734,7 +742,7 @@ static int json_integer_equal(json_t *integer1, json_t *integer2)
     return json_integer_value(integer1) == json_integer_value(integer2);
 }
 
-static json_t *json_integer_copy(json_t *integer)
+static json_t *json_integer_copy(const json_t *integer)
 {
     return json_integer(json_integer_value(integer));
 }
@@ -786,7 +794,7 @@ static int json_real_equal(json_t *real1, json_t *real2)
     return json_real_value(real1) == json_real_value(real2);
 }
 
-static json_t *json_real_copy(json_t *real)
+static json_t *json_real_copy(const json_t *real)
 {
     return json_real(json_real_value(real));
 }
@@ -912,7 +920,7 @@ json_t *json_copy(json_t *json)
     return NULL;
 }
 
-json_t *json_deep_copy(json_t *json)
+json_t *json_deep_copy(const json_t *json)
 {
     if(!json)
         return NULL;
@@ -936,7 +944,7 @@ json_t *json_deep_copy(json_t *json)
         return json_real_copy(json);
 
     if(json_is_true(json) || json_is_false(json) || json_is_null(json))
-        return json;
+        return (json_t *)json;
 
     return NULL;
 }

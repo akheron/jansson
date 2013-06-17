@@ -231,7 +231,7 @@ int json_equal(json_t *value1, json_t *value2);
 /* copying */
 
 json_t *json_copy(json_t *value);
-json_t *json_deep_copy(json_t *value);
+json_t *json_deep_copy(const json_t *value);
 
 
 /* decoding */
