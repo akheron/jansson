@@ -53,6 +53,12 @@ project (jansson C)
 # Options
 OPTION (BUILD_SHARED_LIBS "Build shared libraries." OFF)
 
+if (MSVC)
+   # This option must match the settings used in your program, in particular if you
+	# are linking statically
+	OPTION( STATIC_CRT "Link the static CRT libraries" OFF )
+endif ()
+
 # Set some nicer output dirs.
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -61,10 +67,10 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 # Give the debug version a different postfix for windows,
 # so both the debug and release version can be built in the
 # same build-tree on Windows (MSVC).
-IF (WIN32)
+if (WIN32)
    SET (CMAKE_DEBUG_POSTFIX "_d")
-ELSE (WIN32)
-ENDIF (WIN32)
+else (WIN32)
+endif (WIN32)
 
 # This is how I thought it should go
 # set (JANSSON_VERSION "2.3.1")
@@ -84,14 +90,23 @@ include (CheckFunctionKeywords)
 include (CheckIncludeFiles)
 include (CheckTypeSize)
 
-# Turn off Microsofts "security" warnings.
+
 if (MSVC)
+   # Turn off Microsofts "security" warnings.
    add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo" )
+   
+   if (STATIC_CRT)
+      set(CMAKE_C_FLAGS_RELEASE "/MT")
+      set(CMAKE_C_FLAGS_DEBUG "/MTd")
+   endif()
+   
 endif()
 
 if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
    set(CMAKE_C_FLAGS "-fPIC")
 endif()
+
+   
 
 # Check for the int-type includes
 check_include_files (sys/types.h HAVE_SYS_TYPES_H)
