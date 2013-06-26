@@ -253,9 +253,18 @@ static void lex_unget(lex_t *lex, int c)
 static void lex_unget_unsave(lex_t *lex, int c)
 {
     if(c != STREAM_STATE_EOF && c != STREAM_STATE_ERROR) {
+        /* Since we treat warnings as errors, when assertions are turned
+         * off the "d" variable would be set but never used. Which is
+         * treated as an error by GCC.
+         */
+        #ifndef NDEBUG
         char d;
+        #endif
         stream_unget(&lex->stream, c);
-        d = strbuffer_pop(&lex->saved_text);
+        #ifndef NDEBUG
+        d = 
+        #endif
+            strbuffer_pop(&lex->saved_text);
         assert(c == d);
     }
 }
