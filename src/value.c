@@ -912,31 +912,35 @@ json_t *json_copy(json_t *json)
     return NULL;
 }
 
-json_t *json_deep_copy(json_t *json)
+json_t *json_deep_copy(const json_t *json)
 {
+    json_t *json2;
+
     if(!json)
         return NULL;
 
+    json2 = (json_t *)json;
+
     if(json_is_object(json))
-        return json_object_deep_copy(json);
+        return json_object_deep_copy(json2);
 
     if(json_is_array(json))
-        return json_array_deep_copy(json);
+        return json_array_deep_copy(json2);
 
     /* for the rest of the types, deep copying doesn't differ from
        shallow copying */
 
     if(json_is_string(json))
-        return json_string_copy(json);
+        return json_string_copy(json2);
 
     if(json_is_integer(json))
-        return json_integer_copy(json);
+        return json_integer_copy(json2);
 
     if(json_is_real(json))
-        return json_real_copy(json);
+        return json_real_copy(json2);
 
     if(json_is_true(json) || json_is_false(json) || json_is_null(json))
-        return json;
+        return json2;
 
     return NULL;
 }
