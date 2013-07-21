@@ -35,8 +35,13 @@ void jsonp_free(void *ptr)
 char *jsonp_strdup(const char *str)
 {
     char *new_str;
+    size_t len;
 
-    new_str = jsonp_malloc(strlen(str) + 1);
+    len = strlen(str);
+    if(len == (size_t)-1)
+        return NULL;
+
+    new_str = jsonp_malloc(len + 1);
     if(!new_str)
         return NULL;
 
