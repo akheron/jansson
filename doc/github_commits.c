@@ -51,15 +51,19 @@ static size_t write_response(void *ptr, size_t size, size_t nmemb, void *stream)
 
 static char *request(const char *url)
 {
-    CURL *curl;
+    CURL *curl = NULL;
     CURLcode status;
-    char *data;
+    char *data = NULL;
     long code;
 
+    curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
+    if(!curl)
+        goto error;
+
     data = malloc(BUFFER_SIZE);
-    if(!curl || !data)
-        return NULL;
+    if(!data)
+        goto error;
 
     struct write_result write_result = {
         .data = data,
@@ -75,14 +79,14 @@ static char *request(const char *url)
     {
         fprintf(stderr, "error: unable to request data from %s:\n", url);
         fprintf(stderr, "%s\n", curl_easy_strerror(status));
-        return NULL;
+        goto error;
     }
 
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
     if(code != 200)
     {
         fprintf(stderr, "error: server responded with code %ld\n", code);
-        return NULL;
+        goto error;
     }
 
     curl_easy_cleanup(curl);
@@ -92,6 +96,14 @@ static char *request(const char *url)
     data[write_result.pos] = '\0';
 
     return data;
+
+error:
+    if(data)
+        free(data);
+    if(curl)
+        curl_easy_cleanup(curl);
+    curl_global_cleanup();
+    return NULL;
 }
 
 int main(int argc, char *argv[])
@@ -140,7 +152,7 @@ int main(int argc, char *argv[])
         data = json_array_get(root, i);
         if(!json_is_object(data))
         {
-            fprintf(stderr, "error: commit data %d is not an object\n", i + 1);
+            fprintf(stderr, "error: commit data %d is not an object\n", (int)(i + 1));
             json_decref(root);
             return 1;
         }
@@ -148,14 +160,14 @@ int main(int argc, char *argv[])
         sha = json_object_get(data, "sha");
         if(!json_is_string(sha))
         {
-            fprintf(stderr, "error: commit %d: sha is not a string\n", i + 1);
+            fprintf(stderr, "error: commit %d: sha is not a string\n", (int)(i + 1));
             return 1;
         }
 
         commit = json_object_get(data, "commit");
         if(!json_is_object(commit))
         {
-            fprintf(stderr, "error: commit %d: commit is not an object\n", i + 1);
+            fprintf(stderr, "error: commit %d: commit is not an object\n", (int)(i + 1));
             json_decref(root);
             return 1;
         }
@@ -163,7 +175,7 @@ int main(int argc, char *argv[])
         message = json_object_get(commit, "message");
         if(!json_is_string(message))
         {
-            fprintf(stderr, "error: commit %d: message is not a string\n", i + 1);
+            fprintf(stderr, "error: commit %d: message is not a string\n", (int)(i + 1));
             json_decref(root);
             return 1;
         }
