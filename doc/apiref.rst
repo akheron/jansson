@@ -1419,7 +1419,12 @@ behavior is needed.
    Jansson's API functions to ensure that all memory operations use
    the same functions.
 
-Examples:
+**Examples:**
+
+Circumvent problems with different CRT heaps on Windows by using
+application's :func:`malloc()` and :func:`free()`::
+
+    json_set_alloc_funcs(malloc, free);
 
 Use the `Boehm's conservative garbage collector`_ for memory
 operations::
