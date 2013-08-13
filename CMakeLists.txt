@@ -89,6 +89,7 @@ include (CheckFunctionExists)
 include (CheckFunctionKeywords)
 include (CheckIncludeFiles)
 include (CheckTypeSize)
+include (CheckSymbolExists)
 
 
 if (MSVC)
@@ -106,7 +107,8 @@ if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
    set(CMAKE_C_FLAGS "-fPIC")
 endif()
 
-   
+# Are we compiling against uClibc? 
+check_symbol_exists(__UCLIBC__ "stdlib.h" HAVE_UCLIBC)
 
 # Check for the int-type includes
 check_include_files (sys/types.h HAVE_SYS_TYPES_H)
@@ -443,6 +445,12 @@ if (NOT WITHOUT_TESTS)
        add_executable(${name} ${dir}/${name}.c)
        add_dependencies(${name} jansson)
        target_link_libraries(${name} jansson)
+
+       # uClibc does not include some math functions, so we need
+       # to link against libm in that case as well.
+       if (HAVE_UCLIBC)
+         target_link_libraries(${name} m)
+       endif()
    endmacro(build_testprog)
 
    # Create executables and tests/valgrind tests for API tests.
