@@ -34,7 +34,9 @@ int strbuffer_init(strbuffer_t *strbuff)
 
 void strbuffer_close(strbuffer_t *strbuff)
 {
-    jsonp_free(strbuff->value);
+    if(strbuff->value)
+        jsonp_free(strbuff->value);
+
     strbuff->size = 0;
     strbuff->length = 0;
     strbuff->value = NULL;
@@ -54,7 +56,7 @@ const char *strbuffer_value(const strbuffer_t *strbuff)
 char *strbuffer_steal_value(strbuffer_t *strbuff)
 {
     char *result = strbuff->value;
-    strbuffer_init(strbuff);
+    strbuff->value = NULL;
     return result;
 }
 

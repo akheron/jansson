@@ -357,7 +357,6 @@ information, see :ref:`rfc-conformance`.
    should use ``json_int_t`` explicitly.
 
 ``JSON_INTEGER_IS_LONG_LONG``
-
    This is a preprocessor variable that holds the value 1 if
    :type:`json_int_t` is ``long long``, and 0 if it's ``long``. It
    can be used as follows::
@@ -369,7 +368,6 @@ information, see :ref:`rfc-conformance`.
        #endif
 
 ``JSON_INTEGER_FORMAT``
-
    This is a macro that expands to a :func:`printf()` conversion
    specifier that corresponds to :type:`json_int_t`, without the
    leading ``%`` sign, i.e. either ``"lld"`` or ``"ld"``. This macro
@@ -1072,12 +1070,24 @@ items::
     /* Create the JSON array ["foo", "bar", true] */
     json_pack("[ssb]", "foo", "bar", 1);
 
-Here's the full list of format characters. The type in parentheses
+Here's the full list of format specifiers. The type in parentheses
 denotes the resulting JSON type, and the type in brackets (if any)
-denotes the C type that is expected as the corresponding argument.
+denotes the C type that is expected as the corresponding argument or
+arguments.
 
 ``s`` (string) [const char \*]
     Convert a NULL terminated UTF-8 string to a JSON string.
+
+``s#`` (string) [const char \*, int]
+    Convert a UTF-8 buffer of a given length to a JSON string.
+
+``+`` [const char \*]
+    Like ``s``, but concatenate to the previous string. Only valid
+    after ``s``, ``s#``, ``+`` or ``+#``.
+
+``+#`` [const char \*, int]
+    Like ``s#``, but concatenate to the previous string. Only valid
+    after ``s``, ``s#``, ``+`` or ``+#``.
 
 ``n`` (null)
     Output a JSON null value. No argument is consumed.
@@ -1113,10 +1123,11 @@ denotes the C type that is expected as the corresponding argument.
 
 ``{fmt}`` (object)
     Build an object with contents from the inner format string
-    ``fmt``. The first, third, etc. format character represent a key,
-    and must be ``s`` (as object keys are always strings). The second,
-    fourth, etc. format character represent a value. Any value may be
-    an object or array, i.e. recursive value building is supported.
+    ``fmt``. The first, third, etc. format specifier represent a key,
+    and must be a string (see ``s``, ``s#``, ``+`` and ``+#`` above),
+    as object keys are always strings. The second, fourth, etc. format
+    specifier represent a value. Any value may be an object or array,
+    i.e. recursive value building is supported.
 
 Whitespace, ``:`` and ``,`` are ignored.
 
@@ -1127,9 +1138,9 @@ The following functions compose the value building API:
    .. refcounting:: new
 
    Build a new JSON value according to the format string *fmt*. For
-   each format character (except for ``{}[]n``), one argument is
-   consumed and used to build the corresponding value. Returns *NULL*
-   on error.
+   each format specifier (except for ``{}[]n``), one or more arguments
+   are consumed and used to build the corresponding value. Returns
+   *NULL* on error.
 
 .. function:: json_t *json_pack_ex(json_error_t *error, size_t flags, const char *fmt, ...)
               json_t *json_vpack_ex(json_error_t *error, size_t flags, const char *fmt, va_list ap)
@@ -1158,6 +1169,13 @@ More examples::
   /* Build the JSON array [[1, 2], {"cool": true}] */
   json_pack("[[i,i],{s:b}]", 1, 2, "cool", 1);
 
+  /* Build a string from a non-NUL terminated buffer */
+  char buffer[4] = {'t', 'e', 's', 't'};
+  json_pack("s#", buffer, 4);
+
+  /* Concatentate strings together to build the JSON string "foobarbaz" */
+  json_pack("s++", "foo", "bar", "baz");
+
 
 .. _apiref-unpack:
 
@@ -1172,10 +1190,10 @@ While a JSON value is unpacked, the type specified in the format
 string is checked to match that of the JSON value. This is the
 validation part of the process. In addition to this, the unpacking
 functions can also check that all items of arrays and objects are
-unpacked. This check be enabled with the format character ``!`` or by
+unpacked. This check be enabled with the format specifier ``!`` or by
 using the flag ``JSON_STRICT``. See below for details.
 
-Here's the full list of format characters. The type in parentheses
+Here's the full list of format specifiers. The type in parentheses
 denotes the JSON type, and the type in brackets (if any) denotes the C
 type whose address should be passed.
 
@@ -1217,10 +1235,10 @@ type whose address should be passed.
 
 ``{fmt}`` (object)
     Convert each item in the JSON object according to the inner format
-    string ``fmt``. The first, third, etc. format character represent
+    string ``fmt``. The first, third, etc. format specifier represent
     a key, and must be ``s``. The corresponding argument to unpack
     functions is read as the object key. The second fourth, etc.
-    format character represent a value and is written to the address
+    format specifier represent a value and is written to the address
     given as the corresponding argument. **Note** that every other
     argument is read from and every other is written to.
 
@@ -1233,17 +1251,17 @@ type whose address should be passed.
        extracted. See below for an example.
 
 ``!``
-    This special format character is used to enable the check that
+    This special format specifier is used to enable the check that
     all object and array items are accessed, on a per-value basis. It
-    must appear inside an array or object as the last format character
+    must appear inside an array or object as the last format specifier
     before the closing bracket or brace. To enable the check globally,
     use the ``JSON_STRICT`` unpacking flag.
 
 ``*``
-    This special format character is the opposite of ``!``. If the
+    This special format specifier is the opposite of ``!``. If the
     ``JSON_STRICT`` flag is used, ``*`` can be used to disable the
     strict check on a per-value basis. It must appear inside an array
-    or object as the last format character before the closing bracket
+    or object as the last format specifier before the closing bracket
     or brace.
 
 Whitespace, ``:`` and ``,`` are ignored.
@@ -1268,13 +1286,13 @@ The following functions compose the parsing and validation API:
 
    The first argument of all unpack functions is ``json_t *root``
    instead of ``const json_t *root``, because the use of ``O`` format
-   character causes the reference count of ``root``, or some value
+   specifier causes the reference count of ``root``, or some value
    reachable from ``root``, to be increased. Furthermore, the ``o``
-   format character may be used to extract a value as-is, which allows
+   format specifier may be used to extract a value as-is, which allows
    modifying the structure or contents of a value reachable from
    ``root``.
 
-   If the ``O`` and ``o`` format characters are not used, it's
+   If the ``O`` and ``o`` format specifiers are not used, it's
    perfectly safe to cast a ``const json_t *`` variable to plain
    ``json_t *`` when used with these functions.
 
@@ -1283,7 +1301,7 @@ The following unpacking flags are available:
 ``JSON_STRICT``
     Enable the extra validation step checking that all object and
     array items are unpacked. This is equivalent to appending the
-    format character ``!`` to the end of every array and object in the
+    format specifier ``!`` to the end of every array and object in the
     format string.
 
 ``JSON_VALIDATE_ONLY``

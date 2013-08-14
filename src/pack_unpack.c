@@ -12,14 +12,26 @@
 #include "utf.h"
 
 typedef struct {
+    int line;
+    int column;
+    size_t pos;
+    char token;
+} token_t;
+
+typedef struct {
     const char *start;
     const char *fmt;
-    char token;
+    token_t prev_token;
+    token_t token;
+    token_t next_token;
     json_error_t *error;
     size_t flags;
     int line;
     int column;
+    size_t pos;
 } scanner_t;
+
+#define token(scanner) ((scanner)->token.token)
 
 static const char * const type_names[] = {
     "object",
@@ -43,14 +55,28 @@ static void scanner_init(scanner_t *s, json_error_t *error,
     s->error = error;
     s->flags = flags;
     s->fmt = s->start = fmt;
+    memset(&s->prev_token, 0, sizeof(token_t));
+    memset(&s->token, 0, sizeof(token_t));
+    memset(&s->next_token, 0, sizeof(token_t));
     s->line = 1;
     s->column = 0;
+    s->pos = 0;
 }
 
 static void next_token(scanner_t *s)
 {
-    const char *t = s->fmt;
+    const char *t;
+    s->prev_token = s->token;
+
+    if(s->next_token.line) {
+        s->token = s->next_token;
+        s->next_token.line = 0;
+        return;
+    }
+
+    t = s->fmt;
     s->column++;
+    s->pos++;
 
     /* skip space and ignored chars */
     while(*t == ' ' || *t == '\t' || *t == '\n' || *t == ',' || *t == ':') {
@@ -61,23 +87,32 @@ static void next_token(scanner_t *s)
         else
             s->column++;
 
+        s->pos++;
         t++;
     }
 
-    s->token = *t;
+    s->token.token = *t;
+    s->token.line = s->line;
+    s->token.column = s->column;
+    s->token.pos = s->pos;
 
     t++;
     s->fmt = t;
 }
 
+static void prev_token(scanner_t *s)
+{
+    s->next_token = s->token;
+    s->token = s->prev_token;
+}
+
 static void set_error(scanner_t *s, const char *source, const char *fmt, ...)
 {
     va_list ap;
-    size_t pos;
     va_start(ap, fmt);
 
-    pos = (size_t)(s->fmt - s->start);
-    jsonp_error_vset(s->error, s->line, s->column, pos, fmt, ap);
+    jsonp_error_vset(s->error, s->token.line, s->token.column, s->token.pos,
+                     fmt, ap);
 
     jsonp_error_set_source(s->error, source);
 
@@ -86,35 +121,107 @@ static void set_error(scanner_t *s, const char *source, const char *fmt, ...)
 
 static json_t *pack(scanner_t *s, va_list *ap);
 
+
+/* ours will be set to 1 if jsonp_free() must be called for the result
+   afterwards */
+static char *read_string(scanner_t *s, va_list *ap,
+                         const char *purpose, int *ours)
+{
+    char t;
+    strbuffer_t strbuff;
+    const char *str;
+    size_t length;
+    char *result;
+
+    next_token(s);
+    t = token(s);
+    prev_token(s);
+
+    if(t != '#' && t != '+') {
+        /* Optimize the simple case */
+        str = va_arg(*ap, const char *);
+
+        if(!str) {
+            set_error(s, "<args>", "NULL string argument");
+            return NULL;
+        }
+
+        if(!utf8_check_string(str, -1)) {
+            set_error(s, "<args>", "Invalid UTF-8 %s", purpose);
+            return NULL;
+        }
+
+        *ours = 0;
+        return (char *)str;
+    }
+
+    strbuffer_init(&strbuff);
+
+    while(1) {
+        str = va_arg(*ap, const char *);
+        if(!str) {
+            set_error(s, "<args>", "NULL string argument");
+            strbuffer_close(&strbuff);
+            return NULL;
+        }
+
+        next_token(s);
+
+        if(token(s) == '#') {
+            length = va_arg(*ap, int);
+        }
+        else {
+            prev_token(s);
+            length = strlen(str);
+        }
+
+        if(strbuffer_append_bytes(&strbuff, str, length) == -1) {
+            set_error(s, "<internal>", "Out of memory");
+            strbuffer_close(&strbuff);
+            return NULL;
+        }
+
+        next_token(s);
+        if(token(s) != '+') {
+            prev_token(s);
+            break;
+        }
+    }
+
+    result = strbuffer_steal_value(&strbuff);
+
+    if(!utf8_check_string(result, -1)) {
+        set_error(s, "<args>", "Invalid UTF-8 %s", purpose);
+        return NULL;
+    }
+
+    *ours = 1;
+    return result;
+}
+
 static json_t *pack_object(scanner_t *s, va_list *ap)
 {
     json_t *object = json_object();
     next_token(s);
 
-    while(s->token != '}') {
-        const char *key;
+    while(token(s) != '}') {
+        char *key;
+        int ours;
         json_t *value;
 
-        if(!s->token) {
+        if(!token(s)) {
             set_error(s, "<format>", "Unexpected end of format string");
             goto error;
         }
 
-        if(s->token != 's') {
-            set_error(s, "<format>", "Expected format 's', got '%c'", s->token);
+        if(token(s) != 's') {
+            set_error(s, "<format>", "Expected format 's', got '%c'", token(s));
             goto error;
         }
 
-        key = va_arg(*ap, const char *);
-        if(!key) {
-            set_error(s, "<args>", "NULL object key");
+        key = read_string(s, ap, "object key", &ours);
+        if(!key)
             goto error;
-        }
-
-        if(!utf8_check_string(key, -1)) {
-            set_error(s, "<args>", "Invalid UTF-8 in object key");
-            goto error;
-        }
 
         next_token(s);
 
@@ -123,9 +230,15 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
             goto error;
 
         if(json_object_set_new_nocheck(object, key, value)) {
+            if(ours)
+                jsonp_free(key);
+
             set_error(s, "<internal>", "Unable to add key \"%s\"", key);
             goto error;
         }
+
+        if(ours)
+            jsonp_free(key);
 
         next_token(s);
     }
@@ -142,10 +255,10 @@ static json_t *pack_array(scanner_t *s, va_list *ap)
     json_t *array = json_array();
     next_token(s);
 
-    while(s->token != ']') {
+    while(token(s) != ']') {
         json_t *value;
 
-        if(!s->token) {
+        if(!token(s)) {
             set_error(s, "<format>", "Unexpected end of format string");
             goto error;
         }
@@ -170,25 +283,27 @@ error:
 
 static json_t *pack(scanner_t *s, va_list *ap)
 {
-    switch(s->token) {
+    switch(token(s)) {
         case '{':
             return pack_object(s, ap);
 
         case '[':
             return pack_array(s, ap);
 
-        case 's': /* string */
-        {
-            const char *str = va_arg(*ap, const char *);
-            if(!str) {
-                set_error(s, "<args>", "NULL string argument");
+        case 's': { /* string */
+            char *str;
+            int ours;
+            json_t *result;
+
+            str = read_string(s, ap, "string", &ours);
+            if(!str)
                 return NULL;
-            }
-            if(!utf8_check_string(str, -1)) {
-                set_error(s, "<args>", "Invalid UTF-8 string");
-                return NULL;
-            }
-            return json_string_nocheck(str);
+
+            result = json_string_nocheck(str);
+            if(ours)
+                jsonp_free(str);
+
+            return result;
         }
 
         case 'n': /* null */
@@ -214,7 +329,7 @@ static json_t *pack(scanner_t *s, va_list *ap)
 
         default:
             set_error(s, "<format>", "Unexpected format character '%c'",
-                      s->token);
+                      token(s));
             return NULL;
     }
 }
@@ -245,30 +360,30 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
     }
     next_token(s);
 
-    while(s->token != '}') {
+    while(token(s) != '}') {
         const char *key;
         json_t *value;
         int opt = 0;
 
         if(strict != 0) {
             set_error(s, "<format>", "Expected '}' after '%c', got '%c'",
-                      (strict == 1 ? '!' : '*'), s->token);
+                      (strict == 1 ? '!' : '*'), token(s));
             goto out;
         }
 
-        if(!s->token) {
+        if(!token(s)) {
             set_error(s, "<format>", "Unexpected end of format string");
             goto out;
         }
 
-        if(s->token == '!' || s->token == '*') {
-            strict = (s->token == '!' ? 1 : -1);
+        if(token(s) == '!' || token(s) == '*') {
+            strict = (token(s) == '!' ? 1 : -1);
             next_token(s);
             continue;
         }
 
-        if(s->token != 's') {
-            set_error(s, "<format>", "Expected format 's', got '%c'", s->token);
+        if(token(s) != 's') {
+            set_error(s, "<format>", "Expected format 's', got '%c'", token(s));
             goto out;
         }
 
@@ -280,7 +395,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
 
         next_token(s);
 
-        if(s->token == '?') {
+        if(token(s) == '?') {
             opt = 1;
             next_token(s);
         }
@@ -331,30 +446,30 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
     }
     next_token(s);
 
-    while(s->token != ']') {
+    while(token(s) != ']') {
         json_t *value;
 
         if(strict != 0) {
             set_error(s, "<format>", "Expected ']' after '%c', got '%c'",
                       (strict == 1 ? '!' : '*'),
-                      s->token);
+                      token(s));
             return -1;
         }
 
-        if(!s->token) {
+        if(!token(s)) {
             set_error(s, "<format>", "Unexpected end of format string");
             return -1;
         }
 
-        if(s->token == '!' || s->token == '*') {
-            strict = (s->token == '!' ? 1 : -1);
+        if(token(s) == '!' || token(s) == '*') {
+            strict = (token(s) == '!' ? 1 : -1);
             next_token(s);
             continue;
         }
 
-        if(!strchr(unpack_value_starters, s->token)) {
+        if(!strchr(unpack_value_starters, token(s))) {
             set_error(s, "<format>", "Unexpected format character '%c'",
-                      s->token);
+                      token(s));
             return -1;
         }
 
@@ -392,7 +507,7 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
 
 static int unpack(scanner_t *s, json_t *root, va_list *ap)
 {
-    switch(s->token)
+    switch(token(s))
     {
         case '{':
             return unpack_object(s, root, ap);
@@ -521,7 +636,7 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
         default:
             set_error(s, "<format>", "Unexpected format character '%c'",
-                      s->token);
+                      token(s));
             return -1;
     }
 }
@@ -551,7 +666,7 @@ json_t *json_vpack_ex(json_error_t *error, size_t flags,
         return NULL;
 
     next_token(&s);
-    if(s.token) {
+    if(token(&s)) {
         json_decref(value);
         set_error(&s, "<format>", "Garbage after format string");
         return NULL;
@@ -614,7 +729,7 @@ int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags,
     va_end(ap_copy);
 
     next_token(&s);
-    if(s.token) {
+    if(token(&s)) {
         set_error(&s, "<format>", "Garbage after format string");
         return -1;
     }
