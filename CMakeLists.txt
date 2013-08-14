@@ -240,6 +240,10 @@ elseif (HAVE__SNPRINTF)
    set (JSON_SNPRINTF _snprintf)
 endif ()
 
+# uClibc lacks isnan and isinf.
+check_function_exists (isnan HAVE_ISNAN)
+check_function_exists (isinf HAVE_ISINF)
+
 # Create pkg-conf file.
 # (We use the same files as ./configure does, so we
 #  have to defined the same variables used there).
@@ -448,9 +452,9 @@ if (NOT WITHOUT_TESTS)
 
        # uClibc does not include some math functions, so we need
        # to link against libm in that case as well.
-       if (HAVE_UCLIBC)
-         target_link_libraries(${name} m)
-       endif()
+       #if (HAVE_UCLIBC)
+         target_link_libraries(${name})
+       #endif()
    endmacro(build_testprog)
 
    # Create executables and tests/valgrind tests for API tests.
