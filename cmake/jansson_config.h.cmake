@@ -57,6 +57,9 @@
 /* If locale.h and localeconv() are available, define to 1, otherwise to 0. */
 #define JSON_HAVE_LOCALECONV @JSON_HAVE_LOCALECONV@
 
-
+/* If isnan() and isinf() are available in math.h, define to 1,
+   otherwise to 0. Note that you may need to link with -lm on some
+   systems. */
+#cmakedefine JSON_HAVE_ISNAN_ISINF 1
 
 #endif

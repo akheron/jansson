@@ -89,6 +89,8 @@ include (CheckFunctionExists)
 include (CheckFunctionKeywords)
 include (CheckIncludeFiles)
 include (CheckTypeSize)
+include (CheckLibraryExists)
+include (CheckCSourceCompiles)
 
 
 if (MSVC)
@@ -237,6 +239,38 @@ if (HAVE_SNPRINTF)
 elseif (HAVE__SNPRINTF)
    set (JSON_SNPRINTF _snprintf)
 endif ()
+
+#
+# Check for existance of isnan and isinf
+#
+set(JSON_ISNAN_ISINF_REQUIRES_LIBM 0)
+set(ISNAN_ISINF_SRC "
+   char isnan();
+   char isinf();
+
+   int main(int argc, char **argv)
+   {
+      isnan();
+      isinf();
+      return 0;
+   }
+   
+   ")
+
+CHECK_C_SOURCE_COMPILES("${ISNAN_ISINF_SRC}" JSON_HAVE_ISNAN_ISINF)
+
+if (NOT JSON_HAVE_ISNAN_ISINF)
+   # Not found, try linking libm and see if it works
+   # uClibc requires this for instance.
+   set(CMAKE_REQUIRED_LIBRARIES m)
+   CHECK_C_SOURCE_COMPILES("${ISNAN_ISINF_SRC}" JSON_HAVE_ISNAN_ISINF_LIBM)
+   set(CMAKE_REQUIRED_LIBRARIES)
+
+   if (JSON_HAVE_ISNAN_ISINF_LIBM)
+      set(JSON_HAVE_ISNAN_ISINF 1)
+      set(JSON_ISNAN_ISINF_REQUIRES_LIBM 1)
+   endif()
+endif()
 
 # Create pkg-conf file.
 # (We use the same files as ./configure does, so we
@@ -443,6 +477,11 @@ if (NOT WITHOUT_TESTS)
        add_executable(${name} ${dir}/${name}.c)
        add_dependencies(${name} jansson)
        target_link_libraries(${name} jansson)
+
+       # uClibc requires libm for some math.h functions.
+       if (JSON_ISNAN_ISINF_REQUIRES_LIBM)
+         target_link_libraries(${name} m)
+       endif()
    endmacro(build_testprog)
 
    # Create executables and tests/valgrind tests for API tests.
