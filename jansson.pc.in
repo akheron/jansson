@@ -7,4 +7,5 @@ Name: Jansson
 Description: Library for encoding, decoding and manipulating JSON data
 Version: @VERSION@
 Libs: -L${libdir} -ljansson
+Libs.private: @LIBS@
 Cflags: -I${includedir}

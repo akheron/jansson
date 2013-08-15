@@ -36,4 +36,9 @@
    otherwise to 0. */
 #define JSON_HAVE_LOCALECONV @json_have_localeconv@
 
+/* If isnan() and isinf() are available in math.h, define to 1,
+   otherwise to 0. Note that you may need to link with -lm on some
+   systems. */
+#define JSON_HAVE_ISNAN_ISINF @json_have_isnan_isinf@
+
 #endif

@@ -19,11 +19,12 @@
 #include "jansson_private.h"
 #include "utf.h"
 
-/* Work around nonstandard isnan() and isinf() implementations */
-#ifndef isnan
+/* Work around missing isnan() and isinf() implementations */
+#if !JSON_HAVE_ISNAN_ISINF
+/* Undef them just to be sure */
+#undef isnan
+#undef isinf
 static JSON_INLINE int isnan(double x) { return x != x; }
-#endif
-#ifndef isinf
 static JSON_INLINE int isinf(double x) { return !isnan(x) && isnan(x - x); }
 #endif
 

@@ -43,6 +43,37 @@ case "$ac_cv_header_locale_h$ac_cv_func_localeconv" in
 esac
 AC_SUBST([json_have_localeconv])
 
+# isinf/isnan
+AC_MSG_CHECKING([whether isnan and isinf are defined and/or need -lm])
+AC_LANG([C])
+
+# First, test without -lm
+isnan_isinf_found=no
+AC_LINK_IFELSE(
+    [AC_LANG_PROGRAM([#include <math.h>], [isnan(0.1); isinf(0.1);])],
+    [AC_MSG_RESULT([defined, -lm not needed]); isnan_isinf_found=yes]
+)
+
+if test "x$isnan_isinf_found" = "xno"; then
+    # Not found, test with -lm
+    libs_before_test=$LIBS
+    LIBS="$LIBS -lm"
+    AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM([#include <math.h>], [isnan(0.1); isinf(0.1);])],
+        [AC_MSG_RESULT([defined, -lm needed]); isnan_isinf_found=yes],
+        [LIBS=$libs_before_test]
+    )
+fi
+
+if test "x$isnan_isinf_found" = "xno"; then
+    # Still not found
+    AC_MSG_RESULT([not defined])
+    json_have_isnan_isinf=0
+else
+    json_have_isnan_isinf=1
+fi
+AC_SUBST([json_have_isnan_isinf])
+
 AC_CONFIG_FILES([
         jansson.pc
         Makefile
