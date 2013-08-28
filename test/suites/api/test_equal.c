@@ -62,16 +62,18 @@ static void test_equal_simple()
 
     /* string */
     value1 = json_string("foo");
-    value2 = json_string("foo");
+    value2 = json_string_ex("foo",sizeof("foo")-1,JSON_LITERAL);
     if(!value1 || !value2)
         fail("unable to create strings");
     if(!json_equal(value1, value2))
         fail("json_equal fails for two equal strings");
-    json_decref(value2);
 
-    value2 = json_string("bar");
-    if(!value2)
-        fail("unable to create an string");
+    if(json_string_set_ex(value2, "bar2", sizeof("bar2")-1, 0))
+        fail("unable to reassign a string");
+
+    if(json_string_len(value2) != sizeof("bar2")-1)
+        fail("wrong len after assignation");
+
     if(json_equal(value1, value2))
         fail("json_equal fails for two inequal strings");
 

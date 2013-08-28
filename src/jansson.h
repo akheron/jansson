@@ -85,14 +85,17 @@ typedef long json_int_t;
  * that it can take the ownership of the passed value instead of copying it.
  * To steal a value, value must be freeable by the free_fn function.
  */ 
-#define JSON_STEAL 0x1
+#define JSON_STEAL   0x1
+
+/* value is a string literal. no copy done, no deallocation required */
+#define JSON_LITERAL 0x2
 
 json_t *json_object(void);
 json_t *json_array(void);
 json_t *json_string(const char *value);
-json_t *json_string_ex(const char *value, size_t len, size_t steal);
+json_t *json_string_ex(const char *value, size_t len, size_t mode);
 json_t *json_string_nocheck(const char *value);
-json_t *json_string_nocheck_ex(const char *value, size_t len, size_t steal);
+json_t *json_string_nocheck_ex(const char *value, size_t len, size_t mode);
 json_t *json_integer(json_int_t value);
 json_t *json_real(double value);
 json_t *json_true(void);
@@ -213,9 +216,9 @@ json_int_t json_integer_value(const json_t *integer);
 double json_real_value(const json_t *real);
 double json_number_value(const json_t *json);
 int json_string_set(json_t *string, const char *value);
-int json_string_set_ex(json_t *string, const char *value, size_t len, size_t steal);
+int json_string_set_ex(json_t *string, const char *value, size_t len, size_t mode);
 int json_string_set_nocheck(json_t *string, const char *value);
-int json_string_set_nocheck_ex(json_t *string, const char *value, size_t len, size_t steal);
+int json_string_set_nocheck_ex(json_t *string, const char *value, size_t len, size_t mode);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
 
