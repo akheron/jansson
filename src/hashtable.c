@@ -227,7 +227,7 @@ int hashtable_set(hashtable_t *hashtable,
 {
     pair_t *pair;
     bucket_t *bucket;
-    size_t hash, index;
+    size_t hash, index, len;
 
     /* rehash if the load ratio exceeds 1 */
     if(hashtable->size >= num_buckets(hashtable))
@@ -249,13 +249,14 @@ int hashtable_set(hashtable_t *hashtable,
         /* offsetof(...) returns the size of pair_t without the last,
            flexible member. This way, the correct amount is
            allocated. */
-        pair = jsonp_malloc(offsetof(pair_t, key) + strlen(key) + 1);
+        len = strlen(key);
+        pair = jsonp_malloc(offsetof(pair_t, key) + len + 1);
         if(!pair)
             return -1;
 
         pair->hash = hash;
         pair->serial = serial;
-        strcpy(pair->key, key);
+        memcpy(pair->key, key, len + 1);
         pair->value = value;
         list_init(&pair->list);
 
