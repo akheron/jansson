@@ -45,7 +45,7 @@ char *jsonp_strdup(const char *str)
     if(!new_str)
         return NULL;
 
-    strcpy(new_str, str);
+    memcpy(new_str, str, len + 1);
     return new_str;
 }
 
