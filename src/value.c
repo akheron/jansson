@@ -648,9 +648,8 @@ json_t *json_string_nocheck_ex(const char *value, size_t len, size_t steal)
 {
     json_string_t *string;
 
-    if(!value) {
+    if(!value)
         return NULL;
-    }
 
     string = jsonp_malloc(sizeof(json_string_t));
     if(!string) {
