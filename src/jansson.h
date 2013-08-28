@@ -81,7 +81,7 @@ typedef long json_int_t;
 /* construction, destruction, reference counting */
 
 /*
- * optional value of the steal parameter to indicate to the creation function
+ * optional value of the mode parameter to indicate to the creation function
  * that it can take the ownership of the passed value instead of copying it.
  * To steal a value, value must be freeable by the free_fn function.
  */ 
