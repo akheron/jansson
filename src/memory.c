@@ -32,12 +32,10 @@ void jsonp_free(void *ptr)
     (*do_free)(ptr);
 }
 
-char *jsonp_strdup(const char *str)
+char *jsonp_strndup(const char *str, size_t len)
 {
     char *new_str;
-    size_t len;
 
-    len = strlen(str);
     if(len == (size_t)-1)
         return NULL;
 
