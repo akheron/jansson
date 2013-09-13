@@ -1031,8 +1031,9 @@ The following functions perform the actual JSON decoding.
    corresponding :func:`json_load_callback()` argument passed through.
 
    On error, the function should return ``(size_t)-1`` to abort the
-   decoding process. When there's no data left, it should return 0 to
-   report that the end of input has been reached.
+   decoding process. On success, it should return the number of bytes read;
+   a returned value of 0 indicates that no data was read and that the end of
+   file has been reached.
 
    .. versionadded:: 2.4
 
