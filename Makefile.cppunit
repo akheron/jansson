@@ -1,0 +1,36 @@
+
+.DEFAULT_GOAL := libjansson.a
+
+CFLAGS += -Isrc
+
+HEADERS += src/jansson.h
+HEADERS += src/jansson_config.h
+HEADERS += src/hashtable.h
+HEADERS += src/strbuffer.h
+HEADERS += src/utf.h
+HEADERS += src/jansson_private.h
+
+OBJS += src/dump.o
+OBJS += src/error.o
+OBJS += src/hashtable.o
+OBJS += src/load.o
+OBJS += src/memory.o
+OBJS += src/pack_unpack.o
+OBJS += src/strbuffer.o
+OBJS += src/strconv.o
+OBJS += src/utf.o
+OBJS += src/value.o
+
+src/jansson_config.h:
+	cp cppunit/jansson_config.h $@
+
+src/%.o: src/%.c $(HEADERS)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+libjansson.a: $(HEADERS) $(OBJS)
+	$(AR) src libjansson.a $(OBJS)
+
+clean:
+	rm src/*.o
+	rm libjansson.a
+	rm src/jansson_config.h
