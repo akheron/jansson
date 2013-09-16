@@ -993,9 +993,10 @@ The following functions perform the actual JSON decoding.
    *buffer* points to a buffer of *buflen* bytes, and *data* is the
    corresponding :func:`json_load_callback()` argument passed through.
 
-   On error, the function should return ``(size_t)-1`` to abort the
-   decoding process. When there's no data left, it should return 0 to
-   report that the end of input has been reached.
+   On success, the function should return the number of bytes read; a
+   returned value of 0 indicates that no data was read and that the
+   end of file has been reached. On error, the function should return
+   ``(size_t)-1`` to abort the decoding process.
 
    .. versionadded:: 2.4
 
