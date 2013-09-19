@@ -1,3 +1,62 @@
+Version 2.5
+===========
+
+Released 2013-09-19
+
+* New features:
+
+  - `json_pack()` and friends: Add format specifiers ``s#``, ``+`` and
+    ``+#``.
+
+  - Add ``JSON_DECODE_INT_AS_REAL`` decoding flag to treat all numbers
+    as real in the decoder (#123).
+
+  - Add `json_array_foreach()`, paralleling `json_object_foreach()`
+    (#118).
+
+* Bug fixes:
+
+  - `json_dumps()` and friends: Don't crash if json is *NULL* and
+    ``JSON_ENCODE_ANY`` is set.
+
+  - Fix a theoretical integer overflow in `jsonp_strdup()`.
+
+  - Fix `l_isxdigit()` macro (#97).
+
+  - Fix an off-by-one error in `json_array_remove()`.
+
+* Build:
+
+  - Support CMake in addition to GNU Autotools (#106, #107, #112,
+    #115, #120, #127).
+
+  - Support building for Android (#109).
+
+  - Don't use ``-Werror`` by default.
+
+  - Support building and testing with VPATH (#93).
+
+  - Fix compilation when ``NDEBUG`` is defined (#128)
+
+* Tests:
+
+  - Fix a refleak in ``test/bin/json_process.c``.
+
+* Documentation:
+
+  - Clarify the return value of `json_load_callback_t`.
+
+  - Document how to circumvent problems with separate heaps on Windows.
+
+  - Fix memory leaks and warnings in ``github_commits.c``.
+
+  - Use `json_decref()` properly in tutorial.
+
+* Other:
+
+  - Make it possible to forward declare ``struct json_t``.
+
+
 Version 2.4
 ===========
 
