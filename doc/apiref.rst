@@ -510,7 +510,7 @@ in an array.
 
    Iterate over every element of ``array``, running the block
    of code that follows each time with the proper values set to
-   variables ``index`` and ``value``, of types :type:`int` and
+   variables ``index`` and ``value``, of types :type:`size_t` and
    :type:`json_t *` respectively. Example::
 
        /* array is a JSON array */
