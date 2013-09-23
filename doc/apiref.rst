@@ -1082,13 +1082,19 @@ arguments.
 ``s#`` (string) [const char \*, int]
     Convert a UTF-8 buffer of a given length to a JSON string.
 
+    .. versionadded:: 2.5
+
 ``+`` [const char \*]
     Like ``s``, but concatenate to the previous string. Only valid
     after ``s``, ``s#``, ``+`` or ``+#``.
 
+    .. versionadded:: 2.5
+
 ``+#`` [const char \*, int]
     Like ``s#``, but concatenate to the previous string. Only valid
     after ``s``, ``s#``, ``+`` or ``+#``.
+
+    .. versionadded:: 2.5
 
 ``n`` (null)
     Output a JSON null value. No argument is consumed.
