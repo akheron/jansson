@@ -41,7 +41,7 @@ static void test_copy_simple(void)
     json_decref(copy);
 
     /* string */
-    value = json_string("foo");
+    value = json_string_ex("foo", sizeof("foo")-1, JSON_LITERAL);
     if(!value)
         fail("unable to create a string");
     copy = json_copy(value);

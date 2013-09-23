@@ -8,6 +8,8 @@
 #ifndef STRBUFFER_H
 #define STRBUFFER_H
 
+#include <jansson_config.h>
+
 typedef struct {
     char *value;
     size_t length;   /* bytes used */
@@ -19,7 +21,17 @@ void strbuffer_close(strbuffer_t *strbuff);
 
 void strbuffer_clear(strbuffer_t *strbuff);
 
-const char *strbuffer_value(const strbuffer_t *strbuff);
+static JSON_INLINE
+const char *strbuffer_value(const strbuffer_t *strbuff)
+{
+    return strbuff->value;
+}
+
+static JSON_INLINE
+size_t strbuffer_length(const strbuffer_t *strbuff)
+{
+    return strbuff->length;
+}
 
 /* Steal the value and close the strbuffer */
 char *strbuffer_steal_value(strbuffer_t *strbuff);

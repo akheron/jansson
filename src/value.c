@@ -620,7 +620,50 @@ static json_t *json_array_deep_copy(const json_t *array)
 
 /*** string ***/
 
+/* XXX: this breaks const guarantee */
+static char *steal_or_copy(const char *value, size_t len, size_t mode)
+{
+    if(!mode)
+        return jsonp_strndup(value, len);
+    else
+        return (char *)value;
+}
+
+/* used to clean up value param when an error occurs */
+static JSON_INLINE
+void clean_value(const char *value, size_t mode)
+{
+    if(mode == JSON_STEAL)
+        jsonp_free((char *)value);
+}
+
+static JSON_INLINE
+void free_value(json_string_t *string)
+{
+    if(!string->mode)
+        jsonp_free(string->value);
+}
+
+static
+void set_value(json_string_t *string, char *value, size_t len, size_t mode)
+{
+    string->value = value;
+    string->len = len;
+    if(mode != JSON_STEAL) /* can only steal once */
+        string->mode = mode;
+    else
+        string->mode = 0;
+}
+
 json_t *json_string_nocheck(const char *value)
+{
+    if(!value)
+        return NULL;
+
+    return json_string_nocheck_ex(value, strlen(value), 0);
+}
+
+json_t *json_string_nocheck_ex(const char *value, size_t len, size_t mode)
 {
     json_string_t *string;
 
@@ -628,11 +671,13 @@ json_t *json_string_nocheck(const char *value)
         return NULL;
 
     string = jsonp_malloc(sizeof(json_string_t));
-    if(!string)
+    if(!string) {
+        clean_value(value, mode);
         return NULL;
+    }
     json_init(&string->json, JSON_STRING);
 
-    string->value = jsonp_strdup(value);
+    set_value(string, steal_or_copy(value, len, mode), len, mode);
     if(!string->value) {
         jsonp_free(string);
         return NULL;
@@ -643,10 +688,23 @@ json_t *json_string_nocheck(const char *value)
 
 json_t *json_string(const char *value)
 {
-    if(!value || !utf8_check_string(value, -1))
+    if(!value)
         return NULL;
 
-    return json_string_nocheck(value);
+    return json_string_ex(value, strlen(value), 0);
+}
+
+json_t *json_string_ex(const char *value, size_t len, size_t mode)
+{
+    if(!value)
+        return NULL;
+
+    if(!utf8_check_string(value, len)) {
+        clean_value(value, mode);
+        return NULL;
+    }
+
+    return json_string_nocheck_ex(value, len, mode);
 }
 
 const char *json_string_value(const json_t *json)
@@ -657,47 +715,96 @@ const char *json_string_value(const json_t *json)
     return json_to_string(json)->value;
 }
 
-int json_string_set_nocheck(json_t *json, const char *value)
+size_t json_string_len(const json_t *json)
+{
+    if(!json_is_string(json))
+        return 0;
+
+    return json_to_string(json)->len;
+}
+
+int json_string_set_nocheck(json_t *string, const char *value)
+{
+    if(!value)
+        return -1;
+
+    return json_string_set_nocheck_ex(string, value, strlen(value), 0);
+}
+
+int json_string_set_nocheck_ex(json_t *json, const char *value, size_t len, size_t mode)
 {
     char *dup;
     json_string_t *string;
 
-    if(!json_is_string(json) || !value)
+    if(!value)
         return -1;
 
-    dup = jsonp_strdup(value);
+    if(!json_is_string(json)) {
+        clean_value(value, mode);
+        return -1;
+    }
+
+    dup = steal_or_copy(value, len, mode);
     if(!dup)
         return -1;
 
     string = json_to_string(json);
-    jsonp_free(string->value);
-    string->value = dup;
+    free_value(string);
+    set_value(string, dup, len, mode);
 
     return 0;
 }
 
-int json_string_set(json_t *json, const char *value)
+int json_string_set(json_t *string, const char *value)
 {
-    if(!value || !utf8_check_string(value, -1))
+    if(!value)
         return -1;
 
-    return json_string_set_nocheck(json, value);
+    return json_string_set_ex(string, value, strlen(value), 0);
+}
+
+int json_string_set_ex(json_t *json, const char *value, size_t len, size_t mode)
+{
+    if(!value)
+        return -1;
+
+    if(!utf8_check_string(value, len)) {
+        clean_value(value, mode);
+        return -1;
+    }
+
+    return json_string_set_nocheck_ex(json, value, len, mode);
 }
 
 static void json_delete_string(json_string_t *string)
 {
-    jsonp_free(string->value);
+    free_value(string);
     jsonp_free(string);
 }
 
 static int json_string_equal(json_t *string1, json_t *string2)
 {
-    return strcmp(json_string_value(string1), json_string_value(string2)) == 0;
+    json_string_t *s1, *s2;
+
+    if(!json_is_string(string1) || !json_is_string(string2))
+        return 0;
+
+    s1 = json_to_string(string1);
+    s2 = json_to_string(string2);
+
+    return s1->len == s2->len && memcmp(s1->value, s2->value, s1->len) == 0;
 }
 
 static json_t *json_string_copy(const json_t *string)
 {
-    return json_string_nocheck(json_string_value(string));
+    json_string_t *s;
+
+    if(!json_is_string(string))
+        return NULL;
+
+    s = json_to_string(string);
+
+    return json_string_nocheck_ex(s->value, s->len, s->mode);
 }
 
 

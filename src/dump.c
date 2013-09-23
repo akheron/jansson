@@ -420,7 +420,7 @@ char *json_dumps(const json_t *json, size_t flags)
     if(json_dump_callback(json, dump_to_strbuffer, (void *)&strbuff, flags))
         result = NULL;
     else
-        result = jsonp_strdup(strbuffer_value(&strbuff));
+        result = jsonp_strndup(strbuffer_value(&strbuff),strbuffer_length(&strbuff));
 
     strbuffer_close(&strbuff);
     return result;

@@ -9,6 +9,7 @@
 #define JANSSON_PRIVATE_H
 
 #include <stddef.h>
+#include <string.h>
 #include "jansson.h"
 #include "hashtable.h"
 #include "strbuffer.h"
@@ -49,6 +50,8 @@ typedef struct {
 typedef struct {
     json_t json;
     char *value;
+    size_t len;
+    size_t mode;
 } json_string_t;
 
 typedef struct {
@@ -81,8 +84,13 @@ int jsonp_dtostr(char *buffer, size_t size, double value);
 /* Wrappers for custom memory functions */
 void* jsonp_malloc(size_t size);
 void jsonp_free(void *ptr);
-char *jsonp_strndup(const char *str, size_t length);
-char *jsonp_strdup(const char *str);
+char *jsonp_strndup(const char *str, size_t len);
+
+static JSON_INLINE
+char *jsonp_strdup(const char *str)
+{
+    return jsonp_strndup(str, strlen(str));
+}
 
 /* Windows compatibility */
 #ifdef _WIN32
