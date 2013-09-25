@@ -125,13 +125,12 @@ static json_t *pack(scanner_t *s, va_list *ap);
 /* ours will be set to 1 if jsonp_free() must be called for the result
    afterwards */
 static char *read_string(scanner_t *s, va_list *ap,
-                         const char *purpose, int *ours)
+                         const char *purpose, size_t *out_len, int *ours)
 {
     char t;
     strbuffer_t strbuff;
     const char *str;
     size_t length;
-    char *result;
 
     next_token(s);
     t = token(s);
@@ -146,11 +145,14 @@ static char *read_string(scanner_t *s, va_list *ap,
             return NULL;
         }
 
-        if(!utf8_check_string(str, -1)) {
+        length = strlen(str);
+
+        if(!utf8_check_string(str, length)) {
             set_error(s, "<args>", "Invalid UTF-8 %s", purpose);
             return NULL;
         }
 
+        *out_len = length;
         *ours = 0;
         return (char *)str;
     }
@@ -188,15 +190,15 @@ static char *read_string(scanner_t *s, va_list *ap,
         }
     }
 
-    result = strbuffer_steal_value(&strbuff);
-
-    if(!utf8_check_string(result, -1)) {
+    if(!utf8_check_string(strbuff.value, strbuff.length)) {
         set_error(s, "<args>", "Invalid UTF-8 %s", purpose);
+        strbuffer_close(&strbuff);
         return NULL;
     }
 
+    *out_len = strbuff.length;
     *ours = 1;
-    return result;
+    return strbuffer_steal_value(&strbuff);
 }
 
 static json_t *pack_object(scanner_t *s, va_list *ap)
@@ -206,6 +208,7 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
 
     while(token(s) != '}') {
         char *key;
+        size_t len;
         int ours;
         json_t *value;
 
@@ -219,15 +222,19 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
             goto error;
         }
 
-        key = read_string(s, ap, "object key", &ours);
+        key = read_string(s, ap, "object key", &len, &ours);
         if(!key)
             goto error;
 
         next_token(s);
 
         value = pack(s, ap);
-        if(!value)
+        if(!value) {
+            if(ours)
+                jsonp_free(key);
+
             goto error;
+        }
 
         if(json_object_set_new_nocheck(object, key, value)) {
             if(ours)
@@ -297,14 +304,9 @@ static json_t *pack(scanner_t *s, va_list *ap)
             size_t len;
             int ours;
 
-            str = read_string(s, *ap, "string", &ours);
+            str = read_string(s, ap, "string", &len, &ours);
             if(!str)
                 return NULL;
-
-            if(s->token == 'S')
-                len = va_arg(*ap, size_t);
-            else
-                len = strlen(str);
 
             return json_string_nocheck_ex(str, len, ours ? JSON_STEAL : 0);
         }
@@ -536,7 +538,7 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
                     return -1;
                 }
 
-                if(s->token == 'S') {
+                if(token(s) == 'S') {
                     len_target = va_arg(*ap, size_t *);
                     if(!len_target) {
                         set_error(s, "<args>", "NULL string length argument");
