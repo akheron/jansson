@@ -382,7 +382,7 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
             p++;
             if(*p == 'u') {
                 char buffer[4];
-                int length;
+                size_t length;
                 int32_t value;
 
                 value = decode_unicode_escape(p);

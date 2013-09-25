@@ -83,7 +83,9 @@ typedef long json_int_t;
 json_t *json_object(void);
 json_t *json_array(void);
 json_t *json_string(const char *value);
+json_t *json_string_ex(const char *value, size_t len, size_t flags);
 json_t *json_string_nocheck(const char *value);
+json_t *json_string_nocheck_ex(const char *value, size_t len, size_t flags);
 json_t *json_integer(json_int_t value);
 json_t *json_real(double value);
 json_t *json_true(void);
@@ -199,12 +201,15 @@ int json_array_insert(json_t *array, size_t ind, json_t *value)
 }
 
 const char *json_string_value(const json_t *string);
+size_t json_string_len(const json_t *string);
 json_int_t json_integer_value(const json_t *integer);
 double json_real_value(const json_t *real);
 double json_number_value(const json_t *json);
 
 int json_string_set(json_t *string, const char *value);
+int json_string_set_ex(json_t *string, const char *value, size_t len, size_t flags);
 int json_string_set_nocheck(json_t *string, const char *value);
+int json_string_set_nocheck_ex(json_t *string, const char *value, size_t len, size_t flags);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
 
@@ -259,6 +264,7 @@ json_t *json_load_callback(json_load_callback_t callback, void *data, size_t fla
 #define JSON_PRESERVE_ORDER 0x100
 #define JSON_ENCODE_ANY     0x200
 #define JSON_ESCAPE_SLASH   0x400
+#define JSON_STEAL          0x800
 
 typedef int (*json_dump_callback_t)(const char *buffer, size_t size, void *data);
 

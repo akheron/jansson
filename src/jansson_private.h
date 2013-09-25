@@ -49,6 +49,7 @@ typedef struct {
 typedef struct {
     json_t json;
     char *value;
+    size_t len;
 } json_string_t;
 
 typedef struct {
@@ -83,6 +84,7 @@ void* jsonp_malloc(size_t size);
 void jsonp_free(void *ptr);
 char *jsonp_strndup(const char *str, size_t length);
 char *jsonp_strdup(const char *str);
+char *jsonp_strndup(const char *str, size_t len);
 
 /* Windows compatibility */
 #ifdef _WIN32
