@@ -136,7 +136,7 @@ static char *read_string(scanner_t *s, va_list *ap,
     t = token(s);
     prev_token(s);
 
-    if(t != '#' && t != '+') {
+    if(t != '#' && t != '%' && t != '+') {
         /* Optimize the simple case */
         str = va_arg(*ap, const char *);
 
@@ -171,6 +171,9 @@ static char *read_string(scanner_t *s, va_list *ap,
 
         if(token(s) == '#') {
             length = va_arg(*ap, int);
+        }
+        else if(token(s) == '%') {
+            length = va_arg(*ap, size_t);
         }
         else {
             prev_token(s);
@@ -298,7 +301,6 @@ static json_t *pack(scanner_t *s, va_list *ap)
             return pack_array(s, ap);
 
         case 's': /* string */
-        case 'S': /* string and length */
         {
             const char *str;
             size_t len;
@@ -521,7 +523,6 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             return unpack_array(s, root, ap);
 
         case 's':
-        case 'S':
             if(root && !json_is_string(root)) {
                 set_error(s, "<validation>", "Expected string, got %s",
                           type_name(root));
@@ -538,13 +539,17 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
                     return -1;
                 }
 
-                if(token(s) == 'S') {
+                next_token(s);
+
+                if(token(s) == '%') {
                     len_target = va_arg(*ap, size_t *);
                     if(!len_target) {
                         set_error(s, "<args>", "NULL string length argument");
                         return -1;
                     }
                 }
+                else
+                    prev_token(s);
 
                 if(root) {
                     *str_target = json_string_value(root);
