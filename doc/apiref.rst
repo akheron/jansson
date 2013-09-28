@@ -304,6 +304,13 @@ U+10FFFF are allowed.
    Returns a new JSON string, or *NULL* on error. *value* must be a
    valid UTF-8 encoded Unicode string.
 
+.. function:: json_t *json_stringn(const char *value, size_t len)
+
+   .. refcounting:: new
+
+   Like :func:`json_string`, but with explicit length, so *value* may
+   contain null characters or not be null terminated.
+
 .. function:: json_t *json_string_nocheck(const char *value)
 
    .. refcounting:: new
@@ -311,6 +318,13 @@ U+10FFFF are allowed.
    Like :func:`json_string`, but doesn't check that *value* is valid
    UTF-8. Use this function only if you are certain that this really
    is the case (e.g. you have already checked it by other means).
+
+.. function:: json_t *json_stringn_nocheck(const char *value, size_t len)
+
+   .. refcounting:: new
+
+   Like :func:`json_string_nocheck`, but with explicit length, so
+   *value* may contain null characters or not be null terminated.
 
 .. function:: const char *json_string_value(const json_t *string)
 
@@ -321,11 +335,21 @@ U+10FFFF are allowed.
    the user. It is valid as long as *string* exists, i.e. as long as
    its reference count has not dropped to zero.
 
+.. function:: size_t json_string_length(const json_t *string)
+
+   Returns the length of *string* as a UTF-8 encoded string, or zero
+   if *string* is not a JSON string.
+
 .. function:: int json_string_set(const json_t *string, const char *value)
 
    Sets the associated value of *string* to *value*. *value* must be a
    valid UTF-8 encoded Unicode string. Returns 0 on success and -1 on
    error.
+
+.. function:: int json_string_setn(json_t *string, const char *value, size_t len)
+
+   Like :func:`json_string_set`, but with explicit length, so *value*
+   may contain null characters or not be null terminated.
 
 .. function:: int json_string_set_nocheck(const json_t *string, const char *value)
 
@@ -333,6 +357,11 @@ U+10FFFF are allowed.
    valid UTF-8. Use this function only if you are certain that this
    really is the case (e.g. you have already checked it by other
    means).
+
+.. function:: int json_string_setn_nocheck(json_t *string, const char *value, size_t len)
+
+   Like :func:`json_string_set_nocheck`, but with explicit length,
+   so *value* may contain null characters or not be null terminated.
 
 
 Number
