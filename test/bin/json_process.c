@@ -86,8 +86,9 @@ static void read_conf(FILE *conffile)
     char *buffer, *line, *val;
 
     buffer = loadfile(conffile);
-    line = strtok(buffer, "\r\n");
-    while (line) {
+    for (line = strtok(buffer, "\r\n"); line; line = strtok(NULL, "\r\n")) {
+        if (!strncmp(line, "export ", 7))
+            continue;
         val = strchr(line, '=');
         if (!val) {
             printf("invalid configuration line\n");
@@ -107,8 +108,6 @@ static void read_conf(FILE *conffile)
             conf.sort_keys = atoi(val);
         if (!strcmp(line, "STRIP"))
             conf.strip = atoi(val);
-
-        line = strtok(NULL, "\r\n");
     }
 
     free(buffer);
