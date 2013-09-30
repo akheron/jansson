@@ -28,7 +28,7 @@ typedef int int32_t;
 
 #endif /* HAVE_CONFIG_H */
 
-int utf8_encode(int codepoint, char *buffer, size_t *size);
+int utf8_encode(int32_t codepoint, char *buffer, size_t *size);
 
 size_t utf8_check_first(char byte);
 size_t utf8_check_full(const char *buffer, size_t size, int32_t *codepoint);
