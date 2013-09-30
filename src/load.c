@@ -701,7 +701,7 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
             return NULL;
         if (memchr(key, len, '\0')) {
             jsonp_free(key);
-            error_set(error, lex, "nul char in object key not supported");
+            error_set(error, lex, "NUL byte in object key not supported");
             goto error;
         }
 
