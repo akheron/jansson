@@ -1113,6 +1113,11 @@ arguments.
 
     .. versionadded:: 2.5
 
+``s%`` (string) [const char \*, size_t]
+    Like ``s#`` but the length argument is of type :type:`size_t`.
+
+    .. versionadded:: 2.6
+
 ``+`` [const char \*]
     Like ``s``, but concatenate to the previous string. Only valid
     after ``s``, ``s#``, ``+`` or ``+#``.
@@ -1124,6 +1129,11 @@ arguments.
     after ``s``, ``s#``, ``+`` or ``+#``.
 
     .. versionadded:: 2.5
+
+``+%`` (string) [const char \*, size_t]
+    Like ``+#`` but the length argument is of type :type:`size_t`.
+
+    .. versionadded:: 2.6
 
 ``n`` (null)
     Output a JSON null value. No argument is consumed.
@@ -1238,6 +1248,12 @@ type whose address should be passed.
     string. The resulting string is extracted by using
     :func:`json_string_value()` internally, so it exists as long as
     there are still references to the corresponding JSON string.
+
+``s%`` (string) [const char \*, size_t *]
+    Convert a JSON string to a pointer to a NULL terminated UTF-8
+    string and its length.
+
+    .. versionadded:: 2.6
 
 ``n`` (null)
     Expect a JSON null value. Nothing is extracted.
