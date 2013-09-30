@@ -1,3 +1,34 @@
+Version 2.6 (in development)
+============================
+
+Released XXXX-XX-XX
+
+* New features:
+
+  - `json_pack()` and friends: Add format specifiers ``s%`` and ``+%``
+    for a size_t string length.
+
+  - `json_unpack()` and friends: Add format specifier ``s%`` for
+    unpacking the string length along with the string itself.
+
+  - Add length-aware string constructors `json_stringn()` and
+    `json_stringn_nocheck()`, length-aware string mutators
+    `json_string_setn()` and `json_string_setn_nocheck()`, and a
+    function for getting string's length `json_string_length()`.
+
+  - Support ``\u0000`` escapes in the decoder.
+
+* Bug fixes:
+
+  - Some malformed ``\uNNNN`` escapes could crash the decoder with an
+    assertion failure.
+
+* Other changes:
+
+  - ``\uNNNN`` escapes are now encoded in upper case for better
+    readability.
+
+
 Version 2.5
 ===========
 
