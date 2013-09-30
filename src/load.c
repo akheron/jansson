@@ -802,7 +802,17 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
 
     switch(lex->token) {
         case TOKEN_STRING: {
-            json = jsonp_stringn_nocheck_own(lex->value.string.val, lex->value.string.len);
+            const char *value = lex->value.string.val;
+            size_t len = lex->value.string.len;
+
+            if(!(flags & JSON_ALLOW_NUL)) {
+                if(memchr(value, '\0', len)) {
+                    error_set(error, lex, "\\u0000 is not allowed without JSON_ALLOW_NUL");
+                    return NULL;
+                }
+            }
+
+            json = jsonp_stringn_nocheck_own(value, len);
             if(json) {
                 lex->value.string.val = NULL;
                 lex->value.string.len = 0;

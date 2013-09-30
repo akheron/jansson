@@ -16,7 +16,8 @@ Released XXXX-XX-XX
     `json_string_setn()` and `json_string_setn_nocheck()`, and a
     function for getting string's length `json_string_length()`.
 
-  - Support ``\u0000`` escapes in the decoder.
+  - Support ``\u0000`` escapes in the decoder. The support can be
+    enabled by using the ``JSON_ALLOW_NUL`` decoding flag.
 
 * Bug fixes:
 
