@@ -294,8 +294,9 @@ String
 Jansson uses UTF-8 as the character encoding. All JSON strings must be
 valid UTF-8 (or ASCII, as it's a subset of UTF-8). Normal null
 terminated C strings are used, so JSON strings may not contain
-embedded null characters. All other Unicode codepoints U+0001 through
-U+10FFFF are allowed.
+embedded null characters. All other Unicode codepoints U+0000 through
+U+10FFFF are allowed, but you must use length-aware functions if you
+wish to embed NUL bytes in strings.
 
 .. function:: json_t *json_string(const char *value)
 
@@ -567,6 +568,9 @@ Object
 
 A JSON object is a dictionary of key-value pairs, where the key is a
 Unicode string and the value is any JSON value.
+
+Even though NUL bytes are allowed in string values, they are not
+allowed in object keys.
 
 .. function:: json_t *json_object(void)
 
@@ -986,6 +990,19 @@ macros can be ORed together to obtain *flags*.
    a double overflow will cause an error.
 
    .. versionadded:: 2.5
+
+``JSON_ALLOW_NUL``
+   Allow ``\u0000`` escape inside string values. This is a safety
+   measure; If you know your input can contain NUL bytes, use this
+   flag. If you don't use this flag, you don't have to worry about NUL
+   bytes inside strings unless you explicitly create themselves by
+   using e.g. :func:`json_stringn()` or ``s#`` format specifier for
+   :func:`json_pack()`.
+
+   Object keys cannot have embedded NUL bytes even if this flag is
+   used.
+
+   .. versionadded:: 2.6
 
 Each function also takes an optional :type:`json_error_t` parameter
 that is filled with error information if decoding fails. It's also
