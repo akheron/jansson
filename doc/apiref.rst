@@ -337,7 +337,7 @@ U+10FFFF are allowed.
 
 .. function:: size_t json_string_length(const json_t *string)
 
-   Returns the length of *string* as a UTF-8 encoded string, or zero
+   Returns the length of *string* in its UTF-8 presentation, or zero
    if *string* is not a JSON string.
 
 .. function:: int json_string_set(const json_t *string, const char *value)
