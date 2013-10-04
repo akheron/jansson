@@ -723,6 +723,7 @@ int json_string_setn_nocheck(json_t *json, const char *value, size_t len)
     string = json_to_string(json);
     jsonp_free(string->value);
     string->value = dup;
+    string->length = len;
 
     return 0;
 }
