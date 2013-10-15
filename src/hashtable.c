@@ -249,6 +249,13 @@ int hashtable_set(hashtable_t *hashtable,
         /* offsetof(...) returns the size of pair_t without the last,
            flexible member. This way, the correct amount is
            allocated. */
+
+        size_t len = strlen(key);
+        if(len > (size_t)-1 - offsetof(pair_t, key)) {
+            /* Avoid an overflow if the key is very long */
+            return -1;
+        }
+
         pair = jsonp_malloc(offsetof(pair_t, key) + strlen(key) + 1);
         if(!pair)
             return -1;

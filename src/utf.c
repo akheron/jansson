@@ -173,7 +173,7 @@ int utf8_check_string(const char *string, size_t length)
             return 0;
         else if(count > 1)
         {
-            if(i + count > length)
+            if(count > length - i)
                 return 0;
 
             if(!utf8_check_full(&string[i], count, NULL))
