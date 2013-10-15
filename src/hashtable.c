@@ -256,7 +256,7 @@ int hashtable_set(hashtable_t *hashtable,
             return -1;
         }
 
-        pair = jsonp_malloc(offsetof(pair_t, key) + strlen(key) + 1);
+        pair = jsonp_malloc(offsetof(pair_t, key) + len + 1);
         if(!pair)
             return -1;
 
