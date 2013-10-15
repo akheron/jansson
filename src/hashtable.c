@@ -251,7 +251,7 @@ int hashtable_set(hashtable_t *hashtable,
            allocated. */
 
         size_t len = strlen(key);
-        if(len > (size_t)-1 - offsetof(pair_t, key)) {
+        if(len >= (size_t)-1 - offsetof(pair_t, key)) {
             /* Avoid an overflow if the key is very long */
             return -1;
         }
