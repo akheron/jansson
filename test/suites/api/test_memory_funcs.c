@@ -65,7 +65,7 @@ static void secure_free(void *ptr)
     ptr = (char *)ptr - 8;
     size = *((size_t *)ptr);
 
-    /*guaranteed_*/memset(ptr, 0, size);
+    /*guaranteed_*/memset(ptr, 0, size + 8);
     free(ptr);
 }
 

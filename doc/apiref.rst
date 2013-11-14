@@ -1538,7 +1538,7 @@ JSON structures by zeroing all memory when freed::
         ptr -= 8;
         size = *((size_t *)ptr);
 
-        guaranteed_memset(ptr, 0, size);
+        guaranteed_memset(ptr, 0, size + 8);
         free(ptr);
     }
 
