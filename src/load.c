@@ -1103,3 +1103,24 @@ json_t *json_load_callback(json_load_callback_t callback, void *arg, size_t flag
     lex_close(&lex);
     return result;
 }
+
+json_t *json_load_unbuffered(json_getc_callback_t callback, void *data, size_t flags, json_error_t *error)
+{
+    lex_t lex;
+    json_t *result;
+
+    jsonp_error_init(error, "<callback>");
+
+    if (callback == NULL) {
+        error_set(error, NULL, "wrong arguments");
+        return NULL;
+    }
+
+    if(lex_init(&lex, callback, data))
+        return NULL;
+
+    result = parse_json(&lex, flags, error);
+
+    lex_close(&lex);
+    return result;
+}
