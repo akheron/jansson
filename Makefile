@@ -53,12 +53,17 @@ PROJECT_BASE_NAME = jansson
 
 include $(BUILD_DIR)/Makefile.library.mk
 
+#
+# 1294 assignment in condition
+#
+CFLAGS += --diag_suppress=1293
+
 # Make sure we're using our config.h -- this has to be done after the include above.
 #
 CONFIG_H = $(SOURCE_DIR)/jansson_config.h
 
 $(CONFIG_H):
-	cp $(PROJ_DIR)/armcc/jansson_config.h $(CONFIG_H)
+	@cp $(PROJ_DIR)/armcc/jansson_config.h $(CONFIG_H)
 
 $(OBJS): $(CONFIG_H)
 
