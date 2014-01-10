@@ -12,6 +12,6 @@ set(JANSSON_INCLUDE_DIRS "@JANSSON__INCLUDE_DIRS@")
 # Include the project Targets file, this contains definitions for IMPORTED targets.
 include(${JANSSON_CMAKE_DIR}/JanssonTargets.cmake)
 
-# IMPORTED targets from LibeventTargets.cmake
-set(JANSSON_LIBRARIES event event_core event_extras)
+# IMPORTED targets from JanssonTargets.cmake
+set(JANSSON_LIBRARIES jansson)
 
