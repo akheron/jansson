@@ -322,6 +322,20 @@ static json_t *pack(scanner_t *s, va_list *ap)
         case 'b': /* boolean */
             return va_arg(*ap, int) ? json_true() : json_false();
 
+        case 'd': /* decimal from int */
+        {
+            int val = va_arg(*ap, int);
+            int pos = va_arg(*ap, int);
+            return json_decimal(val, pos);
+        }
+
+        case 'D': /* decimal from json_int_t */
+        {
+            json_int_t val = va_arg(*ap, json_int_t);
+            int pos = va_arg(*ap, int);
+            return json_decimal(val, pos);
+        }
+
         case 'i': /* integer from int */
             return json_integer(va_arg(*ap, int));
 
@@ -588,6 +602,42 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
                 json_int_t *target = va_arg(*ap, json_int_t*);
                 if(root)
                     *target = json_integer_value(root);
+            }
+
+            return 0;
+
+        case 'd':
+            if(root && !json_is_decimal(root)) {
+                set_error(s, "<validation>", "Expected decimal, got %s",
+                          type_name(root));
+                return -1;
+            }
+
+            if(!(s->flags & JSON_VALIDATE_ONLY)) {
+                int *target = va_arg(*ap, int*);
+                int *pos = va_arg(*ap, int*);
+                if(root) {
+                    *target = (int)json_decimal_value(root);
+                    *pos    = json_decimal_decimal_pos(root);
+                }
+            }
+
+            return 0;
+
+        case 'D':
+            if(root && !json_is_decimal(root)) {
+                set_error(s, "<validation>", "Expected decimal, got %s",
+                          type_name(root));
+                return -1;
+            }
+
+            if(!(s->flags & JSON_VALIDATE_ONLY)) {
+                json_int_t *target = va_arg(*ap, json_int_t*);
+                int *pos = va_arg(*ap, int*);
+                if(root) {
+                    *target = json_decimal_value(root);
+                    *pos    = json_decimal_decimal_pos(root);
+                }
             }
 
             return 0;

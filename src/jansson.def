@@ -16,6 +16,10 @@ EXPORTS
     json_integer
     json_integer_value
     json_integer_set
+    json_decimal
+    json_decimal_value
+    json_decimal_decimal_pos
+    json_decimal_set
     json_real
     json_real_value
     json_real_set
