@@ -246,13 +246,11 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/jansson_config.h.cmake
 file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/jansson.h
            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/)
 
+add_definitions(-DJANSSON_USING_CMAKE)
 
 # configure the private config file
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.cmake
-                ${CMAKE_CURRENT_BINARY_DIR}/private_include/config.h)
-
-# and tell the source code to include it
-add_definitions (-DHAVE_CONFIG_H)
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/jansson_private_config.h.cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/private_include/jansson_private_config.h)
 
 include_directories (${CMAKE_CURRENT_BINARY_DIR}/include)
 include_directories (${CMAKE_CURRENT_BINARY_DIR}/private_include)
@@ -299,7 +297,7 @@ if (JANSSON_BUILD_DOCS)
 
    if (NOT SPHINX_FOUND)
       message(WARNING "Sphinx not found. Cannot generate documentation! 
-      Set -DJSON_BUILD_DOCS=0 to get rid of this message.")
+      Set -DJANSSON_BUILD_DOCS=OFF to get rid of this message.")
    else()
       if (Sphinx_VERSION_STRING VERSION_LESS 1.0)
          message(WARNING "Your Sphinx version is too old! 
@@ -501,6 +499,7 @@ export(PACKAGE jansson)
 set(JANSSON__INCLUDE_DIRS 
     "${PROJECT_SOURCE_DIR}/include"
     "${PROJECT_BINARY_DIR}/include")
+set(JANSSON_INCLUDE_DIRS ${JANSSON__INCLUDE_DIRS} CACHE PATH "Jansson include directories")
 configure_file(${PROJECT_SOURCE_DIR}/cmake/JanssonConfig.cmake.in
                 ${PROJECT_BINARY_DIR}/JanssonConfig.cmake 
                 @ONLY)
@@ -565,3 +564,5 @@ install(FILES
 install(EXPORT JanssonTargets 
         DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}" COMPONENT dev)
 
+# For use when simply using add_library from a parent project to build jansson.
+set(JANSSON_LIBRARIES jansson CACHE STRING "Jansson libraries")

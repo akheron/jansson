@@ -5,9 +5,9 @@
 #include "jansson_private.h"
 #include "strbuffer.h"
 
-/* need config.h to get the correct snprintf */
+/* need jansson_private_config.h to get the correct snprintf */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include <jansson_private_config.h>
 #endif
 
 #if JSON_HAVE_LOCALECONV

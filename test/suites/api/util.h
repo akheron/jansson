@@ -9,7 +9,7 @@
 #define UTIL_H
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include <jansson_private_config.h>
 #endif
 
 #include <stdio.h>
