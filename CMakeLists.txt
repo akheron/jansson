@@ -246,13 +246,11 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/jansson_config.h.cmake
 file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/jansson.h
            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/)
 
+add_definitions(-DJANSSON_USING_CMAKE)
 
 # configure the private config file
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.cmake
-                ${CMAKE_CURRENT_BINARY_DIR}/private_include/config.h)
-
-# and tell the source code to include it
-add_definitions (-DHAVE_CONFIG_H)
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/jansson_private_config.h.cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/private_include/jansson_private_config.h)
 
 include_directories (${CMAKE_CURRENT_BINARY_DIR}/include)
 include_directories (${CMAKE_CURRENT_BINARY_DIR}/private_include)

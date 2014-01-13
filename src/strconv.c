@@ -6,9 +6,13 @@
 #include "strbuffer.h"
 
 /* need config.h to get the correct snprintf */
+#ifdef JANSSON_USING_CMAKE
+#include <jansson_private_config.h>
+#else
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+#endif // JANSSON_USING_CMAKE
 
 #if JSON_HAVE_LOCALECONV
 #include <locale.h>
