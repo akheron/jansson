@@ -499,6 +499,7 @@ export(PACKAGE jansson)
 set(JANSSON__INCLUDE_DIRS 
     "${PROJECT_SOURCE_DIR}/include"
     "${PROJECT_BINARY_DIR}/include")
+set(JANSSON_INCLUDE_DIRS ${JANSSON__INCLUDE_DIRS} CACHE PATH "Jansson include directories")
 configure_file(${PROJECT_SOURCE_DIR}/cmake/JanssonConfig.cmake.in
                 ${PROJECT_BINARY_DIR}/JanssonConfig.cmake 
                 @ONLY)
@@ -563,3 +564,5 @@ install(FILES
 install(EXPORT JanssonTargets 
         DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}" COMPONENT dev)
 
+# For use when simply using add_library from a parent project to build jansson.
+set(JANSSON_LIBRARIES jansson CACHE STRING "Jansson libraries")
