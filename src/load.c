@@ -27,6 +27,7 @@
 
 #define TOKEN_INVALID         -1
 #define TOKEN_EOF              0
+#define TOKEN_DECIMAL        255
 #define TOKEN_STRING         256
 #define TOKEN_INTEGER        257
 #define TOKEN_REAL           258
@@ -69,6 +70,10 @@ typedef struct {
             size_t len;
         } string;
         json_int_t integer;
+        struct {
+          json_int_t value;
+          int pos;
+        } decimal;
         double real;
     } value;
 } lex_t;
@@ -480,6 +485,37 @@ out:
 #endif
 #endif
 
+static int lex_scan_decimal(lex_t *lex, int c, json_error_t *error)
+{
+    int neg = 0;
+    json_int_t value = 0;
+    int increment_pos = 0;
+    int pos = 0;
+    lex->token = TOKEN_DECIMAL;
+
+    if (c == '-') {
+      c = lex_get_save (lex, error);
+      neg = 1;
+    }
+
+    while (l_isdigit (c) || c == '.') {
+      if (c == '.')
+        increment_pos = 1;
+      else {
+        value *= 10;
+        value += (c - '0');
+        if (increment_pos)
+          ++pos;
+      }
+      c = lex_get_save (lex, error);
+    }
+    lex_unget_unsave(lex, c);
+
+    lex->value.decimal.value = neg ? -value : value;
+    lex->value.decimal.pos = pos;
+    return 0;
+}
+
 static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 {
     const char *saved_text;
@@ -607,7 +643,11 @@ static int lex_scan(lex_t *lex, json_error_t *error)
         lex_scan_string(lex, error);
 
     else if(l_isdigit(c) || c == '-') {
-        if(lex_scan_number(lex, c, error))
+        if(lex->flags & JSON_READ_DECIMALS) {
+          if(lex_scan_decimal(lex, c, error))
+              goto out;
+        }
+        else if(lex_scan_number(lex, c, error))
             goto out;
     }
 
@@ -832,6 +872,12 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
             } else {
                 json = json_integer(lex->value.integer);
             }
+            break;
+        }
+
+        case TOKEN_DECIMAL: {
+            json = json_decimal(lex->value.decimal.value,
+                                lex->value.decimal.pos);
             break;
         }
 
