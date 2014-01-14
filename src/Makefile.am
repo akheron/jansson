@@ -8,6 +8,7 @@ libjansson_la_SOURCES = \
 	error.c \
 	hashtable.c \
 	hashtable.h \
+	hashtable_seed.c \
 	jansson_private.h \
 	load.c \
 	memory.c \

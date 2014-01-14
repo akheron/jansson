@@ -52,6 +52,8 @@ project (jansson C)
 
 # Options
 OPTION (BUILD_SHARED_LIBS "Build shared libraries." OFF)
+OPTION (USE_URANDOM "Use /dev/urandom to seed the hash function." ON)
+OPTION (USE_WINDOWS_CRYPTOAPI "Use CryptGenRandom to seed the hash function." ON)
 
 if (MSVC)
    # This option must match the settings used in your program, in particular if you
@@ -85,11 +87,11 @@ set (JANSSON_SOVERSION 4)
 # for CheckFunctionKeywords
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+INCLUDE (CheckCSourceCompiles)
 include (CheckFunctionExists)
 include (CheckFunctionKeywords)
 include (CheckIncludeFiles)
 include (CheckTypeSize)
-
 
 if (MSVC)
    # Turn off Microsofts "security" warnings.
@@ -106,13 +108,24 @@ if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
    set(CMAKE_C_FLAGS "-fPIC")
 endif()
 
-   
+check_include_files (endian.h HAVE_ENDIAN_H)
+check_include_files (fcntl.h HAVE_FCNTL_H)
+check_include_files (sched.h HAVE_SCHED_H)
+check_include_files (unistd.h HAVE_UNISTD_H)
+check_include_files (sys/param.h HAVE_SYS_PARAM_H)
+check_include_files (sys/stat.h HAVE_SYS_STAT_H)
+check_include_files (sys/time.h HAVE_SYS_TIME_H)
+check_include_files (sys/time.h HAVE_SYS_TYPES_H)
+
+check_function_exists (close HAVE_CLOSE)
+check_function_exists (getpid HAVE_GETPID)
+check_function_exists (gettimeofday HAVE_GETTIMEOFDAY)
+check_function_exists (open HAVE_OPEN)
+check_function_exists (read HAVE_READ)
+check_function_exists (sched_yield HAVE_SCHED_YIELD)
 
 # Check for the int-type includes
-check_include_files (sys/types.h HAVE_SYS_TYPES_H)
-check_include_files (inttypes.h HAVE_INTTYPES_H)
 check_include_files (stdint.h HAVE_STDINT_H)
-
 
 # Check our 64 bit integer sizes
 check_type_size (__int64 __INT64)
@@ -124,17 +137,32 @@ check_type_size (int32_t INT32_T)
 check_type_size (__int32 __INT32)
 check_type_size ("long" LONG_INT)
 check_type_size ("int" INT)
-
 if (HAVE_INT32_T)
    set (JSON_INT32 int32_t)
 elseif (HAVE___INT32)
    set (JSON_INT32 __int32)
-elseif (HAVE_LONG AND (${LONG_INT} EQUAL 4))
+elseif (HAVE_LONG_INT AND (${LONG_INT} EQUAL 4))
    set (JSON_INT32 long)
 elseif (HAVE_INT AND (${INT} EQUAL 4))
    set (JSON_INT32 int)
 else ()
-   message (FATAL_ERROR "Could not detect a valid 32 bit integer type")
+   message (FATAL_ERROR "Could not detect a valid 32-bit integer type")
+endif ()
+
+check_type_size (uint32_t UINT32_T)
+check_type_size (__uint32 __UINT32)
+check_type_size ("unsigned long" UNSIGNED_LONG_INT)
+check_type_size ("unsigned int" UNSIGNED_INT)
+if (HAVE_UINT32_T)
+   set (JSON_UINT32 uint32_t)
+elseif (HAVE___UINT32)
+   set (JSON_UINT32 __uint32)
+elseif (HAVE_UNSIGNED_LONG_INT AND (${UNSIGNED_LONG_INT} EQUAL 4))
+   set (JSON_UINT32 "unsigned long")
+elseif (HAVE_UNSIGNED_INT AND (${UNSIGNED_INT} EQUAL 4))
+   set (JSON_UINT32 "unsigned int")
+else ()
+   message (FATAL_ERROR "Could not detect a valid unsigned 32-bit integer type")
 endif ()
 
 # Check for ssize_t and SSIZE_T existance.
@@ -206,10 +234,8 @@ else ()
    set (JSON_HAVE_LOCALECONV 0)
 endif ()
 
-
 # check if we have setlocale
 check_function_exists (setlocale HAVE_SETLOCALE)
-
 
 # Check what the inline keyword is.
 # Note that the original JSON_INLINE was always set to just 'inline', so this goes further.
@@ -237,6 +263,9 @@ if (HAVE_SNPRINTF)
 elseif (HAVE__SNPRINTF)
    set (JSON_SNPRINTF _snprintf)
 endif ()
+
+check_c_source_compiles ("int main() { unsigned long val; __sync_bool_compare_and_swap(&val, 0, 1); return 0; } " HAVE_SYNC_BUILTINS)
+check_c_source_compiles ("int main() { char l; unsigned long v; __atomic_test_and_set(&l, __ATOMIC_RELAXED); __atomic_store_n(&v, 1, __ATOMIC_ACQ_REL); __atomic_load_n(&v, __ATOMIC_ACQUIRE); return 0; }" HAVE_ATOMIC_BUILTINS)
 
 # Create pkg-conf file.
 # (We use the same files as ./configure does, so we

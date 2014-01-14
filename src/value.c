@@ -9,10 +9,18 @@
 #define _GNU_SOURCE
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
 
 #include "jansson.h"
 #include "hashtable.h"
@@ -36,11 +44,19 @@ static JSON_INLINE void json_init(json_t *json, json_type type)
 
 /*** object ***/
 
+extern volatile uint32_t hashtable_seed;
+
 json_t *json_object(void)
 {
     json_object_t *object = jsonp_malloc(sizeof(json_object_t));
     if(!object)
         return NULL;
+
+    if (!hashtable_seed) {
+        /* Autoseed */
+        json_object_seed(0);
+    }
+
     json_init(&object->json, JSON_OBJECT);
 
     if(hashtable_init(&object->hashtable))

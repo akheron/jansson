@@ -41,6 +41,7 @@ EXPORTS
     json_object_iter_value
     json_object_iter_set_new
     json_object_key_to_iter
+    json_object_seed
     json_dumps
     json_dumpf
     json_dump_file

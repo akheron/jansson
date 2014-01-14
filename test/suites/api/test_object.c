@@ -249,7 +249,11 @@ static void test_set_nocheck()
 
 static void test_iterators()
 {
+    int i;
     json_t *object, *foo, *bar, *baz;
+    const char *iter_keys[3];
+    int have_key[3] = { 0, 0, 0 };
+    json_t *iter_values[3];
     void *iter;
 
     if(json_object_iter(NULL))
@@ -276,29 +280,49 @@ static void test_iterators()
     iter = json_object_iter(object);
     if(!iter)
         fail("unable to get iterator");
-    if(strcmp(json_object_iter_key(iter), "a"))
-        fail("iterating failed: wrong key");
-    if(json_object_iter_value(iter) != foo)
-        fail("iterating failed: wrong value");
+    iter_keys[0] = json_object_iter_key(iter);
+    iter_values[0] = json_object_iter_value(iter);
 
     iter = json_object_iter_next(object, iter);
     if(!iter)
         fail("unable to increment iterator");
-    if(strcmp(json_object_iter_key(iter), "b"))
-        fail("iterating failed: wrong key");
-    if(json_object_iter_value(iter) != bar)
-        fail("iterating failed: wrong value");
+    iter_keys[1] = json_object_iter_key(iter);
+    iter_values[1] = json_object_iter_value(iter);
 
     iter = json_object_iter_next(object, iter);
     if(!iter)
         fail("unable to increment iterator");
-    if(strcmp(json_object_iter_key(iter), "c"))
-        fail("iterating failed: wrong key");
-    if(json_object_iter_value(iter) != baz)
-        fail("iterating failed: wrong value");
+    iter_keys[2] = json_object_iter_key(iter);
+    iter_values[2] = json_object_iter_value(iter);
 
     if(json_object_iter_next(object, iter) != NULL)
         fail("able to iterate over the end");
+
+    /* Check that keys have correct values */
+    for (i = 0; i < 3; i++) {
+        if (strcmp(iter_keys[i], "a") == 0) {
+            if (iter_values[i] != foo)
+                fail("wrong value for iter key a");
+            else
+                have_key[0] = 1;
+        } else if (strcmp(iter_keys[i], "b") == 0) {
+            if (iter_values[i] != bar)
+                fail("wrong value for iter key b");
+            else
+                have_key[1] = 1;
+        } else if (strcmp(iter_keys[i], "c") == 0) {
+            if (iter_values[i] != baz)
+                fail("wrong value for iter key c");
+            else
+                have_key[2] = 1;
+        }
+    }
+
+    /* Check that we got all keys */
+    for(i = 0; i < 3; i++) {
+        if(!have_key[i])
+            fail("a key wasn't iterated over");
+    }
 
     if(json_object_iter_at(object, "foo"))
         fail("json_object_iter_at() succeeds for non-existent key");
@@ -312,22 +336,14 @@ static void test_iterators()
     if(json_object_iter_value(iter) != bar)
         fail("iterating failed: wrong value");
 
-    iter = json_object_iter_next(object, iter);
-    if(!iter)
-        fail("unable to increment iterator");
-    if(strcmp(json_object_iter_key(iter), "c"))
-        fail("iterating failed: wrong key");
-    if(json_object_iter_value(iter) != baz)
-        fail("iterating failed: wrong value");
-
-    if(json_object_iter_set(object, iter, bar))
+    if(json_object_iter_set(object, iter, baz))
         fail("unable to set value at iterator");
 
-    if(strcmp(json_object_iter_key(iter), "c"))
+    if(strcmp(json_object_iter_key(iter), "b"))
         fail("json_object_iter_key() fails after json_object_iter_set()");
-    if(json_object_iter_value(iter) != bar)
+    if(json_object_iter_value(iter) != baz)
         fail("json_object_iter_value() fails after json_object_iter_set()");
-    if(json_object_get(object, "c") != bar)
+    if(json_object_get(object, "b") != baz)
         fail("json_object_get() fails after json_object_iter_set()");
 
     json_decref(object);
