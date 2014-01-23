@@ -5,9 +5,13 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
+#ifdef JANSSON_USING_CMAKE
+#include <jansson_private_config.h>
+#else
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+#endif // JANSSON_USING_CMAKE
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -8,8 +8,13 @@
 #ifndef UTF_H
 #define UTF_H
 
-#ifdef HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H) || defined(JANSSON_USING_CMAKE)
+
+#ifdef JANSSON_USING_CMAKE
+#include <jansson_private_config.h>
+#else
 #include <config.h>
+#endif
 
 #ifdef HAVE_INTTYPES_H
 /* inttypes.h includes stdint.h in a standard environment, so there's
