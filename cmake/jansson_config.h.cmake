@@ -17,7 +17,9 @@
 #define JANSSON_CONFIG_H
 
 /* Define this so that we can disable scattered automake configuration in source files */
+#ifndef JANSSON_USING_CMAKE
 #define JANSSON_USING_CMAKE
+#endif
 
 /* Note: when using cmake, JSON_INTEGER_IS_LONG_LONG is not defined nor used,
  * as we will also check for __int64 etc types.

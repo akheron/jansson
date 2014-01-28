@@ -4,7 +4,7 @@ AC_INIT([jansson], [2.5], [petri@digip.org])
 AM_INIT_AUTOMAKE([1.10 foreign])
 
 AC_CONFIG_SRCDIR([src/value.c])
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS([jansson_private_config.h])
 
 # Checks for programs.
 AC_PROG_CC
