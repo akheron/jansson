@@ -394,7 +394,7 @@ if (NOT JANSSON_WITHOUT_TESTS)
       # enable valgrind
       set(CMAKE_MEMORYCHECK_COMMAND valgrind)
       set(CMAKE_MEMORYCHECK_COMMAND_OPTIONS
-         "--leak-check=full --show-reachable=yes --track-origins=yes -q")
+         "--error-exitcode=1 --leak-check=full --show-reachable=yes --track-origins=yes -q")
 
       set(MEMCHECK_COMMAND
          "${CMAKE_MEMORYCHECK_COMMAND} ${CMAKE_MEMORYCHECK_COMMAND_OPTIONS}")
@@ -438,11 +438,12 @@ if (NOT JANSSON_WITHOUT_TESTS)
    # Create executables and tests/valgrind tests for API tests.
    foreach (test ${api_tests})
       build_testprog(${test} ${PROJECT_SOURCE_DIR}/test/suites/api)
-      add_test(${test} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
 
-      if (TEST_WITH_VALGRIND)
-         add_test(memcheck_${test} ${MEMCHECK_COMMAND}
-                  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
+      if (JANSSON_TEST_WITH_VALGRIND)
+         add_test(memcheck__${test}
+                  ${MEMCHECK_COMMAND} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
+      else()
+         add_test(${test} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
       endif ()
    endforeach ()
 
@@ -452,14 +453,29 @@ if (NOT JANSSON_WITHOUT_TESTS)
    set(SUITES encoding-flags valid invalid invalid-unicode)
    foreach (SUITE ${SUITES})
        file(GLOB TESTDIRS ${jansson_SOURCE_DIR}/test/suites/${SUITE}/*)
+
        foreach (TESTDIR ${TESTDIRS})
          if (IS_DIRECTORY ${TESTDIR})
             get_filename_component(TNAME ${TESTDIR} NAME)
-            add_test(${SUITE}__${TNAME}
-                     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process ${TESTDIR})
+
+            set(SUITE_TEST_CMD ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process)
+
+            if (JANSSON_TEST_WITH_VALGRIND)
+               add_test(memcheck__${SUITE}__${TNAME}
+                        ${MEMCHECK_COMMAND} ${SUITE_TEST_CMD} ${TESTDIR})
+            else()
+               add_test(${SUITE}__${TNAME}
+                        ${SUITE_TEST_CMD} ${TESTDIR})
+            endif()
+
             if ((${SUITE} STREQUAL "valid" OR ${SUITE} STREQUAL "invalid") AND NOT EXISTS ${TESTDIR}/nostrip)
-               add_test(${SUITE}__${TNAME}__strip
-                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process --strip ${TESTDIR})
+               if (JANSSON_TEST_WITH_VALGRIND)
+                  add_test(memcheck__${SUITE}__${TNAME}__strip
+                           ${MEMCHECK_COMMAND} ${SUITE_TEST_CMD} --strip ${TESTDIR})
+               else()
+                  add_test(${SUITE}__${TNAME}__strip
+                           ${SUITE_TEST_CMD} --strip ${TESTDIR})
+               endif()
             endif ()
          endif ()
        endforeach ()
