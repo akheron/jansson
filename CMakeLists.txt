@@ -252,6 +252,9 @@ add_definitions(-DJANSSON_USING_CMAKE)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cmake/jansson_private_config.h.cmake
                 ${CMAKE_CURRENT_BINARY_DIR}/private_include/jansson_private_config.h)
 
+# and tell the source code to include it
+add_definitions(-DHAVE_CONFIG_H)
+
 include_directories (${CMAKE_CURRENT_BINARY_DIR}/include)
 include_directories (${CMAKE_CURRENT_BINARY_DIR}/private_include)
 
@@ -262,7 +265,8 @@ set(JANSSON_HDR_PRIVATE
    ${CMAKE_CURRENT_SOURCE_DIR}/src/hashtable.h
    ${CMAKE_CURRENT_SOURCE_DIR}/src/jansson_private.h
    ${CMAKE_CURRENT_SOURCE_DIR}/src/strbuffer.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/utf.h)
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/utf.h
+   ${CMAKE_CURRENT_BINARY_DIR}/private_include/jansson_private_config.h)
 
 set(JANSSON_HDR_PUBLIC 
    ${CMAKE_CURRENT_BINARY_DIR}/include/jansson_config.h
