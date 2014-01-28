@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2013 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2010-2014 Petri Lehtinen <petri@digip.org>
  *
  * Jansson is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
