@@ -43,7 +43,9 @@ JSON makes no distinction between real and integer numbers; Jansson
 does. Real numbers are mapped to the ``double`` type and integers to
 the ``json_int_t`` type, which is a typedef of ``long long`` or
 ``long``, depending on whether ``long long`` is supported by your
-compiler or not.
+compiler or not.  Jansson also has an extension mechanism that allows
+an externally provided big number package to be used to represent
+arbitrary-sized integers and real numbers.
 
 A JSON number is considered to be a real number if its lexical
 representation includes one of ``e``, ``E``, or ``.``; regardless if
@@ -60,6 +62,13 @@ represented in JSON as ``3.0``, not ``3``.
 
 Overflow, Underflow & Precision
 -------------------------------
+
+If a big number extension is used for either integer or real values,
+then the behavior of all overflows, underflows, or loss of precision
+is left to the extension. It is possible that no errors or loss of
+information need ever occur.
+
+However lacking a big number extension there are limitations.
 
 Real numbers whose absolute values are too small to be represented in
 a C ``double`` will be silently estimated with 0.0. Thus, depending on
@@ -101,10 +110,12 @@ IEEE support the concept of signed integer zeros.
 Types
 -----
 
-No support is provided in Jansson for any C numeric types other than
-``json_int_t`` and ``double``. This excludes things such as unsigned
-types, ``long double``, etc. Obviously, shorter types like ``short``,
+The only numeric types with direct built-in support in Jansson are the 
+``json_int_t`` and ``double`` types.  Shorter types like ``short``,
 ``int``, ``long`` (if ``json_int_t`` is ``long long``) and ``float``
 are implicitly handled via the ordinary C type coercion rules (subject
-to overflow semantics). Also, no support or hooks are provided for any
-supplemental "bignum" type add-on packages.
+to overflow semantics).
+
+Larger or more precise numeric types may be supported by using the big
+number extension API; though such support depends upon an external big
+number package.

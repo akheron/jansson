@@ -41,12 +41,14 @@ static const char * const type_names[] = {
     "real",
     "true",
     "false",
-    "null"
+    "null",
+    "biginteger",
+    "bigreal"
 };
 
 #define type_name(x) type_names[json_typeof(x)]
 
-static const char unpack_value_starters[] = "{[siIbfFOon";
+static const char unpack_value_starters[] = "{[siIbfFOonzr";
 
 
 static void scanner_init(scanner_t *s, json_error_t *error,
@@ -328,8 +330,14 @@ static json_t *pack(scanner_t *s, va_list *ap)
         case 'I': /* integer from json_int_t */
             return json_integer(va_arg(*ap, json_int_t));
 
+        case 'z': /* big integer */
+	    return json_biginteger(va_arg(*ap,json_bigz_const_t));
+
         case 'f': /* real */
             return json_real(va_arg(*ap, double));
+
+        case 'r': /* big real */
+	    return json_bigreal(va_arg(*ap,json_bigr_const_t));
 
         case 'O': /* a json_t object; increments refcount */
             return json_incref(va_arg(*ap, json_t *));
@@ -517,6 +525,8 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap)
 
 static int unpack(scanner_t *s, json_t *root, va_list *ap)
 {
+    int do_incref = 0;
+
     switch(token(s))
     {
         case '{':
@@ -592,6 +602,50 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
             return 0;
 
+        case 'z':
+	    if(!json_is_biginteger(root)) {
+		set_error(s,"<validation>", "Expected big integer, got %s",
+			  type_name(root));
+		return -1;
+	    }
+
+	    if(!(s->flags & JSON_VALIDATE_ONLY)) {
+		json_bigz_t v;
+		json_context_t *ctx = jsonp_context();
+		if(!ctx->have_bigint) {
+		    set_error(s,"<validation>", "No big integer package registed, can not unpack value");
+		    return -1;
+		}
+		v = ctx->bigint.copy_fn(json_biginteger_value(root),
+					 &ctx->memfuncs);
+		*va_arg(*ap, json_bigz_t*) = v;
+	    }
+	    return 0;
+
+        case 'Z':
+	    if(!json_is_anyinteger(root)) {
+		set_error(s,"<validation>", "Expected an integer, got %s",
+			  type_name(root));
+		return -1;
+	    }
+
+	    if(!(s->flags & JSON_VALIDATE_ONLY)) {
+		json_bigz_t v;
+		json_context_t *ctx = jsonp_context();
+		if(!ctx->have_bigint) {
+		    set_error(s,"<validation>", "No big integer package registed, can not unpack value");
+		    return -1;
+		}
+		if(json_is_biginteger(root))
+		    v = ctx->bigint.copy_fn(json_biginteger_value(root),
+					     &ctx->memfuncs);
+		else
+		    v = ctx->bigint.from_int_fn(json_integer_value(root),
+						 &ctx->memfuncs);
+		*va_arg(*ap, json_bigz_t*) = v;
+	    }
+	    return 0;
+
         case 'b':
             if(root && !json_is_boolean(root)) {
                 set_error(s, "<validation>", "Expected true or false, got %s",
@@ -623,7 +677,7 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             return 0;
 
         case 'F':
-            if(root && !json_is_number(root)) {
+            if((root && !json_is_number(root)) || json_is_bignumber(root)) {
                 set_error(s, "<validation>", "Expected real or integer, got %s",
                           type_name(root));
                 return -1;
@@ -637,18 +691,75 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
             return 0;
 
+        case 'r':
+	    if(!json_is_bigreal(root)) {
+		set_error(s,"<validation>", "Expected big real, got %s",
+			  type_name(root));
+		return -1;
+	    }
+
+	    if(!(s->flags & JSON_VALIDATE_ONLY)) {
+		json_bigr_t v;
+		json_context_t *ctx = jsonp_context();
+		if(!ctx->have_bigreal) {
+		    set_error(s,"<validation>", "No big real package registed, can not unpack value");
+		    return -1;
+		}
+		v = ctx->bigreal.copy_fn(json_bigreal_value(root),
+					  &ctx->memfuncs);
+		*va_arg(*ap, json_bigr_t*) = v;
+	    }
+	    return 0;
+
+        case 'R':
+	    if(!json_is_anyreal(root)) {
+		set_error(s,"<validation>", "Expected a real, got %s",
+			  type_name(root));
+		return -1;
+	    }
+
+	    if(!(s->flags & JSON_VALIDATE_ONLY)) {
+		json_bigr_t v;
+		json_context_t *ctx = jsonp_context();
+		if(!ctx->have_bigreal) {
+		    set_error(s,"<validation>", "No big real package registed, can not unpack value");
+		    return -1;
+		}
+		if(json_is_bigreal(root))
+		    v = ctx->bigreal.copy_fn(json_bigreal_value(root),
+					      &ctx->memfuncs);
+		else
+		    v = ctx->bigreal.from_real_fn(json_real_value(root),
+						   &ctx->memfuncs);
+		*va_arg(*ap, json_bigz_t*) = v;
+	    }
+	    return 0;
+
+        case 'V':
         case 'O':
             if(root && !(s->flags & JSON_VALIDATE_ONLY))
-                json_incref(root);
+                do_incref = 1;
             /* Fall through */
 
+        case 'v':
         case 'o':
+	    if(token(s) == 'V' || token(s) == 'v') {
+		if(json_is_array(root) || json_is_object(root)) {
+		    set_error(s,"<validation>", "Expecting a scalar value, got %s",
+			      type_name(root));
+		    return -1;
+		}
+	    }
             if(!(s->flags & JSON_VALIDATE_ONLY)) {
-                json_t **target = va_arg(*ap, json_t**);
+                json_t **target;
+
+                if(do_incref)
+                    json_incref(root);
+
+                target = va_arg(*ap, json_t**);
                 if(root)
                     *target = root;
             }
-
             return 0;
 
         case 'n':

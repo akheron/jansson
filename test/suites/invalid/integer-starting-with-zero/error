@@ -1,2 +1,2 @@
 1 2 2
-invalid token near '0'
+numbers may not have unnecessary leading zeros near '0'
