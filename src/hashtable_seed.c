@@ -206,7 +206,7 @@ void json_object_seed(size_t seed) {
             if (new_seed == 0)
                 new_seed = generate_seed();
 
-            __atomic_store_n(&hashtable_seed, new_seed, __ATOMIC_ACQ_REL);
+            __atomic_store_n(&hashtable_seed, new_seed, __ATOMIC_RELEASE);
         } else {
             /* Wait for another thread to do the seeding */
             do {
