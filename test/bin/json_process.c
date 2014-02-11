@@ -37,6 +37,8 @@ struct config {
     int sort_keys;
     int strip;
     int use_env;
+    int have_hashseed;
+    int hashseed;
 } conf;
 
 #define l_isspace(c) ((c) == ' ' || (c) == '\n' || (c) == '\r' || (c) == '\t')
@@ -108,6 +110,12 @@ static void read_conf(FILE *conffile)
             conf.sort_keys = atoi(val);
         if (!strcmp(line, "STRIP"))
             conf.strip = atoi(val);
+        if (!strcmp(line, "HASHSEED")) {
+            conf.have_hashseed = 1;
+            conf.hashseed = atoi(val);
+        } else {
+            conf.have_hashseed = 0;
+        }
     }
 
     free(buffer);
@@ -188,6 +196,9 @@ int use_conf(char *test_path)
     if (conf.sort_keys)
         flags |= JSON_SORT_KEYS;
 
+    if (conf.have_hashseed)
+        json_object_seed(conf.hashseed);
+
     if (conf.strip) {
         /* Load to memory, strip leading and trailing whitespace */
         buffer = loadfile(infile);
@@ -265,7 +276,10 @@ int use_env()
         flags |= JSON_PRESERVE_ORDER;
 
     if(getenv_int("JSON_SORT_KEYS"))
-         flags |= JSON_SORT_KEYS;
+        flags |= JSON_SORT_KEYS;
+
+    if(getenv("HASHSEED"))
+        json_object_seed(getenv_int("HASHSEED"));
 
     if(getenv_int("STRIP")) {
         /* Load to memory, strip leading and trailing whitespace */

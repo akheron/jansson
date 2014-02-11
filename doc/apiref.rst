@@ -755,6 +755,32 @@ The iteration protocol can be used for example as follows::
        iter = json_object_iter_next(obj, iter);
    }
 
+.. function:: void json_object_seed(size_t seed)
+
+    Seed the hash function used in Jansson's hashtable implementation.
+    The seed is used to randomize the hash function so that an
+    attacker cannot control its output.
+
+    If *seed* is 0, Jansson generates the seed itselfy by reading
+    random data from the operating system's entropy sources. If no
+    entropy sources are available, falls back to using a combination
+    of the current timestamp (with microsecond precision if possible)
+    and the process ID.
+
+    If called at all, this function must be called before any calls to
+    :func:`json_object()`, either explicit or implicit. If this
+    function is not called by the user, the first call to
+    :func:`json_object()` (either explicit or implicit) seeds the hash
+    function. See :ref:`portability-thread-safety` for notes on thread
+    safety.
+
+    If repeatable results are required, for e.g. unit tests, the hash
+    function can be "unrandomized" by calling :func:`json_object_seed`
+    with a constant value on program startup, e.g.
+    ``json_object_seed(1)``.
+
+    .. versionadded:: 2.6
+
 
 Error reporting
 ===============
