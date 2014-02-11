@@ -11,6 +11,7 @@ libjansson_la_SOURCES = \
 	hashtable_seed.c \
 	jansson_private.h \
 	load.c \
+	lookup3.h \
 	memory.c \
 	pack_unpack.c \
 	strbuffer.c \
@@ -22,4 +23,4 @@ libjansson_la_SOURCES = \
 libjansson_la_LDFLAGS = \
 	-no-undefined \
 	-export-symbols-regex '^json_' \
-	-version-info 9:0:5
+	-version-info 10:0:6

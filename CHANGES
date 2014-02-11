@@ -1,3 +1,32 @@
+Version 2.6
+===========
+
+Released 2014-02-11
+
+* Security:
+
+  - CVE-2013-6401: The hash function used by the hashtable
+    implementation has been changed, and is automatically seeded with
+    random data when the first JSON object is created. This prevents
+    an attacker from causing large JSON objects with specially crafted
+    keys perform poorly.
+
+* New features:
+
+  - `json_object_seed()`: Set the seed value of the hash function.
+
+* Bug fixes:
+
+  - Include CMake specific files in the release tarball.
+
+* Documentation:
+
+  - Fix tutorial source to send a User-Agent header, which is now
+    required by the GitHub API.
+
+  - Set all memory to zero in secure_free() example.
+
+
 Version 2.5
 ===========
 
