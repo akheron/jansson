@@ -47,7 +47,7 @@ AC_MSG_RESULT([$have_sync_builtins])
 AC_MSG_CHECKING([for gcc __atomic builtins])
 have_atomic_builtins=no
 AC_TRY_LINK(
-  [], [char l; unsigned long v; __atomic_test_and_set(&l, __ATOMIC_RELAXED); __atomic_store_n(&v, 1, __ATOMIC_ACQ_REL); __atomic_load_n(&v, __ATOMIC_ACQUIRE);],
+  [], [char l; unsigned long v; __atomic_test_and_set(&l, __ATOMIC_RELAXED); __atomic_store_n(&v, 1, __ATOMIC_RELEASE); __atomic_load_n(&v, __ATOMIC_ACQUIRE);],
   [have_atomic_builtins=yes],
 )
 if test "x$have_atomic_builtins" = "xyes"; then
