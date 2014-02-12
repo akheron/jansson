@@ -433,6 +433,8 @@ if (NOT JANSSON_WITHOUT_TESTS)
    if (JANSSON_TEST_WITH_VALGRIND)
       # TODO: Add FindValgrind.cmake instead of having a hardcoded path.
 
+      add_definitions(-DVALGRIND)
+
       # enable valgrind
       set(CMAKE_MEMORYCHECK_COMMAND valgrind)
       set(CMAKE_MEMORYCHECK_COMMAND_OPTIONS
