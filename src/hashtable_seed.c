@@ -38,8 +38,8 @@
 #endif
 
 #if defined(_WIN32)
-/* For _getpid() */
-#include <process.h>
+/* For GetModuleHandle(), GetProcAddress() and GetCurrentProcessId() */
+#include <windows.h>
 #endif
 
 #include "jansson.h"
@@ -95,7 +95,6 @@ static int seed_from_urandom(uint32_t *seed) {
 
 /* Windows Crypto API */
 #if defined(_WIN32) && defined(USE_WINDOWS_CRYPTOAPI)
-#include <windows.h>
 #include <wincrypt.h>
 
 typedef BOOL (WINAPI *CRYPTACQUIRECONTEXTA)(HCRYPTPROV *phProv, LPCSTR pszContainer, LPCSTR pszProvider, DWORD dwProvType, DWORD dwFlags);
@@ -112,7 +111,7 @@ static int seed_from_windows_cryptoapi(uint32_t *seed)
     BYTE data[sizeof(uint32_t)];
     int ok;
 
-    hAdvAPI32 = GetModuleHandle("advapi32.dll");
+    hAdvAPI32 = GetModuleHandle(TEXT("advapi32.dll"));
     if(hAdvAPI32 == NULL)
         return 1;
 
@@ -131,7 +130,7 @@ static int seed_from_windows_cryptoapi(uint32_t *seed)
     if (!pCryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
         return 1;
 
-    ok = CryptGenRandom(hCryptProv, sizeof(uint32_t), data);
+    ok = pCryptGenRandom(hCryptProv, sizeof(uint32_t), data);
     pCryptReleaseContext(hCryptProv, 0);
 
     if (!ok)
@@ -156,7 +155,7 @@ static int seed_from_timestamp_and_pid(uint32_t *seed) {
 
     /* XOR with PID for more randomness */
 #if defined(_WIN32)
-    *seed ^= (uint32_t)_getpid();
+    *seed ^= (uint32_t)GetCurrentProcessId();
 #elif defined(HAVE_GETPID)
     *seed ^= (uint32_t)getpid();
 #endif
