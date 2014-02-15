@@ -432,10 +432,20 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
     if(strict == 0 && (s->flags & JSON_STRICT))
         strict = 1;
 
-    if(root && strict == 1 && key_set.size != json_object_size(root)) {
-        long diff = (long)json_object_size(root) - (long)key_set.size;
-        set_error(s, "<validation>", "%li object item(s) left unpacked", diff);
-        goto out;
+    if(root && strict == 1) {
+        /* We need to check that all non optional items have been parsed */
+        const char *key;
+        json_t *value;
+        long unpacked = 0;
+        json_object_foreach(root, key, value) {
+            if(!hashtable_get(&key_set, key)) {
+                unpacked++;
+            }
+        }
+        if (unpacked) {
+            set_error(s, "<validation>", "%li object item(s) left unpacked", unpacked);
+            goto out;
+        }
     }
 
     ret = 0;

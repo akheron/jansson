@@ -378,4 +378,23 @@ static void run_tests()
     if(i1 != 42)
         fail("json_unpack failed to unpack");
     json_decref(j);
+
+    /* Combine ? and ! */
+    j = json_pack("{si}", "foo", 42);
+    i1 = i2 = 0;
+    if(json_unpack(j, "{sis?i!}", "foo", &i1, "bar", &i2))
+        fail("json_unpack failed for optional values with strict mode");
+    if(i1 != 42)
+        fail("json_unpack failed to unpack");
+    if(i2 != 0)
+        fail("json_unpack failed to unpack");
+    json_decref(j);
+
+    /* But don't compensate a missing key with an optional one. */
+    j = json_pack("{sisi}", "foo", 42, "baz", 43);
+    i1 = i2 = i3 = 0;
+    if(!json_unpack_ex(j, &error, 0, "{sis?i!}", "foo", &i1, "bar", &i2))
+        fail("json_unpack failed for optional values with strict mode and compensation");
+    check_error("1 object item(s) left unpacked", "<validation>", 1, 8, 8);
+    json_decref(j);
 }
