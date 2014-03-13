@@ -202,6 +202,30 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             return dump(buffer, size, data);
         }
 
+        case JSON_DECIMAL:
+        {
+            char buffer[MAX_INTEGER_STR_LENGTH + 1];
+            int size, pos;
+
+            /* Print it as an integer */
+            size = snprintf(buffer, MAX_INTEGER_STR_LENGTH,
+                            "%0*" JSON_INTEGER_FORMAT,
+                            1+json_decimal_decimal_pos(json),
+                            json_decimal_value(json));
+            if(size < 0 || size >= MAX_INTEGER_STR_LENGTH)
+                return -1;
+            /* Add the decimal point */
+            pos = json_decimal_decimal_pos(json);
+            if (pos > 0) {
+              int i;
+              for (i = size; i >= size - pos; --i)
+                buffer[i + 1] = buffer[i];
+              buffer[i + 1] = '.';
+            }
+
+            return dump(buffer, size + (pos > 0), data);
+        }
+
         case JSON_REAL:
         {
             char buffer[MAX_REAL_STR_LENGTH];

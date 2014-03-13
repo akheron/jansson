@@ -836,6 +836,64 @@ static json_t *json_integer_copy(const json_t *integer)
     return json_integer(json_integer_value(integer));
 }
 
+/*** decimal ***/
+json_t *json_decimal(json_int_t value, int pos)
+{
+    json_decimal_t *decimal = jsonp_malloc(sizeof(json_decimal_t));
+    if(!decimal)
+        return NULL;
+    json_init(&decimal->json, JSON_DECIMAL);
+
+    decimal->value = value;
+    decimal->pos = pos;
+    return &decimal->json;
+}
+
+json_int_t json_decimal_value(const json_t *json)
+{
+    if(!json_is_decimal(json))
+        return 0;
+
+    return json_to_decimal(json)->value;
+}
+
+int json_decimal_decimal_pos(const json_t *json)
+{
+    if(!json_is_decimal(json))
+        return 0;
+
+    return json_to_decimal(json)->pos;
+}
+
+int json_decimal_set(json_t *json, json_int_t value, int pos)
+{
+    if(!json_is_decimal(json))
+        return -1;
+
+    json_to_decimal(json)->value = value;
+    json_to_decimal(json)->pos = pos;
+
+    return 0;
+}
+
+static void json_delete_decimal(json_decimal_t *decimal)
+{
+    jsonp_free(decimal);
+}
+
+static int json_decimal_equal(json_t *decimal1, json_t *decimal2)
+{
+    return json_decimal_value(decimal1) == json_decimal_value(decimal2) &&
+           json_decimal_decimal_pos(decimal1) == json_decimal_decimal_pos(decimal2);
+}
+
+static json_t *json_decimal_copy(const json_t *decimal)
+{
+    return json_decimal(json_decimal_value(decimal),
+                        json_decimal_decimal_pos(decimal));
+}
+
+
 
 /*** real ***/
 
@@ -895,6 +953,13 @@ double json_number_value(const json_t *json)
 {
     if(json_is_integer(json))
         return (double)json_integer_value(json);
+    else if(json_is_decimal(json)) {
+        double rv = json_decimal_value(json);
+        int n = json_decimal_decimal_pos(json);
+        while (n--)
+          rv /= 10;
+        return rv;
+    }
     else if(json_is_real(json))
         return json_real_value(json);
     else
@@ -941,6 +1006,9 @@ void json_delete(json_t *json)
     else if(json_is_integer(json))
         json_delete_integer(json_to_integer(json));
 
+    else if(json_is_decimal(json))
+        json_delete_decimal(json_to_decimal(json));
+
     else if(json_is_real(json))
         json_delete_real(json_to_real(json));
 
@@ -974,6 +1042,9 @@ int json_equal(json_t *json1, json_t *json2)
     if(json_is_integer(json1))
         return json_integer_equal(json1, json2);
 
+    if(json_is_decimal(json1))
+        return json_decimal_equal(json1, json2);
+
     if(json_is_real(json1))
         return json_real_equal(json1, json2);
 
@@ -999,6 +1070,9 @@ json_t *json_copy(json_t *json)
 
     if(json_is_integer(json))
         return json_integer_copy(json);
+
+    if(json_is_decimal(json))
+        return json_decimal_copy(json);
 
     if(json_is_real(json))
         return json_real_copy(json);
@@ -1028,6 +1102,9 @@ json_t *json_deep_copy(const json_t *json)
 
     if(json_is_integer(json))
         return json_integer_copy(json);
+
+    if(json_is_decimal(json))
+        return json_decimal_copy(json);
 
     if(json_is_real(json))
         return json_real_copy(json);
