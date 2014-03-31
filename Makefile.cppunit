@@ -1,7 +1,7 @@
 
 .DEFAULT_GOAL := libjansson.a
 
-CFLAGS += -Isrc
+CFLAGS += -Isrc -g
 
 HEADERS += src/jansson.h
 HEADERS += src/jansson_config.h
@@ -25,7 +25,7 @@ src/jansson_config.h:
 	cp cppunit/jansson_config.h $@
 
 src/%.o: src/%.c $(HEADERS)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(PROFILE_FLAGS) -c $< -o $@
 
 libjansson.a: $(HEADERS) $(OBJS)
 	$(AR) src libjansson.a $(OBJS)
