@@ -28,5 +28,6 @@ stamp-h1
 *.pc
 /src/jansson_config.h
 /jansson_private_config.h.in
+/jansson_private_config.h
 /build
 *.exe
