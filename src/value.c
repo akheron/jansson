@@ -29,7 +29,7 @@
 
 /* Work around nonstandard isnan() and isinf() implementations */
 #ifndef isnan
-#ifndef sun
+#ifndef __sun
 static JSON_INLINE int isnan(double x) { return x != x; }
 #endif
 #endif
