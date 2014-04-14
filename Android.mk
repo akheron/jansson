@@ -7,6 +7,7 @@ LOCAL_SRC_FILES := \
     src/dump.c \
     src/error.c \
     src/hashtable.c \
+    src/hashtable_seed.c \
     src/load.c \
     src/memory.c \
     src/pack_unpack.c \
