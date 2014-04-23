@@ -483,7 +483,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 {
     const char *saved_text;
     char *end;
-    double value;
+    double doubleval;
 
     lex->token = TOKEN_INVALID;
 
@@ -508,16 +508,16 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
     }
 
     if(c != '.' && c != 'E' && c != 'e') {
-        json_int_t value;
+        json_int_t intval;
 
         lex_unget_unsave(lex, c);
 
         saved_text = strbuffer_value(&lex->saved_text);
 
         errno = 0;
-        value = json_strtoint(saved_text, &end, 10);
+        intval = json_strtoint(saved_text, &end, 10);
         if(errno == ERANGE) {
-            if(value < 0)
+            if(intval < 0)
                 error_set(error, lex, "too big negative integer");
             else
                 error_set(error, lex, "too big integer");
@@ -527,7 +527,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         assert(end == saved_text + lex->saved_text.length);
 
         lex->token = TOKEN_INTEGER;
-        lex->value.integer = value;
+        lex->value.integer = intval;
         return 0;
     }
 
@@ -561,13 +561,13 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 
     lex_unget_unsave(lex, c);
 
-    if(jsonp_strtod(&lex->saved_text, &value)) {
+    if(jsonp_strtod(&lex->saved_text, &doubleval)) {
         error_set(error, lex, "real number overflow");
         goto out;
     }
 
     lex->token = TOKEN_REAL;
-    lex->value.real = value;
+    lex->value.real = doubleval;
     return 0;
 
 out:
