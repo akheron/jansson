@@ -905,6 +905,16 @@ can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.4
 
+``JSON_REAL_PRECISION(n)``
+   Output all real numbers with at most *n* digits of precision. The
+   valid range for *n* is between 0 and 31 (inclusive), and other
+   values result in an undefined behavior.
+
+   By default, the precision is 17, to correctly and losslessly encode
+   all IEEE 754 double precision floating point numbers.
+
+   .. versionadded:: 2.7
+
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
 

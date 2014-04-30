@@ -22,6 +22,9 @@
 #define MAX_INTEGER_STR_LENGTH  100
 #define MAX_REAL_STR_LENGTH     100
 
+#define FLAGS_TO_INDENT(f)      ((f) & 0x1F)
+#define FLAGS_TO_PRECISION(f)   (((f) >> 11) & 0x1F)
+
 struct object_key {
     size_t serial;
     const char *key;
@@ -45,9 +48,9 @@ static const char whitespace[] = "                                ";
 
 static int dump_indent(size_t flags, int depth, int space, json_dump_callback_t dump, void *data)
 {
-    if(JSON_INDENT(flags) > 0)
+    if(FLAGS_TO_INDENT(flags) > 0)
     {
-        int i, ws_count = JSON_INDENT(flags);
+        int i, ws_count = FLAGS_TO_INDENT(flags);
 
         if(dump("\n", 1, data))
             return -1;
@@ -208,7 +211,8 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             int size;
             double value = json_real_value(json);
 
-            size = jsonp_dtostr(buffer, MAX_REAL_STR_LENGTH, value);
+            size = jsonp_dtostr(buffer, MAX_REAL_STR_LENGTH, value,
+                                FLAGS_TO_PRECISION(flags));
             if(size < 0)
                 return -1;
 
