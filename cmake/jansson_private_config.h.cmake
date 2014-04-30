@@ -31,6 +31,16 @@
 #  define uint32_t @JSON_UINT32@
 #endif
 
+#cmakedefine HAVE_UINT16_T 1
+#ifndef HAVE_UINT16_T
+#  define uint16_t @JSON_UINT16@
+#endif
+
+#cmakedefine HAVE_UINT8_T 1
+#ifndef HAVE_UINT8_T
+#  define uint8_t @JSON_UINT8@
+#endif
+
 #cmakedefine HAVE_SSIZE_T 1
 
 #ifndef HAVE_SSIZE_T

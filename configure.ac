@@ -19,6 +19,8 @@ AC_CHECK_HEADERS([endian.h fcntl.h locale.h sched.h unistd.h sys/param.h sys/sta
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_INT32_T
 AC_TYPE_UINT32_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT8_T
 AC_TYPE_LONG_LONG_INT
 
 AC_C_INLINE
