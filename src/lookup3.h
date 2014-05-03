@@ -205,7 +205,22 @@ static uint32_t hashlittle(const void *key, size_t length, uint32_t initval)
   if (HASH_LITTLE_ENDIAN && ((u.i & 0x3) == 0)) {
     const uint32_t *k = (const uint32_t *)key;         /* read 32-bit chunks */
 
+/* Detect Valgrind or AddressSanitizer */
 #ifdef VALGRIND
+# define NO_MASKING_TRICK 1
+#else
+# if defined(__has_feature)  /* Clang */
+#  if __has_feature(address_sanitizer)  /* is ASAN enabled? */
+#   define NO_MASKING_TRICK 1
+#  endif
+# else
+#  if defined(__SANITIZE_ADDRESS__)  /* GCC 4.8.x, is ASAN enabled? */
+#   define NO_MASKING_TRICK 1
+#  endif
+# endif
+#endif
+
+#ifdef NO_MASKING_TRICK
     const uint8_t  *k8;
 #endif
 
@@ -230,7 +245,7 @@ static uint32_t hashlittle(const void *key, size_t length, uint32_t initval)
      * still catch it and complain.  The masking trick does make the hash
      * noticably faster for short strings (like English words).
      */
-#ifndef VALGRIND
+#ifndef NO_MASKING_TRICK
 
     switch(length)
     {
@@ -270,6 +285,10 @@ static uint32_t hashlittle(const void *key, size_t length, uint32_t initval)
     }
 
 #endif /* !valgrind */
+
+#ifdef NO_MASKING_TRICK
+# undef NO_MASKING_TRICK
+#endif
 
   } else if (HASH_LITTLE_ENDIAN && ((u.i & 0x1) == 0)) {
     const uint16_t *k = (const uint16_t *)key;         /* read 16-bit chunks */
