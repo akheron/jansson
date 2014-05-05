@@ -286,10 +286,6 @@ static uint32_t hashlittle(const void *key, size_t length, uint32_t initval)
 
 #endif /* !valgrind */
 
-#ifdef NO_MASKING_TRICK
-# undef NO_MASKING_TRICK
-#endif
-
   } else if (HASH_LITTLE_ENDIAN && ((u.i & 0x1) == 0)) {
     const uint16_t *k = (const uint16_t *)key;         /* read 16-bit chunks */
     const uint8_t  *k8;
