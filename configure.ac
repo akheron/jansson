@@ -1,6 +1,7 @@
 AC_PREREQ([2.60])
 AC_INIT([jansson], [2.6], [petri@digip.org])
 
+AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([1.10 foreign])
 
 AC_CONFIG_SRCDIR([src/value.c])
