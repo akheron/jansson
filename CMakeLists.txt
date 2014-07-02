@@ -105,7 +105,7 @@ if (MSVC)
 endif()
 
 if (NOT WIN32 AND (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX))
-   set(CMAKE_C_FLAGS "-fPIC")
+   add_definitions("-fPIC")
 endif()
 
 check_include_files (endian.h HAVE_ENDIAN_H)
