@@ -866,6 +866,12 @@ can be ORed together to obtain *flags*.
    output. If ``JSON_INDENT`` is not used or *n* is 0, no newlines are
    inserted between array and object items.
 
+   The ``JSON_MAX_INDENT`` constant defines the maximum indentation
+   that can be used, and its value is 31.
+
+   .. versionchanged:: 2.7
+      Added ``JSON_MAX_INDENT``.
+
 ``JSON_COMPACT``
    This flag enables a compact representation, i.e. sets the separator
    between array and object items to ``","`` and between object keys
