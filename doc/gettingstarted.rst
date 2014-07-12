@@ -140,7 +140,7 @@ By default the CMake_ project will generate build files for building the
 static library. To build the shared version use::
 
     ...
-    cmake -DBUILD_SHARED=1 ..
+    cmake -DJANSSON_BUILD_SHARED_LIBS=1 ..
 
 Changing install directory (same as autoconf --prefix)
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
