@@ -181,7 +181,7 @@ int use_conf(char *test_path)
 
     if (conf.indent < 0 || conf.indent > 31) {
         fprintf(stderr, "invalid value for JSON_INDENT: %d\n", conf.indent);
-		fclose(infile);
+        fclose(infile);
         return 2;
     }
     if (conf.indent)
@@ -202,7 +202,7 @@ int use_conf(char *test_path)
     if (conf.precision < 0 || conf.precision > 31) {
         fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n",
                 conf.precision);
-		fclose(infile);
+        fclose(infile);
         return 2;
     }
     if (conf.precision)
@@ -314,10 +314,10 @@ int use_env()
             buf_ck = realloc(buffer, size);
             if(!buf_ck) {
                 fprintf(stderr, "Unable to allocate %d bytes\n", (int)size);
-				free(buffer);
+                free(buffer);
                 return 1;
             }
-			buffer = buf_ck;
+            buffer = buf_ck;
 
             count = fread(buffer + used, 1, size - used, stdin);
             if(count < size - used) {
