@@ -297,18 +297,16 @@ String
 ======
 
 Jansson uses UTF-8 as the character encoding. All JSON strings must be
-valid UTF-8 (or ASCII, as it's a subset of UTF-8). Normal null
-terminated C strings are used, so JSON strings may not contain
-embedded null characters. All other Unicode codepoints U+0000 through
-U+10FFFF are allowed, but you must use length-aware functions if you
-wish to embed NUL bytes in strings.
+valid UTF-8 (or ASCII, as it's a subset of UTF-8). All Unicode
+codepoints U+0000 through U+10FFFF are allowed, but you must use
+length-aware functions if you wish to embed NUL bytes in strings.
 
 .. function:: json_t *json_string(const char *value)
 
    .. refcounting:: new
 
    Returns a new JSON string, or *NULL* on error. *value* must be a
-   valid UTF-8 encoded Unicode string.
+   valid null terminated UTF-8 encoded Unicode string.
 
 .. function:: json_t *json_stringn(const char *value, size_t len)
 
