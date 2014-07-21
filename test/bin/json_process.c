@@ -181,6 +181,7 @@ int use_conf(char *test_path)
 
     if (conf.indent < 0 || conf.indent > 31) {
         fprintf(stderr, "invalid value for JSON_INDENT: %d\n", conf.indent);
+        fclose(infile);
         return 2;
     }
     if (conf.indent)
@@ -201,6 +202,7 @@ int use_conf(char *test_path)
     if (conf.precision < 0 || conf.precision > 31) {
         fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n",
                 conf.precision);
+        fclose(infile);
         return 2;
     }
     if (conf.precision)
@@ -303,17 +305,19 @@ int use_env()
     if(getenv_int("STRIP")) {
         /* Load to memory, strip leading and trailing whitespace */
         size_t size = 0, used = 0;
-        char *buffer = NULL;
+        char *buffer = NULL, *buf_ck = NULL;
 
         while(1) {
             size_t count;
 
             size = (size == 0 ? 128 : size * 2);
-            buffer = realloc(buffer, size);
-            if(!buffer) {
+            buf_ck = realloc(buffer, size);
+            if(!buf_ck) {
                 fprintf(stderr, "Unable to allocate %d bytes\n", (int)size);
+                free(buffer);
                 return 1;
             }
+            buffer = buf_ck;
 
             count = fread(buffer + used, 1, size - used, stdin);
             if(count < size - used) {
