@@ -92,6 +92,11 @@ AC_DEFINE([USE_WINDOWS_CRYPTOAPI], [1],
   [Define to 1 if CryptGenRandom should be used for seeding the hash function])
 fi
 
+if test x$GCC = xyes; then
+    AM_CFLAGS="-Wall -Wextra -Wdeclaration-after-statement"
+fi
+AC_SUBST([AM_CFLAGS])
+
 AC_CONFIG_FILES([
         jansson.pc
         Makefile
