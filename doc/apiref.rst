@@ -155,6 +155,8 @@ functions:
    Alias of :func:`json_is_true()`, i.e. returns 1 for ``JSON_TRUE``
    and 0 otherwise.
 
+   .. versionadded:: 2.7
+
 
 .. _apiref-reference-count:
 
