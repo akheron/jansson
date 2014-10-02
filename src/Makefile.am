@@ -23,4 +23,4 @@ libjansson_la_SOURCES = \
 libjansson_la_LDFLAGS = \
 	-no-undefined \
 	-export-symbols-regex '^json_' \
-	-version-info 10:0:6
+	-version-info 11:0:7

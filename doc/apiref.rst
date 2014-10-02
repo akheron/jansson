@@ -1313,7 +1313,7 @@ type whose address should be passed.
     :func:`json_string_value()` internally, so it exists as long as
     there are still references to the corresponding JSON string.
 
-``s%`` (string) [const char \*, size_t *]
+``s%`` (string) [const char \*, size_t \*]
     Convert a JSON string to a pointer to a NULL terminated UTF-8
     string and its length.
 
