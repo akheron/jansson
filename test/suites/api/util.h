@@ -20,7 +20,7 @@
 
 #include <jansson.h>
 
-#define failhdr fprintf(stderr, "%s:%s:%d: ", __FILE__, __FUNCTION__, __LINE__)
+#define failhdr fprintf(stderr, "%s:%d: ", __FILE__, __LINE__)
 
 #define fail(msg)                                                \
     do {                                                         \
