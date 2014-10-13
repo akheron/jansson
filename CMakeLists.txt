@@ -98,8 +98,8 @@ if (MSVC)
    add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo" )
    
    if (JANSSON_STATIC_CRT)
-      set(CMAKE_C_FLAGS_RELEASE "/MT")
-      set(CMAKE_C_FLAGS_DEBUG "/MTd")
+      set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MT")
+      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd")
    endif()
    
 endif()
