@@ -48,8 +48,7 @@ use autoreconf::
 Documentation
 -------------
 
-Prebuilt HTML documentation is available at
-http://www.digip.org/jansson/doc/.
+Documentation is available at http://jansson.readthedocs.org/en/latest/.
 
 The documentation source is in the ``doc/`` subdirectory. To generate
 HTML documentation, invoke::
