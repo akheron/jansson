@@ -169,7 +169,7 @@ static int stream_get(stream_t *stream, json_error_t *error)
         if(0x80 <= c && c <= 0xFF)
         {
             /* multi-byte UTF-8 sequence */
-            int i, count;
+            size_t i, count;
 
             count = utf8_check_first(c);
             if(!count)
@@ -265,7 +265,7 @@ static void lex_unget_unsave(lex_t *lex, int c)
         #endif
         stream_unget(&lex->stream, c);
         #ifndef NDEBUG
-        d = 
+        d =
         #endif
             strbuffer_pop(&lex->saved_text);
         assert(c == d);
@@ -900,7 +900,7 @@ static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
 
     if(error) {
         /* Save the position even though there was no error */
-        error->position = lex->stream.position;
+        error->position = (int)lex->stream.position;
     }
 
     return result;
