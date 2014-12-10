@@ -8,6 +8,9 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 
+#include <stdlib.h>
+#include "jansson.h"
+
 struct hashtable_list {
     struct hashtable_list *prev;
     struct hashtable_list *next;
@@ -17,8 +20,8 @@ struct hashtable_list {
    key-value pair. In this case, it just encodes some extra data,
    too */
 struct hashtable_pair {
-    size_t hash;
     struct hashtable_list list;
+    size_t hash;
     json_t *value;
     size_t serial;
     char key[1];
