@@ -61,6 +61,12 @@ if (MSVC)
 	option(JANSSON_STATIC_CRT "Link the static CRT libraries" OFF )
 endif ()
 
+if (UNIX)
+   option(JANSSON_COVERAGE "(GCC Only! Requires gcov/lcov to be installed). Include target for doing coverage analysis for the test suite. Note that -DCMAKE_BUILD_TYPE=Debug must be set" OFF)
+   option(JANSSON_COVERALLS "Generate coverage info for Coveralls" OFF)
+   option(JANSSON_COVERALLS_UPLOAD "Upload coverage info to Coveralls (Only works via Travis)" ON)
+endif ()
+
 # Set some nicer output dirs.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -106,6 +112,21 @@ endif()
 
 if (NOT WIN32 AND (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX))
    add_definitions("-fPIC")
+endif()
+
+message("C compiler: ${CMAKE_C_COMPILER_ID}")
+
+# Coverage only works with GCC for a debug build.
+if (JANSSON_COVERALLS)
+   set(JANSSON_COVERAGE ON)
+endif()
+
+if (JANSSON_COVERAGE)
+   include(CodeCoverage)
+   include(Coveralls)
+
+   # This adds coverage arguments to gcc/clang.
+   coveralls_turn_on_coverage()
 endif()
 
 check_include_files (endian.h HAVE_ENDIAN_H)
@@ -520,6 +541,7 @@ if (NOT JANSSON_WITHOUT_TESTS)
    # Test harness for the suites tests.
    build_testprog(json_process ${PROJECT_SOURCE_DIR}/test/bin)
 
+   set(SUITE_TEST_CMD ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process)
    set(SUITES encoding-flags valid invalid invalid-unicode)
    foreach (SUITE ${SUITES})
        file(GLOB TESTDIRS ${jansson_SOURCE_DIR}/test/suites/${SUITE}/*)
@@ -527,8 +549,6 @@ if (NOT JANSSON_WITHOUT_TESTS)
        foreach (TESTDIR ${TESTDIRS})
          if (IS_DIRECTORY ${TESTDIR})
             get_filename_component(TNAME ${TESTDIR} NAME)
-
-            set(SUITE_TEST_CMD ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process)
 
             if (JANSSON_TEST_WITH_VALGRIND)
                add_test(memcheck__${SUITE}__${TNAME}
@@ -551,6 +571,21 @@ if (NOT JANSSON_WITHOUT_TESTS)
        endforeach ()
    endforeach ()
 
+   if (JANSSON_COVERAGE)
+      setup_target_for_coverage(
+            coverage             # Coverage make target "make coverage".
+            coverage             # Name of output directory.
+            make                 # Name of test runner executable.
+            test)                # Arguments to the test runner above (make test).
+
+      if (JANSSON_COVERALLS)
+         set(COVERAGE_SRCS ${JANSSON_SRC})
+         coveralls_setup("${COVERAGE_SRCS}" ${JANSSON_COVERALLS_UPLOAD})
+      endif ()
+   endif ()
+
+   # Enable using "make check" just like the autotools project.
+   # By default cmake creates a target "make test"
    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
                      DEPENDS json_process ${api_tests})
 endif ()
