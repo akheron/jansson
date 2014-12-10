@@ -4,10 +4,15 @@ EXPORTS
     json_false
     json_null
     json_string
+    json_stringn
     json_string_nocheck
+    json_stringn_nocheck
     json_string_value
+    json_string_length
     json_string_set
+    json_string_setn
     json_string_set_nocheck
+    json_string_setn_nocheck
     json_integer
     json_integer_value
     json_integer_set
@@ -41,6 +46,7 @@ EXPORTS
     json_object_iter_value
     json_object_iter_set_new
     json_object_key_to_iter
+    json_object_seed
     json_dumps
     json_dumpf
     json_dump_file

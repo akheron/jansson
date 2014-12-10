@@ -140,7 +140,7 @@ By default the CMake_ project will generate build files for building the
 static library. To build the shared version use::
 
     ...
-    cmake -DBUILD_SHARED=1 ..
+    cmake -DJANSSON_BUILD_SHARED_LIBS=1 ..
 
 Changing install directory (same as autoconf --prefix)
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -154,23 +154,13 @@ in CMake_ is::
 
 .. _CMake: http://www.cmake.org
 
+
 Android
 -------
 
 Jansson can be built for Android platforms. Android.mk is in the
 source root directory. The configuration header file is located in the
 ``android`` directory in the source distribution.
-
-
-Windows
--------
-
-**This method is deprecated**. Using :ref:`CMake <build-cmake>` is now
-preferred.
-
-Jansson can be built with Visual Studio 2010 (and probably newer
-versions, too). The solution and project files are in the
-``win32/vs2010/`` directory in the source distribution.
 
 
 Other Systems

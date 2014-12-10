@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2013 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2009-2014 Petri Lehtinen <petri@digip.org>
  *
  * Jansson is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
@@ -115,6 +115,26 @@ static void decode_int_as_real()
 #endif
 }
 
+static void allow_nul()
+{
+    const char *text = "\"nul byte \\u0000 in string\"";
+    const char *expected = "nul byte \0 in string";
+    size_t len = 20;
+    json_t *json;
+
+    json = json_loads(text, JSON_ALLOW_NUL | JSON_DECODE_ANY, NULL);
+    if(!json || !json_is_string(json))
+        fail("unable to decode embedded NUL byte");
+
+    if(json_string_length(json) != len)
+        fail("decoder returned wrong string length");
+
+    if(memcmp(json_string_value(json), expected, len + 1))
+        fail("decoder returned wrong string content");
+
+    json_decref(json);
+}
+
 static void load_wrong_args()
 {
     json_t *json;
@@ -161,6 +181,7 @@ static void run_tests()
     disable_eof_check();
     decode_any();
     decode_int_as_real();
+    allow_nul();
     load_wrong_args();
     position();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2013 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2009-2014 Petri Lehtinen <petri@digip.org>
  *
  * Jansson is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
@@ -27,6 +27,8 @@ static void run_tests()
     value = json_boolean(0);
     if(!json_is_false(value))
         fail("json_boolean(0) failed");
+    if(json_boolean_value(value) != 0)
+        fail("json_boolean_value failed");
     json_decref(value);
 
 
@@ -72,11 +74,22 @@ static void run_tests()
         fail("json_string failed");
     if(strcmp(json_string_value(value), "foo"))
         fail("invalid string value");
+    if (json_string_length(value) != 3)
+        fail("invalid string length");
 
-    if(json_string_set(value, "bar"))
+    if(json_string_set(value, "barr"))
         fail("json_string_set failed");
-    if(strcmp(json_string_value(value), "bar"))
+    if(strcmp(json_string_value(value), "barr"))
         fail("invalid string value");
+    if (json_string_length(value) != 4)
+        fail("invalid string length");
+
+    if(json_string_setn(value, "hi\0ho", 5))
+        fail("json_string_set failed");
+    if(memcmp(json_string_value(value), "hi\0ho\0", 6))
+        fail("invalid string value");
+    if (json_string_length(value) != 5)
+        fail("invalid string length");
 
     json_decref(value);
 
@@ -94,11 +107,22 @@ static void run_tests()
         fail("json_string_nocheck failed");
     if(strcmp(json_string_value(value), "foo"))
         fail("invalid string value");
+    if (json_string_length(value) != 3)
+        fail("invalid string length");
 
-    if(json_string_set_nocheck(value, "bar"))
+    if(json_string_set_nocheck(value, "barr"))
         fail("json_string_set_nocheck failed");
-    if(strcmp(json_string_value(value), "bar"))
+    if(strcmp(json_string_value(value), "barr"))
         fail("invalid string value");
+    if (json_string_length(value) != 4)
+        fail("invalid string length");
+
+    if(json_string_setn_nocheck(value, "hi\0ho", 5))
+        fail("json_string_set failed");
+    if(memcmp(json_string_value(value), "hi\0ho\0", 6))
+        fail("invalid string value");
+    if (json_string_length(value) != 5)
+        fail("invalid string length");
 
     json_decref(value);
 
@@ -108,11 +132,15 @@ static void run_tests()
         fail("json_string_nocheck failed");
     if(strcmp(json_string_value(value), "qu\xff"))
         fail("invalid string value");
+    if (json_string_length(value) != 3)
+        fail("invalid string length");
 
     if(json_string_set_nocheck(value, "\xfd\xfe\xff"))
         fail("json_string_set_nocheck failed");
     if(strcmp(json_string_value(value), "\xfd\xfe\xff"))
         fail("invalid string value");
+    if (json_string_length(value) != 3)
+        fail("invalid string length");
 
     json_decref(value);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2013 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2009-2014 Petri Lehtinen <petri@digip.org>
  * Copyright (c) 2011-2012 Basile Starynkevitch <basile@starynkevitch.net>
  *
  * Jansson is free software; you can redistribute it and/or modify it
@@ -11,6 +11,10 @@
 
 #include "jansson.h"
 #include "jansson_private.h"
+
+/* C89 allows these to be macros */
+#undef malloc
+#undef free
 
 /* memory function pointers */
 static json_malloc_t do_malloc = malloc;
@@ -34,18 +38,19 @@ void jsonp_free(void *ptr)
 
 char *jsonp_strdup(const char *str)
 {
-    char *new_str;
-    size_t len;
+    return jsonp_strndup(str, strlen(str));
+}
 
-    len = strlen(str);
-    if(len == (size_t)-1)
-        return NULL;
+char *jsonp_strndup(const char *str, size_t len)
+{
+    char *new_str;
 
     new_str = jsonp_malloc(len + 1);
     if(!new_str)
         return NULL;
 
-    memcpy(new_str, str, len + 1);
+    memcpy(new_str, str, len);
+    new_str[len] = '\0';
     return new_str;
 }
 

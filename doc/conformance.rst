@@ -19,15 +19,11 @@ Strings
 =======
 
 JSON strings are mapped to C-style null-terminated character arrays,
-and UTF-8 encoding is used internally. Strings may not contain
-embedded null characters, not even escaped ones.
+and UTF-8 encoding is used internally.
 
-For example, trying to decode the following JSON text leads to a parse
-error::
-
-    ["this string contains the null character: \u0000"]
-
-All other Unicode codepoints U+0001 through U+10FFFF are allowed.
+All Unicode codepoints U+0000 through U+10FFFF are allowed in string
+values. However, U+0000 is not allowed in object keys because of API
+restrictions.
 
 Unicode normalization or any other transformation is never performed
 on any strings (string values or object keys). When checking for

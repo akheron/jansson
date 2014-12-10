@@ -1,7 +1,7 @@
 
 .DEFAULT_GOAL := libjansson.a
 
-CFLAGS += -Isrc -g
+CFLAGS += -Isrc -g -DHAVE_STDINT_H=1
 
 HEADERS += src/jansson.h
 HEADERS += src/jansson_config.h
@@ -13,6 +13,7 @@ HEADERS += src/jansson_private.h
 OBJS += src/dump.o
 OBJS += src/error.o
 OBJS += src/hashtable.o
+OBJS += src/hashtable_seed.o
 OBJS += src/load.o
 OBJS += src/memory.o
 OBJS += src/pack_unpack.o

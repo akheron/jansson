@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2013 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2009-2014 Petri Lehtinen <petri@digip.org>
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
@@ -7,6 +7,9 @@
 
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
+
+#include <stdlib.h>
+#include "jansson.h"
 
 struct hashtable_list {
     struct hashtable_list *prev;
@@ -17,8 +20,8 @@ struct hashtable_list {
    key-value pair. In this case, it just encodes some extra data,
    too */
 struct hashtable_pair {
-    size_t hash;
     struct hashtable_list list;
+    size_t hash;
     json_t *value;
     size_t serial;
     char key[1];
@@ -32,13 +35,14 @@ struct hashtable_bucket {
 typedef struct hashtable {
     size_t size;
     struct hashtable_bucket *buckets;
-    size_t num_buckets;  /* index to primes[] */
+    size_t order;  /* hashtable has pow(2, order) buckets */
     struct hashtable_list list;
 } hashtable_t;
 
 
 #define hashtable_key_to_iter(key_) \
     (&(container_of(key_, struct hashtable_pair, key)->list))
+
 
 /**
  * hashtable_init - Initialize a hashtable object
