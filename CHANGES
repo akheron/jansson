@@ -1,3 +1,187 @@
+Version 2.7
+===========
+
+Released 2014-10-02
+
+* New features:
+
+  - `json_pack()` and friends: Add format specifiers ``s%`` and ``+%``
+    for a size_t string length (#141).
+
+  - `json_unpack()` and friends: Add format specifier ``s%`` for
+    unpacking the string length along with the string itself (#141).
+
+  - Add length-aware string constructors `json_stringn()` and
+    `json_stringn_nocheck()`, length-aware string mutators
+    `json_string_setn()` and `json_string_setn_nocheck()`, and a
+    function for getting string's length `json_string_length()` (#141,
+    #143).
+
+  - Support ``\u0000`` escapes in the decoder. The support can be
+    enabled by using the ``JSON_ALLOW_NUL`` decoding flag (#141).
+
+  - Add `json_boolean_value()` as an alias for `json_is_true()`
+    (#146).
+
+  - Add JSON_REAL_PRECISION encoding flag/macro for controlling real
+    number precision (#178).
+
+  - Define the maximum indentation as JSON_MAX_INDENT (#191).
+
+* Bug fixes:
+
+  - Some malformed ``\uNNNN`` escapes could crash the decoder with an
+    assertion failure.
+
+  - Avoid integer overflows with very long strings in UTF-8 decoder and
+    hashtable.
+
+  - Check for *NULL* key in `json_object_get()` and
+    `json_object_del()` (#151).
+
+  - Enhance hashtable seeding on Windows (#162).
+
+  - `json_unpack()`: Allow mixing JSON_STRICT with optional keys
+    (#162, #163).
+
+  - Fix int/int32 mismatch (#142).
+
+  - Parse subnormal numbers correctly (#202).
+
+* Build:
+
+  - Remove VS2010 build files. CMake should be used on Windows instead
+    (#165).
+
+  - Fix CMake build flags for MinGW (#193).
+
+  - Add CMake config files for find_package. Rename config.h to
+    jansson_private_config.h (#157, #159).
+
+  - Make Valgrind checks work with CMake (#160).
+
+  - Fix feature checks to use correct __ATOMIC flags.
+
+  - Fix CMake checks for uint16_t and uint8_t support (#177).
+
+  - Make Jansson build on SmartOS/Solaris (#171).
+
+  - Work around a GCC bug on Solaris (#175).
+
+  - Fix autoreconf on Debian (#182).
+
+  - Don't use GNU make specific export for global AM_CFLAGS (#203,
+    #204).
+
+  - Fix building on Android using the supplied Android.mk (#166,
+    #174).
+
+  - Android.mk: Add -DHAVE_STDINT_H to LOCAL_CFLAGS (#200).
+
+* Documentation:
+
+  - Document JANSSON_BUILD_SHARED_LIBS CMake option (#187).
+
+* Tests:
+
+  - Close file handles correctly (#198).
+
+* Other changes:
+
+  - ``\uNNNN`` escapes are now encoded in upper case for better
+    readability.
+
+  - Enable usage of AddressSanitizer (#180).
+
+
+Version 2.6
+===========
+
+Released 2014-02-11
+
+* Security:
+
+  - CVE-2013-6401: The hash function used by the hashtable
+    implementation has been changed, and is automatically seeded with
+    random data when the first JSON object is created. This prevents
+    an attacker from causing large JSON objects with specially crafted
+    keys perform poorly.
+
+* New features:
+
+  - `json_object_seed()`: Set the seed value of the hash function.
+
+* Bug fixes:
+
+  - Include CMake specific files in the release tarball.
+
+* Documentation:
+
+  - Fix tutorial source to send a User-Agent header, which is now
+    required by the GitHub API.
+
+  - Set all memory to zero in secure_free() example.
+
+
+Version 2.5
+===========
+
+Released 2013-09-19
+
+* New features:
+
+  - `json_pack()` and friends: Add format specifiers ``s#``, ``+`` and
+    ``+#``.
+
+  - Add ``JSON_DECODE_INT_AS_REAL`` decoding flag to treat all numbers
+    as real in the decoder (#123).
+
+  - Add `json_array_foreach()`, paralleling `json_object_foreach()`
+    (#118).
+
+* Bug fixes:
+
+  - `json_dumps()` and friends: Don't crash if json is *NULL* and
+    ``JSON_ENCODE_ANY`` is set.
+
+  - Fix a theoretical integer overflow in `jsonp_strdup()`.
+
+  - Fix `l_isxdigit()` macro (#97).
+
+  - Fix an off-by-one error in `json_array_remove()`.
+
+* Build:
+
+  - Support CMake in addition to GNU Autotools (#106, #107, #112,
+    #115, #120, #127).
+
+  - Support building for Android (#109).
+
+  - Don't use ``-Werror`` by default.
+
+  - Support building and testing with VPATH (#93).
+
+  - Fix compilation when ``NDEBUG`` is defined (#128)
+
+* Tests:
+
+  - Fix a refleak in ``test/bin/json_process.c``.
+
+* Documentation:
+
+  - Clarify the return value of `json_load_callback_t`.
+
+  - Document how to circumvent problems with separate heaps on Windows.
+
+  - Fix memory leaks and warnings in ``github_commits.c``.
+
+  - Use `json_decref()` properly in tutorial.
+
+* Other:
+
+  - Make it possible to forward declare ``struct json_t``.
+
+
 Version 2.4
 ===========
 

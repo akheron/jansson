@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2013 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2009-2014 Petri Lehtinen <petri@digip.org>
  *
  * Jansson is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
@@ -180,6 +180,20 @@ static void escape_slashes()
     json_decref(json);
 }
 
+static void encode_nul_byte()
+{
+    json_t *json;
+    char *result;
+
+    json = json_stringn("nul byte \0 in string", 20);
+    result = json_dumps(json, JSON_ENCODE_ANY);
+    if(!result || memcmp(result, "\"nul byte \\u0000 in string\"", 27))
+        fail("json_dumps failed to dump an embedded NUL byte");
+
+    free(result);
+    json_decref(json);
+}
+
 static void run_tests()
 {
     encode_null();
@@ -187,4 +201,5 @@ static void run_tests()
     circular_references();
     encode_other_than_array_or_object();
     escape_slashes();
+    encode_nul_byte();
 }

@@ -19,7 +19,7 @@
 
        <description of the json_object function>
 
-    :copyright: Copyright (c) 2009-2013 Petri Lehtinen <petri@digip.org>
+    :copyright: Copyright (c) 2009-2014 Petri Lehtinen <petri@digip.org>
     :license: MIT, see LICENSE for details.
 """
 

@@ -2,12 +2,13 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "jansson_private.h"
 #include "strbuffer.h"
 
-/* need config.h to get the correct snprintf */
+/* need jansson_private_config.h to get the correct snprintf */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include <jansson_private_config.h>
 #endif
 
 #if JSON_HAVE_LOCALECONV
@@ -69,7 +70,7 @@ int jsonp_strtod(strbuffer_t *strbuffer, double *out)
     value = strtod(strbuffer->value, &end);
     assert(end == strbuffer->value + strbuffer->length);
 
-    if(errno == ERANGE && value != 0) {
+    if((value == HUGE_VAL || value == -HUGE_VAL) && errno == ERANGE) {
         /* Overflow */
         return -1;
     }
@@ -78,13 +79,16 @@ int jsonp_strtod(strbuffer_t *strbuffer, double *out)
     return 0;
 }
 
-int jsonp_dtostr(char *buffer, size_t size, double value)
+int jsonp_dtostr(char *buffer, size_t size, double value, int precision)
 {
     int ret;
     char *start, *end;
     size_t length;
 
-    ret = snprintf(buffer, size, "%.17g", value);
+    if (precision == 0)
+        precision = 17;
+
+    ret = snprintf(buffer, size, "%.*g", precision, value);
     if(ret < 0)
         return -1;
 
