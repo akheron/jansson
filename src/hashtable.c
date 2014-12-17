@@ -184,7 +184,7 @@ int hashtable_init(hashtable_t *hashtable)
     size_t i;
 
     hashtable->size = 0;
-    hashtable->order = 3;
+    hashtable->order = INITIAL_HASHTABLE_ORDER;
     hashtable->buckets = jsonp_malloc(hashsize(hashtable->order) * sizeof(bucket_t));
     if(!hashtable->buckets)
         return -1;
