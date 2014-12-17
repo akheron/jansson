@@ -92,6 +92,9 @@ AC_DEFINE([USE_WINDOWS_CRYPTOAPI], [1],
   [Define to 1 if CryptGenRandom should be used for seeding the hash function])
 fi
 
+AC_DEFINE([INITIAL_HASHTABLE_ORDER], [3],
+  [Controls the number of hashtable buckets allocated during json_object_t initialization. 2^INITIAL_HASHTABLE_ORDER buckets are created. Default (3) creates 8 buckets.])
+
 if test x$GCC = xyes; then
     AM_CFLAGS="-Wall -Wextra -Wdeclaration-after-statement"
 fi

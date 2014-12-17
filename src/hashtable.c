@@ -20,10 +20,6 @@
 #include "jansson_private.h"  /* for container_of() */
 #include "hashtable.h"
 
- #ifndef INITIAL_HASHTABLE_ORDER
- #define INITIAL_HASHTABLE_ORDER 3
- #endif
-
 typedef struct hashtable_list list_t;
 typedef struct hashtable_pair pair_t;
 typedef struct hashtable_bucket bucket_t;
