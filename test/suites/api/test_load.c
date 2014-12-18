@@ -97,6 +97,8 @@ static void decode_int_as_real()
     json_int_t expected;
 #endif
 
+    char big[311];
+
     json = json_loads("42", JSON_DECODE_INT_AS_REAL | JSON_DECODE_ANY, &error);
     if (!json || !json_is_real(json) || json_real_value(json) != 42.0)
         fail("json_load decode int as real failed - int");
@@ -113,6 +115,18 @@ static void decode_int_as_real()
         fail("json_load decode int as real failed - expected imprecision");
     json_decref(json);
 #endif
+
+    /* 1E309 overflows. Here we create 1E309 as a decimal number, i.e.
+       1000...(309 zeroes)...0. */
+    big[0] = '1';
+    memset(big + 1, '0', 309);
+    big[310] = '\0';
+
+    json = json_loads(big, JSON_DECODE_INT_AS_REAL | JSON_DECODE_ANY, &error);
+    if (json || strcmp(error.text, "real number overflow") != 0)
+        fail("json_load decode int as real failed - expected overflow");
+    json_decref(json);
+
 }
 
 static void allow_nul()
