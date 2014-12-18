@@ -30,8 +30,7 @@ compiling and installing is extremely simple::
 
 To change the destination directory (``/usr/local`` by default), use
 the ``--prefix=DIR`` argument to ``./configure``. See ``./configure
---help`` for the list of all possible installation options. (There are
-no options to customize the resulting Jansson binary.)
+--help`` for the list of all possible configuration options.
 
 The command ``make check`` runs the test suite distributed with
 Jansson. This step is not strictly necessary, but it may find possible
@@ -44,7 +43,7 @@ version control. To create the script, the build system needs to be
 bootstrapped. There are many ways to do this, but the easiest one is
 to use ``autoreconf``::
 
-    autoreconf -vi
+    autoreconf -fi
 
 This command creates the ``./configure`` script, which can then be
 used as described above.
@@ -83,10 +82,10 @@ Generating make files on unix:
 
     mkdir build
     cd build
-    cmake .. # or `ccmake ..` for a GUI.
+    cmake .. # or ccmake .. for a GUI.
 
 Then to build::
-    
+
     make
     make check
     make install
@@ -107,7 +106,7 @@ Creating Visual Studio project files from the command line:
 You will now have a *Visual Studio Solution* in your build directory.
 To run the unit tests build the ``RUN_TESTS`` project.
 
-If you prefer a GUI the ``cmake`` line in the above example can 
+If you prefer a GUI the ``cmake`` line in the above example can
 be replaced with::
 
     cmake-gui ..
@@ -117,7 +116,7 @@ for CMake_ simply run::
 
     cmake
 
-To list available CMake_ settings (and what they are currently set to) 
+To list available CMake_ settings (and what they are currently set to)
 for the project, run::
 
     cmake -LH ..
@@ -125,7 +124,7 @@ for the project, run::
 Mac OSX (Xcode)
 ^^^^^^^^^^^^^^^
 If you prefer using Xcode instead of make files on OSX,
-do the following. (Use the same steps as 
+do the following. (Use the same steps as
 for :ref:`Unix <build-cmake-unix>`)::
 
     ...
@@ -145,7 +144,7 @@ static library. To build the shared version use::
 Changing install directory (same as autoconf --prefix)
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
 Just as with the autoconf_ project you can change the destination directory
-for ``make install``. The equivalent for autoconfs ``./configure --prefix`` 
+for ``make install``. The equivalent for autoconfs ``./configure --prefix``
 in CMake_ is::
 
     ...

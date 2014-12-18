@@ -92,6 +92,13 @@ AC_DEFINE([USE_WINDOWS_CRYPTOAPI], [1],
   [Define to 1 if CryptGenRandom should be used for seeding the hash function])
 fi
 
+AC_ARG_ENABLE([initial-hashtable-order],
+  [AS_HELP_STRING([--enable-initial-hashtable-order=VAL],
+    [Number of buckets new object hashtables contain is 2 raised to this power. The default is 3, so empty hashtables contain 2^3 = 8 buckets.])],
+  [initial_hashtable_order=$enableval], [initial_hashtable_order=3])
+AC_DEFINE_UNQUOTED([INITIAL_HASHTABLE_ORDER], [$initial_hashtable_order],
+  [Number of buckets new object hashtables contain is 2 raised to this power. E.g. 3 -> 2^3 = 8.])
+
 if test x$GCC = xyes; then
     AM_CFLAGS="-Wall -Wextra -Wdeclaration-after-statement"
 fi
