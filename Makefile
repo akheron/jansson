@@ -30,8 +30,8 @@ include $(BUILD_DIR)/Makefile.library.mk
 #
 CONFIG_H = $(SOURCE_DIR)/jansson_config.h
 
-$(CONFIG_H):
-	@cp $(PROJ_DIR)/armcc/jansson_config.h $(CONFIG_H)
+$(CONFIG_H): $(PROJ_DIR)/armcc/jansson_config.h
+	@cp $< $@
 
 $(OBJS): $(CONFIG_H)
 

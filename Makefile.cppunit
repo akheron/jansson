@@ -22,8 +22,8 @@ OBJS += src/strconv.o
 OBJS += src/utf.o
 OBJS += src/value.o
 
-src/jansson_config.h:
-	cp cppunit/jansson_config.h $@
+src/jansson_config.h: cppunit/jansson_config.h
+	cp $< $@
 
 src/%.o: src/%.c $(HEADERS)
 	$(CC) $(CFLAGS) $(PROFILE_FLAGS) -c $< -o $@
