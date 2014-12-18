@@ -36,4 +36,9 @@
    otherwise to 0. */
 #define JSON_HAVE_LOCALECONV 0
 
+/* Number of buckets new object hashtables contain is 2 raised to this power. The default is 3,
+   so empty hashtables contain 2^3 = 8 buckets. We use 2, so empty hashtables contain 2^2 = 4 
+   buckets. */
+#define INITIAL_HASHTABLE_ORDER 2
+
 #endif
