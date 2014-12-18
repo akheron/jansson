@@ -20,6 +20,10 @@
 #include "jansson_private.h"  /* for container_of() */
 #include "hashtable.h"
 
+#ifndef INITIAL_HASHTABLE_ORDER
+#define INITIAL_HASHTABLE_ORDER 3
+#endif
+
 typedef struct hashtable_list list_t;
 typedef struct hashtable_pair pair_t;
 typedef struct hashtable_bucket bucket_t;
@@ -184,7 +188,7 @@ int hashtable_init(hashtable_t *hashtable)
     size_t i;
 
     hashtable->size = 0;
-    hashtable->order = 3;
+    hashtable->order = INITIAL_HASHTABLE_ORDER;
     hashtable->buckets = jsonp_malloc(hashsize(hashtable->order) * sizeof(bucket_t));
     if(!hashtable->buckets)
         return -1;
