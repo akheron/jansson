@@ -34,6 +34,20 @@ static void file_not_found()
         fail("json_load_file returned an invalid error message");
 }
 
+static void very_long_file_name() {
+    json_t *json;
+    json_error_t error;
+
+    json = json_load_file("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 0, &error);
+    if(json)
+        fail("json_load_file returned non-NULL for a nonexistent file");
+    if(error.line != -1)
+        fail("json_load_file returned an invalid line number");
+
+    if (strncmp(error.source, "...aaa", 6) != 0)
+        fail("error source was set incorrectly");
+}
+
 static void reject_duplicates()
 {
     json_error_t error;
@@ -191,6 +205,7 @@ static void position()
 static void run_tests()
 {
     file_not_found();
+    very_long_file_name();
     reject_duplicates();
     disable_eof_check();
     decode_any();

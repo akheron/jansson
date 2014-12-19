@@ -194,6 +194,24 @@ static void encode_nul_byte()
     json_decref(json);
 }
 
+static void dump_file()
+{
+    json_t *json;
+    int result;
+
+    result = json_dump_file(NULL, "", 0);
+    if (result != -1)
+        fail("json_dump_file succeeded with invalid args");
+
+    json = json_object();
+    result = json_dump_file(json, "json_dump_file.json", 0);
+    if (result != 0)
+        fail("json_dump_file failed");
+
+    json_decref(json);
+    remove("json_dump_file.json");
+}
+
 static void run_tests()
 {
     encode_null();
@@ -202,4 +220,5 @@ static void run_tests()
     encode_other_than_array_or_object();
     escape_slashes();
     encode_nul_byte();
+    dump_file();
 }

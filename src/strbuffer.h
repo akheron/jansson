@@ -8,6 +8,8 @@
 #ifndef STRBUFFER_H
 #define STRBUFFER_H
 
+#include <stdlib.h>
+
 typedef struct {
     char *value;
     size_t length;   /* bytes used */
@@ -24,7 +26,6 @@ const char *strbuffer_value(const strbuffer_t *strbuff);
 /* Steal the value and close the strbuffer */
 char *strbuffer_steal_value(strbuffer_t *strbuff);
 
-int strbuffer_append(strbuffer_t *strbuff, const char *string);
 int strbuffer_append_byte(strbuffer_t *strbuff, char byte);
 int strbuffer_append_bytes(strbuffer_t *strbuff, const char *data, size_t size);
 

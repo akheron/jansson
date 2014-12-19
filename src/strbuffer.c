@@ -60,11 +60,6 @@ char *strbuffer_steal_value(strbuffer_t *strbuff)
     return result;
 }
 
-int strbuffer_append(strbuffer_t *strbuff, const char *string)
-{
-    return strbuffer_append_bytes(strbuff, string, strlen(string));
-}
-
 int strbuffer_append_byte(strbuffer_t *strbuff, char byte)
 {
     return strbuffer_append_bytes(strbuff, &byte, 1);

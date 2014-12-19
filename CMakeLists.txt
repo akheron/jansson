@@ -71,6 +71,7 @@ endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(JANSSON_TEMP_DIR ${PROJECT_BINARY_DIR}/tmp)
 
 # Give the debug version a different postfix for windows,
 # so both the debug and release version can be built in the
@@ -534,9 +535,12 @@ if (NOT JANSSON_WITHOUT_TESTS)
 
       if (JANSSON_TEST_WITH_VALGRIND)
          add_test(memcheck__${test}
-                  ${MEMCHECK_COMMAND} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
+             ${MEMCHECK_COMMAND} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test}
+             WORKING_DIRECTORY ${JANSSON_TEMP_DIR})
       else()
-         add_test(${test} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test})
+         add_test(${test}
+             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test}
+             WORKING_DIRECTORY ${JANSSON_TEMP_DIR})
       endif ()
    endforeach ()
 
