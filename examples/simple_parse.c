@@ -59,16 +59,16 @@ void print_json_aux(json_t *element, int indent) {
       print_json_integer(element, indent);
       break;
     case JSON_REAL:
-      print_json_real(element, indent);;
+      print_json_real(element, indent);
       break;
     case JSON_TRUE:
-      print_json_true(element, indent);;
+      print_json_true(element, indent);
       break;
     case JSON_FALSE:
-      print_json_false(element, indent);;
+      print_json_false(element, indent);
       break;
     case JSON_NULL:
-      print_json_null(element, indent);;
+      print_json_null(element, indent);
       break;
     default:
       fprintf(stderr, "unrecognized JSON type %d\n", json_typeof(element));
@@ -158,35 +158,29 @@ json_t *load_json(const char *text) {
 
 /*
  * Print a prompt and return (by reference) a null-terminated line of
- * text.  Returns the number of characters read, including the line
- * termination char but excluding the null.
+ * text.  Returns NULL on eof or some error.
  */
-int read_line(char **line) {
-  size_t len = 0;               /* ignored */
-
-  if (*line != NULL) {
-    free(*line);
-    *line = NULL;
-  }
+char *read_line(char *line, int max_chars) {
   printf("Type some JSON > ");
   fflush(stdout);
-
-  return getline(line, &len, stdin);  
+  return fgets(line, max_chars, stdin);
 }
 
 /* ================================================================
  * main
  */
 
+#define MAX_CHARS 4096
+
 int main(int argc, char *argv[]) {
-  char *line = NULL;
+  char line[MAX_CHARS];
   
   if (argc != 1) {
     fprintf(stderr, "Usage: %s\n", argv[0]);
     exit(-1);
   }
 
-  while (read_line(&line) > 1) {
+  while (read_line(line, MAX_CHARS) != (char *)NULL) {
 
     /* parse text into JSON structure */
     json_t *root = load_json(line);
