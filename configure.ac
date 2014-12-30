@@ -114,5 +114,6 @@ AC_CONFIG_FILES([
         test/bin/Makefile
         test/suites/Makefile
         test/suites/api/Makefile
+        examples/Makefile
 ])
 AC_OUTPUT
