@@ -61,6 +61,8 @@ if (MSVC)
 	option(JANSSON_STATIC_CRT "Link the static CRT libraries" OFF )
 endif ()
 
+option(JANSSON_EXAMPLES "Compile example applications" ON)
+
 if (UNIX)
    option(JANSSON_COVERAGE "(GCC Only! Requires gcov/lcov to be installed). Include target for doing coverage analysis for the test suite. Note that -DCMAKE_BUILD_TYPE=Debug must be set" OFF)
    option(JANSSON_COVERALLS "Generate coverage info for Coveralls" OFF)
@@ -78,7 +80,6 @@ set(JANSSON_TEMP_DIR ${PROJECT_BINARY_DIR}/tmp)
 # same build-tree on Windows (MSVC).
 if (WIN32)
    set(CMAKE_DEBUG_POSTFIX "_d")
-else (WIN32)
 endif (WIN32)
 
 # This is how I thought it should go
@@ -385,6 +386,10 @@ else()
       ${JANSSON_HDR_PUBLIC})
 endif()
 
+if (JANSSON_EXAMPLES)
+	add_executable(simple_parse "${PROJECT_SOURCE_DIR}/examples/simple_parse.c")
+	target_link_libraries(simple_parse jansson)
+endif()
 
 # For building Documentation (uses Sphinx)
 option(JANSSON_BUILD_DOCS "Build documentation (uses python-sphinx)." ON)
