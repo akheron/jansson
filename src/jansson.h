@@ -126,6 +126,9 @@ typedef struct {
     char text[JSON_ERROR_TEXT_LENGTH];
 } json_error_t;
 
+char *json_error_get_detailed(json_error_t *error, const char *src, int color);
+char *json_error_get_arrow(json_error_t *error, const char *src, int length, int color);
+char *json_error_get_source_text(json_error_t *error, const char *src);
 
 /* getters, setters, manipulation */
 

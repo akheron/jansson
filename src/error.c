@@ -61,3 +61,135 @@ void jsonp_error_vset(json_error_t *error, int line, int column,
     vsnprintf(error->text, JSON_ERROR_TEXT_LENGTH, msg, ap);
     error->text[JSON_ERROR_TEXT_LENGTH - 1] = '\0';
 }
+
+char *json_error_get_source_text(json_error_t *error, const char *src)
+{
+    const char *start;
+    const char *end;
+    size_t len;
+    char *s;
+
+    start = &src[(error->position - error->column)];
+    end = strchr(start, '\n');
+
+    if (!end) {
+        end = src + strlen(src);
+    }
+
+    len = (end - start);
+
+    if (!(s = malloc(len + 1))) {
+        return NULL;
+    }
+
+    if (snprintf(s, len, "%*s", (int)len, start) < 0) {
+        free(s);
+        return NULL;
+    }
+
+    return s;
+}
+
+char *json_error_get_arrow(json_error_t *error, const char *src, int length, int color)
+{
+    size_t msglen;
+    int offset = 0;
+    int ret = 0;
+    char *msg;
+    #define ARROWLEN 5
+    const char padchars[] = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+
+    if (strlen(src) < 2) {
+        return strdup("");
+    }
+
+    if (length < 0) {
+        length = ARROWLEN;
+    }
+
+    if (length >= sizeof(padchars)) {
+        length = sizeof(padchars);
+    }
+
+    msglen = (error->column + strlen(error->text) + ARROWLEN + 1) * 2;
+
+    if (!(msg = malloc(msglen))) {
+        return NULL;
+    }
+
+    msglen--;
+
+    #ifndef _WIN32
+    if (color) {
+        if ((ret = snprintf(&msg[offset], msglen, "%s", "\x1b[01;32m")) < 0) {
+            goto fail;
+        }
+    }
+    offset += ret;
+    #endif // _WIN32
+
+    // Print the arrow.
+    if ((ret = snprintf(&msg[offset], msglen - offset,
+                "%*s^%*.*s",
+                error->column, "",
+                length, length, padchars)) < 0) {
+        goto fail;
+    }
+
+    offset += ret;
+
+    #ifndef _WIN32
+    if (color) {
+        if (snprintf(&msg[offset], msglen - offset, "%s", "\x1b[0m\x1b[0m") < 0) {
+            goto fail;
+        }
+    }
+    #endif // _WIN32
+
+    return msg;
+fail:
+    if (msg) free(msg);
+    return NULL;
+}
+
+char *json_error_get_detailed(json_error_t *error, const char *src, int color)
+{
+    char *problem_src = NULL;
+    char *arrow = NULL;
+    char *s = NULL;
+    size_t len;
+
+    if (!(problem_src = json_error_get_source_text(error, src))) {
+        return NULL;
+    }
+
+    if (!(arrow = json_error_get_arrow(error, src, -1, color)))
+    {
+        goto fail;
+    }
+
+    len = (strlen(problem_src)
+         + strlen(arrow)
+         + strlen(error->text)) * 2;
+
+    if (!(s = malloc(len))) {
+        goto fail;
+    }
+
+    // TODO: If the error message goes outside of the console width, flip it!
+    if (snprintf(s, len - 1, "%s\n%s (%s)\n",
+            problem_src, arrow, error->text) < 0) {
+        goto fail;
+    }
+
+    free(problem_src);
+    free(arrow);
+
+    return s;
+fail:
+    if (problem_src) free(problem_src);
+    if (arrow) free(arrow);
+    if (s) free(s);
+    return NULL;
+}
+
