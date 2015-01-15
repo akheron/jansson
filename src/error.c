@@ -78,11 +78,11 @@ char *json_error_get_source_text(json_error_t *error, const char *src)
 
     len = (end - start);
 
-    if (!(s = malloc(len + 1))) {
+    if (!(s = malloc(len))) {
         return NULL;
     }
 
-    if (snprintf(s, len, "%*s", (int)len, start) < 0) {
+    if (snprintf(s, len - 1, "%*s", len, start) < 0) {
         free(s);
         return NULL;
     }
@@ -90,7 +90,7 @@ char *json_error_get_source_text(json_error_t *error, const char *src)
     return s;
 }
 
-char *json_error_get_arrow(json_error_t *error, const char *src, int length, int color)
+char *json_error_get_arrow(json_error_t *error, const char *src, int length, size_t flags)
 {
     size_t msglen;
     int offset = 0;
@@ -120,7 +120,7 @@ char *json_error_get_arrow(json_error_t *error, const char *src, int length, int
     msglen--;
 
     #ifndef _WIN32
-    if (color) {
+    if (flags & JSON_ERROR_COLOR) {
         if ((ret = snprintf(&msg[offset], msglen, "%s", "\x1b[01;32m")) < 0) {
             goto fail;
         }
@@ -139,7 +139,7 @@ char *json_error_get_arrow(json_error_t *error, const char *src, int length, int
     offset += ret;
 
     #ifndef _WIN32
-    if (color) {
+	if (flags & JSON_ERROR_COLOR) {
         if (snprintf(&msg[offset], msglen - offset, "%s", "\x1b[0m\x1b[0m") < 0) {
             goto fail;
         }
@@ -152,19 +152,22 @@ fail:
     return NULL;
 }
 
-char *json_error_get_detailed(json_error_t *error, const char *src, int color)
+char *json_error_get_detailed(json_error_t *error, const char *src, size_t flags)
 {
     char *problem_src = NULL;
     char *arrow = NULL;
     char *s = NULL;
     size_t len;
+	int arrow_length = flags & JSON_ERROR_ARROW_MAXLEN;
+
+	if (!arrow_length)
+		arrow_length = -1;
 
     if (!(problem_src = json_error_get_source_text(error, src))) {
         return NULL;
     }
 
-    if (!(arrow = json_error_get_arrow(error, src, -1, color)))
-    {
+    if (!(arrow = json_error_get_arrow(error, src, arrow_length, flags))) {
         goto fail;
     }
 
