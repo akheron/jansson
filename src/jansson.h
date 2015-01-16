@@ -132,6 +132,7 @@ typedef struct {
 #define JSON_ERROR_FLIP         0x40
 
 char *json_error_get_detailed(json_error_t *error, const char *src, size_t flags);
+void json_error_print_detailed(FILE *fd, json_error_t *error, const char *src, size_t flags);
 
 /* getters, setters, manipulation */
 

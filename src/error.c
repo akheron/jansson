@@ -78,7 +78,7 @@ static size_t json_error_get_utf8_column(json_error_t *error, const char *src)
     return i;
 }
 
-char *json_error_get_source_text(json_error_t *error, const char *src)
+static char *json_error_get_source_text(json_error_t *error, const char *src)
 {
     const char *start;
     const char *end;
@@ -95,7 +95,7 @@ char *json_error_get_source_text(json_error_t *error, const char *src)
 
     len = (end - start) + 2;
 
-    if (!(s = malloc(len))) {
+    if (!(s = jsonp_malloc(len))) {
         return NULL;
     }
 
@@ -107,7 +107,7 @@ char *json_error_get_source_text(json_error_t *error, const char *src)
     return s;
 }
 
-char *json_error_get_arrow(json_error_t *error,
+static char *json_error_get_arrow(json_error_t *error,
     const char *src, size_t flags)
 {
     size_t msglen;
@@ -120,7 +120,7 @@ char *json_error_get_arrow(json_error_t *error,
     const char padchars[] = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 
     if (strlen(src) < 2) {
-        return strdup("");
+        return jsonp_strdup("");
     }
 
     if (arrowlen < 0) {
@@ -133,7 +133,7 @@ char *json_error_get_arrow(json_error_t *error,
 
     msglen = (error->column + strlen(error->text) + arrowlen + 1) * 2;
 
-    if (!(msg = malloc(msglen))) {
+    if (!(msg = jsonp_malloc(msglen))) {
         return NULL;
     }
 
@@ -184,7 +184,7 @@ char *json_error_get_arrow(json_error_t *error,
 
     return msg;
 fail:
-    if (msg) free(msg);
+    if (msg) jsonp_free(msg);
     return NULL;
 }
 
@@ -236,14 +236,28 @@ char *json_error_get_detailed(json_error_t *error, const char *src, size_t flags
         }
     }
 
-    free(problem_src);
-    free(arrow);
+    jsonp_free(problem_src);
+    jsonp_free(arrow);
 
     return s;
 fail:
-    if (problem_src) free(problem_src);
-    if (arrow) free(arrow);
-    if (s) free(s);
+    if (problem_src) jsonp_free(problem_src);
+    if (arrow) jsonp_free(arrow);
+    if (s) jsonp_free(s);
     return NULL;
+}
+
+void json_error_print_detailed(FILE *fd, json_error_t *error, const char *src, size_t flags)
+{
+    char *d;
+
+    if (!(d = json_error_get_detailed(error, src, flags))) {
+        // Since we're reporting an error, at least report something!
+        fprintf(fd, "%s\n", error->text);
+        return;
+    }
+
+    fprintf(fd, "%s", d);
+    jsonp_free(d);
 }
 
