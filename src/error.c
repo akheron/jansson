@@ -1,5 +1,6 @@
 #include <string.h>
 #include "jansson_private.h"
+#include "utf.h"
 
 void jsonp_error_init(json_error_t *error, const char *source)
 {
@@ -62,6 +63,23 @@ void jsonp_error_vset(json_error_t *error, int line, int column,
     error->text[JSON_ERROR_TEXT_LENGTH - 1] = '\0';
 }
 
+static size_t json_error_get_utf8_column(json_error_t *error, const char *src)
+{
+    size_t utf8_len;
+    size_t srclen = strlen(src);
+    size_t i = 0;
+    const char *s = src;
+    const char *colend = src + error->column;
+
+    while (s < colend) {
+        if (!(s = utf8_iterate(s, colend - s, NULL)))
+            return error->column;
+        i++;
+    }
+
+    return i;
+}
+
 char *json_error_get_source_text(json_error_t *error, const char *src)
 {
     const char *start;
@@ -69,6 +87,7 @@ char *json_error_get_source_text(json_error_t *error, const char *src)
     size_t len;
     char *s;
 
+    // TODO: Pick start properly so we don't split a UTF-8 code point.
     start = &src[(error->position - error->column)];
     end = strchr(start, '\n');
 
@@ -76,13 +95,13 @@ char *json_error_get_source_text(json_error_t *error, const char *src)
         end = src + strlen(src);
     }
 
-    len = (end - start);
+    len = (end - start) + 2;
 
     if (!(s = malloc(len))) {
         return NULL;
     }
 
-    if (snprintf(s, len - 1, "%*s", len, start) < 0) {
+    if (snprintf(s, len - 1, "%.*s", (int)len - 2, start) < 0) {
         free(s);
         return NULL;
     }
@@ -90,28 +109,33 @@ char *json_error_get_source_text(json_error_t *error, const char *src)
     return s;
 }
 
-char *json_error_get_arrow(json_error_t *error, const char *src, int length, size_t flags)
+char *json_error_get_arrow(json_error_t *error,
+    const char *src, size_t flags)
 {
     size_t msglen;
     int offset = 0;
     int ret = 0;
     char *msg;
-    #define ARROWLEN 5
-    const char padchars[] = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+    size_t utf8_len = 0;
+    size_t srclen = 0;
+    size_t utf8_column = 0;
+    int arrowlen = flags & JSON_ERROR_ARROW_MAXLEN;
+    #define DEFAULT_ARROWLEN 5
+    const char padchars[] = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 
     if (strlen(src) < 2) {
         return strdup("");
     }
 
-    if (length < 0) {
-        length = ARROWLEN;
+    if (arrowlen < 0) {
+        arrowlen = DEFAULT_ARROWLEN;
     }
 
-    if (length >= sizeof(padchars)) {
-        length = sizeof(padchars);
+    if (arrowlen >= (int)sizeof(padchars)) {
+        arrowlen = sizeof(padchars);
     }
 
-    msglen = (error->column + strlen(error->text) + ARROWLEN + 1) * 2;
+    msglen = (error->column + strlen(error->text) + arrowlen + 1) * 2;
 
     if (!(msg = malloc(msglen))) {
         return NULL;
@@ -128,19 +152,35 @@ char *json_error_get_arrow(json_error_t *error, const char *src, int length, siz
     offset += ret;
     #endif // _WIN32
 
-    // Print the arrow.
-    if ((ret = snprintf(&msg[offset], msglen - offset,
-                "%*s^%*.*s",
-                error->column, "",
-                length, length, padchars)) < 0) {
-        goto fail;
+    // TODO: Make sure this works on Windows.
+    // TODO: How to check if console supports UTF-8? If not we want normal column value.
+    // Get the error column based on UTF-8 code points
+    // so that the arrow points in the correct position.
+    utf8_column = json_error_get_utf8_column(error, src);
+
+    if ((utf8_column + strlen(error->text) + (arrowlen + 1)) > JSON_ERROR_SOURCE_LENGTH) {
+        // Flip the arrow if the column is too far to the right.
+        if ((ret = snprintf(&msg[offset], msglen - offset,
+                    "%*.*s^", arrowlen, arrowlen, padchars)) < 0) {
+            goto fail;
+        }
+    } else {
+
+        // Print the arrow.
+        if ((ret = snprintf(&msg[offset], msglen - offset,
+                    "%*s^%*.*s",
+                    (int)utf8_column, "",
+                    arrowlen, arrowlen, padchars)) < 0) {
+            goto fail;
+        }
     }
 
     offset += ret;
 
     #ifndef _WIN32
-	if (flags & JSON_ERROR_COLOR) {
-        if (snprintf(&msg[offset], msglen - offset, "%s", "\x1b[0m\x1b[0m") < 0) {
+    if (flags & JSON_ERROR_COLOR) {
+        if (snprintf(&msg[offset], msglen - offset,
+            "%s", "\x1b[0m\x1b[0m") < 0) {
             goto fail;
         }
     }
@@ -158,31 +198,46 @@ char *json_error_get_detailed(json_error_t *error, const char *src, size_t flags
     char *arrow = NULL;
     char *s = NULL;
     size_t len;
-	int arrow_length = flags & JSON_ERROR_ARROW_MAXLEN;
-
-	if (!arrow_length)
-		arrow_length = -1;
+    size_t arrowlen = (flags & JSON_ERROR_ARROW_MAXLEN) + 1;
+    size_t textlen;
+    size_t utf8_column;
+    size_t srclen;
+    size_t total;
 
     if (!(problem_src = json_error_get_source_text(error, src))) {
         return NULL;
     }
 
-    if (!(arrow = json_error_get_arrow(error, src, arrow_length, flags))) {
+    if (!(arrow = json_error_get_arrow(error, src, flags))) {
         goto fail;
     }
 
-    len = (strlen(problem_src)
-         + strlen(arrow)
-         + strlen(error->text)) * 2;
+    textlen = strlen(error->text);
+    srclen = strlen(problem_src);
+    utf8_column = json_error_get_utf8_column(error, src);
+    total = (utf8_column + arrowlen + textlen + 3);
+    //problem_src[error->column]= '_';
+
+    len = (srclen + arrowlen + textlen) * 2;
 
     if (!(s = malloc(len))) {
         goto fail;
     }
 
-    // TODO: If the error message goes outside of the console width, flip it!
-    if (snprintf(s, len - 1, "%s\n%s (%s)\n",
-            problem_src, arrow, error->text) < 0) {
-        goto fail;
+    // If the error message goes outside of the console width, flip it!
+    if (total > JSON_ERROR_SOURCE_LENGTH) {
+        if (snprintf(s, len - 1, "%s\n%*s(%s) %s\n",
+                problem_src, 
+                (int)(utf8_column - textlen - 3 - arrowlen), "", 
+                error->text, arrow) < 0) {
+            goto fail;
+        }
+    } else {
+
+        if (snprintf(s, len - 1, "%s\n%s (%s)\n",
+                problem_src, arrow, error->text) < 0) {
+            goto fail;
+        }
     }
 
     free(problem_src);

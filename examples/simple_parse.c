@@ -158,10 +158,10 @@ json_t *load_json(const char *text) {
     if (root) {
         return root;
     } else {
-		char *detailed = json_error_get_detailed(&error, text, JSON_ERROR_COLOR | JSON_ERROR_ARROW_LEN(2));
-        //fprintf(stderr, "json error on line %d: %s\n", error.line, error.text);
-		fprintf(stderr, "Error:\n%s\n", detailed);
-		free(detailed);
+        char *detailed = json_error_get_detailed(&error, text,
+                            JSON_ERROR_COLOR | JSON_ERROR_ARROW_LEN(4));
+        fprintf(stderr, "Error:\n%s\n", detailed);
+        free(detailed);
         return (json_t *)0;
     }
 }
