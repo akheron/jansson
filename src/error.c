@@ -65,8 +65,6 @@ void jsonp_error_vset(json_error_t *error, int line, int column,
 
 static size_t json_error_get_utf8_column(json_error_t *error, const char *src)
 {
-    size_t utf8_len;
-    size_t srclen = strlen(src);
     size_t i = 0;
     const char *s = src;
     const char *colend = src + error->column;
@@ -116,8 +114,6 @@ char *json_error_get_arrow(json_error_t *error,
     int offset = 0;
     int ret = 0;
     char *msg;
-    size_t utf8_len = 0;
-    size_t srclen = 0;
     size_t utf8_column = 0;
     int arrowlen = flags & JSON_ERROR_ARROW_MAXLEN;
     #define DEFAULT_ARROWLEN 5
