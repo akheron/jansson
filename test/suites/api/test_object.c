@@ -292,7 +292,7 @@ static void test_iterators()
     foo = json_string("foo");
     bar = json_string("bar");
     baz = json_string("baz");
-    if(!object || !foo || !bar || !bar)
+    if(!object || !foo || !bar || !baz)
         fail("unable to create values");
 
     if(json_object_iter_next(object, NULL))
