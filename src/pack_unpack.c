@@ -240,10 +240,10 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
         }
 
         if(json_object_set_new_nocheck(object, key, value)) {
+            set_error(s, "<internal>", "Unable to add key \"%s\"", key);
             if(ours)
                 jsonp_free(key);
 
-            set_error(s, "<internal>", "Unable to add key \"%s\"", key);
             goto error;
         }
 
