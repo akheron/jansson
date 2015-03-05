@@ -279,9 +279,12 @@ int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *
 /* custom memory allocation */
 
 typedef void *(*json_malloc_t)(size_t);
+typedef void *(*json_malloc_arg_t)(size_t, void*);
 typedef void (*json_free_t)(void *);
+typedef void (*json_free_arg_t)(void *, void*);
 
 void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn);
+void json_set_alloc_funcs_arg(json_malloc_arg_t malloc_fn, json_free_arg_t free_fn, void *arg);
 
 #ifdef __cplusplus
 }

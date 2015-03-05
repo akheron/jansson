@@ -17,15 +17,26 @@
 #undef free
 
 /* memory function pointers */
-static json_malloc_t do_malloc = malloc;
-static json_free_t do_free = free;
+static union { 
+  json_malloc_t     normal;
+  json_malloc_arg_t with_arg;
+} do_malloc = {.normal = malloc};
+
+static union {
+  json_free_t     normal;
+  json_free_arg_t with_arg;
+} do_free = {.normal = free};
+
+/* Argument to pass to alloc functions which accept user argument. If NULL, normal alloc functions are used. */
+static void *user_arg = NULL;
+
 
 void *jsonp_malloc(size_t size)
 {
     if(!size)
         return NULL;
-
-    return (*do_malloc)(size);
+    
+    return (user_arg == NULL) ? (do_malloc.normal)(size) : (do_malloc.with_arg)(size, user_arg);
 }
 
 void jsonp_free(void *ptr)
@@ -33,7 +44,11 @@ void jsonp_free(void *ptr)
     if(!ptr)
         return;
 
-    (*do_free)(ptr);
+    if (user_arg == NULL) {
+        (do_free.normal)(ptr);
+    } else {
+        (do_free.with_arg)(ptr, user_arg);
+    }
 }
 
 char *jsonp_strdup(const char *str)
@@ -56,6 +71,19 @@ char *jsonp_strndup(const char *str, size_t len)
 
 void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn)
 {
-    do_malloc = malloc_fn;
-    do_free = free_fn;
+    do_malloc.normal = malloc_fn;
+    do_free.normal = free_fn;
+    user_arg = NULL; 
 }
+
+void json_set_alloc_funcs_arg(json_malloc_arg_t malloc_fn, json_free_arg_t free_fn, void *arg)
+{
+    if (arg == NULL) {
+        json_set_alloc_funcs((json_malloc_t) malloc_fn, (json_free_t) free_fn);
+    } else {
+      do_malloc.with_arg = malloc_fn;
+      do_free.with_arg = free_fn;
+      user_arg = arg;
+    }
+}
+
