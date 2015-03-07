@@ -55,5 +55,6 @@ def setup(app):
     app.add_node(refcounting,
                  html=(html_visit, html_depart),
                  latex=(visit, depart),
-                 text=(visit, depart))
+                 text=(visit, depart),
+                 man=(visit, depart))
     app.add_directive('refcounting', refcounting_directive, 0, (1, 0, 0))
