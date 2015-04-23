@@ -12,6 +12,8 @@
 #include <stdlib.h>  /* for size_t */
 #include <stdarg.h>
 
+#include <pthread.h>
+
 #include "jansson_config.h"
 
 #ifdef __cplusplus
@@ -50,6 +52,7 @@ typedef enum {
 typedef struct json_t {
     json_type type;
     size_t refcount;
+    pthread_mutex_t refmutex;
 } json_t;
 
 #ifndef JANSSON_USING_CMAKE /* disabled if using cmake */
@@ -97,8 +100,17 @@ json_t *json_null(void);
 static JSON_INLINE
 json_t *json_incref(json_t *json)
 {
-    if(json && json->refcount != (size_t)-1)
-        ++json->refcount;
+    if (json && json->refcount != (size_t)-1)
+    {
+        int status = pthread_mutex_lock(&json->refmutex);
+        if (status == 0)
+        {
+            if (json->refcount != (size_t)-1)
+                ++json->refcount;
+            pthread_mutex_unlock(&json->refmutex);
+        }
+    }
+
     return json;
 }
 
@@ -108,8 +120,23 @@ void json_delete(json_t *json);
 static JSON_INLINE
 void json_decref(json_t *json)
 {
-    if(json && json->refcount != (size_t)-1 && --json->refcount == 0)
-        json_delete(json);
+    if(json && json->refcount != (size_t)-1)
+    {
+        int status = pthread_mutex_lock(&json->refmutex);
+        if (status == 0)
+        {
+            if (json->refcount != (size_t)-1 && --json->refcount == 0)
+            {
+                json->refcount = -1;
+                pthread_mutex_unlock(&json->refmutex);
+                json_delete(json);
+            }
+            else
+            {
+                pthread_mutex_unlock(&json->refmutex);
+            }
+        }
+    }
 }
 
 
