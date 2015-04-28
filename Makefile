@@ -1,41 +1,42 @@
-####################################################################################################
-#
-# Make xml_parser library
-#
-####################################################################################################
 
-PROJECT_DIR = .
-BUILD_DIR ?= ../build-internal
-export BUILD_DIR
+include $(BUILD_DIR)/makefile.d/base.mk
 
-SOURCE_DIR = $(PROJ_DIR)/src
-INCLUDE_DIR = $(PROJ_DIR)/src
+CFLAGS += -Isrc -DHAVE_STDINT_H=1
 
-# Include base makefile after setting directories
-#
--include $(BUILD_DIR)/Makefile.base.mk
+JANSSON_A = $(OUTPUT_DIR)/libjansson.a
 
-######################################################################################
-### Local information
+HEADERS += src/jansson.h
+HEADERS += src/jansson_config.h
+HEADERS += src/hashtable.h
+HEADERS += src/strbuffer.h
+HEADERS += src/utf.h
+HEADERS += src/jansson_private.h
 
-PROJECT_BASE_NAME = jansson
+OBJS += $(OUTPUT_DIR)/dump.o
+OBJS += $(OUTPUT_DIR)/error.o
+OBJS += $(OUTPUT_DIR)/hashtable.o
+OBJS += $(OUTPUT_DIR)/hashtable_seed.o
+OBJS += $(OUTPUT_DIR)/load.o
+OBJS += $(OUTPUT_DIR)/memory.o
+OBJS += $(OUTPUT_DIR)/pack_unpack.o
+OBJS += $(OUTPUT_DIR)/strbuffer.o
+OBJS += $(OUTPUT_DIR)/strconv.o
+OBJS += $(OUTPUT_DIR)/utf.o
+OBJS += $(OUTPUT_DIR)/value.o
 
-#  177-D: function "json_object_set" was declared but never referenced
-#  550-D: variable "value" was set but never used
-# 1293-D: assignment in condition
-#
-DIAGFLAGS += --diag_remark=177,550,1293
+src/jansson_config.h: cppunit/jansson_config.h
+	cp $< $@
 
-include $(BUILD_DIR)/Makefile.library.mk
+$(OUTPUT_DIR):
+	$(VERBOSE)mkdir -p $(OUTPUT_DIR)
 
-# Make sure we're using our config.h -- this has to be done after the include above.
-#
-CONFIG_H = $(SOURCE_DIR)/jansson_config.h
+$(OUTPUT_DIR)/%.o: src/%.c $(HEADERS) | $(OUTPUT_DIR)
+	$(CC) $(CFLAGS) $(PROFILE_FLAGS) -c $< -o $@
 
-$(CONFIG_H): $(PROJ_DIR)/armcc/jansson_config.h
-	@cp $< $@
+$(JANSSON_A): $(HEADERS) $(OBJS) | $(OUTPUT_DIR)
+	$(AR) src $(JANSSON_A) $(OBJS)
 
-$(OBJS): $(CONFIG_H)
+clean:
+	rm -rf $(OUTPUT_DIR) src/jansson_config.h
 
-clean: code_clean archive_clean depclean
-	rm $(CONFIG_H)
+all: $(JANSSON_A)
