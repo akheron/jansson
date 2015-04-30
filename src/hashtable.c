@@ -251,7 +251,7 @@ int hashtable_set(hashtable_t *hashtable,
 
         pair->hash = hash;
         pair->serial = serial;
-        strcpy(pair->key, key);
+        strncpy(pair->key, key, len + 1);
         pair->value = value;
         list_init(&pair->list);
 
