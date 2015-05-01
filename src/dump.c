@@ -50,15 +50,19 @@ static int dump_indent(size_t flags, int depth, int space, json_dump_callback_t 
 {
     if(FLAGS_TO_INDENT(flags) > 0)
     {
-        int i, ws_count = FLAGS_TO_INDENT(flags);
+        unsigned int ws_count = FLAGS_TO_INDENT(flags), n_spaces = depth * ws_count;
 
         if(dump("\n", 1, data))
             return -1;
 
-        for(i = 0; i < depth; i++)
+        while(n_spaces > 0)
         {
-            if(dump(whitespace, ws_count, data))
+            int cur_n = n_spaces < sizeof whitespace - 1 ? n_spaces : sizeof whitespace - 1;
+
+            if(dump(whitespace, cur_n, data))
                 return -1;
+
+            n_spaces -= cur_n;
         }
     }
     else if(space && !(flags & JSON_COMPACT))
