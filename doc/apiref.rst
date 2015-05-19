@@ -1510,6 +1510,10 @@ the same child values in the copied value. Deep copying makes a fresh
 copy of the child values, too. Moreover, all the child values are deep
 copied in a recursive fashion.
 
+Copying objects doesn't preserve the insertion order of keys. Deep
+copying also loses the key insertion order of any objects deeper in
+the hierarchy.
+
 .. function:: json_t *json_copy(json_t *value)
 
    .. refcounting:: new
