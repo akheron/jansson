@@ -851,9 +851,9 @@ below).
 
 By default, the output has no newlines, and spaces are used between
 array and object elements for a readable output. This behavior can be
-altered by using the ``JSON_INDENT`` and ``JSON_COMPACT`` flags
-described below. A newline is never appended to the end of the encoded
-JSON data.
+altered by using the ``JSON_INDENT``, ``JSON_SEMIPRETTY`` and
+``JSON_COMPACT`` flags described below. A newline is never appended to
+the end of the encoded JSON data.
 
 Each function takes a *flags* parameter that controls some aspects of
 how the data is encoded. Its default value is 0. The following macros
@@ -871,6 +871,16 @@ can be ORed together to obtain *flags*.
 
    .. versionchanged:: 2.7
       Added ``JSON_MAX_INDENT``.
+
+``JSON_SEMIPRETTY``
+
+   Can be used with ``JSON_INDENT(n)``; indented newlines are not
+   always emitted, but only when the current line is larger than
+   *64+n* bytes. So the output looks half-pretty, but has much less
+   line indentation than without this flag.
+  
+   .. versionchanged:: 2.8
+   
 
 ``JSON_COMPACT``
    This flag enables a compact representation, i.e. sets the separator
