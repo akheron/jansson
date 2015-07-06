@@ -44,9 +44,9 @@ static JSON_INLINE void json_init(json_t *json, json_type type)
 }
 
 
-int json_set_flag(json_t *json, unsigned char input)
+int json_set_flags(json_t *json, unsigned char input)
 {
-    json->flag = input;
+    json->flags = input;
     return 0;
 }
 

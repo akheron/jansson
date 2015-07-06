@@ -50,7 +50,7 @@ typedef enum {
 typedef struct json_t {
     json_type type;
     size_t refcount;
-    unsigned char flag;
+    unsigned char flags;
 } json_t;
 
 #ifndef JANSSON_USING_CMAKE /* disabled if using cmake */
@@ -79,7 +79,7 @@ typedef long json_int_t;
 #define json_boolean_value     json_is_true
 #define json_is_boolean(json)  (json_is_true(json) || json_is_false(json))
 #define json_is_null(json)     ((json) && json_typeof(json) == JSON_NULL)
-#define json_get_flag(json)    ((json)->flag)
+#define json_get_flags(json)   ((json)->flags)
 
 /* construction, destruction, reference counting */
 
