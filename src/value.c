@@ -47,6 +47,7 @@ static JSON_INLINE void json_init(json_t *json, json_type type)
 int json_set_flag(json_t *json, uint32_t input)
 {
 	json->flag = input;
+	return 0;
 }
 
 /*** object ***/
