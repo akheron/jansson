@@ -50,6 +50,7 @@ typedef enum {
 typedef struct json_t {
     json_type type;
     size_t refcount;
+	boolean is_modified;
 } json_t;
 
 #ifndef JANSSON_USING_CMAKE /* disabled if using cmake */
@@ -78,6 +79,7 @@ typedef long json_int_t;
 #define json_boolean_value     json_is_true
 #define json_is_boolean(json)  (json_is_true(json) || json_is_false(json))
 #define json_is_null(json)     ((json) && json_typeof(json) == JSON_NULL)
+#define json_is_modified(json) ((json)->is_modified)
 
 /* construction, destruction, reference counting */
 
@@ -128,6 +130,8 @@ typedef struct {
 
 
 /* getters, setters, manipulation */
+
+int json_set_modified(json_t *json_object, bool input);
 
 void json_object_seed(size_t seed);
 size_t json_object_size(const json_t *object);
