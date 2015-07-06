@@ -12,7 +12,7 @@
 #include <stdlib.h>  /* for size_t */
 #include <stdarg.h>
 
-#include <jansson_config.h>
+#include "jansson_config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -131,7 +131,7 @@ typedef struct {
 
 /* getters, setters, manipulation */
 
-int json_set_flag(json_t *json, unsigned char input);
+int json_set_flags(json_t *json, unsigned char input);
 
 void json_object_seed(size_t seed);
 size_t json_object_size(const json_t *object);
