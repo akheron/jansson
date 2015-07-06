@@ -44,6 +44,11 @@ static JSON_INLINE void json_init(json_t *json, json_type type)
 }
 
 
+int json_set_modified(json_t *json_object, bool input)
+{
+	json_object->is_modified = input;
+}
+
 /*** object ***/
 
 extern volatile uint32_t hashtable_seed;
