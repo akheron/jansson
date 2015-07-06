@@ -44,9 +44,9 @@ static JSON_INLINE void json_init(json_t *json, json_type type)
 }
 
 
-int json_set_modified(json_t *json_object, bool input)
+int json_set_flag(json_t *json, int32_t input)
 {
-	json_object->is_modified = input;
+	json->flag = input;
 }
 
 /*** object ***/
