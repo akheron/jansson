@@ -131,7 +131,7 @@ typedef struct {
 
 /* getters, setters, manipulation */
 
-int json_set_flag(json_t *json, int32_t input);
+int json_set_flag(json_t *json, uint32_t input);
 
 void json_object_seed(size_t seed);
 size_t json_object_size(const json_t *object);
