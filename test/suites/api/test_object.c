@@ -545,6 +545,24 @@ static void test_object_foreach()
     json_decref(object2);
 }
 
+static void test_object_foreach_safe()
+{
+    const char *key;
+    void *tmp;
+    json_t *object, *value;
+
+    object = json_pack("{sisisi}", "foo", 1, "bar", 2, "baz", 3);
+
+    json_object_foreach_safe(object, tmp, key, value) {
+        json_object_del(object, key);
+    }
+
+    if(json_object_size(object) != 0)
+        fail("json_object_foreach_safe failed to iterate all key-value pairs");
+
+    json_decref(object);
+}
+
 static void run_tests()
 {
     test_misc();
@@ -557,4 +575,5 @@ static void run_tests()
     test_iterators();
     test_preserve_order();
     test_object_foreach();
+    test_object_foreach_safe();
 }

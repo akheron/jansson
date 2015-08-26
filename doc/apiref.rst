@@ -676,6 +676,10 @@ in an object.
 
    The items are not returned in any particular order.
 
+   **Note:** It's not safe to call ``json_object_del(object, key)``
+   during iteration. If you need to, use
+   :func:`json_object_foreach_safe` instead.
+
    This macro expands to an ordinary ``for`` statement upon
    preprocessing, so its performance is equivalent to that of
    hand-written iteration code using the object iteration protocol
@@ -684,6 +688,15 @@ in an object.
    concise code.
 
    .. versionadded:: 2.3
+
+
+.. function:: json_object_foreach_safe(object, tmp, key, value)
+
+   Like :func:`json_object_foreach()`, but it's safe to call
+   ``json_object_del(object, key)`` during iteration. You need to pass
+   an extra ``void *`` parameter ``tmp`` that is used for temporary storage.
+
+   .. versionadded:: 2.8
 
 
 The following functions implement an iteration protocol for objects,
