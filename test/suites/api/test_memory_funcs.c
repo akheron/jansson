@@ -11,7 +11,7 @@ static void create_and_free_complex_object()
 {
     json_t *obj;
 
-    obj = json_pack("{s:i,s:n,s:b,s:b,s:{s:s},s:[i,i,i]",
+    obj = json_pack("{s:i,s:n,s:b,s:b,s:{s:s},s:[i,i,i]}",
                     "foo", 42,
                     "bar",
                     "baz", 1,
