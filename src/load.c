@@ -499,9 +499,9 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         }
     }
     else if(l_isdigit(c)) {
-        c = lex_get_save(lex, error);
-        while(l_isdigit(c))
+        do
             c = lex_get_save(lex, error);
+        while(l_isdigit(c));
     }
     else {
         lex_unget_unsave(lex, c);
@@ -542,9 +542,9 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         }
         lex_save(lex, c);
 
-        c = lex_get_save(lex, error);
-        while(l_isdigit(c))
+        do
             c = lex_get_save(lex, error);
+        while(l_isdigit(c));
     }
 
     if(c == 'E' || c == 'e') {
@@ -557,9 +557,9 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
             goto out;
         }
 
-        c = lex_get_save(lex, error);
-        while(l_isdigit(c))
+        do
             c = lex_get_save(lex, error);
+        while(l_isdigit(c));
     }
 
     lex_unget_unsave(lex, c);
@@ -586,9 +586,9 @@ static int lex_scan(lex_t *lex, json_error_t *error)
     if(lex->token == TOKEN_STRING)
         lex_free_string(lex);
 
-    c = lex_get(lex, error);
-    while(c == ' ' || c == '\t' || c == '\n' || c == '\r')
+    do
         c = lex_get(lex, error);
+    while(c == ' ' || c == '\t' || c == '\n' || c == '\r');
 
     if(c == STREAM_STATE_EOF) {
         lex->token = TOKEN_EOF;
@@ -617,9 +617,9 @@ static int lex_scan(lex_t *lex, json_error_t *error)
         /* eat up the whole identifier for clearer error messages */
         const char *saved_text;
 
-        c = lex_get_save(lex, error);
-        while(l_isalpha(c))
+        do
             c = lex_get_save(lex, error);
+        while(l_isalpha(c));
         lex_unget_unsave(lex, c);
 
         saved_text = strbuffer_value(&lex->saved_text);
