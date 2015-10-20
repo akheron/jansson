@@ -23,5 +23,6 @@ size_t utf8_check_full(const char *buffer, size_t size, int32_t *codepoint);
 const char *utf8_iterate(const char *buffer, size_t size, int32_t *codepoint);
 
 int utf8_check_string(const char *string, size_t length);
+int utf8_strlen(const char *str, size_t *count);
 
 #endif

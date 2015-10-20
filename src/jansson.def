@@ -66,4 +66,6 @@ EXPORTS
     json_unpack_ex
     json_vunpack_ex
     json_set_alloc_funcs
+    json_error_get_detailed
+    json_error_print_detailed
 
