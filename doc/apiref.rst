@@ -1582,7 +1582,7 @@ operations::
 
     json_set_alloc_funcs(GC_malloc, GC_free);
 
-.. _Boehm's conservative garbage collector: http://www.hpl.hp.com/personal/Hans_Boehm/gc/
+.. _Boehm's conservative garbage collector: http://www.hboehm.info/gc/
 
 Allow storing sensitive data (e.g. passwords or encryption keys) in
 JSON structures by zeroing all memory when freed::
