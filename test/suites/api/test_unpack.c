@@ -298,10 +298,16 @@ static void run_tests()
     json_decref(j);
 
     /* Unpack the same item twice */
-    j = json_pack("{s:s, s:i}", "foo", "bar", "baz", 42);
+    j = json_pack("{s:s, s:i, s:b}", "foo", "bar", "baz", 42, "quux", 1);
     if(!json_unpack_ex(j, &error, 0, "{s:s,s:s!}", "foo", &s, "foo", &s))
         fail("json_unpack object with strict validation failed");
-    check_error("1 object item(s) left unpacked", "<validation>", 1, 10, 10);
+    {
+        const char *possible_errors[] = {
+            "2 object item(s) left unpacked: baz, quux",
+            "2 object item(s) left unpacked: quux, baz"
+        };
+        check_errors(possible_errors, 2, "<validation>", 1, 10, 10);
+    }
     json_decref(j);
 
     j = json_pack("[i,{s:i,s:n},[i,i]]", 1, "foo", 2, "bar", 3, 4);
@@ -335,7 +341,7 @@ static void run_tests()
     j = json_pack("{s{snsn}}", "foo", "bar", "baz");
     if(!json_unpack_ex(j, &error, 0, "{s{sn!}}", "foo", "bar"))
         fail("json_unpack nested object with strict validation failed");
-    check_error("1 object item(s) left unpacked", "<validation>", 1, 7, 7);
+    check_error("1 object item(s) left unpacked: baz", "<validation>", 1, 7, 7);
     json_decref(j);
 
     /* Error in nested array */
@@ -395,6 +401,6 @@ static void run_tests()
     i1 = i2 = i3 = 0;
     if(!json_unpack_ex(j, &error, 0, "{sis?i!}", "foo", &i1, "bar", &i2))
         fail("json_unpack failed for optional values with strict mode and compensation");
-    check_error("1 object item(s) left unpacked", "<validation>", 1, 8, 8);
+    check_error("1 object item(s) left unpacked: baz", "<validation>", 1, 8, 8);
     json_decref(j);
 }
