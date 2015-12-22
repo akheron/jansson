@@ -1575,6 +1575,8 @@ behavior is needed.
    Fetch the current malloc_fn and free_fn used. Either parameter
    may be NULL.
 
+   .. versionadded:: 2.8
+
 **Examples:**
 
 Circumvent problems with different CRT heaps on Windows by using
