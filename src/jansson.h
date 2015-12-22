@@ -289,6 +289,7 @@ typedef void *(*json_malloc_t)(size_t);
 typedef void (*json_free_t)(void *);
 
 void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn);
+void json_get_alloc_funcs(json_malloc_t *malloc_fn, json_free_t *free_fn);
 
 #ifdef __cplusplus
 }

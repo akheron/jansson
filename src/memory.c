@@ -59,3 +59,11 @@ void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn)
     do_malloc = malloc_fn;
     do_free = free_fn;
 }
+
+void json_get_alloc_funcs(json_malloc_t *malloc_fn, json_free_t *free_fn)
+{
+    if (malloc_fn)
+        *malloc_fn = do_malloc;
+    if (free_fn)
+        *free_fn = do_free;
+}

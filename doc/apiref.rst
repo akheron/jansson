@@ -1570,6 +1570,11 @@ behavior is needed.
    Jansson's API functions to ensure that all memory operations use
    the same functions.
 
+.. function:: void json_get_alloc_funcs(json_malloc_t *malloc_fn, json_free_t *free_fn)
+
+   Fetch the current malloc_fn and free_fn used. Either parameter
+   may be NULL.
+
 **Examples:**
 
 Circumvent problems with different CRT heaps on Windows by using
