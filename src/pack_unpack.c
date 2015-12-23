@@ -446,6 +446,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
                 if(!hashtable_get(&key_set, key)) {
                     unpacked++;
 
+                    /* Save unrecognized keys for the error message */
                     if (!have_unrecognized_keys) {
                         strbuffer_init(&unrecognized_keys);
                         have_unrecognized_keys = 1;
@@ -461,7 +462,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
         }
         if (unpacked) {
             if (!gotopt) {
-                /* Find the first unrecognized key */
+                /* Save unrecognized keys for the error message */
                 json_object_foreach(root, key, value) {
                     if(!hashtable_get(&key_set, key)) {
                         if (!have_unrecognized_keys) {
