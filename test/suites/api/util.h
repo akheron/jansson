@@ -30,11 +30,22 @@
     } while(0)
 
 /* Assumes json_error_t error */
-#define check_error(text_, source_, line_, column_, position_)          \
+#define check_errors(texts_, num_, source_, line_, column_, position_)  \
     do {                                                                \
-        if(strcmp(error.text, text_) != 0) {                            \
+        int i_, found_ = 0;                                             \
+        for(i_ = 0; i_ < num_; i_++) {                                  \
+            if(strcmp(error.text, texts_[i_]) == 0) {                   \
+                found_ = 1;                                             \
+                break;                                                  \
+            }                                                           \
+        }                                                               \
+        if (!found_) {                                                  \
             failhdr;                                                    \
-            fprintf(stderr, "text: \"%s\" != \"%s\"\n", error.text, text_); \
+            if (num_ == 1) {                                            \
+                fprintf(stderr, "text: \"%s\" != \"%s\"\n", error.text, texts_[0]); \
+            } else {                                                    \
+                fprintf(stderr, "text: \"%s\" does not match\n", error.text); \
+            }                                                           \
             exit(1);                                                    \
         }                                                               \
         if(strcmp(error.source, source_) != 0) {                        \
@@ -59,6 +70,11 @@
             exit(1);                                                    \
         }                                                               \
     } while(0)
+
+
+/* Assumes json_error_t error */
+#define check_error(text_, source_, line_, column_, position_)          \
+    check_errors(&text_, 1, source_, line_, column_, position_)
 
 
 static void run_tests();
