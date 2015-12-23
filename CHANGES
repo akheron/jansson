@@ -4,7 +4,7 @@ Version 2.8 (in development)
 * New features:
 
   - Add `json_object_foreach_safe()` macro that allows
-    ``json_object_del()`` calls during iteration (#230).
+    `json_object_del()` calls during iteration (#230).
 
   - Add `json_get_alloc_funcs()` to allow reading the allocation
     functions set by `json_set_alloc_funcs()` (#262, #264).
