@@ -1,3 +1,77 @@
+Version 2.8 (in development)
+============================
+
+* New features:
+
+  - Add `json_object_foreach_safe()` macro that allows
+    ``json_object_del()`` calls during iteration (#230).
+
+  - Add `json_get_alloc_funcs()` to allow reading the allocation
+    functions set by `json_set_alloc_funcs()` (#262, #264).
+
+* Bug fixes:
+
+  - Never convert numbers to integers in the parser when
+    JSON_DECODE_INT_AS_REAL is set. This fixes error messages for
+    overflowing numbers when JSON_DECODE_INT_AS_REAL is set (#212).
+
+  - Fix a use-after-free in `json_pack()` error handling.
+
+* Build:
+
+  - Fix CMake config for static CRT builds on Windows (#206).
+
+  - Fix warnings on LLVM 6.0 targeting iOS arm64 (#208).
+
+  - Add coverlls.io support via Travis for a nice test coverage badge
+    (#211).
+
+  - Don't expect ``jansson_config.h`` to be in the compiler's include
+    path (#209).
+
+  - Add a build-time option to set initial hashtable size (#213).
+
+  - Use snprintf and strncpy in place of sprintf and strcpy to silence
+    linker warnings on OpenBSD (#233).
+
+  - Fix build on MSVC >= 1900 (#262).
+
+* Documentation:
+
+  - Fix various typos in documentation, and a broken link (#258).
+
+  - Add an example program in ``examples/`` (#214, #217).
+
+  - Fix building of documentation man pages (#207).
+
+  - Document the fact that copying objects doesn't preserve the
+    insertion order of keys (#237).
+
+* Tests:
+
+  - Don't use the nonstandard __FUNCTION__ macro in tests.
+
+  - Use expr instead of $((...)) in shell scripts for Solaris 10
+    compatibility.
+
+  - Disable Visual Studio warning C4756 when triggered deliberately in
+    tests (#216).
+
+  - Other minor fixes (#221, #248).
+
+* Ohter changes:
+
+  - List all unrecognized object keys when strict unpacking fails
+    (#263).
+
+  - Alter the order of the members of the hashtable_pair struct for
+    easier debugging.
+
+  - Minor performance improvement to `json_dump()` and friends (#234).
+
+  - Minor style fixes (#255, #257).
+
+
 Version 2.7
 ===========
 
