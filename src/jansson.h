@@ -240,6 +240,9 @@ int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags, const char 
 
 int json_equal(json_t *value1, json_t *value2);
 
+/* search */
+
+json_t * json_search(json_t * haystack, json_t * needle);
 
 /* copying */
 
