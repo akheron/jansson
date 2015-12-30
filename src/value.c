@@ -982,6 +982,56 @@ int json_equal(json_t *json1, json_t *json2)
     return 0;
 }
 
+/*** search ***/
+
+/**
+ * Look for an occurence of needle within haystack
+ * If needle is present in haystack, return the reference to the json_t * that is equal to needle
+ * If needle is not found, return NULL
+ */
+json_t * json_search(json_t * haystack, json_t * needle) {
+    json_t * value1, * value2;
+    size_t index;
+    const char * key;
+    
+    if (!haystack || !needle)
+        return NULL;
+    
+    if (haystack == needle)
+        return haystack;
+    
+    // If both haystack and needle are the same type, test them
+    if (json_typeof(haystack) == json_typeof(needle))
+        if (json_equal(haystack, needle))
+            return haystack;
+    
+    // If they are not equals, test json_search in haystack elements recursively if it's an array or an object
+    if (json_is_array(haystack)) {
+        json_array_foreach(haystack, index, value1) {
+            if (json_equal(value1, needle)) {
+                return value1;
+            } else {
+                value2 = json_search(value1, needle);
+                if (value2 != NULL) {
+                    return value2;
+                }
+            }
+        }
+    } else if (json_is_object(haystack)) {
+        json_object_foreach(haystack, key, value1) {
+            if (json_equal(value1, needle)) {
+                return value1;
+            } else {
+                value2 = json_search(value1, needle);
+                if (value2 != NULL) {
+                    return value2;
+                }
+            }
+        }
+    }
+    return NULL;
+}
+
 
 /*** copying ***/
 
