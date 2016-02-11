@@ -931,20 +931,28 @@ json_t *json_null(void)
 
 void json_delete(json_t *json)
 {
-    if(json_is_object(json))
-        json_delete_object(json_to_object(json));
+    if (!json)
+        return;
 
-    else if(json_is_array(json))
-        json_delete_array(json_to_array(json));
-
-    else if(json_is_string(json))
-        json_delete_string(json_to_string(json));
-
-    else if(json_is_integer(json))
-        json_delete_integer(json_to_integer(json));
-
-    else if(json_is_real(json))
-        json_delete_real(json_to_real(json));
+    switch(json_typeof(json)) {
+        case JSON_OBJECT:
+            json_delete_object(json_to_object(json));
+            break;
+        case JSON_ARRAY:
+            json_delete_array(json_to_array(json));
+            break;
+        case JSON_STRING:
+            json_delete_string(json_to_string(json));
+            break;
+        case JSON_INTEGER:
+            json_delete_integer(json_to_integer(json));
+            break;
+        case JSON_REAL:
+            json_delete_real(json_to_real(json));
+            break;
+        default:
+            return;
+    }
 
     /* json_delete is not called for true, false or null */
 }
@@ -964,22 +972,20 @@ int json_equal(json_t *json1, json_t *json2)
     if(json1 == json2)
         return 1;
 
-    if(json_is_object(json1))
-        return json_object_equal(json1, json2);
-
-    if(json_is_array(json1))
-        return json_array_equal(json1, json2);
-
-    if(json_is_string(json1))
-        return json_string_equal(json1, json2);
-
-    if(json_is_integer(json1))
-        return json_integer_equal(json1, json2);
-
-    if(json_is_real(json1))
-        return json_real_equal(json1, json2);
-
-    return 0;
+    switch(json_typeof(json1)) {
+        case JSON_OBJECT:
+            return json_object_equal(json1, json2);
+        case JSON_ARRAY:
+            return json_array_equal(json1, json2);
+        case JSON_STRING:
+            return json_string_equal(json1, json2);
+        case JSON_INTEGER:
+            return json_integer_equal(json1, json2);
+        case JSON_REAL:
+            return json_real_equal(json1, json2);
+        default:
+            return 0;
+    }
 }
 
 
@@ -990,23 +996,24 @@ json_t *json_copy(json_t *json)
     if(!json)
         return NULL;
 
-    if(json_is_object(json))
-        return json_object_copy(json);
-
-    if(json_is_array(json))
-        return json_array_copy(json);
-
-    if(json_is_string(json))
-        return json_string_copy(json);
-
-    if(json_is_integer(json))
-        return json_integer_copy(json);
-
-    if(json_is_real(json))
-        return json_real_copy(json);
-
-    if(json_is_true(json) || json_is_false(json) || json_is_null(json))
-        return json;
+    switch(json_typeof(json)) {
+        case JSON_OBJECT:
+            return json_object_copy(json);
+        case JSON_ARRAY:
+            return json_array_copy(json);
+        case JSON_STRING:
+            return json_string_copy(json);
+        case JSON_INTEGER:
+            return json_integer_copy(json);
+        case JSON_REAL:
+            return json_real_copy(json);
+        case JSON_TRUE:
+        case JSON_FALSE:
+        case JSON_NULL:
+            return json;
+        default:
+            return NULL;
+    }
 
     return NULL;
 }
@@ -1016,26 +1023,26 @@ json_t *json_deep_copy(const json_t *json)
     if(!json)
         return NULL;
 
-    if(json_is_object(json))
-        return json_object_deep_copy(json);
-
-    if(json_is_array(json))
-        return json_array_deep_copy(json);
-
-    /* for the rest of the types, deep copying doesn't differ from
-       shallow copying */
-
-    if(json_is_string(json))
-        return json_string_copy(json);
-
-    if(json_is_integer(json))
-        return json_integer_copy(json);
-
-    if(json_is_real(json))
-        return json_real_copy(json);
-
-    if(json_is_true(json) || json_is_false(json) || json_is_null(json))
-        return (json_t *)json;
+    switch(json_typeof(json)) {
+        case JSON_OBJECT:
+            return json_object_deep_copy(json);
+        case JSON_ARRAY:
+            return json_array_deep_copy(json);
+            /* for the rest of the types, deep copying doesn't differ from
+               shallow copying */
+        case JSON_STRING:
+            return json_string_copy(json);
+        case JSON_INTEGER:
+            return json_integer_copy(json);
+        case JSON_REAL:
+            return json_real_copy(json);
+        case JSON_TRUE:
+        case JSON_FALSE:
+        case JSON_NULL:
+            return (json_t *)json;
+        default:
+            return NULL;
+    }
 
     return NULL;
 }
