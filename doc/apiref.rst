@@ -1185,6 +1185,12 @@ arguments.
 ``s`` (string) [const char \*]
     Convert a null terminated UTF-8 string to a JSON string.
 
+``s?`` (string) [const char \*]
+    Like ``s``, but if the argument is *NULL*, output a JSON null
+    value.
+
+    .. versionadded:: 2.8
+
 ``s#`` (string) [const char \*, int]
     Convert a UTF-8 buffer of a given length to a JSON string.
 
@@ -1238,6 +1244,12 @@ arguments.
     This is useful if you pack into an array or object and want to
     keep the reference for the JSON value consumed by ``O`` to
     yourself.
+
+``o?``, ``O?`` (any value) [json_t \*]
+    Like ``o`` and ``O?``, respectively, but if the argument is
+    *NULL*, output a JSON null value.
+
+    .. versionadded:: 2.8
 
 ``[fmt]`` (array)
     Build an array with contents from the inner format string. ``fmt``
