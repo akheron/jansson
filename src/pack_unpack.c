@@ -48,7 +48,6 @@ static const char * const type_names[] = {
 
 static const char unpack_value_starters[] = "{[siIbfFOon";
 
-
 static void scanner_init(scanner_t *s, json_error_t *error,
                          size_t flags, const char *fmt)
 {
@@ -291,6 +290,28 @@ error:
     return NULL;
 }
 
+static json_t *pack_string(scanner_t *s, va_list *ap)
+{
+    char *str;
+    size_t len;
+    int ours;
+    int nullable;
+
+    next_token(s);
+    nullable = token(s) == '?';
+    if (!nullable)
+        prev_token(s);
+
+    str = read_string(s, ap, "string", &len, &ours);
+    if (!str) {
+        return nullable ? json_null() : NULL;
+    } else if (ours) {
+        return jsonp_stringn_nocheck_own(str, len);
+    } else {
+        return json_stringn_nocheck(str, len);
+    }
+}
+
 static json_t *pack(scanner_t *s, va_list *ap)
 {
     switch(token(s)) {
@@ -301,20 +322,7 @@ static json_t *pack(scanner_t *s, va_list *ap)
             return pack_array(s, ap);
 
         case 's': /* string */
-        {
-            char *str;
-            size_t len;
-            int ours;
-
-            str = read_string(s, ap, "string", &len, &ours);
-            if(!str)
-                return NULL;
-
-            if (ours)
-                return jsonp_stringn_nocheck_own(str, len);
-            else
-                return json_stringn_nocheck(str, len);
-        }
+            return pack_string(s, ap);
 
         case 'n': /* null */
             return json_null();
@@ -332,10 +340,40 @@ static json_t *pack(scanner_t *s, va_list *ap)
             return json_real(va_arg(*ap, double));
 
         case 'O': /* a json_t object; increments refcount */
-            return json_incref(va_arg(*ap, json_t *));
+        {
+            int nullable;
+            json_t *json;
+
+            next_token(s);
+            nullable = token(s) == '?';
+            if (!nullable)
+                prev_token(s);
+
+            json = va_arg(*ap, json_t *);
+            if (!json && nullable) {
+                return json_null();
+            } else {
+                return json_incref(json);
+            }
+        }
 
         case 'o': /* a json_t object; doesn't increment refcount */
-            return va_arg(*ap, json_t *);
+        {
+            int nullable;
+            json_t *json;
+
+            next_token(s);
+            nullable = token(s) == '?';
+            if (!nullable)
+                prev_token(s);
+
+            json = va_arg(*ap, json_t *);
+            if (!json && nullable) {
+                return json_null();
+            } else {
+                return json;
+            }
+        }
 
         default:
             set_error(s, "<format>", "Unexpected format character '%c'",
