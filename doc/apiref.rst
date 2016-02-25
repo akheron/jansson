@@ -1474,7 +1474,7 @@ Examples::
     /* returns -1 for failed validation */
 
     /* root is an empty JSON object */
-    int myint = 0, myint2 = 0;
+    int myint = 0, myint2 = 0, myint3 = 0;
     json_unpack(root, "{s?i, s?[ii]}",
                 "foo", &myint1,
                 "bar", &myint2, &myint3);
