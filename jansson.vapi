@@ -222,17 +222,17 @@ namespace Jansson {
 
     /* decoding */
 
-    public static Element? loads(string input, DecodeFlags flags, out Error? error = null);
-    // TODO public static Element loadb(string input, LoadFlags flags, out Error? error = null);
-    // TODO public static Element loadf(void* input, LoadFlags flags, out Error? error = null);
-    public static Element? load_file(string path, DecodeFlags flags, out Error? error = null);
-    // TODO public static Element load_callback(LoadCb callback, LoadFlags flags, out Error? error = null);
+    public static Element? loads(string input, DecodeFlags flags, out Error error);
+    // TODO public static Element loadb(string input, DecodeFlags flags, out Error error);
+    public static Element loadf(GLib.FileStream input, DecodeFlags flags, out Error error);
+    public static Element? load_file(string path, DecodeFlags flags, out Error error);
+    // TODO public static Element load_callback(LoadCb callback, DecodeFlags flags, out Error error);
 
 
     /* encoding */
 
     public string? dumps(EncodeFlags flags);
-    /*FIXME public int dumpsf(EncodeFlags flags, FILE output, EncodeFlags flags);*/
+    public int dumpf(GLib.FileStream output, EncodeFlags flags);
     public int dump_file(string path, EncodeFlags flags);
     /*FIXME int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags);*/
   }
