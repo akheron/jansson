@@ -27,8 +27,9 @@ namespace Jansson {
     NULL
   }
 
-  [CCode (cname = "json_error_t", has_type_id = false)]
-  public struct Error {
+  [Compact]
+  [CCode (cname = "json_error_t", free_function = "g_free", has_type_id = false)]
+  public class Error {
     public string text;
     public string source;
     public int line;
