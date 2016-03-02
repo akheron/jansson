@@ -28,8 +28,8 @@ namespace Jansson {
   }
 
   [Compact]
-  [CCode (cname = "json_error_t", free_function = "g_free", has_type_id = false)]
-  public class Error {
+  [CCode (cname = "json_error_t", has_copy_function = false, has_type_id = false)]
+  public struct Error {
     public string text;
     public string source;
     public int line;
@@ -92,7 +92,7 @@ namespace Jansson {
 
 
   [Compact]
-  [CCode (cname = "json_t", lower_case_cprefix = "json_", ref_function = "json_incref", unref_function = "json_decref", free_function = "json_delete", has_type_id = false)]
+  [CCode (cname = "json_t", lower_case_cprefix = "json_", copy_function = "json_deep_copy", has_destroy_function = false, has_construct_function = false, has_new_function = false, ref_function = "json_incref", unref_function = "json_decref", free_function = "json_delete", has_type_id = false)]
   public class Element {
 
     /* types */
@@ -133,7 +133,7 @@ namespace Jansson {
 
     public void object_seed(size_t seed);
     public size_t object_size();
-    public Element? object_get(string key);
+    public unowned Element? object_get(string key);
     public int object_set_new(string key, Element value);
     public int object_set_new_nocheck(string key, Element value);
     public int object_del(string key);
@@ -177,7 +177,7 @@ namespace Jansson {
 
 
     public size_t array_size();
-    public Element? array_get(size_t index);
+    public unowned Element? array_get(size_t index);
     public int array_set_new(size_t index, Element value);
     public int array_append_new(Element value);
     public int array_insert_new(size_t index, Element value);
@@ -188,7 +188,7 @@ namespace Jansson {
     public int array_append(Element value);
     public int array_insert(size_t ind, Element value);
 
-    public string string_value();
+    public unowned string string_value();
     public size_t string_length();
     public json_int_t integer_value();
     public double real_value();
