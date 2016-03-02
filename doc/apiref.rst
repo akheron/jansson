@@ -346,7 +346,7 @@ length-aware functions if you wish to embed null bytes in strings.
    Returns the length of *string* in its UTF-8 presentation, or zero
    if *string* is not a JSON string.
 
-.. function:: int json_string_set(const json_t *string, const char *value)
+.. function:: int json_string_set(json_t *string, const char *value)
 
    Sets the associated value of *string* to *value*. *value* must be a
    valid UTF-8 encoded Unicode string. Returns 0 on success and -1 on
@@ -357,7 +357,7 @@ length-aware functions if you wish to embed null bytes in strings.
    Like :func:`json_string_set`, but with explicit length, so *value*
    may contain null characters or not be null terminated.
 
-.. function:: int json_string_set_nocheck(const json_t *string, const char *value)
+.. function:: int json_string_set_nocheck(json_t *string, const char *value)
 
    Like :func:`json_string_set`, but doesn't check that *value* is
    valid UTF-8. Use this function only if you are certain that this
