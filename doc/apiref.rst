@@ -910,7 +910,7 @@ can be ORed together to obtain *flags*.
 ``JSON_ENCODE_ANY``
    Specifying this flag makes it possible to encode any JSON value on
    its own. Without it, only objects and arrays can be passed as the
-   *root* value to the encoding functions.
+   *json* value to the encoding functions.
 
    **Note:** Encoding any value may be useful in some scenarios, but
    it's generally discouraged as it violates strict compatibility with
@@ -937,15 +937,15 @@ can be ORed together to obtain *flags*.
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
 
-.. function:: char *json_dumps(const json_t *root, size_t flags)
+.. function:: char *json_dumps(const json_t *json, size_t flags)
 
-   Returns the JSON representation of *root* as a string, or *NULL* on
+   Returns the JSON representation of *json* as a string, or *NULL* on
    error. *flags* is described above. The return value must be freed
    by the caller using :func:`free()`.
 
-.. function:: int json_dumpf(const json_t *root, FILE *output, size_t flags)
+.. function:: int json_dumpf(const json_t *json, FILE *output, size_t flags)
 
-   Write the JSON representation of *root* to the stream *output*.
+   Write the JSON representation of *json* to the stream *output*.
    *flags* is described above. Returns 0 on success and -1 on error.
    If an error occurs, something may have already been written to
    *output*. In this case, the output is undefined and most likely not
@@ -953,7 +953,7 @@ is in UTF-8.
 
 .. function:: int json_dump_file(const json_t *json, const char *path, size_t flags)
 
-   Write the JSON representation of *root* to the file *path*. If
+   Write the JSON representation of *json* to the file *path*. If
    *path* already exists, it is overwritten. *flags* is described
    above. Returns 0 on success and -1 on error.
 
@@ -976,7 +976,7 @@ is in UTF-8.
 .. function:: int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags)
 
    Call *callback* repeatedly, passing a chunk of the JSON
-   representation of *root* each time. *flags* is described above.
+   representation of *json* each time. *flags* is described above.
    Returns 0 on success and -1 on error.
 
    .. versionadded:: 2.2
