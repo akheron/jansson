@@ -15,7 +15,7 @@ data. Its main features and design principles are:
 
 - Simple and intuitive API and data model
 
-- Comprehensive documentation
+- `Comprehensive documentation`_
 
 - No dependencies on other libraries
 
@@ -51,7 +51,7 @@ use autoreconf::
 Documentation
 -------------
 
-Documentation is available at http://jansson.readthedocs.org/en/latest/.
+Documentation is available at http://jansson.readthedocs.io/en/latest/.
 
 The documentation source is in the ``doc/`` subdirectory. To generate
 HTML documentation, invoke::
@@ -63,5 +63,6 @@ Then, point your browser to ``doc/_build/html/index.html``. Sphinx_
 
 
 .. _Jansson: http://www.digip.org/jansson/
+.. _`Comprehensive documentation`: http://jansson.readthedocs.io/en/latest/
 .. _`MIT license`: http://www.opensource.org/licenses/mit-license.php
 .. _Sphinx: http://sphinx.pocoo.org/
