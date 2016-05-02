@@ -62,7 +62,7 @@
 
 /* Maximum recursion depth for parsing JSON input.
    This limits the depth of e.g. array-within-array constructions. */
-#define JSON_PARSER_MAX_DEPTH 16384
+#define JSON_PARSER_MAX_DEPTH 2048
 
 
 #endif
