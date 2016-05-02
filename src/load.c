@@ -62,6 +62,7 @@ typedef struct {
     stream_t stream;
     strbuffer_t saved_text;
     size_t flags;
+    size_t depth;
     int token;
     union {
         struct {
@@ -803,6 +804,12 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
 {
     json_t *json;
 
+    lex->depth++;
+    if(lex->depth > JSON_PARSER_MAX_DEPTH) {
+        error_set(error, lex, "maximum parsing depth reached");
+        return NULL;
+    }
+
     switch(lex->token) {
         case TOKEN_STRING: {
             const char *value = lex->value.string.val;
@@ -865,12 +872,15 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
     if(!json)
         return NULL;
 
+    lex->depth--;
     return json;
 }
 
 static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
 {
     json_t *result;
+
+    lex->depth = 0;
 
     lex_scan(lex, error);
     if(!(flags & JSON_DECODE_ANY)) {
