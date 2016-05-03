@@ -872,6 +872,7 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
     if(!json)
         return NULL;
 
+    lex->depth--;
     return json;
 }
 
