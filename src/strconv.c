@@ -3,12 +3,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#ifdef __MINGW32__
+#undef __NO_ISOCEXT /* ensure stdlib.h will declare prototypes for mingw own 'strtod' replacement, called '__strtod' */
+#endif
 #include "jansson_private.h"
 #include "strbuffer.h"
 
 /* need jansson_private_config.h to get the correct snprintf */
 #ifdef HAVE_CONFIG_H
 #include <jansson_private_config.h>
+#endif
+
+#ifdef __MINGW32__
+#define strtod __strtod
 #endif
 
 #if JSON_HAVE_LOCALECONV
