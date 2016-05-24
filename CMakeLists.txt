@@ -304,8 +304,13 @@ else()
 endif()
 
 # Find our snprintf
-check_function_exists (snprintf HAVE_SNPRINTF)
-check_function_exists (_snprintf HAVE__SNPRINTF)
+if (MSVC_VERSION EQUAL 1900 OR MSVC_VERSION GREATER 1900)
+   set(HAVE_SNPRINTF 1)
+   set(HAVE__SNPRINTF 1)
+else ()
+   check_function_exists (snprintf HAVE_SNPRINTF)
+   check_function_exists (_snprintf HAVE__SNPRINTF)
+endif ()
 
 if (HAVE_SNPRINTF)
    set(JSON_SNPRINTF snprintf)
