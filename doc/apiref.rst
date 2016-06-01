@@ -90,9 +90,6 @@ also cause errors.
 Type
 ----
 
-The type of a JSON value is queried and tested using the following
-functions:
-
 .. type:: enum json_type
 
    The type of a JSON value. The following members are defined:
@@ -170,8 +167,6 @@ later use), its reference count is incremented, and when the value is
 no longer needed, the reference count is decremented. When the
 reference count drops to zero, there are no references left, and the
 value can be destroyed.
-
-The following functions are used to manipulate the reference count.
 
 .. function:: json_t *json_incref(json_t *json)
 
@@ -448,9 +443,6 @@ information, see :ref:`rfc-conformance`.
    Sets the associated value of *real* to *value*. Returns 0 on
    success and -1 if *real* is not a JSON real.
 
-In addition to the functions above, there's a common query function
-for integers and reals:
-
 .. function:: double json_number_value(const json_t *json)
 
    Returns the associated value of the JSON integer or JSON real
@@ -538,9 +530,6 @@ A JSON array is an ordered collection of other JSON values.
    Appends all elements in *other_array* to the end of *array*.
    Returns 0 on success and -1 on error.
 
-The following macro can be used to iterate through all elements
-in an array.
-
 .. function:: json_array_foreach(array, index, value)
 
    Iterate over every element of ``array``, running the block
@@ -562,8 +551,7 @@ in an array.
    preprocessing, so its performance is equivalent to that of
    hand-written code using the array access functions.
    The main advantage of this macro is that it abstracts
-   away the complexity, and makes for shorter, more
-   concise code.
+   away the complexity, and makes for more concise and readable code.
 
    .. versionadded:: 2.5
 
@@ -656,9 +644,6 @@ allowed in object keys.
 
    .. versionadded:: 2.3
 
-The following macro can be used to iterate through all key-value pairs
-in an object.
-
 .. function:: json_object_foreach(object, key, value)
 
    Iterate over every key-value pair of ``object``, running the block
@@ -684,8 +669,8 @@ in an object.
    preprocessing, so its performance is equivalent to that of
    hand-written iteration code using the object iteration protocol
    (see below). The main advantage of this macro is that it abstracts
-   away the complexity behind iteration, and makes for shorter, more
-   concise code.
+   away the complexity behind iteration, and makes for more concise and
+   readable code.
 
    .. versionadded:: 2.3
 
@@ -699,10 +684,10 @@ in an object.
    .. versionadded:: 2.8
 
 
-The following functions implement an iteration protocol for objects,
-allowing to iterate through all key-value pairs in an object. The
-items are not returned in any particular order, as this would require
-sorting due to the internal hashtable implementation.
+The following functions can be used to iterate through all key-value
+pairs in an object. The items are not returned in any particular order,
+as this would require sorting due to the internal hashtable
+implementation.
 
 .. function:: void *json_object_iter(json_t *object)
 
@@ -749,11 +734,7 @@ sorting due to the internal hashtable implementation.
    Like :func:`json_object_iter_at()`, but much faster. Only works for
    values returned by :func:`json_object_iter_key()`. Using other keys
    will lead to segfaults. This function is used internally to
-   implement :func:`json_object_foreach`.
-
-   .. versionadded:: 2.3
-
-The iteration protocol can be used for example as follows::
+   implement :func:`json_object_foreach`. Example::
 
    /* obj is a JSON object */
    const char *key;
@@ -767,6 +748,8 @@ The iteration protocol can be used for example as follows::
        /* use key and value ... */
        iter = json_object_iter_next(obj, iter);
    }
+
+   .. versionadded:: 2.3
 
 .. function:: void json_object_seed(size_t seed)
 
@@ -934,8 +917,7 @@ can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.7
 
-The following functions perform the actual JSON encoding. The result
-is in UTF-8.
+These functions output UTF-8:
 
 .. function:: char *json_dumps(const json_t *json, size_t flags)
 
@@ -1075,8 +1057,6 @@ its ``position`` field. This is especially useful when using
    of the :type:`json_error_t` structure.
 
 If no error or position information is needed, you can pass *NULL*.
-
-The following functions perform the actual JSON decoding.
 
 .. function:: json_t *json_loads(const char *input, size_t flags, json_error_t *error)
 
@@ -1266,8 +1246,6 @@ arguments.
 
 Whitespace, ``:`` and ``,`` are ignored.
 
-The following functions compose the value building API:
-
 .. function:: json_t *json_pack(const char *fmt, ...)
 
    .. refcounting:: new
@@ -1407,8 +1385,6 @@ type whose address should be passed.
 
 Whitespace, ``:`` and ``,`` are ignored.
 
-The following functions compose the parsing and validation API:
-
 .. function:: int json_unpack(json_t *root, const char *fmt, ...)
 
    Validate and unpack the JSON value *root* according to the format
@@ -1509,9 +1485,6 @@ only if they are exactly the same value, but also if they have equal
 * Two true, false or null values have no "contents", so they are equal
   if their types are equal. (Because these values are singletons,
   their equality can actually be tested with ``==``.)
-
-The following function can be used to test whether two JSON values are
-equal.
 
 .. function:: int json_equal(json_t *value1, json_t *value2)
 
