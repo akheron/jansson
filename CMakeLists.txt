@@ -303,16 +303,6 @@ else()
    set (JSON_INLINE)
 endif()
 
-# Find our snprintf
-check_function_exists (snprintf HAVE_SNPRINTF)
-check_function_exists (_snprintf HAVE__SNPRINTF)
-
-if (HAVE_SNPRINTF)
-   set(JSON_SNPRINTF snprintf)
-elseif (HAVE__SNPRINTF)
-   set(JSON_SNPRINTF _snprintf)
-endif () 
-
 check_c_source_compiles ("int main() { unsigned long val; __sync_bool_compare_and_swap(&val, 0, 1); return 0; } " HAVE_SYNC_BUILTINS)
 check_c_source_compiles ("int main() { char l; unsigned long v; __atomic_test_and_set(&l, __ATOMIC_RELAXED); __atomic_store_n(&v, 1, __ATOMIC_RELEASE); __atomic_load_n(&v, __ATOMIC_ACQUIRE); return 0; }" HAVE_ATOMIC_BUILTINS)
 
