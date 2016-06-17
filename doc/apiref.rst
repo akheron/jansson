@@ -736,18 +736,18 @@ implementation.
    will lead to segfaults. This function is used internally to
    implement :func:`json_object_foreach`. Example::
 
-   /* obj is a JSON object */
-   const char *key;
-   json_t *value;
-
-   void *iter = json_object_iter(obj);
-   while(iter)
-   {
-       key = json_object_iter_key(iter);
-       value = json_object_iter_value(iter);
-       /* use key and value ... */
-       iter = json_object_iter_next(obj, iter);
-   }
+     /* obj is a JSON object */
+     const char *key;
+     json_t *value;
+  
+     void *iter = json_object_iter(obj);
+     while(iter)
+     {
+         key = json_object_iter_key(iter);
+         value = json_object_iter_value(iter);
+         /* use key and value ... */
+         iter = json_object_iter_next(obj, iter);
+     }
 
    .. versionadded:: 2.3
 
