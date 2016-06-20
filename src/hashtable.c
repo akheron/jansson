@@ -34,6 +34,7 @@ extern volatile uint32_t hashtable_seed;
 #include "lookup3.h"
 
 #define list_to_pair(list_)  container_of(list_, pair_t, list)
+#define ordered_list_to_pair(list_)  container_of(list_, pair_t, ordered_list)
 #define hash_str(key)        ((size_t)hashlittle((key), strlen(key), hashtable_seed))
 
 static JSON_INLINE void list_init(list_t *list)
@@ -126,6 +127,7 @@ static int hashtable_do_del(hashtable_t *hashtable,
         bucket->last = pair->list.prev;
 
     list_remove(&pair->list);
+    list_remove(&pair->ordered_list);
     json_decref(pair->value);
 
     jsonp_free(pair);
@@ -194,6 +196,7 @@ int hashtable_init(hashtable_t *hashtable)
         return -1;
 
     list_init(&hashtable->list);
+    list_init(&hashtable->ordered_list);
 
     for(i = 0; i < hashsize(hashtable->order); i++)
     {
@@ -210,9 +213,7 @@ void hashtable_close(hashtable_t *hashtable)
     jsonp_free(hashtable->buckets);
 }
 
-int hashtable_set(hashtable_t *hashtable,
-                  const char *key, size_t serial,
-                  json_t *value)
+int hashtable_set(hashtable_t *hashtable, const char *key, json_t *value)
 {
     pair_t *pair;
     bucket_t *bucket;
@@ -250,12 +251,13 @@ int hashtable_set(hashtable_t *hashtable,
             return -1;
 
         pair->hash = hash;
-        pair->serial = serial;
         strncpy(pair->key, key, len + 1);
         pair->value = value;
         list_init(&pair->list);
+        list_init(&pair->ordered_list);
 
         insert_to_bucket(hashtable, bucket, &pair->list);
+        list_insert(&hashtable->ordered_list, &pair->ordered_list);
 
         hashtable->size++;
     }
@@ -297,12 +299,13 @@ void hashtable_clear(hashtable_t *hashtable)
     }
 
     list_init(&hashtable->list);
+    list_init(&hashtable->ordered_list);
     hashtable->size = 0;
 }
 
 void *hashtable_iter(hashtable_t *hashtable)
 {
-    return hashtable_iter_next(hashtable, &hashtable->list);
+    return hashtable_iter_next(hashtable, &hashtable->ordered_list);
 }
 
 void *hashtable_iter_at(hashtable_t *hashtable, const char *key)
@@ -318,38 +321,32 @@ void *hashtable_iter_at(hashtable_t *hashtable, const char *key)
     if(!pair)
         return NULL;
 
-    return &pair->list;
+    return &pair->ordered_list;
 }
 
 void *hashtable_iter_next(hashtable_t *hashtable, void *iter)
 {
     list_t *list = (list_t *)iter;
-    if(list->next == &hashtable->list)
+    if(list->next == &hashtable->ordered_list)
         return NULL;
     return list->next;
 }
 
 void *hashtable_iter_key(void *iter)
 {
-    pair_t *pair = list_to_pair((list_t *)iter);
+    pair_t *pair = ordered_list_to_pair((list_t *)iter);
     return pair->key;
-}
-
-size_t hashtable_iter_serial(void *iter)
-{
-    pair_t *pair = list_to_pair((list_t *)iter);
-    return pair->serial;
 }
 
 void *hashtable_iter_value(void *iter)
 {
-    pair_t *pair = list_to_pair((list_t *)iter);
+    pair_t *pair = ordered_list_to_pair((list_t *)iter);
     return pair->value;
 }
 
 void hashtable_iter_set(void *iter, json_t *value)
 {
-    pair_t *pair = list_to_pair((list_t *)iter);
+    pair_t *pair = ordered_list_to_pair((list_t *)iter);
 
     json_decref(pair->value);
     pair->value = value;

@@ -34,7 +34,6 @@
 typedef struct {
     json_t json;
     hashtable_t hashtable;
-    size_t serial;
     int visited;
 } json_object_t;
 

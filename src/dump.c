@@ -25,11 +25,6 @@
 #define FLAGS_TO_INDENT(f)      ((f) & 0x1F)
 #define FLAGS_TO_PRECISION(f)   (((f) >> 11) & 0x1F)
 
-struct object_key {
-    size_t serial;
-    const char *key;
-};
-
 static int dump_to_strbuffer(const char *buffer, size_t size, void *data)
 {
     return strbuffer_append_bytes((strbuffer_t *)data, buffer, size);
@@ -165,18 +160,9 @@ static int dump_string(const char *str, size_t len, json_dump_callback_t dump, v
     return dump("\"", 1, data);
 }
 
-static int object_key_compare_keys(const void *key1, const void *key2)
+static int compare_keys(const void *key1, const void *key2)
 {
-    return strcmp(((const struct object_key *)key1)->key,
-                  ((const struct object_key *)key2)->key);
-}
-
-static int object_key_compare_serials(const void *key1, const void *key2)
-{
-    size_t a = ((const struct object_key *)key1)->serial;
-    size_t b = ((const struct object_key *)key2)->serial;
-
-    return a < b ? -1 : a == b ? 0 : 1;
+    return strcmp(*(const char **)key1, *(const char **)key2);
 }
 
 static int do_dump(const json_t *json, size_t flags, int depth,
@@ -309,40 +295,33 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             if(dump_indent(flags, depth + 1, 0, dump, data))
                 goto object_error;
 
-            if(flags & JSON_SORT_KEYS || flags & JSON_PRESERVE_ORDER)
+            if(flags & JSON_SORT_KEYS)
             {
-                struct object_key *keys;
+                const char **keys;
                 size_t size, i;
-                int (*cmp_func)(const void *, const void *);
 
                 size = json_object_size(json);
-                keys = jsonp_malloc(size * sizeof(struct object_key));
+                keys = jsonp_malloc(size * sizeof(const char *));
                 if(!keys)
                     goto object_error;
 
                 i = 0;
                 while(iter)
                 {
-                    keys[i].serial = hashtable_iter_serial(iter);
-                    keys[i].key = json_object_iter_key(iter);
+                    keys[i] = json_object_iter_key(iter);
                     iter = json_object_iter_next((json_t *)json, iter);
                     i++;
                 }
                 assert(i == size);
 
-                if(flags & JSON_SORT_KEYS)
-                    cmp_func = object_key_compare_keys;
-                else
-                    cmp_func = object_key_compare_serials;
-
-                qsort(keys, size, sizeof(struct object_key), cmp_func);
+                qsort(keys, size, sizeof(const char *), compare_keys);
 
                 for(i = 0; i < size; i++)
                 {
                     const char *key;
                     json_t *value;
 
-                    key = keys[i].key;
+                    key = keys[i];
                     value = json_object_get(json, key);
                     assert(value);
 

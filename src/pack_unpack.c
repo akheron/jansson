@@ -464,7 +464,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
         if(unpack(s, value, ap))
             goto out;
 
-        hashtable_set(&key_set, key, 0, json_null());
+        hashtable_set(&key_set, key, json_null());
         next_token(s);
     }
 

@@ -659,7 +659,8 @@ allowed in object keys.
            /* block of code that uses key and value */
        }
 
-   The items are not returned in any particular order.
+   The items are returned in the order they were inserted to the
+   object.
 
    **Note:** It's not safe to call ``json_object_del(object, key)``
    during iteration. If you need to, use
@@ -685,9 +686,8 @@ allowed in object keys.
 
 
 The following functions can be used to iterate through all key-value
-pairs in an object. The items are not returned in any particular order,
-as this would require sorting due to the internal hashtable
-implementation.
+pairs in an object. The items are returned in the order they were
+inserted to to obhect.
 
 .. function:: void *json_object_iter(json_t *object)
 
@@ -885,10 +885,13 @@ can be ORed together to obtain *flags*.
    compared.
 
 ``JSON_PRESERVE_ORDER``
-   If this flag is used, object keys in the output are sorted into the
-   same order in which they were first inserted to the object. For
-   example, decoding a JSON text and then encoding with this flag
-   preserves the order of object keys.
+   **Deprecated since version 2.8:** Order of object keys
+   is always preserved.
+
+   Prior to version 2.8: If this flag is used, object keys in the
+   output are sorted into the same order in which they were first
+   inserted to the object. For example, decoding a JSON text and then
+   encoding with this flag preserves the order of object keys.
 
 ``JSON_ENCODE_ANY``
    Specifying this flag makes it possible to encode any JSON value on
@@ -1508,9 +1511,7 @@ the same child values in the copied value. Deep copying makes a fresh
 copy of the child values, too. Moreover, all the child values are deep
 copied in a recursive fashion.
 
-Copying objects doesn't preserve the insertion order of keys. Deep
-copying also loses the key insertion order of any objects deeper in
-the hierarchy.
+Copying objects preserves the insertion order of keys.
 
 .. function:: json_t *json_copy(json_t *value)
 

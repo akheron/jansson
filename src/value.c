@@ -67,7 +67,6 @@ json_t *json_object(void)
         return NULL;
     }
 
-    object->serial = 0;
     object->visited = 0;
 
     return &object->json;
@@ -115,7 +114,7 @@ int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value)
     }
     object = json_to_object(json);
 
-    if(hashtable_set(&object->hashtable, key, object->serial++, value))
+    if(hashtable_set(&object->hashtable, key, value))
     {
         json_decref(value);
         return -1;
@@ -154,9 +153,7 @@ int json_object_clear(json_t *json)
         return -1;
 
     object = json_to_object(json);
-
     hashtable_clear(&object->hashtable);
-    object->serial = 0;
 
     return 0;
 }
