@@ -687,7 +687,7 @@ allowed in object keys.
 
 The following functions can be used to iterate through all key-value
 pairs in an object. The items are returned in the order they were
-inserted to to obhect.
+inserted to the object.
 
 .. function:: void *json_object_iter(json_t *object)
 
