@@ -569,27 +569,27 @@ allowed in object keys.
 
    .. refcounting:: new
 
-   Returns a new JSON object, or *NULL* on error. Initially, the
-   object is empty.
+   Returns a new JSON object, or *NULL* on memory allocation failure. Initially,
+   the object is empty.
 
 .. function:: size_t json_object_size(const json_t *object)
 
-   Returns the number of elements in *object*, or 0 if *object* is not
-   a JSON object.
+   Returns the number of elements in *object*, or returns 0 and sets *errno* if
+   *object* is not a JSON object.
 
 .. function:: json_t *json_object_get(const json_t *object, const char *key)
 
    .. refcounting:: borrow
 
    Get a value corresponding to *key* from *object*. Returns *NULL* if
-   *key* is not found and on error.
+   *key* is not found, and returns *NULL* and sets *errno* on error.
 
 .. function:: int json_object_set(json_t *object, const char *key, json_t *value)
 
    Set the value of *key* to *value* in *object*. *key* must be a
    valid null terminated UTF-8 encoded Unicode string. If there
    already is a value for *key*, it is replaced by the new value.
-   Returns 0 on success and -1 on error.
+   On success returns 0 and on error returns -1 and sets *errno*.
 
 .. function:: int json_object_set_nocheck(json_t *object, const char *key, json_t *value)
 
