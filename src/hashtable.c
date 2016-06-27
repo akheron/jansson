@@ -9,6 +9,7 @@
 #include <jansson_private_config.h>
 #endif
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -161,7 +162,7 @@ static int hashtable_do_rehash(hashtable_t *hashtable)
 
     hashtable->buckets = jsonp_malloc(new_size * sizeof(bucket_t));
     if(!hashtable->buckets)
-        return -1;
+        return ENOMEM;
 
     for(i = 0; i < hashsize(hashtable->order); i++)
     {

@@ -13,6 +13,7 @@
 #include <jansson_private_config.h>
 #endif
 
+#include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,9 +85,13 @@ size_t json_object_size(const json_t *json)
     json_object_t *object;
 
     if(!json_is_object(json))
+    {
+        errno = EINVAL;
         return 0;
+    }
 
     object = json_to_object(json);
+    errno = 0;
     return object->hashtable.size;
 }
 
@@ -95,29 +100,39 @@ json_t *json_object_get(const json_t *json, const char *key)
     json_object_t *object;
 
     if(!key || !json_is_object(json))
+    {
+        errno = EINVAL;
         return NULL;
+    }
 
     object = json_to_object(json);
+    errno = 0;
     return hashtable_get(&object->hashtable, key);
 }
 
 int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value)
 {
     json_object_t *object;
+    int ret;
 
     if(!value)
+    {
+        errno = EINVAL;
         return -1;
+    }
 
     if(!key || !json_is_object(json) || json == value)
     {
         json_decref(value);
+        errno = EINVAL;
         return -1;
     }
     object = json_to_object(json);
 
-    if(hashtable_set(&object->hashtable, key, object->serial++, value))
+    if((ret = hashtable_set(&object->hashtable, key, object->serial++, value)))
     {
         json_decref(value);
+        errno = ret;
         return -1;
     }
 
@@ -129,6 +144,7 @@ int json_object_set_new(json_t *json, const char *key, json_t *value)
     if(!key || !utf8_check_string(key, strlen(key)))
     {
         json_decref(value);
+        errno = -EINVAL;
         return -1;
     }
 
