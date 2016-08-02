@@ -84,7 +84,7 @@ static int dump_string(const char *str, int ascii, json_dump_callback_t dump, vo
                 return -1;
 
             /* mandatory escape or control char */
-            if(codepoint == '\\' || codepoint == '"' || codepoint < 0x20)
+            if(codepoint == '\\' || codepoint == '/' || codepoint == '"' || codepoint < 0x20)
                 break;
 
             /* non-ASCII */
@@ -102,11 +102,12 @@ static int dump_string(const char *str, int ascii, json_dump_callback_t dump, vo
         if(end == pos)
             break;
 
-        /* handle \, ", and control codes */
+        /* handle \, /, ", and control codes */
         length = 2;
         switch(codepoint)
         {
             case '\\': text = "\\\\"; break;
+            case '/': text = "\\/"; break;
             case '\"': text = "\\\""; break;
             case '\b': text = "\\b"; break;
             case '\f': text = "\\f"; break;
