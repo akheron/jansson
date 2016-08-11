@@ -5,8 +5,9 @@
 
 static int malloc_called = 0;
 static int free_called = 0;
+static size_t malloc_used = 0;
 
-/* helper */
+/* helpers */
 static void create_and_free_complex_object()
 {
     json_t *obj;
@@ -18,6 +19,21 @@ static void create_and_free_complex_object()
                     "qux", 0,
                     "alice", "bar", "baz",
                     "bob", 9, 8, 7);
+
+    json_decref(obj);
+}
+
+static void create_and_free_object_with_oom()
+{
+    int i;
+    char key[4];
+    json_t *obj = json_object();
+
+    for (i = 0; i < 10; i++)
+    {
+        snprintf(key, sizeof key, "%d", i);
+        json_object_set_new(obj, key, json_integer(i));
+    }
 
     json_decref(obj);
 }
@@ -46,6 +62,32 @@ static void test_simple()
     if (malloc_called != 1 || free_called != 1
         || mfunc != my_malloc || ffunc != my_free)
         fail("Custom allocation failed");
+}
+
+
+static void *oom_malloc(size_t size)
+{
+    if (malloc_used + size > 800)
+        return NULL;
+
+    malloc_used += size;
+    return malloc(size);
+}
+
+static void oom_free(void *ptr)
+{
+    free_called++;
+    free(ptr);
+}
+
+static void test_oom()
+{
+    free_called = 0;
+    json_set_alloc_funcs(oom_malloc, oom_free);
+    create_and_free_object_with_oom();
+
+    if (free_called == 0)
+        fail("Allocation with OOM failed");
 }
 
 
@@ -84,4 +126,5 @@ static void run_tests()
 {
     test_simple();
     test_secure_funcs();
+    test_oom();
 }
