@@ -25,11 +25,12 @@ static void create_and_free_complex_object()
 
 static void create_and_free_object_with_oom()
 {
+    int i;
+    char key[4];
     json_t *obj = json_object();
 
-    for (int i = 0; i < 10; i++)
+    for (i = 0; i < 10; i++)
     {
-        char key[4];
         snprintf(key, sizeof key, "%d", i);
         json_object_set_new(obj, key, json_integer(i));
     }
