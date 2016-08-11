@@ -152,16 +152,18 @@ static int hashtable_do_rehash(hashtable_t *hashtable)
 {
     list_t *list, *next;
     pair_t *pair;
-    size_t i, index, new_size;
+    size_t i, index, new_size, new_order;
+
+    new_order = hashtable->order + 1;
+    new_size = hashsize(new_order);
+
+    struct hashtable_bucket *new_buckets = jsonp_malloc(new_size * sizeof(bucket_t));
+    if(!new_buckets)
+        return -1;
 
     jsonp_free(hashtable->buckets);
-
-    hashtable->order++;
-    new_size = hashsize(hashtable->order);
-
-    hashtable->buckets = jsonp_malloc(new_size * sizeof(bucket_t));
-    if(!hashtable->buckets)
-        return -1;
+    hashtable->buckets = new_buckets;
+    hashtable->order = new_order;
 
     for(i = 0; i < hashsize(hashtable->order); i++)
     {
