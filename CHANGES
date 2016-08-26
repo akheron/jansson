@@ -1,7 +1,14 @@
-Version 2.8 (in development)
-============================
+Version 2.8
+===========
+
+Released 2016-08-26
 
 * New features:
+
+  - Always preserve insertion order of object items.
+    `json_object_iter()` and friends, `json_object_foreach()` and
+    json_dumps() and friends now always work in the insertion order of
+    object items (#293).
 
   - Add `json_object_foreach_safe()` macro that allows
     `json_object_del()` calls during iteration (#230).
@@ -9,7 +16,13 @@ Version 2.8 (in development)
   - Add `json_get_alloc_funcs()` to allow reading the allocation
     functions set by `json_set_alloc_funcs()` (#262, #264).
 
+  - Add `json_pack()` format specifiers s?, o? and O? for values that
+    can be null (#261, #270).
+
 * Bug fixes:
+
+  - Fix a crash when parsing inputs consisting of very deeply nested
+    arrays or objects (#282, #284).
 
   - Never convert numbers to integers in the parser when
     JSON_DECODE_INT_AS_REAL is set. This fixes error messages for
@@ -17,7 +30,17 @@ Version 2.8 (in development)
 
   - Fix a use-after-free in `json_pack()` error handling.
 
+  - Fix subnormal number parsing on mingw32.
+
+  - Handle out-of-memory situations gracefully in the hashtable
+    implementation (#298).
+
 * Build:
+
+  - Fix build with CMake on all versions of Visual Studio up to 2015
+    (#262, #289).
+
+  - Fix pkgconfig libdir when using CMake (#268).
 
   - Fix CMake config for static CRT builds on Windows (#206).
 
@@ -33,8 +56,6 @@ Version 2.8 (in development)
 
   - Use snprintf and strncpy in place of sprintf and strcpy to silence
     linker warnings on OpenBSD (#233).
-
-  - Fix build on MSVC >= 1900 (#262).
 
 * Documentation:
 
