@@ -219,7 +219,9 @@ link the program as follows::
 
     cc -o prog prog.c -ljansson
 
-Starting from version 1.2, there's also support for pkg-config_::
+Starting from version 1.2, there's also support for pkg-config_:
+
+.. code-block:: shell
 
     cc -o prog prog.c `pkg-config --cflags --libs jansson`
 

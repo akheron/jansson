@@ -1,5 +1,5 @@
 AC_PREREQ([2.60])
-AC_INIT([jansson], [2.7], [petri@digip.org])
+AC_INIT([jansson], [2.8], [petri@digip.org])
 
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([1.10 foreign])
@@ -114,6 +114,5 @@ AC_CONFIG_FILES([
         test/bin/Makefile
         test/suites/Makefile
         test/suites/api/Makefile
-        examples/Makefile
 ])
 AC_OUTPUT
