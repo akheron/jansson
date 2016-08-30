@@ -9,6 +9,37 @@
 #include <jansson.h>
 #include "util.h"
 
+#if defined __GNUC__
+static int check_free_calls;
+static void check_free(void *p)
+{
+    check_free_calls++;
+    if(p) free(p);
+}
+
+static void test_autodecref_usage()
+{
+    auto_json_decref json_t *value;
+    value = json_string("foo");
+    check_free_calls = 0;
+}
+
+static void test_autodecref()
+{
+    json_malloc_t malloc_fn;
+    json_free_t free_fn;
+    json_get_alloc_funcs(&malloc_fn, &free_fn);
+    json_set_alloc_funcs(malloc_fn, check_free);
+    test_autodecref_usage();
+    if(check_free_calls == 0)
+        fail("auto_json_decref failed");
+
+    json_set_alloc_funcs(malloc_fn, free_fn);
+}
+#else
+static void test_autodecref() { }
+#endif
+
 /* Call the simple functions not covered by other tests of the public API */
 static void run_tests()
 {
@@ -224,4 +255,6 @@ static void run_tests()
     json_incref(value);
     if(value->refcount != (size_t)-1)
       fail("refcounting null works incorrectly");
+
+    test_autodecref();
 }

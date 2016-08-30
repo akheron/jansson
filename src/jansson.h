@@ -112,6 +112,20 @@ void json_decref(json_t *json)
         json_delete(json);
 }
 
+#ifdef __GNUC__
+#define auto_json_decref __attribute((cleanup(json_autodecref)))
+static JSON_INLINE
+void json_autodecref(json_t **json)
+{
+    if(!json)
+        return;
+    if(!*json)
+        return;
+    json_decref(*json);
+    *json = NULL;
+}
+#endif
+
 
 /* error reporting */
 
