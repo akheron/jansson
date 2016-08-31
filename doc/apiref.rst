@@ -808,7 +808,7 @@ this struct.
       *character column*, not the byte column, i.e. a multibyte UTF-8
       character counts as one column.
 
-   .. member:: size_t position
+   .. member:: int position
 
       The position in bytes from the start of the input. This is
       useful for debugging Unicode encoding problems.
