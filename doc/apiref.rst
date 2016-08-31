@@ -253,6 +253,24 @@ other. Moreover, trying to encode the values with any of the encoding
 functions will fail. The encoder detects circular references and
 returns an error status.
 
+Scope Dereferencing
+-------------------
+
+It is possible to use the ``json_auto_t`` type to automatically
+dereference a value at the end of a scope. For example::
+
+  void function(void) {
+    json_auto_t *value = NULL;
+    value = json_string("foo");
+    /* json_decref(value) is automatically called. */
+  }
+
+This feature is only available on GCC and Clang. So if your project
+has a portability requirement for other compilers, you should avoid
+this feature.
+
+Additionally, as always, care should be taken when passing values to
+functions that steal references.
 
 True, False and Null
 ====================
