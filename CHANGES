@@ -7,7 +7,7 @@ Released 2016-08-30
 
   - Always preserve insertion order of object items.
     `json_object_iter()` and friends, `json_object_foreach()` and
-    json_dumps() and friends now always work in the insertion order of
+    `json_dumps()` and friends now always work in the insertion order of
     object items (#293).
 
   - Add `json_object_foreach_safe()` macro that allows
@@ -80,7 +80,7 @@ Released 2016-08-30
 
   - Other minor fixes (#221, #248).
 
-* Ohter changes:
+* Other changes:
 
   - List all unrecognized object keys when strict unpacking fails
     (#263).
