@@ -80,7 +80,7 @@ Released 2016-08-30
 
   - Other minor fixes (#221, #248).
 
-* Ohter changes:
+* Other changes:
 
   - List all unrecognized object keys when strict unpacking fails
     (#263).
