@@ -655,6 +655,8 @@ set_target_properties(jansson PROPERTIES PUBLIC_HEADER "${JANSSON_HDR_PUBLIC}")
 #
 # Install targets.
 #
+option(JANSSON_INSTALL "Generate installation target" ON)
+if (JANSSON_INSTALL)
 install(TARGETS jansson
         EXPORT JanssonTargets
         LIBRARY DESTINATION "${JANSSON_INSTALL_LIB_DIR}" COMPONENT lib
@@ -676,6 +678,7 @@ install(FILES
 # Install exports for the install-tree.
 install(EXPORT JanssonTargets 
         DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}" COMPONENT dev)
+endif()
 
 # For use when simply using add_library from a parent project to build jansson.
 set(JANSSON_LIBRARIES jansson CACHE STRING "Jansson libraries")
