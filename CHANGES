@@ -1,3 +1,25 @@
+Version 2.9
+===========
+
+Released 2016-09-18
+
+* New features:
+
+  - Add ``json_auto_t`` to automatically decref a value that goes out
+    of scope. Available only on GCC and Clang. (#301)
+
+* Build:
+
+  - Fix CMake build (at least on Linux) by removing conflicting
+    jansson_config.h from the distribution (#306)
+
+  - Change CMake install target generation to be optional (#305)
+
+* Documentation:
+
+  - Small documentation fixes.
+
+
 Version 2.8
 ===========
 

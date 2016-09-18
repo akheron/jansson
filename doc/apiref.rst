@@ -256,6 +256,8 @@ returns an error status.
 Scope Dereferencing
 -------------------
 
+.. versionadded:: 2.9
+
 It is possible to use the ``json_auto_t`` type to automatically
 dereference a value at the end of a scope. For example::
 
