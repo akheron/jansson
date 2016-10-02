@@ -914,7 +914,7 @@ static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error)
 typedef struct
 {
     const char *data;
-    int pos;
+    size_t pos;
 } string_data_t;
 
 static int string_get(void *data)
