@@ -609,6 +609,7 @@ endforeach()
 set(prefix      ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix ${CMAKE_INSTALL_PREFIX})
 set(libdir      ${JANSSON_INSTALL_LIB_DIR})
+set(includedir  ${JANSSON_INSTALL_INCLUDE_DIR})
 set(VERSION     ${JANSSON_DISPLAY_VERSION})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/jansson.pc.in
                ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc @ONLY)
