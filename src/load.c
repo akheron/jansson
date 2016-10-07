@@ -340,7 +340,7 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
             /* control character */
             lex_unget_unsave(lex, c);
             if(c == '\n')
-                error_set(error, lex, "unexpected newline", c);
+                error_set(error, lex, "unexpected newline");
             else
                 error_set(error, lex, "control character 0x%x", c);
             goto out;
