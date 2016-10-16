@@ -37,7 +37,7 @@ on 1 byte), but shoehorning those bytes into integers efficiently is messy.
 #include <stdlib.h>
 
 #ifdef HAVE_CONFIG_H
-#include <jansson_private_config.h>
+#include "jansson_private_config.h"
 #endif
 
 #ifdef HAVE_STDINT_H

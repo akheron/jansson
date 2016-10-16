@@ -5,9 +5,7 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#if HAVE_CONFIG_H
-#include <jansson_private_config.h>
-#endif
+#include "jansson.h"   /* for JSON_INLINE */
 
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +14,6 @@
 #include <stdint.h>
 #endif
 
-#include <jansson_config.h>   /* for JSON_INLINE */
 #include "jansson_private.h"  /* for container_of() */
 #include "hashtable.h"
 
