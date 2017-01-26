@@ -9,15 +9,19 @@
 #define _GNU_SOURCE
 #endif
 
+#include "jansson_private.h"
+
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include "jansson.h"
-#include "jansson_private.h"
 #include "strbuffer.h"
 #include "utf.h"
 
@@ -1020,6 +1024,45 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
     }
 
     if(lex_init(&lex, (get_func)fgetc, flags, input))
+        return NULL;
+
+    result = parse_json(&lex, flags, error);
+
+    lex_close(&lex);
+    return result;
+}
+
+static int fd_get_func(int *fd)
+{
+    uint8_t c;
+#ifdef HAVE_UNISTD_H
+    if (read(*fd, &c, 1) == 1)
+        return c;
+#endif
+    return EOF;
+}
+
+json_t *json_loadfd(int input, size_t flags, json_error_t *error)
+{
+    lex_t lex;
+    const char *source;
+    json_t *result;
+
+#ifdef HAVE_UNISTD_H
+    if(input == STDIN_FILENO)
+        source = "<stdin>";
+    else
+#endif
+        source = "<stream>";
+
+    jsonp_error_init(error, source);
+
+    if (input < 0) {
+        error_set(error, NULL, "wrong arguments");
+        return NULL;
+    }
+
+    if(lex_init(&lex, (get_func)fd_get_func, flags, &input))
         return NULL;
 
     result = parse_json(&lex, flags, error);
