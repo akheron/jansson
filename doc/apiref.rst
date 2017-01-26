@@ -978,6 +978,23 @@ These functions output UTF-8:
    *output*. In this case, the output is undefined and most likely not
    valid JSON.
 
+.. function:: int json_dumpfd(const json_t *json, int output, size_t flags)
+
+   Write the JSON representation of *json* to the stream *output*.
+   *flags* is described above. Returns 0 on success and -1 on error.
+   If an error occurs, something may have already been written to
+   *output*. In this case, the output is undefined and most likely not
+   valid JSON.
+
+   It is important to note that this function can only succeed on stream
+   file descriptors (such as SOCK_STREAM). Using this function on a
+   non-stream file descriptor will result in undefined behavior. For
+   non-stream file descriptors, see instead :func:`json_dumpb()`.
+
+   This function requires POSIX and fails on all non-POSIX systems.
+
+   .. versionadded:: 2.10
+
 .. function:: int json_dump_file(const json_t *json, const char *path, size_t flags)
 
    Write the JSON representation of *json* to the file *path*. If
@@ -1133,7 +1150,7 @@ If no error or position information is needed, you can pass *NULL*.
    above.
 
    This function will start reading the input from whatever position
-   the input file was, without attempting to seek first. If an error
+   the input file was in, without attempting to seek first. If an error
    occurs, the file position will be left indeterminate. On success,
    the file position will be at EOF, unless ``JSON_DISABLE_EOF_CHECK``
    flag was used. In this case, the file position will be at the first
@@ -1141,6 +1158,35 @@ If no error or position information is needed, you can pass *NULL*.
    allows calling :func:`json_loadf()` on the same ``FILE`` object
    multiple times, if the input consists of consecutive JSON texts,
    possibly separated by whitespace.
+
+.. function:: json_t *json_loadfd(int input, size_t flags, json_error_t *error)
+
+   .. refcounting:: new
+
+   Decodes the JSON text in stream *input* and returns the array or
+   object it contains, or *NULL* on error, in which case *error* is
+   filled with information about the error. *flags* is described
+   above.
+
+   This function will start reading the input from whatever position
+   the input file descriptor was in, without attempting to seek first.
+   If an error occurs, the file position will be left indeterminate.
+   On success, the file position will be at EOF, unless
+   ``JSON_DISABLE_EOF_CHECK`` flag was used. In this case, the file
+   descriptor's position will be at the first character after the last
+   ``]`` or ``}`` in the JSON input. This allows calling
+   :func:`json_loadfd()` on the same file descriptor multiple times,
+   if the input consists of consecutive JSON texts, possibly separated
+   by whitespace.
+
+   It is important to note that this function can only succeed on stream
+   file descriptors (such as SOCK_STREAM). Using this function on a
+   non-stream file descriptor will result in undefined behavior. For
+   non-stream file descriptors, see instead :func:`json_loadb()`.
+
+   This function requires POSIX and fails on all non-POSIX systems.
+
+   .. versionadded:: 2.10
 
 .. function:: json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
 
