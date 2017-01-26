@@ -22,6 +22,9 @@ static void encode_null()
     if(json_dumps(NULL, JSON_ENCODE_ANY) != NULL)
         fail("json_dumps didn't fail for NULL");
 
+    if(json_dumpb(NULL, NULL, 0, JSON_ENCODE_ANY) != 0)
+        fail("json_dumps didn't fail for NULL");
+
     if(json_dumpf(NULL, stderr, JSON_ENCODE_ANY) != -1)
         fail("json_dumpf didn't fail for NULL");
 
@@ -212,6 +215,28 @@ static void dump_file()
     remove("json_dump_file.json");
 }
 
+static void dumpb()
+{
+    char buf[2];
+    json_t *obj;
+    size_t size;
+
+    obj = json_object();
+
+    size = json_dumpb(obj, buf, sizeof(buf), 0);
+    if(size != 2 || strncmp(buf, "{}", 2))
+      fail("json_dumpb failed");
+
+    json_decref(obj);
+    obj = json_pack("{s:s}", "foo", "bar");
+
+    size = json_dumpb(obj, buf, sizeof(buf), JSON_COMPACT);
+    if(size != 13)
+      fail("json_dumpb size check failed");
+
+    json_decref(obj);
+}
+
 static void run_tests()
 {
     encode_null();
@@ -221,4 +246,5 @@ static void run_tests()
     escape_slashes();
     encode_nul_byte();
     dump_file();
+    dumpb();
 }

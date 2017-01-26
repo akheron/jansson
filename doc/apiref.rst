@@ -948,6 +948,28 @@ These functions output UTF-8:
    error. *flags* is described above. The return value must be freed
    by the caller using :func:`free()`.
 
+.. function:: size_t json_dumpb(const json_t *json, char *buffer, size_t size, size_t flags)
+
+   Writes the JSON representation of *json* to the *buffer* of
+   *size* bytes. Returns the number of bytes that would be written
+   or 0 on error. *flags* is described above. *buffer* is not
+   null-terminated.
+
+   This function never writes more than *size* bytes. If the return
+   value is greater than *size*, the contents of the *buffer* are
+   undefined. This behavior enables you to specify a NULL *buffer*
+   to determine the length of the encoding. For example::
+
+       size_t size = json_dumpb(json, NULL, 0, 0);
+       if (size == 0)
+           return -1;
+
+       char *buf = alloca(size);
+
+       size = json_dumpb(json, buf, size, 0);
+
+   .. versionadded:: 2.10
+
 .. function:: int json_dumpf(const json_t *json, FILE *output, size_t flags)
 
    Write the JSON representation of *json* to the stream *output*.

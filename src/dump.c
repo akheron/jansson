@@ -25,9 +25,26 @@
 #define FLAGS_TO_INDENT(f)      ((f) & 0x1F)
 #define FLAGS_TO_PRECISION(f)   (((f) >> 11) & 0x1F)
 
+struct buffer {
+    const size_t size;
+    size_t used;
+    char *data;
+};
+
 static int dump_to_strbuffer(const char *buffer, size_t size, void *data)
 {
     return strbuffer_append_bytes((strbuffer_t *)data, buffer, size);
+}
+
+static int dump_to_buffer(const char *buffer, size_t size, void *data)
+{
+    struct buffer *buf = (struct buffer *)data;
+
+    if(buf->used + size <= buf->size)
+        memcpy(&buf->data[buf->used], buffer, size);
+
+    buf->used += size;
+    return 0;
 }
 
 static int dump_to_file(const char *buffer, size_t size, void *data)
@@ -414,6 +431,16 @@ char *json_dumps(const json_t *json, size_t flags)
 
     strbuffer_close(&strbuff);
     return result;
+}
+
+size_t json_dumpb(const json_t *json, char *buffer, size_t size, size_t flags)
+{
+    struct buffer buf = { size, 0, buffer };
+
+    if(json_dump_callback(json, dump_to_buffer, (void *)&buf, flags))
+        return 0;
+
+    return buf.used;
 }
 
 int json_dumpf(const json_t *json, FILE *output, size_t flags)

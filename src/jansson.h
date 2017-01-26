@@ -292,6 +292,7 @@ json_t *json_load_callback(json_load_callback_t callback, void *data, size_t fla
 typedef int (*json_dump_callback_t)(const char *buffer, size_t size, void *data);
 
 char *json_dumps(const json_t *json, size_t flags);
+size_t json_dumpb(const json_t *json, char *buffer, size_t size, size_t flags);
 int json_dumpf(const json_t *json, FILE *output, size_t flags);
 int json_dump_file(const json_t *json, const char *path, size_t flags);
 int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags);
