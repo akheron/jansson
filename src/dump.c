@@ -9,13 +9,17 @@
 #define _GNU_SOURCE
 #endif
 
+#include "jansson_private.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include "jansson.h"
-#include "jansson_private.h"
 #include "strbuffer.h"
 #include "utf.h"
 
@@ -25,9 +29,26 @@
 #define FLAGS_TO_INDENT(f)      ((f) & 0x1F)
 #define FLAGS_TO_PRECISION(f)   (((f) >> 11) & 0x1F)
 
+struct buffer {
+    const size_t size;
+    size_t used;
+    char *data;
+};
+
 static int dump_to_strbuffer(const char *buffer, size_t size, void *data)
 {
     return strbuffer_append_bytes((strbuffer_t *)data, buffer, size);
+}
+
+static int dump_to_buffer(const char *buffer, size_t size, void *data)
+{
+    struct buffer *buf = (struct buffer *)data;
+
+    if(buf->used + size <= buf->size)
+        memcpy(&buf->data[buf->used], buffer, size);
+
+    buf->used += size;
+    return 0;
 }
 
 static int dump_to_file(const char *buffer, size_t size, void *data)
@@ -36,6 +57,16 @@ static int dump_to_file(const char *buffer, size_t size, void *data)
     if(fwrite(buffer, size, 1, dest) != 1)
         return -1;
     return 0;
+}
+
+static int dump_to_fd(const char *buffer, size_t size, void *data)
+{
+    int *dest = (int *)data;
+#ifdef HAVE_UNISTD_H
+    if(write(*dest, buffer, size) == (ssize_t)size)
+        return 0;
+#endif
+    return -1;
 }
 
 /* 32 spaces (the maximum indentation size) */
@@ -416,9 +447,24 @@ char *json_dumps(const json_t *json, size_t flags)
     return result;
 }
 
+size_t json_dumpb(const json_t *json, char *buffer, size_t size, size_t flags)
+{
+    struct buffer buf = { size, 0, buffer };
+
+    if(json_dump_callback(json, dump_to_buffer, (void *)&buf, flags))
+        return 0;
+
+    return buf.used;
+}
+
 int json_dumpf(const json_t *json, FILE *output, size_t flags)
 {
     return json_dump_callback(json, dump_to_file, (void *)output, flags);
+}
+
+int json_dumpfd(const json_t *json, int output, size_t flags)
+{
+    return json_dump_callback(json, dump_to_fd, (void *)&output, flags);
 }
 
 int json_dump_file(const json_t *json, const char *path, size_t flags)

@@ -48,12 +48,15 @@ EXPORTS
     json_object_key_to_iter
     json_object_seed
     json_dumps
+    json_dumpb
     json_dumpf
+    json_dumpfd
     json_dump_file
     json_dump_callback
     json_loads
     json_loadb
     json_loadf
+    json_loadfd
     json_load_file
     json_load_callback
     json_equal
