@@ -5,8 +5,13 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
+#include "jansson_private_config.h"
+
 #include <jansson.h>
 #include <string.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #include "util.h"
 
 static int encode_null_callback(const char *buffer, size_t size, void *data)
@@ -22,8 +27,16 @@ static void encode_null()
     if(json_dumps(NULL, JSON_ENCODE_ANY) != NULL)
         fail("json_dumps didn't fail for NULL");
 
+    if(json_dumpb(NULL, NULL, 0, JSON_ENCODE_ANY) != 0)
+        fail("json_dumps didn't fail for NULL");
+
     if(json_dumpf(NULL, stderr, JSON_ENCODE_ANY) != -1)
         fail("json_dumpf didn't fail for NULL");
+
+#ifdef HAVE_UNISTD_H
+    if(json_dumpfd(NULL, STDERR_FILENO, JSON_ENCODE_ANY) != -1)
+        fail("json_dumpfd didn't fail for NULL");
+#endif
 
     /* Don't test json_dump_file to avoid creating a file */
 
@@ -124,14 +137,15 @@ static void encode_other_than_array_or_object()
      * succeed if the JSON_ENCODE_ANY flag is used */
 
     json_t *json;
-    FILE *fp = NULL;
     char *result;
 
     json = json_string("foo");
     if(json_dumps(json, 0) != NULL)
         fail("json_dumps encoded a string!");
-    if(json_dumpf(json, fp, 0) == 0)
+    if(json_dumpf(json, NULL, 0) == 0)
         fail("json_dumpf encoded a string!");
+    if(json_dumpfd(json, -1, 0) == 0)
+        fail("json_dumpfd encoded a string!");
 
     result = json_dumps(json, JSON_ENCODE_ANY);
     if(!result || strcmp(result, "\"foo\"") != 0)
@@ -143,8 +157,10 @@ static void encode_other_than_array_or_object()
     json = json_integer(42);
     if(json_dumps(json, 0) != NULL)
         fail("json_dumps encoded an integer!");
-    if(json_dumpf(json, fp, 0) == 0)
+    if(json_dumpf(json, NULL, 0) == 0)
         fail("json_dumpf encoded an integer!");
+    if(json_dumpfd(json, -1, 0) == 0)
+        fail("json_dumpfd encoded an integer!");
 
     result = json_dumps(json, JSON_ENCODE_ANY);
     if(!result || strcmp(result, "42") != 0)
@@ -212,6 +228,56 @@ static void dump_file()
     remove("json_dump_file.json");
 }
 
+static void dumpb()
+{
+    char buf[2];
+    json_t *obj;
+    size_t size;
+
+    obj = json_object();
+
+    size = json_dumpb(obj, buf, sizeof(buf), 0);
+    if(size != 2 || strncmp(buf, "{}", 2))
+      fail("json_dumpb failed");
+
+    json_decref(obj);
+    obj = json_pack("{s:s}", "foo", "bar");
+
+    size = json_dumpb(obj, buf, sizeof(buf), JSON_COMPACT);
+    if(size != 13)
+      fail("json_dumpb size check failed");
+
+    json_decref(obj);
+}
+
+static void dumpfd()
+{
+#ifdef HAVE_UNISTD_H
+    int fds[2] = {-1, -1};
+    json_t *a, *b;
+
+    if(pipe(fds))
+        fail("pipe() failed");
+
+    a = json_pack("{s:s}", "foo", "bar");
+
+    if(json_dumpfd(a, fds[1], 0))
+        fail("json_dumpfd() failed");
+    close(fds[1]);
+
+    b = json_loadfd(fds[0], 0, NULL);
+    if (!b)
+        fail("json_loadfd() failed");
+    close(fds[0]);
+
+    if (!json_equal(a, b))
+        fail("json_equal() failed for fd test");
+
+    json_decref(a);
+    json_decref(b);
+#endif
+}
+
 static void run_tests()
 {
     encode_null();
@@ -221,4 +287,6 @@ static void run_tests()
     escape_slashes();
     encode_nul_byte();
     dump_file();
+    dumpb();
+    dumpfd();
 }

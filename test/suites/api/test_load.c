@@ -180,9 +180,13 @@ static void load_wrong_args()
     if (json)
         fail("json_loadf should return NULL if the first argument is NULL");
 
+    json = json_loadfd(-1, 0, &error);
+    if (json)
+        fail("json_loadfd should return NULL if the first argument is < 0");
+
     json = json_load_file(NULL, 0, &error);
     if (json)
-        fail("json_loadf should return NULL if the first argument is NULL");
+        fail("json_load_file should return NULL if the first argument is NULL");
 }
 
 static void position()
