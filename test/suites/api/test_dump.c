@@ -278,6 +278,39 @@ static void dumpfd()
 #endif
 }
 
+static void embed()
+{
+    static const char *plains[] = {
+        "{\"bar\":[],\"foo\":{}}",
+        "[[],{}]",
+        "{}",
+        "[]",
+        NULL
+    };
+
+    size_t i;
+
+    for(i = 0; plains[i]; i++) {
+        const char *plain = plains[i];
+        json_t *parse = NULL;
+        char *embed = NULL;
+        size_t psize = 0;
+        size_t esize = 0;
+
+        psize = strlen(plain) - 2;
+        embed = calloc(1, psize);
+        parse = json_loads(plain, 0, NULL);
+        esize = json_dumpb(parse, embed, psize,
+                           JSON_COMPACT | JSON_SORT_KEYS | JSON_EMBED);
+        json_decref(parse);
+        if(esize != psize)
+            fail("json_dumpb(JSON_EMBED) returned an invalid size");
+        if(strncmp(plain + 1, embed, esize) != 0)
+            fail("json_dumps(JSON_EMBED) returned an invalid value");
+        free(embed);
+    }
+}
+
 static void run_tests()
 {
     encode_null();
@@ -289,4 +322,5 @@ static void run_tests()
     dump_file();
     dumpb();
     dumpfd();
+    embed();
 }

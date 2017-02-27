@@ -199,6 +199,10 @@ static int compare_keys(const void *key1, const void *key2)
 static int do_dump(const json_t *json, size_t flags, int depth,
                    json_dump_callback_t dump, void *data)
 {
+    int embed = flags & JSON_EMBED;
+
+    flags &= ~JSON_EMBED;
+
     if(!json)
         return -1;
 
@@ -258,11 +262,11 @@ static int do_dump(const json_t *json, size_t flags, int depth,
 
             n = json_array_size(json);
 
-            if(dump("[", 1, data))
+            if(!embed && dump("[", 1, data))
                 goto array_error;
             if(n == 0) {
                 array->visited = 0;
-                return dump("]", 1, data);
+                return embed ? 0 : dump("]", 1, data);
             }
             if(dump_indent(flags, depth + 1, 0, dump, data))
                 goto array_error;
@@ -286,7 +290,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             }
 
             array->visited = 0;
-            return dump("]", 1, data);
+            return embed ? 0 : dump("]", 1, data);
 
         array_error:
             array->visited = 0;
@@ -317,11 +321,11 @@ static int do_dump(const json_t *json, size_t flags, int depth,
 
             iter = json_object_iter((json_t *)json);
 
-            if(dump("{", 1, data))
+            if(!embed && dump("{", 1, data))
                 goto object_error;
             if(!iter) {
                 object->visited = 0;
-                return dump("}", 1, data);
+                return embed ? 0 : dump("}", 1, data);
             }
             if(dump_indent(flags, depth + 1, 0, dump, data))
                 goto object_error;
@@ -417,7 +421,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             }
 
             object->visited = 0;
-            return dump("}", 1, data);
+            return embed ? 0 : dump("}", 1, data);
 
         object_error:
             object->visited = 0;

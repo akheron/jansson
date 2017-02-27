@@ -940,6 +940,13 @@ can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.7
 
+``JSON_EMBED``
+   If this flag is used, the opening and closing characters of the top-level
+   array ('[', ']') or object ('{', '}') are omitted during encoding. This
+   flag is useful when concatenating multiple arrays or objects into a stream.
+
+   .. versionadded:: 2.10
+
 These functions output UTF-8:
 
 .. function:: char *json_dumps(const json_t *json, size_t flags)
