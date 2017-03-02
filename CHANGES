@@ -1,3 +1,28 @@
+Version 2.10
+============
+
+Released 2017-03-02
+
+* New features:
+
+  - Add JSON_EMBED encoding flag allowing arrays and objects to be encoded
+    into existing streams (#329).
+
+  - Add `json_dumpb()` function for dumping to a pre-allocated buffer (#328).
+
+  - Add `json_dumpfd()` and `json_loadfd()` functions for dumping to streaming
+    file descriptors (#328).
+
+  - Add support for parsing buffers larger than 2GB (#309).
+
+* Build:
+
+  - Fix CMake build when LONG_LONG_INT is defined as "" (#321)
+
+* Other:
+
+  - Internal code cleanup (#311, #314)
+
 Version 2.9
 ===========
 
