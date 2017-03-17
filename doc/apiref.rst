@@ -793,6 +793,9 @@ and pass a pointer to a function. Example::
        ...
    }
 
+You can also throw :type:`json_error_t`, however, be sure to throw the
+actual object and not a pointer to it since the stack will be popped
+by throwing the exception.
 Also note that if the call succeeded (``json != NULL`` in the above
 example), the contents of ``error`` are generally left unspecified.
 The decoding functions write to the ``position`` member also on
