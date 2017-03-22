@@ -224,8 +224,9 @@ static int do_dump(const json_t *json, size_t flags, int depth,
 
         case JSON_ARRAY:
         {
-            int i;
-            int n;
+            size_t n;
+            size_t i;
+
             json_array_t *array;
 
             /* detect circular references */
