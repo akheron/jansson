@@ -131,7 +131,7 @@ void json_decrefp(json_t **json)
 #define JSON_ERROR_TEXT_LENGTH    160
 #define JSON_ERROR_SOURCE_LENGTH   80
 
-typedef struct {
+typedef struct json_error_t {
     int line;
     int column;
     int position;
