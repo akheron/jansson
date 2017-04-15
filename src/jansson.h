@@ -269,6 +269,7 @@ json_t *json_deep_copy(const json_t *value);
 #define JSON_ALLOW_NUL          0x10
 
 typedef size_t (*json_load_callback_t)(void *buffer, size_t buflen, void *data);
+typedef int (*json_getc_callback_t)(void *arg);
 
 json_t *json_loads(const char *input, size_t flags, json_error_t *error);
 json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error);
@@ -276,7 +277,7 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error);
 json_t *json_loadfd(int input, size_t flags, json_error_t *error);
 json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
 json_t *json_load_callback(json_load_callback_t callback, void *data, size_t flags, json_error_t *error);
-
+json_t *json_load_unbuffered(json_getc_callback_t callback, void *data, size_t flags, json_error_t *error);
 
 /* encoding */
 
