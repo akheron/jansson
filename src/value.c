@@ -41,6 +41,7 @@ static JSON_INLINE void json_init(json_t *json, json_type type)
 {
     json->type = type;
     json->refcount = 1;
+    pthread_mutex_init(&json->refmutex, 0);
 }
 
 
@@ -951,6 +952,7 @@ void json_delete(json_t *json)
             return;
     }
 
+    pthread_mutex_destroy(&json->refmutex);
     /* json_delete is not called for true, false or null */
 }
 

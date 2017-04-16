@@ -1,9 +1,11 @@
 *~
 *.o
+*.d
 *.a
 .libs
 .deps
-Makefile
+# [FUTUREHACK] Someday, we'll fix the build system so that we can have differently named Makefiles.
+# Makefile
 Makefile.in
 aclocal.m4
 autom4te.cache
