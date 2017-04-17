@@ -44,6 +44,12 @@ static JSON_INLINE void json_init(json_t *json, json_type type)
 }
 
 
+int json_set_flags(json_t *json, unsigned char input)
+{
+    json->flags = input;
+    return 0;
+}
+
 /*** object ***/
 
 extern volatile uint32_t hashtable_seed;
@@ -905,21 +911,21 @@ double json_number_value(const json_t *json)
 
 json_t *json_true(void)
 {
-    static json_t the_true = {JSON_TRUE, (size_t)-1};
+    static json_t the_true = {JSON_TRUE, (size_t)-1, 0};
     return &the_true;
 }
 
 
 json_t *json_false(void)
 {
-    static json_t the_false = {JSON_FALSE, (size_t)-1};
+    static json_t the_false = {JSON_FALSE, (size_t)-1, 0};
     return &the_false;
 }
 
 
 json_t *json_null(void)
 {
-    static json_t the_null = {JSON_NULL, (size_t)-1};
+    static json_t the_null = {JSON_NULL, (size_t)-1, 0};
     return &the_null;
 }
 
