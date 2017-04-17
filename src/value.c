@@ -44,6 +44,12 @@ static JSON_INLINE void json_init(json_t *json, json_type type)
 }
 
 
+int json_set_flags(json_t *json, unsigned char input)
+{
+    json->flags = input;
+    return 0;
+}
+
 /*** object ***/
 
 extern volatile uint32_t hashtable_seed;
