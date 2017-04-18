@@ -240,6 +240,18 @@ static void run_tests()
         fail("json_pack object refcount failed");
     json_decref(value);
 
+    /* object with optional members */
+    value = json_pack("{s:s,s:o,s:O}", "a", NULL, "b", NULL, "c", NULL);
+    if(value)
+        fail("json_pack object optional incorrectly succeeded");
+    value = json_pack("{s:**}", "a", NULL);
+    if(value)
+        fail("json_pack object optional invalid incorrectly succeeded");
+    value = json_pack("{s:s*,s:o*,s:O*}", "a", NULL, "b", NULL, "c", NULL);
+    if(!json_is_object(value) || json_object_size(value) != 0)
+        fail("json_pack object optional failed");
+    json_decref(value);
+
     /* simple array */
     value = json_pack("[i,i,i]", 0, 1, 2);
     if(!json_is_array(value) || json_array_size(value) != 3)
@@ -251,6 +263,18 @@ static void run_tests()
 
             fail("json_pack integer array failed");
     }
+    json_decref(value);
+
+    /* simple array with optional members */
+    value = json_pack("[s,o,O]", NULL, NULL, NULL);
+    if(value)
+        fail("json_pack array optional incorrectly succeeded");
+    value = json_pack("[**]", NULL);
+    if(value)
+        fail("json_pack array optional invalid incorrectly succeeded");
+    value = json_pack("[s*,o*,O*]", NULL, NULL, NULL);
+    if(!json_is_array(value) || json_array_size(value) != 0)
+        fail("json_pack array optional failed");
     json_decref(value);
 
     /* Whitespace; regular string */

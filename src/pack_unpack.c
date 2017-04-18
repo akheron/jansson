@@ -235,6 +235,12 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
             if(ours)
                 jsonp_free(key);
 
+            if(strchr("soO", token(s)) && s->next_token.token == '*') {
+                next_token(s);
+                next_token(s);
+                continue;
+            }
+
             goto error;
         }
 
@@ -249,6 +255,8 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
         if(ours)
             jsonp_free(key);
 
+        if(strchr("soO", token(s)) && s->next_token.token == '*')
+            next_token(s);
         next_token(s);
     }
 
@@ -273,14 +281,23 @@ static json_t *pack_array(scanner_t *s, va_list *ap)
         }
 
         value = pack(s, ap);
-        if(!value)
+        if(!value) {
+            if(strchr("soO", token(s)) && s->next_token.token == '*') {
+                next_token(s);
+                next_token(s);
+                continue;
+            }
+
             goto error;
+        }
 
         if(json_array_append_new(array, value)) {
             set_error(s, "<internal>", "Unable to append to array");
             goto error;
         }
 
+        if(strchr("soO", token(s)) && s->next_token.token == '*')
+            next_token(s);
         next_token(s);
     }
     return array;
