@@ -595,16 +595,6 @@ endif()
 
 set(JANSSON_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
 
-# Create pkg-conf file.
-# (We use the same files as ./configure does, so we
-#  have to defined the same variables used there).
-set(prefix      ${CMAKE_INSTALL_PREFIX})
-set(exec_prefix ${CMAKE_INSTALL_PREFIX})
-set(libdir      ${CMAKE_INSTALL_PREFIX}/${JANSSON_INSTALL_LIB_DIR})
-set(VERSION     ${JANSSON_DISPLAY_VERSION})
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/jansson.pc.in
-               ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc @ONLY)
-
 # Make sure the paths are absolute.
 foreach(p LIB BIN INCLUDE CMAKE)
     set(var JANSSON_INSTALL_${p}_DIR)
@@ -612,6 +602,17 @@ foreach(p LIB BIN INCLUDE CMAKE)
         set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
     endif()
 endforeach()
+
+# Create pkg-conf file.
+# (We use the same files as ./configure does, so we
+#  have to defined the same variables used there).
+set(prefix      ${CMAKE_INSTALL_PREFIX})
+set(exec_prefix ${CMAKE_INSTALL_PREFIX})
+set(libdir      ${JANSSON_INSTALL_LIB_DIR})
+set(includedir  ${JANSSON_INSTALL_INCLUDE_DIR})
+set(VERSION     ${JANSSON_DISPLAY_VERSION})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/jansson.pc.in
+               ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc @ONLY)
 
 # Export targets (This is used for other CMake projects to easily find the libraries and include files).
 export(TARGETS jansson
