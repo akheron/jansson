@@ -1,14 +1,21 @@
 environment:
   matrix:
-    - VS: Visual Studio 9 2008
-    - VS: Visual Studio 10 2010
-    - VS: Visual Studio 11 2012
-    - VS: Visual Studio 12 2013
-    - VS: Visual Studio 14 2015
+    - GEN: MinGW Makefiles
+    - GEN: Visual Studio 9 2008
+    - GEN: Visual Studio 10 2010
+    - GEN: Visual Studio 11 2012
+    - GEN: Visual Studio 12 2013
+    - GEN: Visual Studio 14 2015
+    - GEN: Visual Studio 15 2017
 
-build_script:
+before_build:
+  - set PATH=%PATH:C:\Program Files\Git\cmd;C:\Program Files\Git\usr\bin;=%
+  - set PATH=C:\MinGW\bin;%PATH%
+  - echo "%PATH%"
   - md build
   - cd build
-  - cmake -G "%VS%" ..
-  - cmake --build . --config Release
-  - ctest --output-on-failure
+  - cmake -G "%GEN%" ..
+
+build_script: cmake --build . --config Release
+
+test_script: ctest --output-on-failure
