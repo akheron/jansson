@@ -7,10 +7,11 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <jansson_private_config.h>
+#include "jansson_private_config.h"
+#else
+#include "jansson_config.h"
 #endif
 
-#include <jansson_config.h>
 
 #include <string.h>
 #include <jansson.h>
