@@ -1269,6 +1269,14 @@ arguments.
 
     .. versionadded:: 2.8
 
+``s*`` (string) [const char \*]
+    Like ``s``, but if the argument is *NULL*, do not output any value.
+    This format can only be used inside an object or an array. If used
+    inside an object, the corresponding key is additionally suppressed
+    when the value is omitted. See below for an example.
+
+    .. versionadded:: 2.11
+
 ``s#`` (string) [const char \*, int]
     Convert a UTF-8 buffer of a given length to a JSON string.
 
@@ -1324,10 +1332,19 @@ arguments.
     yourself.
 
 ``o?``, ``O?`` (any value) [json_t \*]
-    Like ``o`` and ``O?``, respectively, but if the argument is
+    Like ``o`` and ``O``, respectively, but if the argument is
     *NULL*, output a JSON null value.
 
     .. versionadded:: 2.8
+
+``o*``, ``O*`` (any value) [json_t \*]
+    Like ``o`` and ``O``, respectively, but if the argument is
+    *NULL*, do not output any value. This format can only be used
+    inside an object or an array. If used inside an object, the
+    corresponding key is additionally suppressed. See below for an
+    example.
+
+    .. versionadded:: 2.11
 
 ``[fmt]`` (array)
     Build an array with contents from the inner format string. ``fmt``
@@ -1386,6 +1403,10 @@ More examples::
 
   /* Concatenate strings together to build the JSON string "foobarbaz" */
   json_pack("s++", "foo", "bar", "baz");
+
+  /* Create an empty object or array when optional members are missing */
+  json_pack("{s:s*,s:o*,s:O*}", "foo", NULL, "bar", NULL, "baz", NULL);
+  json_pack("[s*,o*,O*]", NULL, NULL, NULL);
 
 
 .. _apiref-unpack:
