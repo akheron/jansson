@@ -252,7 +252,7 @@ static void dumpb()
 
 static void dumpfd()
 {
-#ifdef HAVE_UNISTD_H
+#if defined(HAVE_UNISTD_H) && !defined(__MINGW32__)
     int fds[2] = {-1, -1};
     json_t *a, *b;
 
