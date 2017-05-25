@@ -29,6 +29,9 @@ source distribution for details.
 
 Compilation and Installation
 ----------------------------
+If you're running Ubuntu, you probably need to install additional packages::
+
+   $ sudo apt-get install autoconf libtool
 
 If you obtained a source tarball, just use the standard autotools
 commands::
@@ -47,6 +50,18 @@ use autoreconf::
 
    $ autoreconf -i
 
+Make sure libjansson is cached by `ldconfig`::
+
+   # ldconfig -p | grep jansson
+   
+If you get no results or an empty line -- then run::
+
+   # ldconfig -n /path/to/libjansson.so.xxxx
+
+Don't forget to link jansson library when compiling::
+
+   $ echo -e "#include <jansson.h>\n\nint main() {\n\tjson_t *obj = json_pack(\"{s:i}\", \"id\", 10002);\n\treturn 0;\n}" > my_jansson_code.c
+   $ gcc -ljansson my_jansson_code.c
 
 Documentation
 -------------
