@@ -1,5 +1,5 @@
 EXTRA_DIST = CHANGES LICENSE README.rst CMakeLists.txt cmake android examples
-SUBDIRS = doc src test
+SUBDIRS = doc src cmd test
 
 # "make distcheck" builds the dvi target, so use it to check that the
 # documentation is built correctly.
