@@ -52,6 +52,7 @@ project (jansson C)
 
 # Options
 option(JANSSON_BUILD_SHARED_LIBS "Build shared libraries." OFF)
+option(JANSSON_BUILD_EXECUTABLES "Build executables." OFF)
 option(USE_URANDOM "Use /dev/urandom to seed the hash function." ON)
 option(USE_WINDOWS_CRYPTOAPI "Use CryptGenRandom to seed the hash function." ON)
 
@@ -363,6 +364,12 @@ else()
       ${JANSSON_HDR_PUBLIC})
 endif()
 
+if(JANSSON_BUILD_EXECUTABLES)
+    add_executable(cmd-jansson cmd/jansson.c)
+    target_link_libraries(cmd-jansson jansson)
+    set_target_properties(cmd-jansson PROPERTIES OUTPUT_NAME jansson)
+endif()
+
 if (JANSSON_EXAMPLES)
 	add_executable(simple_parse "${PROJECT_SOURCE_DIR}/examples/simple_parse.c")
 	target_link_libraries(simple_parse jansson)
@@ -559,6 +566,11 @@ if (NOT JANSSON_WITHOUT_TESTS)
        endforeach ()
    endforeach ()
 
+   if (JANSSON_BUILD_EXECUTABLES)
+      add_test(NAME cmd-jansson
+               COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/test/suites/cli/run)
+   endif()
+
    if (JANSSON_COVERAGE)
       setup_target_for_coverage(
             coverage             # Coverage make target "make coverage".
@@ -663,6 +675,12 @@ install(TARGETS jansson
         ARCHIVE DESTINATION "${JANSSON_INSTALL_LIB_DIR}" COMPONENT lib
         RUNTIME DESTINATION "${JANSSON_INSTALL_BIN_DIR}" COMPONENT lib # Windows DLLs
         PUBLIC_HEADER DESTINATION "${JANSSON_INSTALL_INCLUDE_DIR}" COMPONENT dev)
+
+if (JANSSON_BUILD_EXECUTABLES)
+install(TARGETS cmd-jansson
+        RUNTIME DESTINATION "${JANSSON_INSTALL_BIN_DIR}" COMPONENT bin
+        PUBLIC_HEADER DESTINATION "${JANSSON_INSTALL_INCLUDE_DIR}" COMPONENT dev)
+endif()
 
 # Install the pkg-config.
 install (FILES 

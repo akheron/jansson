@@ -110,6 +110,7 @@ AC_CONFIG_FILES([
         doc/Makefile
         src/Makefile
         src/jansson_config.h
+        cmd/Makefile
         test/Makefile
         test/bin/Makefile
         test/suites/Makefile

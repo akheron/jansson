@@ -1,0 +1,145 @@
+#!/bin/bash -ex
+
+export PATH=../cmd:bin:$PATH
+
+jansson -i '{}' -O
+! jansson -i '{}' -A
+! jansson -i '{}' -S
+! jansson -i '{}' -I
+! jansson -i '{}' -R
+! jansson -i '{}' -N
+! jansson -i '{}' -T
+! jansson -i '{}' -F
+! jansson -i '{}' -B
+! jansson -i '{}' -0
+
+! jansson -i '{}' -X -O
+jansson -i '{}' -X -A
+jansson -i '{}' -X -S
+jansson -i '{}' -X -I
+jansson -i '{}' -X -R
+jansson -i '{}' -X -N
+jansson -i '{}' -X -T
+jansson -i '{}' -X -F
+jansson -i '{}' -X -B
+jansson -i '{}' -X -0
+
+jansson -i '[]' -A
+! jansson -i '[]' -X -A
+jansson -i '""' -S
+! jansson -i '""' -X -S
+jansson -i '8' -I
+! jansson -i '8' -X -I
+jansson -i '2.5' -R
+! jansson -i '2.5' -X -R
+jansson -i '8' -N
+! jansson -i '8' -X -N
+jansson -i 'true' -T
+! jansson -i 'true' -X -T
+jansson -i 'false' -F
+! jansson -i 'false' -X -F
+jansson -i 'true' -B
+! jansson -i 'true' -X -B
+jansson -i 'null' -0
+! jansson -i 'null' -X -0
+
+jansson -i 7 -i 7 -E
+! jansson -i 7 -i 7 -X -E
+! jansson -i 7 -i 8 -E
+! jansson -i 7 -i 8 -X -E
+
+jansson -i '"foo"' -i '"foo"' -E
+! jansson -i '"foo"' -i '"foo"' -X -E
+! jansson -i '"foo"' -i '"bar"' -E
+! jansson -i '"foo"' -i '"bar"' -X -E
+
+! jansson -o-
+[ "`jansson -i '{}' -o-`" == "{}" ]
+[ "`jansson -i '[1,2,3]' -l- | wc -l`" == "3" ]
+[ "`jansson -i '[1,2,3]' -l- | head -n 1`" == "1" ]
+[ "`jansson -i '[1,2,3]' -l- | tail -n 1`" == "3" ]
+[ "`jansson -i '{"a":1,"b":2}' -l- | wc -l`" == "2" ]
+[ "`jansson -i '{"a":1,"b":2}' -l- | head -n 1`" == "a=1" ]
+[ "`jansson -i '{"a":1,"b":2}' -l- | tail -n 1`" == "b=2" ]
+
+[ "`jansson -i '"foo"' -u-`" == "foo" ]
+! jansson -i 7 -u-
+
+! jansson -z
+[ "`jansson -i '{}' -i '{"a":1}' -s x -i 7 -s a -p -p -o-`" == '{"x":{"a":7}}' ]
+[ "`jansson -i '{}' -i '{"a":1}' -s x -z -i 7 -s a -p -p -p -o-`" == '{"x":{"a":1}}' ]
+
+[ "`jansson -q -o-`" == "[]" ]
+[ "`jansson -i 7 -i 8 -i 9 -q -o-`" == "[9,8,7]" ]
+
+! jansson -m 1
+[ "`jansson -i 1 -i 2 -i 3 -m 1 -o-`" == "2" ]
+[ "`jansson -i 1 -i 2 -i 3 -m 1 -p -o-`" == "3" ]
+[ "`jansson -i 1 -i 2 -i 3 -m 2 -o-`" == "2" ]
+[ "`jansson -i 1 -i 2 -i 3 -m 2 -p -o-`" == "1" ]
+[ "`jansson -i 1 -i 2 -i 3 -m 2 -p -p -o-`" == "3" ]
+
+! jansson -t 0
+! jansson -i 7 -t 0
+! jansson -i '{}' -t 0
+[ "`jansson -i '[1,2,3]' -t 0 -c -o-`" == "0" ]
+[ "`jansson -i '[1,2,3]' -t 1 -c -o-`" == "1" ]
+[ "`jansson -i '[1,2,3]' -t 2 -c -o-`" == "2" ]
+[ "`jansson -i '[1,2,3]' -t 3 -c -o-`" == "3" ]
+[ "`jansson -i '[1,2,3]' -t 4 -c -o-`" == "3" ]
+
+! jansson -n 0
+! jansson -i '[]' -n 0
+! jansson -i 7 -i 8 -n 0
+[ "`jansson -i '[1,2]' -i 3 -n 0 -p -o-`" == "[3,1,2]" ]
+[ "`jansson -i '[1,2]' -i 3 -n 1 -p -o-`" == "[1,3,2]" ]
+[ "`jansson -i '[1,2]' -i 3 -n 2 -p -o-`" == "[1,2,3]" ]
+
+! jansson -a
+! jansson -i '[]' -a
+! jansson -i 7 -i 8 -a
+[ "`jansson -i '[1,2]' -i 3 -a -p -o-`" == "[1,2,3]" ]
+[ "`jansson -i '{"foo":1}' -i '{"foo":2,"bar":2}' -a -p -o-`" == '{"bar":2,"foo":1}' ]
+
+! jansson -x
+! jansson -i '[]' -x
+! jansson -i 7 -i 8 -x
+[ "`jansson -i '[1,2]' -i '[3,4]' -x -p -o-`" == "[1,2,3,4]" ]
+[ "`jansson -i '{"foo":1}' -i '{"foo":2,"bar":2}' -x -p -o-`" == '{"bar":2,"foo":2}' ]
+
+! jansson -d 0
+! jansson -i 7 -d 0
+! jansson -i '[]' -d 0
+[ "`jansson -i '[1,2]' -d 0 -o-`" == "[2]" ]
+[ "`jansson -i '[1,2]' -d 1 -o-`" == "[1]" ]
+
+! jansson -c
+! jansson -i 7 -c
+[ "`jansson -i '{}' -c -o-`" == "0" ]
+[ "`jansson -i '{"foo":1}' -c -o-`" == "1" ]
+[ "`jansson -i '{"foo":1,"bar":2}' -c -o-`" == "2" ]
+
+! jansson -e
+! jansson -i 7 -e
+[ "`jansson -i '[1,2,3,4]' -e -o-`" == "[]" ]
+[ "`jansson -i '{"foo":1}' -e -o-`" == "{}" ]
+
+! jansson -g bar
+! jansson -g 0
+! jansson -i 7 -g bar
+! jansson -i 7 -g 0
+! jansson -i '{"foo":1}' -g bar
+! jansson -i '[]' -g 0
+[ "`jansson -i '{"foo":1}' -g foo -o-`" == "1" ]
+[ "`jansson -i '[1]' -g 0 -o-`" == "1" ]
+
+! jansson -s foo
+! jansson -s 0
+! jansson -i '{}' -s foo
+! jansson -i '[]' -s 0
+! jansson -i 7 -i 8 -s foo
+! jansson -i 7 -i 8 -s 0
+! jansson -i '[]' -i 8 -s 0
+[ "`jansson -i '{}' -i 7 -s "foo" -p -o-`" == '{"foo":7}' ]
+[ "`jansson -i '[1,2]' -i 7 -s 0 -p -o-`" == '[7,2]' ]
+[ "`jansson -i '[1,2]' -i 7 -s 1 -p -o-`" == '[1,7]' ]
