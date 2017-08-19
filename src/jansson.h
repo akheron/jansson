@@ -251,7 +251,7 @@ int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags, const char 
 
 /* equality */
 
-int json_equal(json_t *value1, json_t *value2);
+int json_equal(const json_t *value1, const json_t *value2);
 
 
 /* copying */

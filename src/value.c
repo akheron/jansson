@@ -272,15 +272,15 @@ void *json_object_key_to_iter(const char *key)
     return hashtable_key_to_iter(key);
 }
 
-static int json_object_equal(json_t *object1, json_t *object2)
+static int json_object_equal(const json_t *object1, const json_t *object2)
 {
     const char *key;
-    json_t *value1, *value2;
+    const json_t *value1, *value2;
 
     if(json_object_size(object1) != json_object_size(object2))
         return 0;
 
-    json_object_foreach(object1, key, value1) {
+    json_object_foreach((json_t *)object1, key, value1) {
         value2 = json_object_get(object2, key);
 
         if(!json_equal(value1, value2))
@@ -581,7 +581,7 @@ int json_array_extend(json_t *json, json_t *other_json)
     return 0;
 }
 
-static int json_array_equal(json_t *array1, json_t *array2)
+static int json_array_equal(const json_t *array1, const json_t *array2)
 {
     size_t i, size;
 
@@ -765,7 +765,7 @@ static void json_delete_string(json_string_t *string)
     jsonp_free(string);
 }
 
-static int json_string_equal(json_t *string1, json_t *string2)
+static int json_string_equal(const json_t *string1, const json_t *string2)
 {
     json_string_t *s1, *s2;
 
@@ -825,7 +825,7 @@ static void json_delete_integer(json_integer_t *integer)
     jsonp_free(integer);
 }
 
-static int json_integer_equal(json_t *integer1, json_t *integer2)
+static int json_integer_equal(const json_t *integer1, const json_t *integer2)
 {
     return json_integer_value(integer1) == json_integer_value(integer2);
 }
@@ -877,7 +877,7 @@ static void json_delete_real(json_real_t *real)
     jsonp_free(real);
 }
 
-static int json_real_equal(json_t *real1, json_t *real2)
+static int json_real_equal(const json_t *real1, const json_t *real2)
 {
     return json_real_value(real1) == json_real_value(real2);
 }
@@ -957,7 +957,7 @@ void json_delete(json_t *json)
 
 /*** equality ***/
 
-int json_equal(json_t *json1, json_t *json2)
+int json_equal(const json_t *json1, const json_t *json2)
 {
     if(!json1 || !json2)
         return 0;
