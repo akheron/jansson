@@ -72,7 +72,7 @@ int jsonp_strtod(strbuffer_t *strbuffer, double *out)
 #if JSON_HAVE_LOCALECONV
     to_locale(strbuffer);
 #endif
-
+#if JSON_HAVE_ERRNO
     errno = 0;
     value = strtod(strbuffer->value, &end);
     assert(end == strbuffer->value + strbuffer->length);
@@ -81,7 +81,10 @@ int jsonp_strtod(strbuffer_t *strbuffer, double *out)
         /* Overflow */
         return -1;
     }
-
+#else
+    value = strtod(strbuffer->value, &end);
+    assert(end == strbuffer->value + strbuffer->length);
+#endif
     *out = value;
     return 0;
 }
