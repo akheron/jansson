@@ -311,6 +311,72 @@ static void embed()
     }
 }
 
+static void trailing_linefeed()
+{
+    /* Encode each type with a trailing linefeed */
+
+    json_t *json;
+    char *result;
+
+    json = json_object();
+    json_object_set_new(json, "foo", json_integer(5));
+    result = json_dumps(json, JSON_TRAILING_LINEFEED);
+    if(!result || strcmp(result, "{\"foo\": 5}\n"))
+        fail("json_dumps failed");
+    free(result);
+    json_decref(json);
+
+    json = json_array();
+    json_array_append_new(json, json_integer(5));
+    result = json_dumps(json, JSON_TRAILING_LINEFEED);
+    if(!result || strcmp(result, "[5]\n"))
+        fail("json_dumps failed");
+    free(result);
+    json_decref(json);
+
+    json = json_string("bar");
+    result = json_dumps(json, JSON_TRAILING_LINEFEED | JSON_ENCODE_ANY);
+    if(!result || strcmp(result, "\"bar\"\n"))
+        fail("json_dumps failed");
+    free(result);
+    json_decref(json);
+
+    json = json_integer(5);
+    result = json_dumps(json, JSON_TRAILING_LINEFEED | JSON_ENCODE_ANY);
+    if(!result || strcmp(result, "5\n"))
+        fail("json_dumps failed");
+    free(result);
+    json_decref(json);
+
+    json = json_real(5.5);
+    result = json_dumps(json, JSON_TRAILING_LINEFEED | JSON_ENCODE_ANY);
+    if(!result || strcmp(result, "5.5\n"))
+        fail("json_dumps failed");
+    free(result);
+    json_decref(json);
+
+    json = json_true();
+    result = json_dumps(json, JSON_TRAILING_LINEFEED | JSON_ENCODE_ANY);
+    if(!result || strcmp(result, "true\n"))
+        fail("json_dumps failed");
+    free(result);
+    json_decref(json);
+
+    json = json_false();
+    result = json_dumps(json, JSON_TRAILING_LINEFEED | JSON_ENCODE_ANY);
+    if(!result || strcmp(result, "false\n"))
+        fail("json_dumps failed");
+    free(result);
+    json_decref(json);
+
+    json = json_null();
+    result = json_dumps(json, JSON_TRAILING_LINEFEED | JSON_ENCODE_ANY);
+    if(!result || strcmp(result, "null\n"))
+        fail("json_dumps failed");
+    free(result);
+    json_decref(json);
+}
+
 static void run_tests()
 {
     encode_null();
@@ -323,4 +389,5 @@ static void run_tests()
     dumpb();
     dumpfd();
     embed();
+    trailing_linefeed();
 }
