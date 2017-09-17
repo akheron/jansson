@@ -481,9 +481,7 @@ int json_dump_file(const json_t *json, const char *path, size_t flags)
 
     result = json_dumpf(json, output, flags);
 
-    if(fclose(output) != 0)
-        return -1;
-
+    fclose(output);
     return result;
 }
 

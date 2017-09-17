@@ -156,7 +156,8 @@ static char *read_string(scanner_t *s, va_list *ap,
         return (char *)str;
     }
 
-    strbuffer_init(&strbuff);
+    if (strbuffer_init(&strbuff))
+        return NULL;
 
     while(1) {
         str = va_arg(*ap, const char *);
@@ -503,12 +504,21 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
 
                     /* Save unrecognized keys for the error message */
                     if (!have_unrecognized_keys) {
-                        strbuffer_init(&unrecognized_keys);
+                        if (strbuffer_init(&unrecognized_keys)) {
+                            set_error(s, "<internal>", "Out of memory");
+                            goto out;
+                        }
                         have_unrecognized_keys = 1;
                     } else {
-                        strbuffer_append_bytes(&unrecognized_keys, ", ", 2);
+                        if (strbuffer_append_bytes(&unrecognized_keys, ", ", 2)) {
+                            set_error(s, "<internal>", "Out of memory");
+                            goto out;
+                        }
                     }
-                    strbuffer_append_bytes(&unrecognized_keys, key, strlen(key));
+                    if (strbuffer_append_bytes(&unrecognized_keys, key, strlen(key))) {
+                        set_error(s, "<internal>", "Out of memory");
+                        goto out;
+                    }
                 }
             }
         } else {
@@ -521,12 +531,21 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
                 json_object_foreach(root, key, value) {
                     if(!hashtable_get(&key_set, key)) {
                         if (!have_unrecognized_keys) {
-                            strbuffer_init(&unrecognized_keys);
+                            if (strbuffer_init(&unrecognized_keys)) {
+                                set_error(s, "<internal>", "Out of memory");
+                                goto out;
+                            }
                             have_unrecognized_keys = 1;
                         } else {
-                            strbuffer_append_bytes(&unrecognized_keys, ", ", 2);
+                            if (strbuffer_append_bytes(&unrecognized_keys, ", ", 2)) {
+                                set_error(s, "<internal>", "Out of memory");
+                                goto out;
+                            }
                         }
-                        strbuffer_append_bytes(&unrecognized_keys, key, strlen(key));
+                        if (strbuffer_append_bytes(&unrecognized_keys, key, strlen(key))) {
+                            set_error(s, "<internal>", "Out of memory");
+                            goto out;
+                        }
                     }
                 }
             }
