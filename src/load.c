@@ -241,16 +241,20 @@ static int lex_get(lex_t *lex, json_error_t *error)
     return stream_get(&lex->stream, error);
 }
 
-static void lex_save(lex_t *lex, int c)
+static int lex_save(lex_t *lex, int c)
 {
-    strbuffer_append_byte(&lex->saved_text, c);
+    return strbuffer_append_byte(&lex->saved_text, c);
 }
 
 static int lex_get_save(lex_t *lex, json_error_t *error)
 {
     int c = stream_get(&lex->stream, error);
-    if(c != STREAM_STATE_EOF && c != STREAM_STATE_ERROR)
-        lex_save(lex, c);
+    if(c != STREAM_STATE_EOF && c != STREAM_STATE_ERROR) {
+        // Terminating the 'get' on a failure to save is critically
+        // important to catch and fail on malloc errors as early as possible.
+        if (lex_save(lex, c))
+            c = STREAM_STATE_ERROR;
+    }
     return c;
 }
 
@@ -275,17 +279,20 @@ static void lex_unget_unsave(lex_t *lex, int c)
         #endif
             strbuffer_pop(&lex->saved_text);
         assert(c == d);
+
     }
 }
 
-static void lex_save_cached(lex_t *lex)
+static int lex_save_cached(lex_t *lex)
 {
     while(lex->stream.buffer[lex->stream.buffer_pos] != '\0')
     {
-        lex_save(lex, lex->stream.buffer[lex->stream.buffer_pos]);
+        if (lex_save(lex, lex->stream.buffer[lex->stream.buffer_pos]))
+            return -1;
         lex->stream.buffer_pos++;
         lex->stream.position++;
     }
+    return 0;
 }
 
 static void lex_free_string(lex_t *lex)
@@ -319,7 +326,7 @@ static int32_t decode_unicode_escape(const char *str)
     return value;
 }
 
-static void lex_scan_string(lex_t *lex, json_error_t *error)
+static int lex_scan_string(lex_t *lex, json_error_t *error)
 {
     int c;
     const char *p;
@@ -352,19 +359,28 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
 
         else if(c == '\\') {
             c = lex_get_save(lex, error);
+            if (c == STREAM_STATE_ERROR)
+                goto out;
             if(c == 'u') {
                 c = lex_get_save(lex, error);
+                if (c == STREAM_STATE_ERROR)
+                    goto out;
                 for(i = 0; i < 4; i++) {
                     if(!l_isxdigit(c)) {
                         error_set(error, lex, "invalid escape");
                         goto out;
                     }
                     c = lex_get_save(lex, error);
+                    if (c == STREAM_STATE_ERROR)
+                        goto out;
                 }
             }
             else if(c == '"' || c == '\\' || c == '/' || c == 'b' ||
-                    c == 'f' || c == 'n' || c == 'r' || c == 't')
+                    c == 'f' || c == 'n' || c == 'r' || c == 't') {
                 c = lex_get_save(lex, error);
+                if (c == STREAM_STATE_ERROR)
+                    goto out;
+            }
             else {
                 error_set(error, lex, "invalid escape");
                 goto out;
@@ -391,7 +407,14 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
     /* + 1 to skip the " */
     p = strbuffer_value(&lex->saved_text) + 1;
 
+    char *tend = &t[lex->saved_text.length];
     while(*p != '"') {
+        // This is simply defensive coding to prevent memory overwrite, as
+        // happened at one point before introducing error checking on lex_get_save,
+        // thus leaving the saved_text without a trailing quote.  Without that
+        // quote, this was a runaway loop that overwrote memory.
+        if (t >= tend)
+            goto out;
         if(*p == '\\') {
             p++;
             if(*p == 'u') {
@@ -467,10 +490,11 @@ static void lex_scan_string(lex_t *lex, json_error_t *error)
     *t = '\0';
     lex->value.string.len = t - lex->value.string.val;
     lex->token = TOKEN_STRING;
-    return;
+    return 0;
 
 out:
     lex_free_string(lex);
+    return -1;
 }
 
 #ifndef JANSSON_USING_CMAKE /* disabled if using cmake */
@@ -492,20 +516,30 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
     double doubleval;
 
     lex->token = TOKEN_INVALID;
+    if (c == STREAM_STATE_ERROR)
+        goto out;
 
-    if(c == '-')
+    if(c == '-') {
         c = lex_get_save(lex, error);
+        if (c == STREAM_STATE_ERROR)
+            goto out;
+    }
 
     if(c == '0') {
         c = lex_get_save(lex, error);
+        if (c == STREAM_STATE_ERROR)
+            goto out;
         if(l_isdigit(c)) {
             lex_unget_unsave(lex, c);
             goto out;
         }
     }
     else if(l_isdigit(c)) {
-        do
+        do {
             c = lex_get_save(lex, error);
+            if (c == STREAM_STATE_ERROR)
+                goto out;
+        }
         while(l_isdigit(c));
     }
     else {
@@ -545,25 +579,36 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
             lex_unget(lex, c);
             goto out;
         }
-        lex_save(lex, c);
+        if (lex_save(lex, c))
+            goto out;
 
-        do
+        do {
             c = lex_get_save(lex, error);
+            if (c == STREAM_STATE_ERROR)
+                goto out;
+        }
         while(l_isdigit(c));
     }
 
     if(c == 'E' || c == 'e') {
         c = lex_get_save(lex, error);
-        if(c == '+' || c == '-')
+        if (c == STREAM_STATE_ERROR)
+            goto out;
+        if(c == '+' || c == '-') {
             c = lex_get_save(lex, error);
-
+            if (c == STREAM_STATE_ERROR)
+                goto out;
+        }
         if(!l_isdigit(c)) {
             lex_unget_unsave(lex, c);
             goto out;
         }
 
-        do
+        do {
             c = lex_get_save(lex, error);
+            if (c == STREAM_STATE_ERROR)
+                goto out;
+        }
         while(l_isdigit(c));
     }
 
@@ -605,25 +650,40 @@ static int lex_scan(lex_t *lex, json_error_t *error)
         goto out;
     }
 
-    lex_save(lex, c);
+    if (lex_save(lex, c)) {
+        lex->token = TOKEN_INVALID;
+        goto out;
+    }
 
-    if(c == '{' || c == '}' || c == '[' || c == ']' || c == ':' || c == ',')
+    if(c == '{' || c == '}' || c == '[' || c == ']' || c == ':' || c == ',') {
         lex->token = c;
-
-    else if(c == '"')
-        lex_scan_string(lex, error);
+    }
+    
+    else if(c == '"') {
+        if(lex_scan_string(lex, error)) {
+            lex->token = TOKEN_INVALID;
+            goto out;
+        }
+    }
 
     else if(l_isdigit(c) || c == '-') {
-        if(lex_scan_number(lex, c, error))
+        if(lex_scan_number(lex, c, error)) {
+            lex->token = TOKEN_INVALID;
             goto out;
+        }
     }
 
     else if(l_isalpha(c)) {
         /* eat up the whole identifier for clearer error messages */
         const char *saved_text;
 
-        do
+        do {
             c = lex_get_save(lex, error);
+            if (c == STREAM_STATE_ERROR) {
+                lex->token = TOKEN_INVALID;
+                goto out;
+            }
+        }
         while(l_isalpha(c));
         lex_unget_unsave(lex, c);
 
@@ -642,7 +702,10 @@ static int lex_scan(lex_t *lex, json_error_t *error)
     else {
         /* save the rest of the input UTF-8 sequence to get an error
            message of valid UTF-8 */
-        lex_save_cached(lex);
+        if (lex_save_cached(lex)) {
+            lex->token = TOKEN_INVALID;
+            goto out;
+        }
         lex->token = TOKEN_INVALID;
     }
 
