@@ -302,78 +302,78 @@ static void run_tests()
     /* newline in format string */
     if(json_pack_ex(&error, 0, "{\n\n1"))
         fail("json_pack failed to catch invalid format '1'");
-    check_error("Expected format 's', got '1'", "<format>", 3, 1, 4);
+    check_error(json_error_invalid_format, "Expected format 's', got '1'", "<format>", 3, 1, 4);
 
     /* mismatched open/close array/object */
     if(json_pack_ex(&error, 0, "[}"))
         fail("json_pack failed to catch mismatched '}'");
-    check_error("Unexpected format character '}'", "<format>", 1, 2, 2);
+    check_error(json_error_invalid_format, "Unexpected format character '}'", "<format>", 1, 2, 2);
 
     if(json_pack_ex(&error, 0, "{]"))
         fail("json_pack failed to catch mismatched ']'");
-    check_error("Expected format 's', got ']'", "<format>", 1, 2, 2);
+    check_error(json_error_invalid_format, "Expected format 's', got ']'", "<format>", 1, 2, 2);
 
     /* missing close array */
     if(json_pack_ex(&error, 0, "["))
         fail("json_pack failed to catch missing ']'");
-    check_error("Unexpected end of format string", "<format>", 1, 2, 2);
+    check_error(json_error_invalid_format, "Unexpected end of format string", "<format>", 1, 2, 2);
 
     /* missing close object */
     if(json_pack_ex(&error, 0, "{"))
         fail("json_pack failed to catch missing '}'");
-    check_error("Unexpected end of format string", "<format>", 1, 2, 2);
+    check_error(json_error_invalid_format, "Unexpected end of format string", "<format>", 1, 2, 2);
 
     /* garbage after format string */
     if(json_pack_ex(&error, 0, "[i]a", 42))
         fail("json_pack failed to catch garbage after format string");
-    check_error("Garbage after format string", "<format>", 1, 4, 4);
+    check_error(json_error_invalid_format, "Garbage after format string", "<format>", 1, 4, 4);
 
     if(json_pack_ex(&error, 0, "ia", 42))
         fail("json_pack failed to catch garbage after format string");
-    check_error("Garbage after format string", "<format>", 1, 2, 2);
+    check_error(json_error_invalid_format, "Garbage after format string", "<format>", 1, 2, 2);
 
     /* NULL string */
     if(json_pack_ex(&error, 0, "s", NULL))
         fail("json_pack failed to catch null argument string");
-    check_error("NULL string argument", "<args>", 1, 1, 1);
+    check_error(json_error_null_value, "NULL string argument", "<args>", 1, 1, 1);
 
     /* + on its own */
     if(json_pack_ex(&error, 0, "+", NULL))
         fail("json_pack failed to a lone +");
-    check_error("Unexpected format character '+'", "<format>", 1, 1, 1);
+    check_error(json_error_invalid_format, "Unexpected format character '+'", "<format>", 1, 1, 1);
 
     /* NULL format */
     if(json_pack_ex(&error, 0, NULL))
         fail("json_pack failed to catch NULL format string");
-    check_error("NULL or empty format string", "<format>", -1, -1, 0);
+    check_error(json_error_invalid_argument, "NULL or empty format string", "<format>", -1, -1, 0);
 
     /* NULL key */
     if(json_pack_ex(&error, 0, "{s:i}", NULL, 1))
         fail("json_pack failed to catch NULL key");
-    check_error("NULL string argument", "<args>", 1, 2, 2);
+    check_error(json_error_null_value, "NULL string argument", "<args>", 1, 2, 2);
 
     /* More complicated checks for row/columns */
     if(json_pack_ex(&error, 0, "{ {}: s }", "foo"))
         fail("json_pack failed to catch object as key");
-    check_error("Expected format 's', got '{'", "<format>", 1, 3, 3);
+    check_error(json_error_invalid_format, "Expected format 's', got '{'", "<format>", 1, 3, 3);
 
     /* Complex object */
     if(json_pack_ex(&error, 0, "{ s: {},  s:[ii{} }", "foo", "bar", 12, 13))
         fail("json_pack failed to catch missing ]");
-    check_error("Unexpected format character '}'", "<format>", 1, 19, 19);
+    check_error(json_error_invalid_format, "Unexpected format character '}'", "<format>", 1, 19, 19);
 
     /* Complex array */
     if(json_pack_ex(&error, 0, "[[[[[   [[[[[  [[[[ }]]]] ]]]] ]]]]]"))
         fail("json_pack failed to catch extra }");
-    check_error("Unexpected format character '}'", "<format>", 1, 21, 21);
+    check_error(json_error_invalid_format, "Unexpected format character '}'", "<format>", 1, 21, 21);
 
     /* Invalid UTF-8 in object key */
     if(json_pack_ex(&error, 0, "{s:i}", "\xff\xff", 42))
         fail("json_pack failed to catch invalid UTF-8 in an object key");
-    check_error("Invalid UTF-8 object key", "<args>", 1, 2, 2);
+    check_error(json_error_invalid_utf8, "Invalid UTF-8 object key", "<args>", 1, 2, 2);
 
     /* Invalid UTF-8 in a string */
     if(json_pack_ex(&error, 0, "{s:s}", "foo", "\xff\xff"))
         fail("json_pack failed to catch invalid UTF-8 in a string");
-    check_error("Invalid UTF-8 string", "<args>", 1, 4, 4);
+    check_error(json_error_invalid_utf8, "Invalid UTF-8 string", "<args>", 1, 4, 4);
 }

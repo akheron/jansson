@@ -813,6 +813,9 @@ this struct.
       The error message (in UTF-8), or an empty string if a message is
       not available.
 
+      The last byte of this array contains a numeric error code.  Use
+      :func:`json_error_code()` to extract this code.
+
    .. member:: char source[]
 
       Source of the error. This can be (a part of) the file name or a
@@ -854,6 +857,93 @@ success. See :ref:`apiref-decoding` for more info.
 
 All functions also accept *NULL* as the :type:`json_error_t` pointer,
 in which case no error information is returned to the caller.
+
+.. type:: enum json_error_code
+
+   An enumeration containing numeric error codes.  The following errors are
+   currently defined:
+
+   ``json_error_unknown``
+
+       Unknown error.  This should only be returned for non-errorneous
+       :type:`json_error_t` structures.
+
+   ``json_error_out_of_memory``
+
+       The library couldn’t allocate any heap memory.
+
+   ``json_error_stack_overflow``
+
+       Nesting too deep.
+
+   ``json_error_cannot_open_file``
+
+       Couldn’t open input file.
+
+   ``json_error_invalid_argument``
+
+       A function argument was invalid.
+
+   ``json_error_invalid_utf8``
+
+       The input string isn’t valid UTF-8.
+
+   ``json_error_premature_end_of_input``
+
+       The input ended in the middle of a JSON value.
+
+   ``json_error_end_of_input_expected``
+
+       There was some text after the end of a JSON value.  See the
+       ``JSON_DISABLE_EOF_CHECK`` flag.
+
+   ``json_error_invalid_syntax``
+
+       JSON syntax error.
+
+   ``json_error_invalid_format``
+
+       Invalid format string for packing or unpacking.
+
+   ``json_error_wrong_type``
+
+       When packing or unpacking, the actual type of a value differed from the
+       one specified in the format string.
+
+   ``json_error_null_character``
+
+       A null character was detected in a JSON string.  See the
+       ``JSON_ALLOW_NUL`` flag.
+
+   ``json_error_null_value``
+
+       When packing or unpacking, some key or value was ``NULL``.
+
+   ``json_error_null_byte_in_key``
+
+       An object key would contain a null byte.  Jansson can’t represent such
+       keys; see :ref:`rfc-conformance`.
+
+   ``json_error_duplicate_key``
+
+       Duplicate key in object.  See the ``JSON_REJECT_DUPLICATES`` flag.
+
+   ``json_error_numeric_overflow``
+
+       When converting a JSON number to a C numeric type, a numeric overflow
+       was detected.
+
+   ``json_error_item_not_found``
+
+       Key in object not found.
+
+   ``json_error_index_out_of_range``
+
+       Array index is out of range.
+
+.. function:: enum json_error_code json_error_code(const json_error_t *error)
+
+   Returns the error code embedded in ``error->text``.
 
 
 Encoding
