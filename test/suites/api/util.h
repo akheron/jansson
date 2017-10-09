@@ -30,9 +30,16 @@
     } while(0)
 
 /* Assumes json_error_t error */
-#define check_errors(texts_, num_, source_, line_, column_, position_)  \
+#define check_errors(code_, texts_, num_, source_,                      \
+    line_, column_, position_)                                          \
     do {                                                                \
         int i_, found_ = 0;                                             \
+        if(json_error_code(&error) != code_) {                          \
+            failhdr;                                                    \
+            fprintf(stderr, "code: %d != %d\n",                         \
+                    json_error_code(&error), code_);                    \
+            exit(1);                                                    \
+        }                                                               \
         for(i_ = 0; i_ < num_; i_++) {                                  \
             if(strcmp(error.text, texts_[i_]) == 0) {                   \
                 found_ = 1;                                             \
@@ -73,8 +80,8 @@
 
 
 /* Assumes json_error_t error */
-#define check_error(text_, source_, line_, column_, position_)          \
-    check_errors(&text_, 1, source_, line_, column_, position_)
+#define check_error(code_, text_, source_, line_, column_, position_)   \
+    check_errors(code_, &text_, 1, source_, line_, column_, position_)
 
 
 static void run_tests();

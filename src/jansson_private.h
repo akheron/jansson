@@ -75,9 +75,11 @@ json_t *jsonp_stringn_nocheck_own(const char *value, size_t len);
 void jsonp_error_init(json_error_t *error, const char *source);
 void jsonp_error_set_source(json_error_t *error, const char *source);
 void jsonp_error_set(json_error_t *error, int line, int column,
-                     size_t position, const char *msg, ...);
+                     size_t position, enum json_error_code code,
+                     const char *msg, ...);
 void jsonp_error_vset(json_error_t *error, int line, int column,
-                      size_t position, const char *msg, va_list ap);
+                      size_t position, enum json_error_code code,
+                      const char *msg, va_list ap);
 
 /* Locale independent string<->double conversions */
 int jsonp_strtod(strbuffer_t *strbuffer, double *out);

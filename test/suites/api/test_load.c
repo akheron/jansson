@@ -32,6 +32,8 @@ static void file_not_found()
 
     if(strcmp(error.text, "unable to open /path/to/nonexistent/file.json") != 0)
         fail("json_load_file returned an invalid error message");
+    if(json_error_code(&error) != json_error_cannot_open_file)
+        fail("json_load_file returned an invalid error code");
 }
 
 static void very_long_file_name() {
@@ -46,6 +48,8 @@ static void very_long_file_name() {
 
     if (strncmp(error.source, "...aaa", 6) != 0)
         fail("error source was set incorrectly");
+    if(json_error_code(&error) != json_error_cannot_open_file)
+        fail("error code was set incorrectly");
 }
 
 static void reject_duplicates()
@@ -54,7 +58,7 @@ static void reject_duplicates()
 
     if(json_loads("{\"foo\": 1, \"foo\": 2}", JSON_REJECT_DUPLICATES, &error))
         fail("json_loads did not detect a duplicate key");
-    check_error("duplicate object key near '\"foo\"'", "<string>", 1, 16, 16);
+    check_error(json_error_duplicate_key, "duplicate object key near '\"foo\"'", "<string>", 1, 16, 16);
 }
 
 static void disable_eof_check()
@@ -66,7 +70,7 @@ static void disable_eof_check()
 
     if(json_loads(text, 0, &error))
         fail("json_loads did not detect garbage after JSON text");
-    check_error("end of file expected near 'garbage'", "<string>", 1, 18, 18);
+    check_error(json_error_end_of_input_expected, "end of file expected near 'garbage'", "<string>", 1, 18, 18);
 
     json = json_loads(text, JSON_DISABLE_EOF_CHECK, &error);
     if(!json)
@@ -137,7 +141,8 @@ static void decode_int_as_real()
     big[310] = '\0';
 
     json = json_loads(big, JSON_DECODE_INT_AS_REAL | JSON_DECODE_ANY, &error);
-    if (json || strcmp(error.text, "real number overflow") != 0)
+    if (json || strcmp(error.text, "real number overflow") != 0 ||
+        json_error_code(&error) != json_error_numeric_overflow)
         fail("json_load decode int as real failed - expected overflow");
     json_decref(json);
 
@@ -206,6 +211,18 @@ static void position()
     json_decref(json);
 }
 
+static void error_code()
+{
+    json_error_t error;
+    json_t *json = json_loads("[123] garbage", 0, &error);
+    if(json != NULL)
+        fail("json_loads returned not NULL");
+    if(strlen(error.text) >= JSON_ERROR_TEXT_LENGTH)
+        fail("error.text longer than expected");
+    if(json_error_code(&error) != json_error_end_of_input_expected)
+        fail("json_loads returned incorrect error code");
+}
+
 static void run_tests()
 {
     file_not_found();
@@ -217,4 +234,5 @@ static void run_tests()
     allow_nul();
     load_wrong_args();
     position();
+    error_code();
 }
