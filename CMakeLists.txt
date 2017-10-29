@@ -599,8 +599,9 @@ set(JANSSON_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation 
 # (We use the same files as ./configure does, so we
 #  have to defined the same variables used there).
 set(prefix      ${CMAKE_INSTALL_PREFIX})
-set(exec_prefix ${CMAKE_INSTALL_PREFIX})
-set(libdir      ${CMAKE_INSTALL_PREFIX}/${JANSSON_INSTALL_LIB_DIR})
+set(exec_prefix "\${prefix}")
+set(libdir      "\${exec_prefix}/${JANSSON_INSTALL_LIB_DIR}")
+set(includedir  "\${prefix}/${JANSSON_INSTALL_INCLUDE_DIR}")
 set(VERSION     ${JANSSON_DISPLAY_VERSION})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/jansson.pc.in
                ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc @ONLY)
