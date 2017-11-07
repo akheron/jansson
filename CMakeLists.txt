@@ -138,7 +138,7 @@ check_include_files (unistd.h HAVE_UNISTD_H)
 check_include_files (sys/param.h HAVE_SYS_PARAM_H)
 check_include_files (sys/stat.h HAVE_SYS_STAT_H)
 check_include_files (sys/time.h HAVE_SYS_TIME_H)
-check_include_files (sys/time.h HAVE_SYS_TYPES_H)
+check_include_files (sys/types.h HAVE_SYS_TYPES_H)
 
 check_function_exists (close HAVE_CLOSE)
 check_function_exists (getpid HAVE_GETPID)
