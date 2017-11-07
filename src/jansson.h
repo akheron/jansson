@@ -161,7 +161,7 @@ enum json_error_code {
 };
 
 static JSON_INLINE enum json_error_code json_error_code(const json_error_t *e) {
-    return e->text[JSON_ERROR_TEXT_LENGTH - 1];
+    return (enum json_error_code)e->text[JSON_ERROR_TEXT_LENGTH - 1];
 }
 
 /* getters, setters, manipulation */
