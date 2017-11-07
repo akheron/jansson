@@ -352,6 +352,15 @@ static void run_tests()
         fail("json_pack failed to catch NULL key");
     check_error(json_error_null_value, "NULL string argument", "<args>", 1, 2, 2);
 
+    /* NULL value followed by object still steals the object's ref */
+    value = json_incref(json_object());
+    if(json_pack_ex(&error, 0, "{s:s,s:o}", "badnull", NULL, "dontleak", value))
+        fail("json_pack failed to catch NULL value");
+    check_error(json_error_null_value, "NULL string argument", "<args>", 1, 4, 4);
+    if(value->refcount != (size_t)1)
+        fail("json_pack failed to steal reference after error.");
+    json_decref(value);
+
     /* More complicated checks for row/columns */
     if(json_pack_ex(&error, 0, "{ {}: s }", "foo"))
         fail("json_pack failed to catch object as key");

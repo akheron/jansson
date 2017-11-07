@@ -29,6 +29,7 @@ typedef struct {
     int line;
     int column;
     size_t pos;
+    int has_error;
 } scanner_t;
 
 #define token(scanner) ((scanner)->token.token)
@@ -60,6 +61,7 @@ static void scanner_init(scanner_t *s, json_error_t *error,
     s->line = 1;
     s->column = 0;
     s->pos = 0;
+    s->has_error = 0;
 }
 
 static void next_token(scanner_t *s)
@@ -136,6 +138,7 @@ static char *read_string(scanner_t *s, va_list *ap,
     t = token(s);
     prev_token(s);
 
+    *ours = 0;
     if(t != '#' && t != '%' && t != '+') {
         /* Optimize the simple case */
         str = va_arg(*ap, const char *);
@@ -153,7 +156,6 @@ static char *read_string(scanner_t *s, va_list *ap,
         }
 
         *out_len = length;
-        *ours = 0;
         return (char *)str;
     }
 
@@ -163,8 +165,7 @@ static char *read_string(scanner_t *s, va_list *ap,
         str = va_arg(*ap, const char *);
         if(!str) {
             set_error(s, "<args>", json_error_null_value, "NULL string argument");
-            strbuffer_close(&strbuff);
-            return NULL;
+            s->has_error = 1;
         }
 
         next_token(s);
@@ -177,13 +178,12 @@ static char *read_string(scanner_t *s, va_list *ap,
         }
         else {
             prev_token(s);
-            length = strlen(str);
+            length = s->has_error ? 0 : strlen(str);
         }
 
-        if(strbuffer_append_bytes(&strbuff, str, length) == -1) {
+        if(!s->has_error && strbuffer_append_bytes(&strbuff, str, length) == -1) {
             set_error(s, "<internal>", json_error_out_of_memory, "Out of memory");
-            strbuffer_close(&strbuff);
-            return NULL;
+            s->has_error = 1;
         }
 
         next_token(s);
@@ -193,9 +193,15 @@ static char *read_string(scanner_t *s, va_list *ap,
         }
     }
 
+    if(s->has_error) {
+        strbuffer_close(&strbuff);
+        return NULL;
+    }
+
     if(!utf8_check_string(strbuff.value, strbuff.length)) {
         set_error(s, "<args>", json_error_invalid_utf8, "Invalid UTF-8 %s", purpose);
         strbuffer_close(&strbuff);
+        s->has_error = 1;
         return NULL;
     }
 
@@ -226,8 +232,8 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
         }
 
         key = read_string(s, ap, "object key", &len, &ours);
-        if(!key)
-            goto error;
+        if (!key)
+            s->has_error = 1;
 
         next_token(s);
 
@@ -238,19 +244,20 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
 
             if(strchr("soO", token(s)) && s->next_token.token == '*') {
                 next_token(s);
-                next_token(s);
-                continue;
+            } else {
+                s->has_error = 1;
             }
 
-            goto error;
+            next_token(s);
+            continue;
         }
 
-        if(json_object_set_new_nocheck(object, key, value)) {
-            set_error(s, "<internal>", json_error_out_of_memory, "Unable to add key \"%s\"", key);
-            if(ours)
-                jsonp_free(key);
+        if(s->has_error)
+            json_decref(value);
 
-            goto error;
+        if(!s->has_error && json_object_set_new_nocheck(object, key, value)) {
+            set_error(s, "<internal>", json_error_out_of_memory, "Unable to add key \"%s\"", key);
+            s->has_error = 1;
         }
 
         if(ours)
@@ -261,7 +268,8 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
         next_token(s);
     }
 
-    return object;
+    if(!s->has_error)
+        return object;
 
 error:
     json_decref(object);
@@ -278,6 +286,7 @@ static json_t *pack_array(scanner_t *s, va_list *ap)
 
         if(!token(s)) {
             set_error(s, "<format>", json_error_invalid_format, "Unexpected end of format string");
+            /* Format string errors are unrecoverable. */
             goto error;
         }
 
@@ -285,23 +294,29 @@ static json_t *pack_array(scanner_t *s, va_list *ap)
         if(!value) {
             if(strchr("soO", token(s)) && s->next_token.token == '*') {
                 next_token(s);
-                next_token(s);
-                continue;
+            } else {
+                s->has_error = 1;
             }
 
-            goto error;
+            next_token(s);
+            continue;
         }
 
-        if(json_array_append_new(array, value)) {
+        if(s->has_error)
+            json_decref(value);
+
+        if(!s->has_error && json_array_append_new(array, value)) {
             set_error(s, "<internal>", json_error_out_of_memory, "Unable to append to array");
-            goto error;
+            s->has_error = 1;
         }
 
         if(strchr("soO", token(s)) && s->next_token.token == '*')
             next_token(s);
         next_token(s);
     }
-    return array;
+
+    if(!s->has_error)
+        return array;
 
 error:
     json_decref(array);
@@ -396,6 +411,7 @@ static json_t *pack(scanner_t *s, va_list *ap)
         default:
             set_error(s, "<format>", json_error_invalid_format, "Unexpected format character '%c'",
                       token(s));
+            s->has_error = 1;
             return NULL;
     }
 }
@@ -796,6 +812,10 @@ json_t *json_vpack_ex(json_error_t *error, size_t flags,
     if(token(&s)) {
         json_decref(value);
         set_error(&s, "<format>", json_error_invalid_format, "Garbage after format string");
+        return NULL;
+    }
+    if(s.has_error) {
+        json_decref(value);
         return NULL;
     }
 
