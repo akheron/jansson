@@ -200,21 +200,31 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                    json_dump_callback_t dump, void *data)
 {
     int embed = flags & JSON_EMBED;
+    int trailing_lf = flags & JSON_TRAILING_LINEFEED;
 
-    flags &= ~JSON_EMBED;
+    flags &= ~(JSON_EMBED | JSON_TRAILING_LINEFEED);
 
     if(!json)
         return -1;
 
     switch(json_typeof(json)) {
         case JSON_NULL:
-            return dump("null", 4, data);
+            if(trailing_lf)
+                return dump("null\n", 5, data);
+            else
+                return dump("null", 4, data);
 
         case JSON_TRUE:
-            return dump("true", 4, data);
+            if(trailing_lf)
+                return dump("true\n", 5, data);
+            else
+                return dump("true", 4, data);
 
         case JSON_FALSE:
-            return dump("false", 5, data);
+            if(trailing_lf)
+                return dump("false\n", 6, data);
+            else
+                return dump("false", 5, data);
 
         case JSON_INTEGER:
         {
@@ -222,8 +232,8 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             int size;
 
             size = snprintf(buffer, MAX_INTEGER_STR_LENGTH,
-                            "%" JSON_INTEGER_FORMAT,
-                            json_integer_value(json));
+                            "%" JSON_INTEGER_FORMAT "%s",
+                            json_integer_value(json), trailing_lf ? "\n" : "");
             if(size < 0 || size >= MAX_INTEGER_STR_LENGTH)
                 return -1;
 
@@ -241,11 +251,17 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             if(size < 0)
                 return -1;
 
-            return dump(buffer, size, data);
+            if (dump(buffer, size, data))
+              return -1;
+
+            return trailing_lf ? dump("\n", 1, data) : 0;
         }
 
         case JSON_STRING:
-            return dump_string(json_string_value(json), json_string_length(json), dump, data, flags);
+            if(dump_string(json_string_value(json), json_string_length(json), dump, data, flags))
+                return -1;
+
+            return trailing_lf ? dump("\n", 1, data) : 0;
 
         case JSON_ARRAY:
         {
@@ -253,6 +269,9 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             size_t i;
 
             json_array_t *array;
+
+            const char *ending = trailing_lf ? "]\n" : "]";
+            int ending_length = trailing_lf ? 2 : 1;
 
             /* detect circular references */
             array = json_to_array(json);
@@ -266,7 +285,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 goto array_error;
             if(n == 0) {
                 array->visited = 0;
-                return embed ? 0 : dump("]", 1, data);
+                return embed ? 0 : dump(ending, ending_length, data);
             }
             if(dump_indent(flags, depth + 1, 0, dump, data))
                 goto array_error;
@@ -290,7 +309,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             }
 
             array->visited = 0;
-            return embed ? 0 : dump("]", 1, data);
+            return embed ? 0 : dump(ending, ending_length, data);
 
         array_error:
             array->visited = 0;
@@ -303,6 +322,9 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             void *iter;
             const char *separator;
             int separator_length;
+
+            const char *ending = trailing_lf ? "}\n" : "}";
+            int ending_length = trailing_lf ? 2 : 1;
 
             if(flags & JSON_COMPACT) {
                 separator = ":";
@@ -325,7 +347,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 goto object_error;
             if(!iter) {
                 object->visited = 0;
-                return embed ? 0 : dump("}", 1, data);
+                return embed ? 0 : dump(ending, ending_length, data);
             }
             if(dump_indent(flags, depth + 1, 0, dump, data))
                 goto object_error;
@@ -421,7 +443,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             }
 
             object->visited = 0;
-            return embed ? 0 : dump("}", 1, data);
+            return embed ? 0 : dump(ending, ending_length, data);
 
         object_error:
             object->visited = 0;

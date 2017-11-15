@@ -1037,6 +1037,13 @@ can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.10
 
+``JSON_TRAILING_LINEFEED``
+   If this flag is used, a trailing newline is added to dump output.
+   This is required for compliance with the POSIX definition of a text file,
+   and is helpful when working with Unix-like utilities.
+
+   .. versionadded:: 2.11
+
 These functions output UTF-8:
 
 .. function:: char *json_dumps(const json_t *json, size_t flags)
