@@ -738,13 +738,11 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
             goto error;
         }
 
-        if(json_object_set_nocheck(object, key, value)) {
+        if(json_object_set_new_nocheck(object, key, value)) {
             jsonp_free(key);
-            json_decref(value);
             goto error;
         }
 
-        json_decref(value);
         jsonp_free(key);
 
         lex_scan(lex, error);
@@ -781,11 +779,9 @@ static json_t *parse_array(lex_t *lex, size_t flags, json_error_t *error)
         if(!elem)
             goto error;
 
-        if(json_array_append(array, elem)) {
-            json_decref(elem);
+        if(json_array_append_new(array, elem)) {
             goto error;
         }
-        json_decref(elem);
 
         lex_scan(lex, error);
         if(lex->token != ',')
