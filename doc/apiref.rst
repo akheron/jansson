@@ -332,6 +332,8 @@ length-aware functions if you wish to embed null bytes in strings.
    Like :func:`json_string`, but with explicit length, so *value* may
    contain null characters or not be null terminated.
 
+   .. versionadded:: 2.7
+
 .. function:: json_t *json_string_nocheck(const char *value)
 
    .. refcounting:: new
@@ -347,6 +349,8 @@ length-aware functions if you wish to embed null bytes in strings.
    Like :func:`json_string_nocheck`, but with explicit length, so
    *value* may contain null characters or not be null terminated.
 
+   .. versionadded:: 2.7
+
 .. function:: const char *json_string_value(const json_t *string)
 
    Returns the associated value of *string* as a null terminated UTF-8
@@ -361,6 +365,8 @@ length-aware functions if you wish to embed null bytes in strings.
    Returns the length of *string* in its UTF-8 presentation, or zero
    if *string* is not a JSON string.
 
+   .. versionadded:: 2.7
+
 .. function:: int json_string_set(json_t *string, const char *value)
 
    Sets the associated value of *string* to *value*. *value* must be a
@@ -371,6 +377,8 @@ length-aware functions if you wish to embed null bytes in strings.
 
    Like :func:`json_string_set`, but with explicit length, so *value*
    may contain null characters or not be null terminated.
+
+   .. versionadded:: 2.7
 
 .. function:: int json_string_set_nocheck(json_t *string, const char *value)
 
@@ -383,6 +391,8 @@ length-aware functions if you wish to embed null bytes in strings.
 
    Like :func:`json_string_set_nocheck`, but with explicit length,
    so *value* may contain null characters or not be null terminated.
+
+   .. versionadded:: 2.7
 
 
 Number
