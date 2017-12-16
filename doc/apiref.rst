@@ -1564,7 +1564,10 @@ type whose address should be passed.
     Store a JSON value with no conversion to a :type:`json_t` pointer.
 
 ``O`` (any value) [json_t \*]
-    Like ``O``, but the JSON value's reference count is incremented.
+    Like ``o``, but the JSON value's reference count is incremented.
+    Storage pointers should be initialized NULL before using unpack.
+    The caller is responsible for releasing all references incremented
+    by unpack, even when an error occurs.
 
 ``[fmt]`` (array)
     Convert each item in the JSON array according to the inner format
