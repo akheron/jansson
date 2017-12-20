@@ -122,6 +122,10 @@ static void error_set(json_error_t *error, const lex_t *lex,
         }
         else
         {
+            if(code == json_error_invalid_syntax) {
+                /* More specific error code for premature end of file. */
+                code = json_error_premature_end_of_input;
+            }
             if(lex->stream.state == STREAM_STATE_ERROR) {
                 /* No context for UTF-8 decoding errors */
                 result = msg_text;
