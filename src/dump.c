@@ -196,8 +196,17 @@ static int compare_keys(const void *key1, const void *key2)
     return strcmp(*(const char **)key1, *(const char **)key2);
 }
 
+static int loop_check(hashtable_t *parents, const json_t *json, char *key, size_t key_size)
+{
+    snprintf(key, key_size, "%p", json);
+    if (hashtable_get(parents, key))
+        return -1;
+
+    return hashtable_set(parents, key, json_null());
+}
+
 static int do_dump(const json_t *json, size_t flags, int depth,
-                   json_dump_callback_t dump, void *data)
+                   hashtable_t *parents, json_dump_callback_t dump, void *data)
 {
     int embed = flags & JSON_EMBED;
 
@@ -251,58 +260,53 @@ static int do_dump(const json_t *json, size_t flags, int depth,
         {
             size_t n;
             size_t i;
-
-            json_array_t *array;
+            /* Space for "0x", double the sizeof a pointer for the hex and a terminator. */
+            char key[2 + (sizeof(json) * 2) + 1];
 
             /* detect circular references */
-            array = json_to_array(json);
-            if(array->visited)
-                goto array_error;
-            array->visited = 1;
+            if (loop_check(parents, json, key, sizeof(key)))
+                return -1;
 
             n = json_array_size(json);
 
             if(!embed && dump("[", 1, data))
-                goto array_error;
+                return -1;
             if(n == 0) {
-                array->visited = 0;
+                hashtable_del(parents, key);
                 return embed ? 0 : dump("]", 1, data);
             }
             if(dump_indent(flags, depth + 1, 0, dump, data))
-                goto array_error;
+                return -1;
 
             for(i = 0; i < n; ++i) {
                 if(do_dump(json_array_get(json, i), flags, depth + 1,
-                           dump, data))
-                    goto array_error;
+                           parents, dump, data))
+                    return -1;
 
                 if(i < n - 1)
                 {
                     if(dump(",", 1, data) ||
                        dump_indent(flags, depth + 1, 1, dump, data))
-                        goto array_error;
+                        return -1;
                 }
                 else
                 {
                     if(dump_indent(flags, depth, 0, dump, data))
-                        goto array_error;
+                        return -1;
                 }
             }
 
-            array->visited = 0;
+            hashtable_del(parents, key);
             return embed ? 0 : dump("]", 1, data);
-
-        array_error:
-            array->visited = 0;
-            return -1;
         }
 
         case JSON_OBJECT:
         {
-            json_object_t *object;
             void *iter;
             const char *separator;
             int separator_length;
+            /* Space for "0x", double the sizeof a pointer for the hex and a terminator. */
+            char key[2 + (sizeof(json) * 2) + 1];
 
             if(flags & JSON_COMPACT) {
                 separator = ":";
@@ -314,21 +318,19 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             }
 
             /* detect circular references */
-            object = json_to_object(json);
-            if(object->visited)
-                goto object_error;
-            object->visited = 1;
+            if (loop_check(parents, json, key, sizeof(key)))
+                return -1;
 
             iter = json_object_iter((json_t *)json);
 
             if(!embed && dump("{", 1, data))
-                goto object_error;
+                return -1;
             if(!iter) {
-                object->visited = 0;
+                hashtable_del(parents, key);
                 return embed ? 0 : dump("}", 1, data);
             }
             if(dump_indent(flags, depth + 1, 0, dump, data))
-                goto object_error;
+                return -1;
 
             if(flags & JSON_SORT_KEYS)
             {
@@ -338,7 +340,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 size = json_object_size(json);
                 keys = jsonp_malloc(size * sizeof(const char *));
                 if(!keys)
-                    goto object_error;
+                    return -1;
 
                 i = 0;
                 while(iter)
@@ -362,10 +364,10 @@ static int do_dump(const json_t *json, size_t flags, int depth,
 
                     dump_string(key, strlen(key), dump, data, flags);
                     if(dump(separator, separator_length, data) ||
-                       do_dump(value, flags, depth + 1, dump, data))
+                       do_dump(value, flags, depth + 1, parents, dump, data))
                     {
                         jsonp_free(keys);
-                        goto object_error;
+                        return -1;
                     }
 
                     if(i < size - 1)
@@ -374,7 +376,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                            dump_indent(flags, depth + 1, 1, dump, data))
                         {
                             jsonp_free(keys);
-                            goto object_error;
+                            return -1;
                         }
                     }
                     else
@@ -382,7 +384,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                         if(dump_indent(flags, depth, 0, dump, data))
                         {
                             jsonp_free(keys);
-                            goto object_error;
+                            return -1;
                         }
                     }
                 }
@@ -401,31 +403,27 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                     dump_string(key, strlen(key), dump, data, flags);
                     if(dump(separator, separator_length, data) ||
                        do_dump(json_object_iter_value(iter), flags, depth + 1,
-                               dump, data))
-                        goto object_error;
+                               parents, dump, data))
+                        return -1;
 
                     if(next)
                     {
                         if(dump(",", 1, data) ||
                            dump_indent(flags, depth + 1, 1, dump, data))
-                            goto object_error;
+                            return -1;
                     }
                     else
                     {
                         if(dump_indent(flags, depth, 0, dump, data))
-                            goto object_error;
+                            return -1;
                     }
 
                     iter = next;
                 }
             }
 
-            object->visited = 0;
+            hashtable_del(parents, key);
             return embed ? 0 : dump("}", 1, data);
-
-        object_error:
-            object->visited = 0;
-            return -1;
         }
 
         default:
@@ -489,10 +487,18 @@ int json_dump_file(const json_t *json, const char *path, size_t flags)
 
 int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags)
 {
+    int res;
+    hashtable_t parents_set;
+
     if(!(flags & JSON_ENCODE_ANY)) {
         if(!json_is_array(json) && !json_is_object(json))
            return -1;
     }
 
-    return do_dump(json, flags, 0, callback, data);
+    if (hashtable_init(&parents_set))
+        return -1;
+    res = do_dump(json, flags, 0, &parents_set, callback, data);
+    hashtable_close(&parents_set);
+
+    return res;
 }
