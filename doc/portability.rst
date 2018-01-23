@@ -13,23 +13,13 @@ see below.
 
 There's no locking performed inside Jansson's code, so a multithreaded
 program must perform its own locking if JSON values are shared by
-multiple threads. Jansson's reference counting semantics may make this
-a bit harder than it seems, as it's possible to have a reference to a
-value that's also stored inside a list or object. Modifying the
-container (adding or removing values) may trigger concurrent access to
-such values, as containers manage the reference count of their
-contained values. Bugs involving concurrent incrementing or
-decrementing of deference counts may be hard to track.
-
-The encoding functions (:func:`json_dumps()` and friends) track
-reference loops by modifying the internal state of objects and arrays.
-For this reason, encoding functions must not be run on the same JSON
-values in two separate threads at the same time. As already noted
-above, be especially careful if two arrays or objects share their
-contained values with another array or object.
-
-If you want to make sure that two JSON value hierarchies do not
-contain shared values, use :func:`json_deep_copy()` to make copies.
+multiple threads. Jansson uses built-in compiler atomic functions to
+manage reference counts. If compiler support is not available it may
+be very difficult to ensure thread safety of reference counting.
+It's possible to have a reference to a value that's also stored inside
+a list or object. Modifying the container (adding or removing values)
+may trigger concurrent access to such values, as containers manage the
+reference count of their contained values.
 
 
 Hash function seed
