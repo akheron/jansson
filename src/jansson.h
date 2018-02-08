@@ -36,7 +36,7 @@ extern "C" {
 /* If __atomic or __sync builtins are available the library is thread
  * safe for all read-only functions plus reference counting. */
 #if JSON_HAVE_ATOMIC_BUILTINS || JSON_HAVE_SYNC_BUILTINS
-#define JANSSON_THREAD_SAFE
+#define JANSSON_THREAD_SAFE_REFCOUNT 1
 #endif
 
 /* types */
