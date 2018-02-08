@@ -496,6 +496,7 @@ if (NOT JANSSON_WITHOUT_TESTS)
          test_object
          test_pack
          test_simple
+         test_sprintf
          test_unpack)
 
    # Doing arithmetic on void pointers is not allowed by Microsofts compiler

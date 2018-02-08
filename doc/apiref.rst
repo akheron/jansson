@@ -399,6 +399,16 @@ length-aware functions if you wish to embed null bytes in strings.
 
    .. versionadded:: 2.7
 
+.. function:: json_t *json_sprintf(const char *format, ...)
+              json_t *json_vsprintf(const char *format, va_list ap)
+
+   .. refcounting:: new
+
+   Construct a JSON string from a format string and varargs, just like
+   :func:`printf()`.
+
+   .. versionadded:: 2.11
+
 
 Number
 ======

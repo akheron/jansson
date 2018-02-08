@@ -289,6 +289,11 @@ int json_unpack(json_t *root, const char *fmt, ...);
 int json_unpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, ...);
 int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags, const char *fmt, va_list ap);
 
+/* sprintf */
+
+json_t *json_sprintf(const char *fmt, ...);
+json_t *json_vsprintf(const char *fmt, va_list ap);
+
 
 /* equality */
 
