@@ -33,6 +33,11 @@ extern "C" {
                               (JANSSON_MINOR_VERSION << 8)  |   \
                               (JANSSON_MICRO_VERSION << 0))
 
+/* If __atomic or __sync builtins are available the library is thread
+ * safe for all read-only functions plus reference counting. */
+#if JSON_HAVE_ATOMIC_BUILTINS || JSON_HAVE_SYNC_BUILTINS
+#define JANSSON_THREAD_SAFE_REFCOUNT 1
+#endif
 
 /* types */
 
@@ -49,7 +54,7 @@ typedef enum {
 
 typedef struct json_t {
     json_type type;
-    size_t refcount;
+    volatile size_t refcount;
 } json_t;
 
 #ifndef JANSSON_USING_CMAKE /* disabled if using cmake */
@@ -94,11 +99,23 @@ json_t *json_false(void);
 #define json_boolean(val)      ((val) ? json_true() : json_false())
 json_t *json_null(void);
 
+/* do not call JSON_INTERNAL_INCREF or JSON_INTERNAL_DECREF directly */
+#if JSON_HAVE_ATOMIC_BUILTINS
+#define JSON_INTERNAL_INCREF(json) __atomic_add_fetch(&json->refcount, 1, __ATOMIC_ACQUIRE)
+#define JSON_INTERNAL_DECREF(json) __atomic_sub_fetch(&json->refcount, 1, __ATOMIC_RELEASE)
+#elif JSON_HAVE_SYNC_BUILTINS
+#define JSON_INTERNAL_INCREF(json) __sync_add_and_fetch(&json->refcount, 1)
+#define JSON_INTERNAL_DECREF(json) __sync_sub_and_fetch(&json->refcount, 1)
+#else
+#define JSON_INTERNAL_INCREF(json) (++json->refcount)
+#define JSON_INTERNAL_DECREF(json) (--json->refcount)
+#endif
+
 static JSON_INLINE
 json_t *json_incref(json_t *json)
 {
     if(json && json->refcount != (size_t)-1)
-        ++json->refcount;
+        JSON_INTERNAL_INCREF(json);
     return json;
 }
 
@@ -108,7 +125,7 @@ void json_delete(json_t *json);
 static JSON_INLINE
 void json_decref(json_t *json)
 {
-    if(json && json->refcount != (size_t)-1 && --json->refcount == 0)
+    if(json && json->refcount != (size_t)-1 && JSON_INTERNAL_DECREF(json) == 0)
         json_delete(json);
 }
 

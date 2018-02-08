@@ -7,29 +7,31 @@ Portability
 Thread safety
 -------------
 
-Jansson is thread safe and has no mutable global state. The only
-exceptions are the hash function seed and memory allocation functions,
-see below.
+Jansson as a library is thread safe and has no mutable global state.
+The only exceptions are the hash function seed and memory allocation
+functions, see below.
 
-There's no locking performed inside Jansson's code, so a multithreaded
-program must perform its own locking if JSON values are shared by
-multiple threads. Jansson's reference counting semantics may make this
-a bit harder than it seems, as it's possible to have a reference to a
-value that's also stored inside a list or object. Modifying the
-container (adding or removing values) may trigger concurrent access to
-such values, as containers manage the reference count of their
-contained values. Bugs involving concurrent incrementing or
-decrementing of deference counts may be hard to track.
+There's no locking performed inside Jansson's code. **Read-only**
+access to JSON values shared by multiple threads is safe, but
+**mutating** a JSON value that's shared by multiple threads is not. A
+multithreaded program must perform its own locking if JSON values
+shared by multiple threads are mutated.
 
-The encoding functions (:func:`json_dumps()` and friends) track
-reference loops by modifying the internal state of objects and arrays.
-For this reason, encoding functions must not be run on the same JSON
-values in two separate threads at the same time. As already noted
-above, be especially careful if two arrays or objects share their
-contained values with another array or object.
+However, **reference count manipulation** (:func:`json_incref()`,
+:func:`json_decref()`) is usually thread-safe, and can be performed on
+JSON values that are shared among threads. The thread-safety of
+reference counting can be checked with the
+``JANSSON_THREAD_SAFE_REFCOUNT`` preprocessor constant. Thread-safe
+reference count manipulation is achieved using compiler built-in
+atomic functions, which are available in most modern compilers.
 
-If you want to make sure that two JSON value hierarchies do not
-contain shared values, use :func:`json_deep_copy()` to make copies.
+If compiler support is not available (``JANSSON_THREAD_SAFE_REFCOUNT``
+is not defined), it may be very difficult to ensure thread safety of
+reference counting. It's possible to have a reference to a value
+that's also stored inside an array or object in another thread.
+Modifying the container (adding or removing values) may trigger
+concurrent access to such values, as containers manage the reference
+count of their contained values.
 
 
 Hash function seed

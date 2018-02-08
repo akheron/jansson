@@ -58,6 +58,11 @@ the library:
       /* Code specific to version 1.3 and above */
       #endif
 
+``JANSSON_THREAD_SAFE_REFCOUNT``
+  If this value is defined all read-only operations and reference counting in
+  Jansson are thread safe.  This value is not defined for versions older than
+  ``2.11`` or when the compiler does not provide built-in atomic functions.
+
 
 Value Representation
 ====================

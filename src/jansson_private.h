@@ -35,7 +35,6 @@
 typedef struct {
     json_t json;
     hashtable_t hashtable;
-    int visited;
 } json_object_t;
 
 typedef struct {
@@ -43,7 +42,6 @@ typedef struct {
     size_t size;
     size_t entries;
     json_t **table;
-    int visited;
 } json_array_t;
 
 typedef struct {
