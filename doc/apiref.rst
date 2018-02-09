@@ -1134,6 +1134,12 @@ These functions output UTF-8:
    the length of the buffer, and *data* is the corresponding
    :func:`json_dump_callback()` argument passed through.
 
+   If the *json* object passed to :func:`json_dump_callback()` contains only
+   valid UTF-8 strings — i.e., you either haven’t used any of the ``_nocheck``
+   functions or have otherwise made sure that the strings stored in the object
+   are valid — then the *buffer* also points to a valid UTF-8 string without
+   embedded null bytes.
+
    On error, the function should return -1 to stop the encoding
    process. On success, it should return 0.
 
@@ -1333,6 +1339,17 @@ If no error or position information is needed, you can pass *NULL*.
    returned value of 0 indicates that no data was read and that the
    end of file has been reached. On error, the function should return
    ``(size_t)-1`` to abort the decoding process.
+
+   The concatenation of the input buffers of all calls to the callback for a
+   single :func:`json_load_callback()` call must be a valid UTF-8 string.
+   However, the individual input buffers for a single callback call can be
+   partial strings with incomplete UTF-8 code unit sequences at the beginning
+   or the end of the buffer. For example, you can read a fixed number of bytes
+   from a network connection without having to care about code unit sequences
+   broken apart by the chunk boundaries.
+
+   If the concatenation of all input buffers is not a valid UTF-8 string,
+   :func:`json_load_callback()` issues a JSON decoding error.
 
    .. versionadded:: 2.4
 
