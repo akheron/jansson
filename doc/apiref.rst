@@ -1138,6 +1138,10 @@ These functions output UTF-8:
    the length of the buffer, and *data* is the corresponding
    :func:`json_dump_callback()` argument passed through.
 
+   *buffer* is guaranteed to be a valid UTF-8 string (i.e. multi-byte
+   code unit sequences are preserved). *buffer* never contains
+   embedded null bytes.
+
    On error, the function should return -1 to stop the encoding
    process. On success, it should return 0.
 
@@ -1333,10 +1337,18 @@ If no error or position information is needed, you can pass *NULL*.
    *buffer* points to a buffer of *buflen* bytes, and *data* is the
    corresponding :func:`json_load_callback()` argument passed through.
 
-   On success, the function should return the number of bytes read; a
-   returned value of 0 indicates that no data was read and that the
-   end of file has been reached. On error, the function should return
+   On success, the function should write at most *buflen* bytes to
+   *buffer*, and return the number of bytes written; a returned value
+   of 0 indicates that no data was produced and that the end of file
+   has been reached. On error, the function should return
    ``(size_t)-1`` to abort the decoding process.
+
+   In UTF-8, some code points are encoded as multi-byte sequences. The
+   callback function doesn't need to worry about this, as Jansson
+   handles it at a higher level. For example, you can safely read a
+   fixed number of bytes from a network connection without having to
+   care about code unit sequences broken apart by the chunk
+   boundaries.
 
    .. versionadded:: 2.4
 
