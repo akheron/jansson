@@ -787,6 +787,40 @@ static json_t *json_string_copy(const json_t *string)
     return json_stringn_nocheck(s->value, s->length);
 }
 
+json_t *json_vsprintf(const char *fmt, va_list ap) {
+    int length;
+    char *buf;
+    va_list aq;
+    va_copy(aq, ap);
+
+    length = vsnprintf(NULL, 0, fmt, ap);
+    if (length == 0)
+        return json_string("");
+
+    buf = jsonp_malloc(length + 1);
+    if (!buf)
+        return NULL;
+
+    vsnprintf(buf, length + 1, fmt, aq);
+    if (!utf8_check_string(buf, length)) {
+        jsonp_free(buf);
+        return NULL;
+    }
+
+    return jsonp_stringn_nocheck_own(buf, length);
+}
+
+json_t *json_sprintf(const char *fmt, ...) {
+    json_t *result;
+    va_list ap;
+
+    va_start(ap, fmt);
+    result = json_vsprintf(fmt, ap);
+    va_end(ap);
+
+    return result;
+}
+
 
 /*** integer ***/
 

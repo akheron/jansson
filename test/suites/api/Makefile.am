@@ -14,6 +14,7 @@ check_PROGRAMS = \
 	test_object \
 	test_pack \
 	test_simple \
+	test_sprintf \
 	test_unpack
 
 test_array_SOURCES = test_array.c util.h
@@ -27,6 +28,7 @@ test_number_SOURCES = test_number.c util.h
 test_object_SOURCES = test_object.c util.h
 test_pack_SOURCES = test_pack.c util.h
 test_simple_SOURCES = test_simple.c util.h
+test_sprintf_SOURCES = test_sprintf.c util.h
 test_unpack_SOURCES = test_unpack.c util.h
 
 AM_CPPFLAGS = -I$(top_builddir)/src -I$(top_srcdir)/src

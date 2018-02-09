@@ -3,6 +3,8 @@ EXPORTS
     json_true
     json_false
     json_null
+    json_sprintf
+    json_vsprintf
     json_string
     json_stringn
     json_string_nocheck
