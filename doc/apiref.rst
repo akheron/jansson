@@ -966,9 +966,13 @@ in which case no error information is returned to the caller.
 
        Array index is out of range.
 
+   .. versionadded:: 2.11
+
 .. function:: enum json_error_code json_error_code(const json_error_t *error)
 
    Returns the error code embedded in ``error->text``.
+
+   .. versionadded:: 2.11
 
 
 Encoding
