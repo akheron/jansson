@@ -221,6 +221,14 @@ static void error_code()
         fail("error.text longer than expected");
     if(json_error_code(&error) != json_error_end_of_input_expected)
         fail("json_loads returned incorrect error code");
+
+    json = json_loads("{\"foo\": ", 0, &error);
+    if(json != NULL)
+        fail("json_loads returned not NULL");
+    if(strlen(error.text) >= JSON_ERROR_TEXT_LENGTH)
+        fail("error.text longer than expected");
+    if(json_error_code(&error) != json_error_premature_end_of_input)
+        fail("json_loads returned incorrect error code");
 }
 
 static void run_tests()
