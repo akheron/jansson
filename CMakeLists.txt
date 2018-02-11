@@ -86,10 +86,10 @@ endif (WIN32)
 # set (JANSSON_VERSION "2.3.1")
 # set (JANSSON_SOVERSION 2)
 
-set(JANSSON_DISPLAY_VERSION "2.10")
+set(JANSSON_DISPLAY_VERSION "2.11")
 
 # This is what is required to match the same numbers as automake's
-set(JANSSON_VERSION "4.10.0")
+set(JANSSON_VERSION "4.11.0")
 set(JANSSON_SOVERSION 4)
 
 # for CheckFunctionKeywords
