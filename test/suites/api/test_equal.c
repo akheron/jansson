@@ -74,6 +74,13 @@ static void test_equal_simple()
         fail("unable to create an string");
     if(json_equal(value1, value2))
         fail("json_equal fails for two inequal strings");
+    json_decref(value2);
+
+    value2 = json_string("bar2");
+    if(!value2)
+        fail("unable to create an string");
+    if(json_equal(value1, value2))
+        fail("json_equal fails for two inequal length strings");
 
     json_decref(value1);
     json_decref(value2);

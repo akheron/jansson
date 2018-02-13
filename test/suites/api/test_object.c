@@ -539,6 +539,127 @@ static void test_object_foreach_safe()
     json_decref(object);
 }
 
+static void test_bad_args(void)
+{
+    json_t *obj = json_object();
+    json_t *num = json_integer(1);
+    void *iter;
+
+    if (!obj || !num)
+        fail("failed to allocate test objects");
+
+    if (json_object_set(obj, "testkey", json_null()))
+        fail("failed to set testkey on object");
+
+    iter = json_object_iter(obj);
+    if (!iter)
+        fail("failed to retrieve test iterator");
+
+    if(json_object_size(NULL) != 0)
+        fail("json_object_size with non-object argument returned non-zero");
+    if(json_object_size(num) != 0)
+        fail("json_object_size with non-object argument returned non-zero");
+
+    if(json_object_get(NULL, "test") != NULL)
+        fail("json_object_get with non-object argument returned non-NULL");
+    if(json_object_get(num, "test") != NULL)
+        fail("json_object_get with non-object argument returned non-NULL");
+    if(json_object_get(obj, NULL) != NULL)
+        fail("json_object_get with NULL key returned non-NULL");
+
+    if(!json_object_set_new_nocheck(NULL, "test", json_null()))
+        fail("json_object_set_new_nocheck with non-object argument did not return error");
+    if(!json_object_set_new_nocheck(num, "test", json_null()))
+        fail("json_object_set_new_nocheck with non-object argument did not return error");
+    if(!json_object_set_new_nocheck(obj, "test", json_incref(obj)))
+        fail("json_object_set_new_nocheck with object == value did not return error");
+    if(!json_object_set_new_nocheck(obj, NULL, json_object()))
+        fail("json_object_set_new_nocheck with NULL key did not return error");
+
+    if(!json_object_del(NULL, "test"))
+        fail("json_object_del with non-object argument did not return error");
+    if(!json_object_del(num, "test"))
+        fail("json_object_del with non-object argument did not return error");
+    if(!json_object_del(obj, NULL))
+        fail("json_object_del with NULL key did not return error");
+
+    if(!json_object_clear(NULL))
+        fail("json_object_clear with non-object argument did not return error");
+    if(!json_object_clear(num))
+        fail("json_object_clear with non-object argument did not return error");
+
+    if(!json_object_update(NULL, obj))
+        fail("json_object_update with non-object first argument did not return error");
+    if(!json_object_update(num, obj))
+        fail("json_object_update with non-object first argument did not return error");
+    if(!json_object_update(obj, NULL))
+        fail("json_object_update with non-object second argument did not return error");
+    if(!json_object_update(obj, num))
+        fail("json_object_update with non-object second argument did not return error");
+
+    if(!json_object_update_existing(NULL, obj))
+        fail("json_object_update_existing with non-object first argument did not return error");
+    if(!json_object_update_existing(num, obj))
+        fail("json_object_update_existing with non-object first argument did not return error");
+    if(!json_object_update_existing(obj, NULL))
+        fail("json_object_update_existing with non-object second argument did not return error");
+    if(!json_object_update_existing(obj, num))
+        fail("json_object_update_existing with non-object second argument did not return error");
+
+    if(!json_object_update_missing(NULL, obj))
+        fail("json_object_update_missing with non-object first argument did not return error");
+    if(!json_object_update_missing(num, obj))
+        fail("json_object_update_missing with non-object first argument did not return error");
+    if(!json_object_update_missing(obj, NULL))
+        fail("json_object_update_missing with non-object second argument did not return error");
+    if(!json_object_update_missing(obj, num))
+        fail("json_object_update_missing with non-object second argument did not return error");
+
+    if(json_object_iter(NULL) != NULL)
+        fail("json_object_iter with non-object argument returned non-NULL");
+    if(json_object_iter(num) != NULL)
+        fail("json_object_iter with non-object argument returned non-NULL");
+
+    if(json_object_iter_at(NULL, "test") != NULL)
+        fail("json_object_iter_at with non-object argument returned non-NULL");
+    if(json_object_iter_at(num, "test") != NULL)
+        fail("json_object_iter_at with non-object argument returned non-NULL");
+    if(json_object_iter_at(obj, NULL) != NULL)
+        fail("json_object_iter_at with NULL iter returned non-NULL");
+
+    if(json_object_iter_next(obj, NULL) != NULL)
+        fail("json_object_iter_next with NULL iter returned non-NULL");
+    if(json_object_iter_next(num, iter) != NULL)
+        fail("json_object_iter_next with non-object argument returned non-NULL");
+
+    if(json_object_iter_key(NULL) != NULL)
+        fail("json_object_iter_key with NULL iter returned non-NULL");
+
+    if(json_object_key_to_iter(NULL) != NULL)
+        fail("json_object_key_to_iter with NULL iter returned non-NULL");
+
+    if(json_object_iter_value(NULL) != NULL)
+        fail("json_object_iter_value with NULL iter returned non-NULL");
+
+    if(!json_object_iter_set_new(NULL, iter, json_incref(num)))
+        fail("json_object_iter_set_new with non-object argument did not return error");
+    if(!json_object_iter_set_new(num, iter, json_incref(num)))
+        fail("json_object_iter_set_new with non-object argument did not return error");
+    if(!json_object_iter_set_new(obj, NULL, json_incref(num)))
+        fail("json_object_iter_set_new with NULL iter did not return error");
+    if(!json_object_iter_set_new(obj, iter, NULL))
+        fail("json_object_iter_set_new with NULL value did not return error");
+
+    if (obj->refcount != 1)
+        fail("unexpected reference count for obj");
+
+    if (num->refcount != 1)
+        fail("unexpected reference count for num");
+
+    json_decref(obj);
+    json_decref(num);
+}
+
 static void run_tests()
 {
     test_misc();
@@ -552,4 +673,5 @@ static void run_tests()
     test_preserve_order();
     test_object_foreach();
     test_object_foreach_safe();
+    test_bad_args();
 }

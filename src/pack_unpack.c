@@ -159,7 +159,10 @@ static char *read_string(scanner_t *s, va_list *ap,
         return (char *)str;
     }
 
-    strbuffer_init(&strbuff);
+    if(strbuffer_init(&strbuff)) {
+        set_error(s, "<internal>", json_error_out_of_memory, "Out of memory");
+        s->has_error = 1;
+    }
 
     while(1) {
         str = va_arg(*ap, const char *);

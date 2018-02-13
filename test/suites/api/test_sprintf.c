@@ -13,6 +13,18 @@ static void test_sprintf() {
         fail("json_sprintf generated an unexpected string");
 
     json_decref(s);
+
+    s = json_sprintf("%s", "");
+    if (!s)
+        fail("json_sprintf returned NULL");
+    if (!json_is_string(s))
+        fail("json_sprintf didn't return a JSON string");
+    if (json_string_length(s) != 0)
+        fail("string is not empty");
+    json_decref(s);
+
+    if (json_sprintf("%s", "\xff\xff"))
+        fail("json_sprintf unexpected success with invalid UTF");
 }
 
 

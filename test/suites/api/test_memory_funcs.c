@@ -122,9 +122,16 @@ static void test_secure_funcs(void)
     create_and_free_complex_object();
 }
 
+static void test_bad_args(void)
+{
+    /* The result of this test is not crashing. */
+    json_get_alloc_funcs(NULL, NULL);
+}
+
 static void run_tests()
 {
     test_simple();
     test_secure_funcs();
     test_oom();
+    test_bad_args();
 }
