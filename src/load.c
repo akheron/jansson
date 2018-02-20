@@ -829,10 +829,8 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
             }
 
             json = jsonp_stringn_nocheck_own(value, len);
-            if(json) {
-                lex->value.string.val = NULL;
-                lex->value.string.len = 0;
-            }
+            lex->value.string.val = NULL;
+            lex->value.string.len = 0;
             break;
         }
 

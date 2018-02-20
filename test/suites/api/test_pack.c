@@ -132,6 +132,9 @@ static void run_tests()
     json_decref(value);
 
     /* string concatenation */
+    if (json_pack("s+", "test", NULL))
+        fail("json_pack string concatenation succeeded with NULL string");
+
     value = json_pack("s++", "te", "st", "ing");
     if(!json_is_string(value) || strcmp("testing", json_string_value(value)))
         fail("json_pack string concatenation failed");
@@ -278,7 +281,7 @@ static void run_tests()
     json_decref(value);
 
     /* Whitespace; regular string */
-    value = json_pack(" s ", "test");
+    value = json_pack(" s\t ", "test");
     if(!json_is_string(value) || strcmp("test", json_string_value(value)))
         fail("json_pack string (with whitespace) failed");
     json_decref(value);
@@ -385,4 +388,9 @@ static void run_tests()
     if(json_pack_ex(&error, 0, "{s:s}", "foo", "\xff\xff"))
         fail("json_pack failed to catch invalid UTF-8 in a string");
     check_error(json_error_invalid_utf8, "Invalid UTF-8 string", "<args>", 1, 4, 4);
+
+    /* Invalid UTF-8 in a concatenated key */
+    if(json_pack_ex(&error, 0, "{s+:i}", "\xff\xff", "concat", 42))
+        fail("json_pack failed to catch invalid UTF-8 in an object key");
+    check_error(json_error_invalid_utf8, "Invalid UTF-8 object key", "<args>", 1, 3, 3);
 }

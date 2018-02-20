@@ -2,6 +2,7 @@ EXTRA_DIST = run check-exports
 
 check_PROGRAMS = \
 	test_array \
+	test_chaos \
 	test_copy \
 	test_dump \
 	test_dump_callback \
@@ -18,6 +19,7 @@ check_PROGRAMS = \
 	test_unpack
 
 test_array_SOURCES = test_array.c util.h
+test_chaos_SOURCES = test_chaos.c util.h
 test_copy_SOURCES = test_copy.c util.h
 test_dump_SOURCES = test_dump.c util.h
 test_dump_callback_SOURCES = test_dump_callback.c util.h

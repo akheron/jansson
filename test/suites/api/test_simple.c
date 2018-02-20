@@ -9,6 +9,56 @@
 #include <jansson.h>
 #include "util.h"
 
+static void test_bad_args(void)
+{
+    json_t *num = json_integer(1);
+    json_t *txt = json_string("test");
+
+    if (!num || !txt)
+        fail("failed to allocate test objects");
+
+    if(json_string_nocheck(NULL) != NULL)
+        fail("json_string_nocheck with NULL argument did not return NULL");
+    if(json_stringn_nocheck(NULL, 0) != NULL)
+        fail("json_stringn_nocheck with NULL argument did not return NULL");
+    if(json_string(NULL) != NULL)
+        fail("json_string with NULL argument did not return NULL");
+    if(json_stringn(NULL, 0) != NULL)
+        fail("json_stringn with NULL argument did not return NULL");
+
+    if(json_string_length(NULL) != 0)
+        fail("json_string_length with non-string argument did not return 0");
+    if(json_string_length(num) != 0)
+        fail("json_string_length with non-string argument did not return 0");
+
+    if(json_string_value(NULL) != NULL)
+        fail("json_string_value with non-string argument did not return NULL");
+    if(json_string_value(num) != NULL)
+        fail("json_string_value with non-string argument did not return NULL");
+
+    if(!json_string_setn_nocheck(NULL, "", 0))
+        fail("json_string_setn with non-string argument did not return error");
+    if(!json_string_setn_nocheck(num, "", 0))
+        fail("json_string_setn with non-string argument did not return error");
+    if(!json_string_setn_nocheck(txt, NULL, 0))
+        fail("json_string_setn_nocheck with NULL value did not return error");
+
+    if(!json_string_set_nocheck(txt, NULL))
+        fail("json_string_set_nocheck with NULL value did not return error");
+    if(!json_string_set(txt, NULL))
+        fail("json_string_set with NULL value did not return error");
+    if(!json_string_setn(txt, NULL, 0))
+        fail("json_string_setn with NULL value did not return error");
+
+    if(num->refcount != 1)
+        fail("unexpected reference count for num");
+    if(txt->refcount != 1)
+        fail("unexpected reference count for txt");
+
+    json_decref(num);
+    json_decref(txt);
+}
+
 /* Call the simple functions not covered by other tests of the public API */
 static void run_tests()
 {
@@ -237,4 +287,6 @@ static void run_tests()
 	fail("automatic decrement failed");
     json_decref(value);
 #endif
+
+    test_bad_args();
 }

@@ -37,6 +37,41 @@ static void test_inifity()
 }
 #endif // INFINITY
 
+static void test_bad_args(void)
+{
+    json_t *txt = json_string("test");
+
+    if(json_integer_value(NULL) != 0)
+        fail("json_integer_value did not return 0 for non-integer");
+    if(json_integer_value(txt) != 0)
+        fail("json_integer_value did not return 0 for non-integer");
+
+    if(!json_integer_set(NULL, 0))
+        fail("json_integer_set did not return error for non-integer");
+    if(!json_integer_set(txt, 0))
+        fail("json_integer_set did not return error for non-integer");
+
+    if(json_real_value(NULL) != 0.0)
+        fail("json_real_value did not return 0.0 for non-real");
+    if(json_real_value(txt) != 0.0)
+        fail("json_real_value did not return 0.0 for non-real");
+
+    if(!json_real_set(NULL, 0.0))
+        fail("json_real_set did not return error for non-real");
+    if(!json_real_set(txt, 0.0))
+        fail("json_real_set did not return error for non-real");
+
+    if(json_number_value(NULL) != 0.0)
+        fail("json_number_value did not return 0.0 for non-numeric");
+    if(json_number_value(txt) != 0.0)
+        fail("json_number_value did not return 0.0 for non-numeric");
+
+    if (txt->refcount != 1)
+        fail("unexpected reference count for txt");
+
+    json_decref(txt);
+}
+
 static void run_tests()
 {
     json_t *integer, *real;
@@ -87,4 +122,5 @@ static void run_tests()
 #ifdef INFINITY
     test_inifity();
 #endif
+    test_bad_args();
 }

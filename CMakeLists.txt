@@ -487,6 +487,7 @@ if (NOT JANSSON_WITHOUT_TESTS)
    set(api_tests
          test_array
          test_copy
+         test_chaos
          test_dump
          test_dump_callback
          test_equal
