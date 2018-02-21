@@ -47,7 +47,9 @@ use autoreconf::
 
    $ autoreconf -i
 
-and the dependency for this is build-essential.
+
+and the dependency for this is build-essential. There is also support for
+cmake, added in 2012.
 
 
 Documentation
