@@ -511,48 +511,34 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
     if(root && strict == 1) {
         /* We need to check that all non optional items have been parsed */
         const char *key;
-        int have_unrecognized_keys = 0;
+        /* keys_res is 1 for uninitialized, 0 for success, -1 for error. */
+        int keys_res = 1;
         strbuffer_t unrecognized_keys;
         json_t *value;
         long unpacked = 0;
-        if (gotopt) {
-            /* We have optional keys, we need to iter on each key */
+
+        if (gotopt || json_object_size(root) != key_set.size) {
             json_object_foreach(root, key, value) {
                 if(!hashtable_get(&key_set, key)) {
                     unpacked++;
 
                     /* Save unrecognized keys for the error message */
-                    if (!have_unrecognized_keys) {
-                        strbuffer_init(&unrecognized_keys);
-                        have_unrecognized_keys = 1;
-                    } else {
-                        strbuffer_append_bytes(&unrecognized_keys, ", ", 2);
+                    if (keys_res == 1) {
+                        keys_res = strbuffer_init(&unrecognized_keys);
+                    } else if (!keys_res) {
+                        keys_res = strbuffer_append_bytes(&unrecognized_keys, ", ", 2);
                     }
-                    strbuffer_append_bytes(&unrecognized_keys, key, strlen(key));
+
+                    if (!keys_res)
+                        keys_res = strbuffer_append_bytes(&unrecognized_keys, key, strlen(key));
                 }
             }
-        } else {
-            /* No optional keys, we can just compare the number of items */
-            unpacked = (long)json_object_size(root) - (long)key_set.size;
         }
         if (unpacked) {
-            if (!gotopt) {
-                /* Save unrecognized keys for the error message */
-                json_object_foreach(root, key, value) {
-                    if(!hashtable_get(&key_set, key)) {
-                        if (!have_unrecognized_keys) {
-                            strbuffer_init(&unrecognized_keys);
-                            have_unrecognized_keys = 1;
-                        } else {
-                            strbuffer_append_bytes(&unrecognized_keys, ", ", 2);
-                        }
-                        strbuffer_append_bytes(&unrecognized_keys, key, strlen(key));
-                    }
-                }
-            }
             set_error(s, "<validation>", json_error_end_of_input_expected,
                       "%li object item(s) left unpacked: %s",
-                      unpacked, strbuffer_value(&unrecognized_keys));
+                      unpacked,
+                      keys_res ? "<unknown>" : strbuffer_value(&unrecognized_keys));
             strbuffer_close(&unrecognized_keys);
             goto out;
         }
