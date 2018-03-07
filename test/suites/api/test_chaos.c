@@ -43,6 +43,53 @@ void chaos_free(void *obj)
 #define chaos_loop_new_value(json, initcall) \
     chaos_loop(!json, json = initcall;, json_decref(json); json = NULL;)
 
+int test_unpack()
+{
+    int ret = -1;
+    int v1;
+    int v2;
+    json_error_t error;
+    json_t *root = json_pack("{s:i, s:i, s:i, s:i}", "n1", 1, "n2", 2, "n3", 3, "n4", 4);
+
+    if (!root)
+        return -1;
+
+    if (!json_unpack_ex(root, &error, JSON_STRICT, "{s:i, s:i}", "n1", &v1, "n2", &v2))
+        fail("Unexpected success");
+
+    if (json_error_code(&error) != json_error_end_of_input_expected) {
+        if (json_error_code(&error) != json_error_out_of_memory)
+            fail("Unexpected error code");
+
+        goto out;
+    }
+
+    if (strcmp(error.text, "2 object item(s) left unpacked: n3, n4"))
+        goto out;
+
+    ret = 0;
+
+out:
+    json_decref(root);
+    return ret;
+}
+
+int dump_chaos_callback(const char *buffer, size_t size, void *data)
+{
+    json_t *obj = json_object();
+
+    (void)buffer;
+    (void)size;
+    (void)data;
+
+    if (!obj)
+        return -1;
+
+    json_decref(obj);
+
+    return 0;
+}
+
 static void test_chaos()
 {
     json_malloc_t orig_malloc;
@@ -54,9 +101,13 @@ static void test_chaos()
     json_t *txt = json_string("test");
     json_t *intnum = json_integer(1);
     json_t *dblnum = json_real(0.5);
+    char *dumptxt = NULL;
+    json_t *dumpobj = json_pack("{s:[iiis], s:s}",
+        "key1", 1, 2, 3, "txt",
+        "key2", "v2");
     int keyno;
 
-    if (!obj || !arr1 || !arr2 || !txt || !intnum || !dblnum)
+    if (!obj || !arr1 || !arr2 || !txt || !intnum || !dblnum || !dumpobj)
         fail("failed to allocate basic objects");
 
     json_get_alloc_funcs(&orig_malloc, &orig_free);
@@ -73,6 +124,12 @@ static void test_chaos()
         "another long string to force yet another reallocation of the string because "
         "that's what we are testing."));
 
+    chaos_loop(test_unpack(),,);
+
+    chaos_loop(json_dump_callback(dumpobj, dump_chaos_callback, NULL, JSON_INDENT(1)),,);
+    chaos_loop(json_dump_callback(dumpobj, dump_chaos_callback, NULL, JSON_INDENT(1) | JSON_SORT_KEYS),,);
+    chaos_loop(!dumptxt, dumptxt = json_dumps(dumpobj, JSON_COMPACT);, free(dumptxt); dumptxt = NULL;);
+
     chaos_loop_new_value(json, json_copy(obj));
     chaos_loop_new_value(json, json_deep_copy(obj));
 
@@ -82,6 +139,10 @@ static void test_chaos()
     chaos_loop_new_value(json, json_copy(txt));
     chaos_loop_new_value(json, json_copy(intnum));
     chaos_loop_new_value(json, json_copy(dblnum));
+
+#define JSON_LOAD_TXT "{\"n\":[1,2,3,4,5,6,7,8,9,10]}"
+    chaos_loop_new_value(json, json_loads(JSON_LOAD_TXT, 0, NULL));
+    chaos_loop_new_value(json, json_loadb(JSON_LOAD_TXT, strlen(JSON_LOAD_TXT), 0, NULL));
 
     chaos_loop_new_value(json, json_sprintf("%s", "string"));
 
@@ -107,6 +168,7 @@ static void test_chaos()
     json_decref(txt);
     json_decref(intnum);
     json_decref(dblnum);
+    json_decref(dumpobj);
 }
 
 static void run_tests()

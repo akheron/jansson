@@ -493,6 +493,7 @@ if (NOT JANSSON_WITHOUT_TESTS)
          test_equal
          test_load
          test_loadb
+         test_load_callback
          test_number
          test_object
          test_pack
