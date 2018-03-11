@@ -615,11 +615,6 @@ foreach(p LIB BIN INCLUDE CMAKE)
     endif()
 endforeach()
 
-# Export targets (This is used for other CMake projects to easily find the libraries and include files).
-export(TARGETS jansson
-       FILE "${CMAKE_CURRENT_BINARY_DIR}/janssonTargets.cmake")
-export(PACKAGE jansson)
-
 # Generate the config file for the build-tree.
 set(JANSSON__INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -629,55 +624,49 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/janssonConfig.cmake.in
                 ${CMAKE_CURRENT_BINARY_DIR}/janssonConfig.cmake
                 @ONLY)
 
+
 # Generate the config file for the installation tree.
-file(RELATIVE_PATH
-    REL_INCLUDE_DIR
-    "${JANSSON_INSTALL_CMAKE_DIR}"
-    "${JANSSON_INSTALL_INCLUDE_DIR}") # Calculate the relative directory from the Cmake dir.
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/janssonVersionConfig.cmake"
+  VERSION ${PROJECT_VERSION}
+)
 
-# Note the EVENT_CMAKE_DIR is defined in janssonConfig.cmake.in,
-# we escape it here so it's evaluated when it is included instead
-# so that the include dirs are given relative to where the
-# config file is located.
-set(JANSSON__INCLUDE_DIRS
-    "\${JANSSON_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/janssonConfig.cmake.in
-                ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/janssonConfig.cmake
-                @ONLY)
+configure_package_config_file(
+    "cmake/janssonConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/janssonConfig.cmake"
+    INSTALL_DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}"
+)
 
-# Generate version info for both build-tree and install-tree.
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/janssonConfigVersion.cmake.in
-                ${CMAKE_CURRENT_BINARY_DIR}/janssonConfigVersion.cmake
-                @ONLY)
 #
 # Install targets.
 #
 option(JANSSON_INSTALL "Generate installation target" ON)
 if (JANSSON_INSTALL)
-install(TARGETS jansson
-        EXPORT janssonTargets
-        LIBRARY DESTINATION "lib"
-        ARCHIVE DESTINATION "lib"
-        RUNTIME DESTINATION "bin"
-        INCLUDES DESTINATION "include")
+  install(TARGETS jansson
+          EXPORT janssonTargets
+          LIBRARY DESTINATION "lib"
+          ARCHIVE DESTINATION "lib"
+          RUNTIME DESTINATION "bin"
+          INCLUDES DESTINATION "include")
 
-install(FILES ${JANSSON_HDR_PUBLIC}
-        DESTINATION "include")
+  install(FILES ${JANSSON_HDR_PUBLIC}
+          DESTINATION "include")
 
-# Install the pkg-config.
-install(FILES
-         ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc
-         DESTINATION lib/pkgconfig)
+  # Install the pkg-config.
+  install(FILES
+          ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc
+          DESTINATION lib/pkgconfig)
 
-# Install the configs.
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/janssonConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/janssonConfigVersion.cmake
-    DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}")
+  # Install the configs.
+  install(FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/cmake/janssonConfig.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/cmake/janssonConfigVersion.cmake
+      DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}")
 
-# Install exports for the install-tree.
-install(EXPORT janssonTargets
-        DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}" COMPONENT dev)
+  # Install exports for the install-tree.
+  install(EXPORT janssonTargets
+          NAMESPACE jansson
+          DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}")
 endif()
 
 # For use when simply using add_library from a parent project to build jansson.
