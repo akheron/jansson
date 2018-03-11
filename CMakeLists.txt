@@ -607,12 +607,9 @@ set(VERSION     ${JANSSON_DISPLAY_VERSION})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/jansson.pc.in
                ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc @ONLY)
 
-# Make sure the paths are absolute.
+# Make sure the paths are relative.
 foreach(p LIB BIN INCLUDE CMAKE)
     set(var JANSSON_INSTALL_${p}_DIR)
-    if(NOT IS_ABSOLUTE "${${var}}")
-        set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-    endif()
 endforeach()
 
 # Generate the config file for the build-tree.
@@ -621,12 +618,11 @@ set(JANSSON__INCLUDE_DIRS
     "${CMAKE_CURRENT_BINARY_DIR}/include")
 set(JANSSON_INCLUDE_DIRS ${JANSSON__INCLUDE_DIRS} CACHE PATH "Jansson include directories")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/janssonConfig.cmake.in
-                ${CMAKE_CURRENT_BINARY_DIR}/janssonConfig.cmake
-                @ONLY)
+               ${CMAKE_CURRENT_BINARY_DIR}/janssonConfig.cmake
+               @ONLY)
 
 
 # Generate the config file for the installation tree.
-
 include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
@@ -669,7 +665,7 @@ if (JANSSON_INSTALL)
 
   # Install exports for the install-tree.
   install(EXPORT janssonTargets
-          NAMESPACE jansson
+          NAMESPACE jansson::
           DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}")
 endif()
 
