@@ -630,7 +630,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/janssonConfig.cmake.in
 include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake/janssonVersionConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/janssonConfigVersion.cmake"
   VERSION ${JANSSON_VERSION}
   COMPATIBILITY ExactVersion
 )
