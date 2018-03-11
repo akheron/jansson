@@ -69,10 +69,10 @@ if (UNIX)
 endif ()
 
 # Set some nicer output dirs.
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(JANSSON_TEMP_DIR ${PROJECT_BINARY_DIR}/tmp)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+set(JANSSON_TEMP_DIR ${CMAKE_CURRENT_BINARY_DIR}/tmp)
 
 # Give the debug version a different postfix for windows,
 # so both the debug and release version can be built in the
@@ -363,7 +363,7 @@ else()
 endif()
 
 if (JANSSON_EXAMPLES)
-	add_executable(simple_parse "${PROJECT_SOURCE_DIR}/examples/simple_parse.c")
+	add_executable(simple_parse "${CMAKE_CURRENT_SOURCE_DIR}/examples/simple_parse.c")
 	target_link_libraries(simple_parse jansson)
 endif()
 
@@ -514,7 +514,7 @@ if (NOT JANSSON_WITHOUT_TESTS)
 
    # Create executables and tests/valgrind tests for API tests.
    foreach (test ${api_tests})
-      build_testprog(${test} ${PROJECT_SOURCE_DIR}/test/suites/api)
+      build_testprog(${test} ${CMAKE_CURRENT_SOURCE_DIR}/test/suites/api)
 
       if (JANSSON_TEST_WITH_VALGRIND)
          add_test(memcheck__${test}
@@ -528,12 +528,12 @@ if (NOT JANSSON_WITHOUT_TESTS)
    endforeach ()
 
    # Test harness for the suites tests.
-   build_testprog(json_process ${PROJECT_SOURCE_DIR}/test/bin)
+   build_testprog(json_process ${CMAKE_CURRENT_SOURCE_DIR}/test/bin)
 
    set(SUITE_TEST_CMD ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_process)
    set(SUITES encoding-flags valid invalid invalid-unicode)
    foreach (SUITE ${SUITES})
-       file(GLOB TESTDIRS ${jansson_SOURCE_DIR}/test/suites/${SUITE}/*)
+       file(GLOB TESTDIRS test/suites/${SUITE}/*)
 
        foreach (TESTDIR ${TESTDIRS})
          if (IS_DIRECTORY ${TESTDIR})
@@ -617,16 +617,16 @@ endforeach()
 
 # Export targets (This is used for other CMake projects to easily find the libraries and include files).
 export(TARGETS jansson
-       FILE "${PROJECT_BINARY_DIR}/janssonTargets.cmake")
+       FILE "${CMAKE_CURRENT_BINARY_DIR}/janssonTargets.cmake")
 export(PACKAGE jansson)
 
 # Generate the config file for the build-tree.
 set(JANSSON__INCLUDE_DIRS
-    "${PROJECT_SOURCE_DIR}/include"
-    "${PROJECT_BINARY_DIR}/include")
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_BINARY_DIR}/include")
 set(JANSSON_INCLUDE_DIRS ${JANSSON__INCLUDE_DIRS} CACHE PATH "Jansson include directories")
-configure_file(${PROJECT_SOURCE_DIR}/cmake/janssonConfig.cmake.in
-                ${PROJECT_BINARY_DIR}/janssonConfig.cmake
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/janssonConfig.cmake.in
+                ${CMAKE_CURRENT_BINARY_DIR}/janssonConfig.cmake
                 @ONLY)
 
 # Generate the config file for the installation tree.
@@ -641,19 +641,14 @@ file(RELATIVE_PATH
 # config file is located.
 set(JANSSON__INCLUDE_DIRS
     "\${JANSSON_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file(${PROJECT_SOURCE_DIR}/cmake/janssonConfig.cmake.in
-                ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/janssonConfig.cmake
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/janssonConfig.cmake.in
+                ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/janssonConfig.cmake
                 @ONLY)
 
 # Generate version info for both build-tree and install-tree.
-configure_file(${PROJECT_SOURCE_DIR}/cmake/janssonConfigVersion.cmake.in
-                ${PROJECT_BINARY_DIR}/janssonConfigVersion.cmake
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/janssonConfigVersion.cmake.in
+                ${CMAKE_CURRENT_BINARY_DIR}/janssonConfigVersion.cmake
                 @ONLY)
-
-# Define the public headers.
-set_target_properties(jansson PROPERTIES PUBLIC_HEADER "${JANSSON_HDR_PUBLIC}")
-#TODO: fix this.
-
 #
 # Install targets.
 #
@@ -661,21 +656,24 @@ option(JANSSON_INSTALL "Generate installation target" ON)
 if (JANSSON_INSTALL)
 install(TARGETS jansson
         EXPORT janssonTargets
-        LIBRARY DESTINATION "${JANSSON_INSTALL_LIB_DIR}" COMPONENT lib
-        ARCHIVE DESTINATION "${JANSSON_INSTALL_LIB_DIR}" COMPONENT lib
-        RUNTIME DESTINATION "${JANSSON_INSTALL_BIN_DIR}" COMPONENT lib # Windows DLLs
-        PUBLIC_HEADER DESTINATION "${JANSSON_INSTALL_INCLUDE_DIR}" COMPONENT dev)
+        LIBRARY DESTINATION "lib"
+        ARCHIVE DESTINATION "lib"
+        RUNTIME DESTINATION "bin"
+        INCLUDES DESTINATION "include")
+
+install(FILES ${JANSSON_HDR_PUBLIC}
+        DESTINATION "include")
 
 # Install the pkg-config.
-install (FILES
+install(FILES
          ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc
-         DESTINATION ${JANSSON_INSTALL_LIB_DIR}/pkgconfig COMPONENT dev)
+         DESTINATION lib/pkgconfig)
 
 # Install the configs.
 install(FILES
-    ${PROJECT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/janssonConfig.cmake
-    ${PROJECT_BINARY_DIR}/janssonConfigVersion.cmake
-    DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}" COMPONENT dev)
+    ${CMAKE_CURRENT_BINARY_DIR}/janssonConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/janssonConfigVersion.cmake
+    DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}")
 
 # Install exports for the install-tree.
 install(EXPORT janssonTargets
