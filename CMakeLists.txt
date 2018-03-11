@@ -77,7 +77,7 @@ set(JANSSON_TEMP_DIR ${CMAKE_CURRENT_BINARY_DIR}/tmp)
 # Give the debug version a different postfix for windows,
 # so both the debug and release version can be built in the
 # same build-tree on Windows (MSVC).
-if (WIN32)
+if (WIN32 AND NOT CMAKE_DEBUG_POSTFIX)
    set(CMAKE_DEBUG_POSTFIX "_d")
 endif (WIN32)
 
@@ -627,11 +627,12 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/janssonConfig.cmake.in
 
 # Generate the config file for the installation tree.
 
-include(WriteBasicPackageVersionFile)
+include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/cmake/janssonVersionConfig.cmake"
-  VERSION ${PROJECT_VERSION}
+  VERSION ${JANSSON_VERSION}
+  COMPATIBILITY ExactVersion
 )
 
 configure_package_config_file(
