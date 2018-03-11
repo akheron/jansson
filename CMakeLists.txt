@@ -79,7 +79,7 @@ set(JANSSON_TEMP_DIR ${CMAKE_CURRENT_BINARY_DIR}/tmp)
 # same build-tree on Windows (MSVC).
 if (WIN32 AND NOT CMAKE_DEBUG_POSTFIX)
    set(CMAKE_DEBUG_POSTFIX "_d")
-endif (WIN32)
+endif()
 
 # This is how I thought it should go
 # set (JANSSON_VERSION "2.3.1")
