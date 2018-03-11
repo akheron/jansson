@@ -626,6 +626,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/janssonConfig.cmake.in
 
 
 # Generate the config file for the installation tree.
+
+include(WriteBasicPackageVersionFile)
+
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/cmake/janssonVersionConfig.cmake"
   VERSION ${PROJECT_VERSION}
