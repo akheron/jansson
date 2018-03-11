@@ -617,7 +617,7 @@ endforeach()
 
 # Export targets (This is used for other CMake projects to easily find the libraries and include files).
 export(TARGETS jansson
-        FILE "${PROJECT_BINARY_DIR}/JanssonTargets.cmake")
+       FILE "${PROJECT_BINARY_DIR}/janssonTargets.cmake")
 export(PACKAGE jansson)
 
 # Generate the config file for the build-tree.
@@ -660,7 +660,7 @@ set_target_properties(jansson PROPERTIES PUBLIC_HEADER "${JANSSON_HDR_PUBLIC}")
 option(JANSSON_INSTALL "Generate installation target" ON)
 if (JANSSON_INSTALL)
 install(TARGETS jansson
-        EXPORT JanssonTargets
+        EXPORT janssonTargets
         LIBRARY DESTINATION "${JANSSON_INSTALL_LIB_DIR}" COMPONENT lib
         ARCHIVE DESTINATION "${JANSSON_INSTALL_LIB_DIR}" COMPONENT lib
         RUNTIME DESTINATION "${JANSSON_INSTALL_BIN_DIR}" COMPONENT lib # Windows DLLs
@@ -678,9 +678,9 @@ install(FILES
     DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 # Install exports for the install-tree.
-install(EXPORT JanssonTargets
+install(EXPORT janssonTargets
         DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}" COMPONENT dev)
 endif()
 
 # For use when simply using add_library from a parent project to build jansson.
-set(JANSSON_LIBRARIES jansson CACHE STRING "Jansson libraries")
+set(JANSSON_LIBRARIES jansson CACHE STRING "jansson libraries")
