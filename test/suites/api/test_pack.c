@@ -393,4 +393,12 @@ static void run_tests()
     if(json_pack_ex(&error, 0, "{s+:i}", "\xff\xff", "concat", 42))
         fail("json_pack failed to catch invalid UTF-8 in an object key");
     check_error(json_error_invalid_utf8, "Invalid UTF-8 object key", "<args>", 1, 3, 3);
+
+    if(json_pack_ex(&error, 0, "{s:o}", "foo", NULL))
+        fail("json_pack failed to catch nullable object");
+    check_error(json_error_null_value, "NULL object key", "<args>", 1, 4, 4);
+
+    if(json_pack_ex(&error, 0, "{s:O}", "foo", NULL))
+        fail("json_pack failed to catch nullable incref object");
+    check_error(json_error_null_value, "NULL object key", "<args>", 1, 4, 4);
 }
