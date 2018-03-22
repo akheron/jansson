@@ -348,6 +348,36 @@ static json_t *pack_string(scanner_t *s, va_list *ap)
     }
 }
 
+static json_t *pack_object_inter(scanner_t *s, va_list *ap, int need_incref)
+{
+    json_t *json;
+    char ntoken;
+
+    next_token(s);
+    ntoken = token(s);
+
+    if (ntoken != '?')
+        prev_token(s);
+
+    json = va_arg(*ap, json_t *);
+
+    if (json)
+        return need_incref ? json_incref(json) : json;
+
+    switch (ntoken) {
+        case '?':
+            return json_null();
+        case '*':
+            return NULL;
+        default:
+            break;
+    }
+
+    set_error(s, "<args>", json_error_null_value, "NULL object key");
+    s->has_error = 1;
+    return NULL;
+}
+
 static json_t *pack(scanner_t *s, va_list *ap)
 {
     switch(token(s)) {
@@ -376,40 +406,10 @@ static json_t *pack(scanner_t *s, va_list *ap)
             return json_real(va_arg(*ap, double));
 
         case 'O': /* a json_t object; increments refcount */
-        {
-            int nullable;
-            json_t *json;
-
-            next_token(s);
-            nullable = token(s) == '?';
-            if (!nullable)
-                prev_token(s);
-
-            json = va_arg(*ap, json_t *);
-            if (!json && nullable) {
-                return json_null();
-            } else {
-                return json_incref(json);
-            }
-        }
+            return pack_object_inter(s, ap, 1);
 
         case 'o': /* a json_t object; doesn't increment refcount */
-        {
-            int nullable;
-            json_t *json;
-
-            next_token(s);
-            nullable = token(s) == '?';
-            if (!nullable)
-                prev_token(s);
-
-            json = va_arg(*ap, json_t *);
-            if (!json && nullable) {
-                return json_null();
-            } else {
-                return json;
-            }
-        }
+            return pack_object_inter(s, ap, 0);
 
         default:
             set_error(s, "<format>", json_error_invalid_format, "Unexpected format character '%c'",
