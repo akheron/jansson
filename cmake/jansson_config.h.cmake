@@ -59,10 +59,16 @@
 /* If locale.h and localeconv() are available, define to 1, otherwise to 0. */
 #define JSON_HAVE_LOCALECONV @JSON_HAVE_LOCALECONV@
 
+/* If __atomic builtins are available they will be used to manage
+   reference counts of json_t. */
+#define JSON_HAVE_ATOMIC_BUILTINS @JSON_HAVE_ATOMIC_BUILTINS@
+
+/* If __atomic builtins are not available we try using __sync builtins
+   to manage reference counts of json_t. */
+#define JSON_HAVE_SYNC_BUILTINS @JSON_HAVE_SYNC_BUILTINS@
 
 /* Maximum recursion depth for parsing JSON input.
    This limits the depth of e.g. array-within-array constructions. */
 #define JSON_PARSER_MAX_DEPTH 2048
-
 
 #endif

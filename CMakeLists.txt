@@ -306,6 +306,18 @@ endif()
 check_c_source_compiles ("int main() { unsigned long val; __sync_bool_compare_and_swap(&val, 0, 1); __sync_add_and_fetch(&val, 1); __sync_sub_and_fetch(&val, 1); return 0; } " HAVE_SYNC_BUILTINS)
 check_c_source_compiles ("int main() { char l; unsigned long v; __atomic_test_and_set(&l, __ATOMIC_RELAXED); __atomic_store_n(&v, 1, __ATOMIC_RELEASE); __atomic_load_n(&v, __ATOMIC_ACQUIRE); __atomic_add_fetch(&v, 1, __ATOMIC_ACQUIRE); __atomic_sub_fetch(&v, 1, __ATOMIC_RELEASE); return 0; }" HAVE_ATOMIC_BUILTINS)
 
+if (HAVE_SYNC_BUILTINS)
+  set(JSON_HAVE_SYNC_BUILTINS 1)
+else()
+  set(JSON_HAVE_SYNC_BUILTINS 0)
+endif()
+
+if (HAVE_ATOMIC_BUILTINS)
+  set(JSON_HAVE_ATOMIC_BUILTINS 1)
+else()
+  set(JSON_HAVE_ATOMIC_BUILTINS 0)
+endif()
+
 set (JANSSON_INITIAL_HASHTABLE_ORDER 3 CACHE STRING "Number of buckets new object hashtables contain is 2 raised to this power. The default is 3, so empty hashtables contain 2^3 = 8 buckets.")
 
 # configure the public config file
