@@ -103,6 +103,10 @@ Creating Visual Studio project files from the command line:
     cd build
     cmake -G "Visual Studio 10" ..
 
+.. note::
+
+   You should replace the name of the generator (``-G`` flag) according to the targeted arch and matching product installed on your system (see instructions below).
+
 You will now have a *Visual Studio Solution* in your build directory.
 To run the unit tests build the ``RUN_TESTS`` project.
 
@@ -114,7 +118,7 @@ be replaced with::
 For command line help (including a list of available generators)
 for CMake_ simply run::
 
-    cmake
+    cmake --help
 
 To list available CMake_ settings (and what they are currently set to)
 for the project, run::
