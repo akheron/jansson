@@ -75,6 +75,9 @@ static void next_token(scanner_t *s)
         return;
     }
 
+    if (!token(s) && !*s->fmt)
+        return;
+
     t = s->fmt;
     s->column++;
     s->pos++;
@@ -97,7 +100,7 @@ static void next_token(scanner_t *s)
     s->token.column = s->column;
     s->token.pos = s->pos;
 
-    t++;
+    if (*t) t++;
     s->fmt = t;
 }
 
