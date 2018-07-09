@@ -229,8 +229,10 @@ static void test_circular()
     if(json_dumps(object1, 0) != NULL)
         fail("able to dump circulars");
 
-    /* decref twice to deal with the circular references */
-    json_decref(object1);
+    /* break circularity */
+    if(json_object_set(object1, "a", json_true()))
+        fail("unable to break circularity");
+
     json_decref(object2);
     json_decref(object1);
 }
@@ -660,6 +662,79 @@ static void test_bad_args(void)
     json_decref(num);
 }
 
+static void test_keylen() {
+    json_t *object, *five, *ten, *value;
+    void *iter;
+    json_keyn_t kn;
+    char c;
+
+    object = json_object();
+    five = json_integer(5);
+    ten = json_integer(10);
+
+    if(!object)
+        fail("unable to create object");
+    if(!five || !ten)
+        fail("unable to create integer");
+
+    /* set, get */
+
+    if(json_object_set(object, "a", five) ||
+       json_object_setn(object, "bee", 1, ten))
+        fail("unable to set value with keylen");
+
+    if(json_object_size(object) != 2)
+        fail("invalid size");
+
+    if(json_object_getn(object, "ayy", 1) != five ||
+       json_object_get(object, "b") != ten)
+        fail("update with keylen works incorrectly");
+
+    /* iter */
+
+    iter = json_object_iter(object);
+    if(!iter)
+        fail("unable to get iterator");
+    kn = json_object_iter_keyn(iter);
+    if(strcmp(kn.key, "a") != 0 || kn.len != 1)
+        fail("iterating with keylen doesn't yield keys in order");
+    if(json_object_iter_value(iter) != five)
+        fail("iterating with keylen doesn't yield values in order");
+
+    iter = json_object_iter_next(object, iter);
+    if(!iter)
+        fail("unable to increment iterator");
+    kn = json_object_iter_keyn(iter);
+    if(strcmp(kn.key, "b") != 0 || kn.len != 1)
+        fail("iterating with keylen doesn't yield keys in order");
+    if(json_object_iter_value(iter) != ten)
+        fail("iterating with keylen doesn't yield values in order");
+
+    /* foreach */
+
+    c = 'a';
+    json_object_foreach_keyn(object, kn, value) {
+        if(strlen(kn.key) != 1 || kn.len != 1 || kn.key[0] != c)
+            fail("foreach with keylen doesn't yield keys in order");
+        ++c;
+    }
+    if(c != 'c')
+        fail("foreach with keylen doesn't has wrong count");
+
+    /* nocheck (last) */
+
+    if(json_object_setn_nocheck(object, "a\xefzzy", 3, ten))
+        fail("json_object_setn_nocheck failed for invalid UTF-8");
+    if(json_object_get(object, "a\xefz") != ten)
+        fail("json_object_get after json_object_setn_nocheck failed");
+    if(json_object_size(object) != 3)
+        fail("invalid size");
+
+    json_decref(ten);
+    json_decref(five);
+    json_decref(object);
+}
+
 static void run_tests()
 {
     test_misc();
@@ -674,4 +749,5 @@ static void run_tests()
     test_object_foreach();
     test_object_foreach_safe();
     test_bad_args();
+    test_keylen();
 }

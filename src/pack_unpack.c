@@ -504,7 +504,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
         if(unpack(s, value, ap))
             goto out;
 
-        hashtable_set(&key_set, key, json_null());
+        hashtable_set(&key_set, key, strlen(key), json_null());
         next_token(s);
     }
 
@@ -513,7 +513,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
 
     if(root && strict == 1) {
         /* We need to check that all non optional items have been parsed */
-        const char *key;
+        json_keyn_t kn;
         /* keys_res is 1 for uninitialized, 0 for success, -1 for error. */
         int keys_res = 1;
         strbuffer_t unrecognized_keys;
@@ -521,8 +521,8 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
         long unpacked = 0;
 
         if (gotopt || json_object_size(root) != key_set.size) {
-            json_object_foreach(root, key, value) {
-                if(!hashtable_get(&key_set, key)) {
+            json_object_foreach_keyn(root, kn, value) {
+                if(!hashtable_get(&key_set, kn.key, kn.len)) {
                     unpacked++;
 
                     /* Save unrecognized keys for the error message */
@@ -533,7 +533,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
                     }
 
                     if (!keys_res)
-                        keys_res = strbuffer_append_bytes(&unrecognized_keys, key, strlen(key));
+                        keys_res = strbuffer_append_bytes(&unrecognized_keys, kn.key, kn.len);
                 }
             }
         }
