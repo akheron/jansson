@@ -108,7 +108,14 @@ AC_DEFINE_UNQUOTED([INITIAL_HASHTABLE_ORDER], [$initial_hashtable_order],
   [Number of buckets new object hashtables contain is 2 raised to this power. E.g. 3 -> 2^3 = 8.])
 
 if test x$GCC = xyes; then
-    AM_CFLAGS="-Wall -Wextra -Wdeclaration-after-statement"
+    AC_MSG_CHECKING(for -Wno-format-truncation)
+    wnoformat_truncation="-Wno-format-truncation"
+    AS_IF([${CC} -Wno-format-truncation -Werror -S -o /dev/null -xc /dev/null > /dev/null 2>&1],
+      [AC_MSG_RESULT(yes)],
+      [AC_MSG_RESULT(no)
+      wnoformat_truncation=""])
+
+    AM_CFLAGS="-Wall -Wextra -Wdeclaration-after-statement ${wnoformat_truncation}"
 fi
 AC_SUBST([AM_CFLAGS])
 
