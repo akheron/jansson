@@ -519,7 +519,8 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         goto out;
     }
 
-    if(!(lex->flags & JSON_DECODE_INT_AS_REAL) &&
+    if(!(lex->flags & JSON_DECODE_INT_AS_REAL ||
+         lex->flags & JSON_DECODE_NUMBER_AS_STRING) &&
        c != '.' && c != 'E' && c != 'e')
     {
         json_int_t intval;
@@ -575,13 +576,29 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 
     lex_unget_unsave(lex, c);
 
-    if(jsonp_strtod(&lex->saved_text, &doubleval)) {
-        error_set(error, lex, json_error_numeric_overflow, "real number overflow");
-        goto out;
+    if (!(lex->flags & JSON_DECODE_NUMBER_AS_STRING)) {
+        if(jsonp_strtod(&lex->saved_text, &doubleval)) {
+            error_set(error, lex, json_error_numeric_overflow, "real number overflow");
+            goto out;
+        }
+        
+        lex->token = TOKEN_REAL;
+        lex->value.real = doubleval;
+        
+    }
+    
+    else {
+        char *t = jsonp_strndup(lex->saved_text.value, lex->saved_text.length);
+        if(!t) {
+            /* this is not very nice, since TOKEN_INVALID is returned */
+            goto out;
+        }
+        
+        lex->value.string.val = t;
+        lex->value.string.len = lex->saved_text.length;
+        lex->token = TOKEN_STRING;
     }
 
-    lex->token = TOKEN_REAL;
-    lex->value.real = doubleval;
     return 0;
 
 out:
