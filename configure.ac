@@ -107,6 +107,35 @@ AC_ARG_ENABLE([initial-hashtable-order],
 AC_DEFINE_UNQUOTED([INITIAL_HASHTABLE_ORDER], [$initial_hashtable_order],
   [Number of buckets new object hashtables contain is 2 raised to this power. E.g. 3 -> 2^3 = 8.])
 
+AC_ARG_ENABLE([Bsymbolic],
+  [AS_HELP_STRING([--disable-Bsymbolic],
+    [Avoid linking with -Bsymbolic-function])],
+  [], [with_Bsymbolic=check])
+
+if test "x$with_Bsymbolic" != "xno" ; then
+    AC_MSG_CHECKING([for -Bsymbolic-functions linker flag])
+    saved_LDFLAGS="${LDFLAGS}"
+    LDFLAGS=-Wl,-Bsymbolic-functions
+    AC_TRY_LINK(
+      [], [int main (void) { return 0; }],
+      [AC_MSG_RESULT([yes])
+       have_Bsymbolic=yes],
+      [AC_MSG_RESULT([no])
+       have_Bsymbolic=no]
+    )
+    LDFLAGS="${saved_LDFLAGS}"
+
+    if test "x$with_Bsymbolic" = "xcheck" ; then
+        with_Bsymbolic=$have_Bsymbolic;
+    fi
+    if test "x$with_Bsymbolic:x$have_Bsymbolic" = "xyes:xno" ; then
+        AC_MSG_ERROR([linker support is required for -Bsymbolic])
+    fi
+fi
+
+AS_IF([test "x$with_Bsymbolic" = "xyes"], [JSON_BSYMBOLIC_LDFLAGS=-Wl[,]-Bsymbolic-functions])
+AC_SUBST(JSON_BSYMBOLIC_LDFLAGS)
+
 if test x$GCC = xyes; then
     AC_MSG_CHECKING(for -Wno-format-truncation)
     wnoformat_truncation="-Wno-format-truncation"
