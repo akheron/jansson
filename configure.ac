@@ -144,7 +144,7 @@ if test x$GCC = xyes; then
       [AC_MSG_RESULT(no)
       wnoformat_truncation=""])
 
-    AM_CFLAGS="-Wall -Wextra -Wdeclaration-after-statement ${wnoformat_truncation}"
+    AM_CFLAGS="-Wall -Wextra -Wdeclaration-after-statement -Wshadow ${wnoformat_truncation}"
 fi
 AC_SUBST([AM_CFLAGS])
 

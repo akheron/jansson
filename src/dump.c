@@ -306,7 +306,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             const char *separator;
             int separator_length;
             /* Space for "0x", double the sizeof a pointer for the hex and a terminator. */
-            char key[2 + (sizeof(json) * 2) + 1];
+            char loop_key[2 + (sizeof(json) * 2) + 1];
 
             if(flags & JSON_COMPACT) {
                 separator = ":";
@@ -318,7 +318,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             }
 
             /* detect circular references */
-            if (loop_check(parents, json, key, sizeof(key)))
+            if (loop_check(parents, json, loop_key, sizeof(loop_key)))
                 return -1;
 
             iter = json_object_iter((json_t *)json);
@@ -326,7 +326,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             if(!embed && dump("{", 1, data))
                 return -1;
             if(!iter) {
-                hashtable_del(parents, key);
+                hashtable_del(parents, loop_key);
                 return embed ? 0 : dump("}", 1, data);
             }
             if(dump_indent(flags, depth + 1, 0, dump, data))
@@ -422,7 +422,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 }
             }
 
-            hashtable_del(parents, key);
+            hashtable_del(parents, loop_key);
             return embed ? 0 : dump("}", 1, data);
         }
 
