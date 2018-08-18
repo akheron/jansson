@@ -231,6 +231,26 @@ static void error_code()
         fail("json_loads returned incorrect error code");
 }
 
+static void number_as_string()
+{
+    json_error_t error;
+	json_t* json;
+	json_t* number;
+
+	json = json_loads("{ \"number\" : 123.456 }",
+			JSON_DECODE_NUMBER_AS_STRING, &error);
+
+	if(!json)
+		fail("json_loads returned NULL");
+	number = json_object_get(json, "number");
+	if (!number)
+		fail("json_object get number returned NULL");
+	if (!json_is_string(number))
+		fail("number is not string");
+	if (!json_string_is_number(number))
+		fail("number string is not number");
+
+}
 static void run_tests()
 {
     file_not_found();
@@ -243,4 +263,5 @@ static void run_tests()
     load_wrong_args();
     position();
     error_code();
+    number_as_string();
 }

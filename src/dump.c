@@ -254,6 +254,9 @@ static int do_dump(const json_t *json, size_t flags, int depth,
         }
 
         case JSON_STRING:
+        	if (json_string_is_number(json)) {
+        		return dump(json_string_value(json), json_string_length(json), data);
+        	}
             return dump_string(json_string_value(json), json_string_length(json), dump, data, flags);
 
         case JSON_ARRAY:

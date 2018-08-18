@@ -311,6 +311,33 @@ static void embed()
     }
 }
 
+static void number_as_string()
+{
+    json_error_t error;
+	json_t* json;
+	json_t* number;
+	char* string;
+
+	json = json_object();
+	number = json_string("123.456");
+	json_string_set_is_number(number, 1);
+	json_object_set_new(json, "number", number);
+	string = json_dumps(json, 0);
+	json_decref(json);
+
+	json = json_loads(string, 0, &error);
+	free(string);
+
+	if(!json)
+		fail("json_loads returned NULL");
+	number = json_object_get(json, "number");
+	if (!number)
+		fail("json_object get number returned NULL");
+	if (!json_is_number(number))
+		fail("number is not number");
+	if (!(json_number_value(number) == 123.456))
+		fail("number is not 123.456");
+}
 static void run_tests()
 {
     encode_null();
@@ -323,4 +350,5 @@ static void run_tests()
     dumpb();
     dumpfd();
     embed();
+    number_as_string();
 }

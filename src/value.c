@@ -658,6 +658,7 @@ static json_t *string_create(const char *value, size_t len, int own)
     json_init(&string->json, JSON_STRING);
     string->value = v;
     string->length = len;
+    string->is_number = 0;
 
     return &string->json;
 }
@@ -775,9 +776,30 @@ static int json_string_equal(const json_t *string1, const json_t *string2)
 static json_t *json_string_copy(const json_t *string)
 {
     json_string_t *s;
+    json_t* r;
 
     s = json_to_string(string);
-    return json_stringn_nocheck(s->value, s->length);
+    r = json_stringn_nocheck(s->value, s->length);
+    json_string_set_is_number(r, s->is_number);
+    return r;
+}
+
+int json_string_is_number(const json_t *json)
+{
+    if(!json_is_string(json))
+        return 0;
+
+    return json_to_string(json)->is_number;
+}
+
+int json_string_set_is_number(const json_t *json, int bool)
+{
+    if(!json_is_string(json))
+        return -1;
+
+    json_to_string(json)->is_number = (bool ? 1 : 0);
+
+    return 0;
 }
 
 json_t *json_vsprintf(const char *fmt, va_list ap) {

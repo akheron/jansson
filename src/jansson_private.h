@@ -48,6 +48,7 @@ typedef struct {
     json_t json;
     char *value;
     size_t length;
+    int is_number;
 } json_string_t;
 
 typedef struct {
