@@ -337,7 +337,9 @@ static void number_as_string()
 		fail("number is not number");
 	if (!(json_number_value(number) == 123.456))
 		fail("number is not 123.456");
+	json_decref(json);
 }
+
 static void run_tests()
 {
     encode_null();

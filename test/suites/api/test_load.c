@@ -249,8 +249,9 @@ static void number_as_string()
 		fail("number is not string");
 	if (!json_string_is_number(number))
 		fail("number string is not number");
-
+	json_decref(json);
 }
+
 static void run_tests()
 {
     file_not_found();
