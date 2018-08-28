@@ -75,6 +75,9 @@ static void next_token(scanner_t *s)
         return;
     }
 
+    if (!token(s) && !*s->fmt)
+        return;
+
     t = s->fmt;
     s->column++;
     s->pos++;
@@ -97,7 +100,7 @@ static void next_token(scanner_t *s)
     s->token.column = s->column;
     s->token.pos = s->pos;
 
-    t++;
+    if (*t) t++;
     s->fmt = t;
 }
 
@@ -159,7 +162,10 @@ static char *read_string(scanner_t *s, va_list *ap,
         return (char *)str;
     }
 
-    strbuffer_init(&strbuff);
+    if(strbuffer_init(&strbuff)) {
+        set_error(s, "<internal>", json_error_out_of_memory, "Out of memory");
+        s->has_error = 1;
+    }
 
     while(1) {
         str = va_arg(*ap, const char *);
@@ -345,6 +351,36 @@ static json_t *pack_string(scanner_t *s, va_list *ap)
     }
 }
 
+static json_t *pack_object_inter(scanner_t *s, va_list *ap, int need_incref)
+{
+    json_t *json;
+    char ntoken;
+
+    next_token(s);
+    ntoken = token(s);
+
+    if (ntoken != '?')
+        prev_token(s);
+
+    json = va_arg(*ap, json_t *);
+
+    if (json)
+        return need_incref ? json_incref(json) : json;
+
+    switch (ntoken) {
+        case '?':
+            return json_null();
+        case '*':
+            return NULL;
+        default:
+            break;
+    }
+
+    set_error(s, "<args>", json_error_null_value, "NULL object key");
+    s->has_error = 1;
+    return NULL;
+}
+
 static json_t *pack(scanner_t *s, va_list *ap)
 {
     switch(token(s)) {
@@ -375,40 +411,10 @@ static json_t *pack(scanner_t *s, va_list *ap)
 #endif
 
         case 'O': /* a json_t object; increments refcount */
-        {
-            int nullable;
-            json_t *json;
-
-            next_token(s);
-            nullable = token(s) == '?';
-            if (!nullable)
-                prev_token(s);
-
-            json = va_arg(*ap, json_t *);
-            if (!json && nullable) {
-                return json_null();
-            } else {
-                return json_incref(json);
-            }
-        }
+            return pack_object_inter(s, ap, 1);
 
         case 'o': /* a json_t object; doesn't increment refcount */
-        {
-            int nullable;
-            json_t *json;
-
-            next_token(s);
-            nullable = token(s) == '?';
-            if (!nullable)
-                prev_token(s);
-
-            json = va_arg(*ap, json_t *);
-            if (!json && nullable) {
-                return json_null();
-            } else {
-                return json;
-            }
-        }
+            return pack_object_inter(s, ap, 0);
 
         default:
             set_error(s, "<format>", json_error_invalid_format, "Unexpected format character '%c'",
@@ -510,48 +516,34 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap)
     if(root && strict == 1) {
         /* We need to check that all non optional items have been parsed */
         const char *key;
-        int have_unrecognized_keys = 0;
+        /* keys_res is 1 for uninitialized, 0 for success, -1 for error. */
+        int keys_res = 1;
         strbuffer_t unrecognized_keys;
         json_t *value;
         long unpacked = 0;
-        if (gotopt) {
-            /* We have optional keys, we need to iter on each key */
+
+        if (gotopt || json_object_size(root) != key_set.size) {
             json_object_foreach(root, key, value) {
                 if(!hashtable_get(&key_set, key)) {
                     unpacked++;
 
                     /* Save unrecognized keys for the error message */
-                    if (!have_unrecognized_keys) {
-                        strbuffer_init(&unrecognized_keys);
-                        have_unrecognized_keys = 1;
-                    } else {
-                        strbuffer_append_bytes(&unrecognized_keys, ", ", 2);
+                    if (keys_res == 1) {
+                        keys_res = strbuffer_init(&unrecognized_keys);
+                    } else if (!keys_res) {
+                        keys_res = strbuffer_append_bytes(&unrecognized_keys, ", ", 2);
                     }
-                    strbuffer_append_bytes(&unrecognized_keys, key, strlen(key));
+
+                    if (!keys_res)
+                        keys_res = strbuffer_append_bytes(&unrecognized_keys, key, strlen(key));
                 }
             }
-        } else {
-            /* No optional keys, we can just compare the number of items */
-            unpacked = (long)json_object_size(root) - (long)key_set.size;
         }
         if (unpacked) {
-            if (!gotopt) {
-                /* Save unrecognized keys for the error message */
-                json_object_foreach(root, key, value) {
-                    if(!hashtable_get(&key_set, key)) {
-                        if (!have_unrecognized_keys) {
-                            strbuffer_init(&unrecognized_keys);
-                            have_unrecognized_keys = 1;
-                        } else {
-                            strbuffer_append_bytes(&unrecognized_keys, ", ", 2);
-                        }
-                        strbuffer_append_bytes(&unrecognized_keys, key, strlen(key));
-                    }
-                }
-            }
             set_error(s, "<validation>", json_error_end_of_input_expected,
                       "%li object item(s) left unpacked: %s",
-                      unpacked, strbuffer_value(&unrecognized_keys));
+                      unpacked,
+                      keys_res ? "<unknown>" : strbuffer_value(&unrecognized_keys));
             strbuffer_close(&unrecognized_keys);
             goto out;
         }

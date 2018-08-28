@@ -28,7 +28,7 @@ void jsonp_error_set_source(json_error_t *error, const char *source)
         strncpy(error->source, source, length + 1);
     else {
         size_t extra = length - JSON_ERROR_SOURCE_LENGTH + 4;
-        strncpy(error->source, "...", 3);
+        memcpy(error->source, "...", 3);
         strncpy(error->source + 3, source + extra, length - extra + 1);
     }
 }

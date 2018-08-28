@@ -101,7 +101,22 @@ Creating Visual Studio project files from the command line:
 
     md build
     cd build
-    cmake -G "Visual Studio 10" ..
+    cmake -G "Visual Studio 15 2017" ..
+
+.. note::
+
+   You should replace the name of the generator (``-G`` flag) matching
+   the Visual Studio version installed on your system. Currently, the
+   following versions are supported:
+
+   - ``Visual Studio 9 2008``
+   - ``Visual Studio 10 2010``
+   - ``Visual Studio 11 2012``
+   - ``Visual Studio 12 2013``
+   - ``Visual Studio 14 2015``
+   - ``Visual Studio 15 2017``
+
+   Any later version should also work.
 
 You will now have a *Visual Studio Solution* in your build directory.
 To run the unit tests build the ``RUN_TESTS`` project.
