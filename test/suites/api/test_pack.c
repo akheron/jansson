@@ -67,6 +67,7 @@ static void run_tests()
         fail("json_pack integer refcount failed");
     json_decref(value);
 
+#if JSON_HAVE_FLOAT
     /* real */
     value = json_pack("f", 1.0);
     if(!json_is_real(value) || json_real_value(value) != 1.0)
@@ -74,6 +75,7 @@ static void run_tests()
     if(value->refcount != (size_t)1)
         fail("json_pack real refcount failed");
     json_decref(value);
+#endif
 
     /* string */
     value = json_pack("s", "test");

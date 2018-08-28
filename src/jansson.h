@@ -46,7 +46,9 @@ typedef enum {
     JSON_ARRAY,
     JSON_STRING,
     JSON_INTEGER,
+#if JSON_HAVE_FLOAT
     JSON_REAL,
+#endif
     JSON_TRUE,
     JSON_FALSE,
     JSON_NULL
@@ -76,8 +78,12 @@ typedef long json_int_t;
 #define json_is_array(json)    ((json) && json_typeof(json) == JSON_ARRAY)
 #define json_is_string(json)   ((json) && json_typeof(json) == JSON_STRING)
 #define json_is_integer(json)  ((json) && json_typeof(json) == JSON_INTEGER)
+#if JSON_HAVE_FLOAT
 #define json_is_real(json)     ((json) && json_typeof(json) == JSON_REAL)
 #define json_is_number(json)   (json_is_integer(json) || json_is_real(json))
+#else
+#define json_is_number(json)   (json_is_integer(json))
+#endif
 #define json_is_true(json)     ((json) && json_typeof(json) == JSON_TRUE)
 #define json_is_false(json)    ((json) && json_typeof(json) == JSON_FALSE)
 #define json_boolean_value     json_is_true
@@ -93,7 +99,9 @@ json_t *json_stringn(const char *value, size_t len);
 json_t *json_string_nocheck(const char *value);
 json_t *json_stringn_nocheck(const char *value, size_t len);
 json_t *json_integer(json_int_t value);
+#if JSON_HAVE_FLOAT
 json_t *json_real(double value);
+#endif
 json_t *json_true(void);
 json_t *json_false(void);
 #define json_boolean(val)      ((val) ? json_true() : json_false())
@@ -174,7 +182,8 @@ enum json_error_code {
     json_error_duplicate_key,
     json_error_numeric_overflow,
     json_error_item_not_found,
-    json_error_index_out_of_range
+    json_error_index_out_of_range,
+    json_error_real_numbers_not_supported
 };
 
 static JSON_INLINE enum json_error_code json_error_code(const json_error_t *e) {
@@ -266,15 +275,21 @@ int json_array_insert(json_t *array, size_t ind, json_t *value)
 const char *json_string_value(const json_t *string);
 size_t json_string_length(const json_t *string);
 json_int_t json_integer_value(const json_t *integer);
+#if JSON_HAVE_FLOAT
 double json_real_value(const json_t *real);
 double json_number_value(const json_t *json);
+#else
+json_int_t json_number_value(const json_t *json);
+#endif
 
 int json_string_set(json_t *string, const char *value);
 int json_string_setn(json_t *string, const char *value, size_t len);
 int json_string_set_nocheck(json_t *string, const char *value);
 int json_string_setn_nocheck(json_t *string, const char *value, size_t len);
 int json_integer_set(json_t *integer, json_int_t value);
+#if JSON_HAVE_FLOAT
 int json_real_set(json_t *real, double value);
+#endif
 
 /* pack, unpack */
 
@@ -311,15 +326,19 @@ json_t *json_deep_copy(const json_t *value);
 #define JSON_REJECT_DUPLICATES  0x1
 #define JSON_DISABLE_EOF_CHECK  0x2
 #define JSON_DECODE_ANY         0x4
+#if JSON_HAVE_FLOAT
 #define JSON_DECODE_INT_AS_REAL 0x8
+#endif
 #define JSON_ALLOW_NUL          0x10
 
 typedef size_t (*json_load_callback_t)(void *buffer, size_t buflen, void *data);
 
 json_t *json_loads(const char *input, size_t flags, json_error_t *error);
 json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error);
+#if JSON_HAVE_FILE
 json_t *json_loadf(FILE *input, size_t flags, json_error_t *error);
 json_t *json_loadfd(int input, size_t flags, json_error_t *error);
+#endif
 json_t *json_load_file(const char *path, size_t flags, json_error_t *error);
 json_t *json_load_callback(json_load_callback_t callback, void *data, size_t flags, json_error_t *error);
 
@@ -334,15 +353,19 @@ json_t *json_load_callback(json_load_callback_t callback, void *data, size_t fla
 #define JSON_PRESERVE_ORDER     0x100
 #define JSON_ENCODE_ANY         0x200
 #define JSON_ESCAPE_SLASH       0x400
+#if JSON_HAVE_FLOAT
 #define JSON_REAL_PRECISION(n)  (((n) & 0x1F) << 11)
+#endif
 #define JSON_EMBED              0x10000
 
 typedef int (*json_dump_callback_t)(const char *buffer, size_t size, void *data);
 
 char *json_dumps(const json_t *json, size_t flags);
 size_t json_dumpb(const json_t *json, char *buffer, size_t size, size_t flags);
+#if JSON_HAVE_FILE
 int json_dumpf(const json_t *json, FILE *output, size_t flags);
 int json_dumpfd(const json_t *json, int output, size_t flags);
+#endif
 int json_dump_file(const json_t *json, const char *path, size_t flags);
 int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags);
 

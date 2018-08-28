@@ -11,10 +11,14 @@
 
 #include "jansson_private.h"
 
+#if JSON_HAVE_ERRNO
 #include <errno.h>
+#endif
 #include <limits.h>
+#if JSON_HAVE_FILE
 #include <stdio.h>
 #include <stdlib.h>
+#endif
 #include <string.h>
 #include <assert.h>
 #ifdef HAVE_UNISTD_H
@@ -74,7 +78,9 @@ typedef struct {
             size_t len;
         } string;
         json_int_t integer;
+#if JSON_HAVE_FLOAT
         double real;
+#endif
     } value;
 } lex_t;
 
@@ -495,7 +501,9 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 {
     const char *saved_text;
     char *end;
+#if JSON_HAVE_FLOAT
     double doubleval;
+#endif
 
     lex->token = TOKEN_INVALID;
 
@@ -514,13 +522,21 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
             c = lex_get_save(lex, error);
         while(l_isdigit(c));
     }
+#if JSON_HAVE_FLOAT
+    else if(c == '.' || c == 'E' || c == 'e') {
+        error_set(error, lex, json_error_real_numbers_not_supported, "real numbers are not supported");
+        goto out;
+    }
+#endif
     else {
         lex_unget_unsave(lex, c);
         goto out;
     }
 
+#if JSON_HAVE_FLOAT
     if(!(lex->flags & JSON_DECODE_INT_AS_REAL) &&
        c != '.' && c != 'E' && c != 'e')
+#endif
     {
         json_int_t intval;
 
@@ -528,6 +544,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 
         saved_text = strbuffer_value(&lex->saved_text);
 
+#if JSON_HAVE_ERRNO
         errno = 0;
         intval = json_strtoint(saved_text, &end, 10);
         if(errno == ERANGE) {
@@ -537,6 +554,9 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
                 error_set(error, lex, json_error_numeric_overflow, "too big integer");
             goto out;
         }
+#else
+        intval = json_strtoint(saved_text, &end, 10);
+#endif
 
         assert(end == saved_text + lex->saved_text.length);
 
@@ -545,6 +565,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         return 0;
     }
 
+#if JSON_HAVE_FLOAT
     if(c == '.') {
         c = lex_get(lex, error);
         if(!l_isdigit(c)) {
@@ -583,6 +604,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
     lex->token = TOKEN_REAL;
     lex->value.real = doubleval;
     return 0;
+#endif
 
 out:
     return -1;
@@ -841,10 +863,12 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
             break;
         }
 
+#if JSON_HAVE_FLOAT
         case TOKEN_REAL: {
             json = json_real(lex->value.real);
             break;
         }
+#endif
 
         case TOKEN_TRUE:
             json = json_true();
@@ -1007,6 +1031,8 @@ json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t
     return result;
 }
 
+#if JSON_HAVE_FILE
+
 json_t *json_loadf(FILE *input, size_t flags, json_error_t *error)
 {
     lex_t lex;
@@ -1088,8 +1114,12 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
     fp = fopen(path, "rb");
     if(!fp)
     {
+#if JSON_HAVE_ERRNO
         error_set(error, NULL, json_error_cannot_open_file, "unable to open %s: %s",
                   path, strerror(errno));
+#else
+        error_set(error, NULL, json_error_cannot_open_file, "unable to open %s", path);
+#endif
         return NULL;
     }
 
@@ -1098,6 +1128,8 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error)
     fclose(fp);
     return result;
 }
+
+#endif
 
 #define MAX_BUF_LEN 1024
 

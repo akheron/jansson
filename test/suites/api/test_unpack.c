@@ -18,7 +18,9 @@ static void run_tests()
     json_int_t I1;
     int rv;
     size_t z;
+#if JSON_HAVE_FLOAT
     double f;
+#endif
     char *s;
 
     json_error_t error;
@@ -55,6 +57,7 @@ static void run_tests()
         fail("json_unpack json_int_t failed");
     json_decref(j);
 
+#if JSON_HAVE_FLOAT
     /* real */
     j = json_real(1.7);
     rv = json_unpack(j, "f", &f);
@@ -74,6 +77,7 @@ static void run_tests()
     if(rv || f != 1.7)
         fail("json_unpack real (or integer) failed");
     json_decref(j);
+#endif
 
     /* string */
     j = json_string("foo");

@@ -54,6 +54,9 @@ project (jansson C)
 option(JANSSON_BUILD_SHARED_LIBS "Build shared libraries." OFF)
 option(USE_URANDOM "Use /dev/urandom to seed the hash function." ON)
 option(USE_WINDOWS_CRYPTOAPI "Use CryptGenRandom to seed the hash function." ON)
+option(JSON_HAVE_FLOAT "Platform has support for floating point numbers." ON)
+option(JSON_HAVE_ERRNO "Platform has errno.h and supports errno()." ON)
+option(JSON_HAVE_FILE "Platform has FILE functions." ON)
 
 if (MSVC)
    # This option must match the settings used in your program, in particular if you

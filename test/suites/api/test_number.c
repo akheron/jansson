@@ -19,6 +19,7 @@
 #endif
 static void test_inifity()
 {
+#if JSON_HAVE_FLOAT
     json_t *real = json_real(INFINITY);
     if (real != NULL)
        fail("could construct a real from Inf");
@@ -31,6 +32,7 @@ static void test_inifity()
        fail("real value changed unexpectedly");
 
     json_decref(real);
+#endif
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -39,22 +41,30 @@ static void test_inifity()
 
 static void run_tests()
 {
-    json_t *integer, *real;
-    json_int_t i;
+    json_t *integer;
+#if JSON_HAVE_FLOAT
+    json_t *real;
     double d;
+#endif
+    json_int_t i;
 
     integer = json_integer(5);
+#if JSON_HAVE_FLOAT
     real = json_real(100.1);
+#endif
 
     if(!integer)
         fail("unable to create integer");
+#if JSON_HAVE_FLOAT
     if(!real)
         fail("unable to create real");
+#endif
 
     i = json_integer_value(integer);
     if(i != 5)
         fail("wrong integer value");
 
+#if JSON_HAVE_FLOAT
     d = json_real_value(real);
     if(d != 100.1)
         fail("wrong real value");
@@ -66,9 +76,12 @@ static void run_tests()
     if(d != 100.1)
         fail("wrong number value");
 
-    json_decref(integer);
     json_decref(real);
+#endif
 
+    json_decref(integer);
+
+#if JSON_HAVE_FLOAT
 #ifdef NAN
     real = json_real(NAN);
     if(real != NULL)
@@ -82,6 +95,7 @@ static void run_tests()
         fail("real value changed unexpectedly");
 
     json_decref(real);
+#endif
 #endif
 
 #ifdef INFINITY

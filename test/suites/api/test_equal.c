@@ -42,6 +42,7 @@ static void test_equal_simple()
     json_decref(value1);
     json_decref(value2);
 
+#if JSON_HAVE_FLOAT
     /* real */
     value1 = json_real(1.2);
     value2 = json_real(1.2);
@@ -59,6 +60,7 @@ static void test_equal_simple()
 
     json_decref(value1);
     json_decref(value2);
+#endif
 
     /* string */
     value1 = json_string("foo");

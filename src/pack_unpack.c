@@ -369,8 +369,10 @@ static json_t *pack(scanner_t *s, va_list *ap)
         case 'I': /* integer from json_int_t */
             return json_integer(va_arg(*ap, json_int_t));
 
+#if JSON_HAVE_FLOAT
         case 'f': /* real */
             return json_real(va_arg(*ap, double));
+#endif
 
         case 'O': /* a json_t object; increments refcount */
         {
@@ -724,6 +726,7 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
 
             return 0;
 
+#if JSON_HAVE_FLOAT
         case 'f':
             if(root && !json_is_real(root)) {
                 set_error(s, "<validation>", json_error_wrong_type, "Expected real, got %s",
@@ -738,11 +741,17 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap)
             }
 
             return 0;
+#endif
 
         case 'F':
             if(root && !json_is_number(root)) {
+#if JSON_HAVE_FLOAT
                 set_error(s, "<validation>", json_error_wrong_type, "Expected real or integer, got %s",
                           type_name(root));
+#else
+                set_error(s, "<validation>", json_error_wrong_type, "Expected integer, got %s",
+                          type_name(root));
+#endif
                 return -1;
             }
 

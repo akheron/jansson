@@ -158,7 +158,9 @@ static int cmpfile(const char *str, const char *path, const char *fname)
 
 int use_conf(char *test_path)
 {
-    int ret;
+    int ret = 0;
+
+#if JSON_HAVE_FILE
     size_t flags = 0;
     char filename[1024], errstr[1024];
     char *buffer;
@@ -199,6 +201,7 @@ int use_conf(char *test_path)
     if (conf.sort_keys)
         flags |= JSON_SORT_KEYS;
 
+#if JSON_HAVE_FLOAT
     if (conf.precision < 0 || conf.precision > 31) {
         fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n",
                 conf.precision);
@@ -207,6 +210,7 @@ int use_conf(char *test_path)
     }
     if (conf.precision)
         flags |= JSON_REAL_PRECISION(conf.precision);
+#endif
 
     if (conf.have_hashseed)
         json_object_seed(conf.hashseed);
@@ -235,9 +239,11 @@ int use_conf(char *test_path)
     ret = cmpfile(buffer, test_path, "output");
     free(buffer);
     json_decref(json);
+#endif
 
     return ret;
 }
+
 
 static int getenv_int(const char *name)
 {
@@ -257,6 +263,7 @@ static int getenv_int(const char *name)
 
 int use_env()
 {
+#if JSON_HAVE_FILE
     int indent, precision;
     size_t flags = 0;
     json_t *json;
@@ -289,18 +296,22 @@ int use_env()
     if(getenv_int("JSON_SORT_KEYS"))
         flags |= JSON_SORT_KEYS;
 
+#if JSON_HAVE_FLOAT
     precision = getenv_int("JSON_REAL_PRECISION");
     if(precision < 0 || precision > 31) {
         fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n",
                 precision);
         return 2;
     }
+#endif
 
     if(getenv("HASHSEED"))
         json_object_seed(getenv_int("HASHSEED"));
 
+#if JSON_HAVE_FLOAT
     if(precision > 0)
         flags |= JSON_REAL_PRECISION(precision);
+#endif
 
     if(getenv_int("STRIP")) {
         /* Load to memory, strip leading and trailing whitespace */
@@ -342,6 +353,7 @@ int use_env()
 
     json_dumpf(json, stdout, flags);
     json_decref(json);
+#endif
 
     return 0;
 }

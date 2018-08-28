@@ -11,6 +11,7 @@
 
 static void file_not_found()
 {
+#if JSON_HAVE_FILE
     json_t *json;
     json_error_t error;
     char *pos;
@@ -34,9 +35,11 @@ static void file_not_found()
         fail("json_load_file returned an invalid error message");
     if(json_error_code(&error) != json_error_cannot_open_file)
         fail("json_load_file returned an invalid error code");
+#endif
 }
 
 static void very_long_file_name() {
+#if JSON_HAVE_FILE
     json_t *json;
     json_error_t error;
 
@@ -50,6 +53,7 @@ static void very_long_file_name() {
         fail("error source was set incorrectly");
     if(json_error_code(&error) != json_error_cannot_open_file)
         fail("error code was set incorrectly");
+#endif
 }
 
 static void reject_duplicates()
@@ -105,6 +109,7 @@ static void decode_any()
     json_decref(json);
 }
 
+#if JSON_HAVE_FLOAT
 static void decode_int_as_real()
 {
     json_t *json;
@@ -147,6 +152,7 @@ static void decode_int_as_real()
     json_decref(json);
 
 }
+#endif
 
 static void allow_nul()
 {
@@ -181,6 +187,7 @@ static void load_wrong_args()
     if (json)
         fail("json_loadb should return NULL if the first argument is NULL");
 
+#if JSON_HAVE_FILE
     json = json_loadf(NULL, 0, &error);
     if (json)
         fail("json_loadf should return NULL if the first argument is NULL");
@@ -192,6 +199,7 @@ static void load_wrong_args()
     json = json_load_file(NULL, 0, &error);
     if (json)
         fail("json_load_file should return NULL if the first argument is NULL");
+#endif
 }
 
 static void position()
@@ -238,7 +246,9 @@ static void run_tests()
     reject_duplicates();
     disable_eof_check();
     decode_any();
+#if JSON_HAVE_FLOAT
     decode_int_as_real();
+#endif
     allow_nul();
     load_wrong_args();
     position();

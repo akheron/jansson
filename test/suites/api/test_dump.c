@@ -30,12 +30,14 @@ static void encode_null()
     if(json_dumpb(NULL, NULL, 0, JSON_ENCODE_ANY) != 0)
         fail("json_dumps didn't fail for NULL");
 
+#if JSON_HAVE_FILE
     if(json_dumpf(NULL, stderr, JSON_ENCODE_ANY) != -1)
         fail("json_dumpf didn't fail for NULL");
 
 #ifdef HAVE_UNISTD_H
     if(json_dumpfd(NULL, STDERR_FILENO, JSON_ENCODE_ANY) != -1)
         fail("json_dumpfd didn't fail for NULL");
+#endif
 #endif
 
     /* Don't test json_dump_file to avoid creating a file */
@@ -142,10 +144,12 @@ static void encode_other_than_array_or_object()
     json = json_string("foo");
     if(json_dumps(json, 0) != NULL)
         fail("json_dumps encoded a string!");
+#if JSON_HAVE_FILE
     if(json_dumpf(json, NULL, 0) == 0)
         fail("json_dumpf encoded a string!");
     if(json_dumpfd(json, -1, 0) == 0)
         fail("json_dumpfd encoded a string!");
+#endif
 
     result = json_dumps(json, JSON_ENCODE_ANY);
     if(!result || strcmp(result, "\"foo\"") != 0)
@@ -157,10 +161,12 @@ static void encode_other_than_array_or_object()
     json = json_integer(42);
     if(json_dumps(json, 0) != NULL)
         fail("json_dumps encoded an integer!");
+#if JSON_HAVE_FILE
     if(json_dumpf(json, NULL, 0) == 0)
         fail("json_dumpf encoded an integer!");
     if(json_dumpfd(json, -1, 0) == 0)
         fail("json_dumpfd encoded an integer!");
+#endif
 
     result = json_dumps(json, JSON_ENCODE_ANY);
     if(!result || strcmp(result, "42") != 0)
@@ -212,6 +218,7 @@ static void encode_nul_byte()
 
 static void dump_file()
 {
+#if JSON_HAVE_FILE
     json_t *json;
     int result;
 
@@ -226,6 +233,7 @@ static void dump_file()
 
     json_decref(json);
     remove("json_dump_file.json");
+#endif
 }
 
 static void dumpb()
@@ -252,6 +260,7 @@ static void dumpb()
 
 static void dumpfd()
 {
+#if JSON_HAVE_FILE
 #ifdef HAVE_UNISTD_H
     int fds[2] = {-1, -1};
     json_t *a, *b;
@@ -275,6 +284,7 @@ static void dumpfd()
 
     json_decref(a);
     json_decref(b);
+#endif
 #endif
 }
 

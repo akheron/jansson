@@ -50,10 +50,12 @@ typedef struct {
     size_t length;
 } json_string_t;
 
+#if JSON_HAVE_FLOAT
 typedef struct {
     json_t json;
     double value;
 } json_real_t;
+#endif
 
 typedef struct {
     json_t json;
@@ -63,7 +65,9 @@ typedef struct {
 #define json_to_object(json_)  container_of(json_, json_object_t, json)
 #define json_to_array(json_)   container_of(json_, json_array_t, json)
 #define json_to_string(json_)  container_of(json_, json_string_t, json)
+#if JSON_HAVE_FLOAT
 #define json_to_real(json_)    container_of(json_, json_real_t, json)
+#endif
 #define json_to_integer(json_) container_of(json_, json_integer_t, json)
 
 /* Create a string by taking ownership of an existing buffer */
@@ -94,10 +98,10 @@ char *jsonp_strndup(const char *str, size_t len);
 /* Windows compatibility */
 #if defined(_WIN32) || defined(WIN32)
 #  if defined(_MSC_VER)  /* MS compiller */
-#    if (_MSC_VER < 1900) && !defined(snprintf)  /* snprintf not defined yet & not introduced */
+#    if (_MSC_VER <= 1915) && !defined(snprintf)  /* snprintf not defined yet & not introduced */
 #      define snprintf _snprintf
 #    endif
-#    if (_MSC_VER < 1500) && !defined(vsnprintf)  /* vsnprintf not defined yet & not introduced */
+#    if (_MSC_VER <= 1915) && !defined(vsnprintf)  /* vsnprintf not defined yet & not introduced */
 #      define vsnprintf(b,c,f,a) _vsnprintf(b,c,f,a)
 #    endif
 #  else  /* Other Windows compiller, old definition */
