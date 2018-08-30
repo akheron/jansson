@@ -61,8 +61,8 @@ static int dump_to_file(const char *buffer, size_t size, void *data)
 
 static int dump_to_fd(const char *buffer, size_t size, void *data)
 {
-    int *dest = (int *)data;
 #ifdef HAVE_UNISTD_H
+    int *dest = (int *)data;
     if(write(*dest, buffer, size) == (ssize_t)size)
         return 0;
 #endif
