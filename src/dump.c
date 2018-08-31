@@ -101,7 +101,7 @@ static int dump_indent(size_t flags, int depth, int space, json_dump_callback_t 
 static int dump_string(const char *str, size_t len, json_dump_callback_t dump, void *data, size_t flags)
 {
     const char *pos, *end, *lim;
-    int32_t codepoint;
+    int32_t codepoint = 0;
 
     if(dump("\"", 1, data))
         return -1;
@@ -351,7 +351,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 }
                 assert(i == size);
 
-                qsort(keys, size, sizeof(const char *), compare_keys);
+                qsort((void*)keys, size, sizeof(const char *), compare_keys);
 
                 for(i = 0; i < size; i++)
                 {
@@ -366,7 +366,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                     if(dump(separator, separator_length, data) ||
                        do_dump(value, flags, depth + 1, parents, dump, data))
                     {
-                        jsonp_free(keys);
+                        jsonp_free((void*)keys);
                         return -1;
                     }
 
@@ -375,7 +375,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                         if(dump(",", 1, data) ||
                            dump_indent(flags, depth + 1, 1, dump, data))
                         {
-                            jsonp_free(keys);
+                            jsonp_free((void*)keys);
                             return -1;
                         }
                     }
@@ -383,7 +383,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                     {
                         if(dump_indent(flags, depth, 0, dump, data))
                         {
-                            jsonp_free(keys);
+                            jsonp_free((void*)keys);
                             return -1;
                         }
                     }
