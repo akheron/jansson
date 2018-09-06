@@ -71,4 +71,18 @@
    This limits the depth of e.g. array-within-array constructions. */
 #define JSON_PARSER_MAX_DEPTH 2048
 
+/* If errno.h and errno() are available, define to 1,
+   otherwise to 0. */
+#cmakedefine JSON_HAVE_ERRNO 1
+
+
+/* If FILE and its related APIs (fopen, fclose, etc.) are available, define to 1
+   otherwise to 1. */
+#cmakedefine JSON_HAVE_FILE 1
+
+
+/* If floating point types are available, define to 1,
+   otherwise to 0. */
+#cmakedefine JSON_HAVE_FLOAT 1
+
 #endif

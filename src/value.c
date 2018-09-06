@@ -12,11 +12,14 @@
 #ifdef HAVE_CONFIG_H
 #include <jansson_private_config.h>
 #endif
+#include "jansson_private.h"
 
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#if JSON_HAVE_FLOAT
 #include <math.h>
+#endif
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
@@ -24,10 +27,10 @@
 
 #include "jansson.h"
 #include "hashtable.h"
-#include "jansson_private.h"
 #include "utf.h"
 
 /* Work around nonstandard isnan() and isinf() implementations */
+#if JSON_HAVE_FLOAT
 #ifndef isnan
 #ifndef __sun
 static JSON_INLINE int isnan(double x) { return x != x; }
@@ -35,6 +38,7 @@ static JSON_INLINE int isnan(double x) { return x != x; }
 #endif
 #ifndef isinf
 static JSON_INLINE int isinf(double x) { return !isnan(x) && isnan(x - x); }
+#endif
 #endif
 
 static JSON_INLINE void json_init(json_t *json, json_type type)
@@ -871,6 +875,7 @@ static json_t *json_integer_copy(const json_t *integer)
 
 /*** real ***/
 
+#if JSON_HAVE_FLOAT
 json_t *json_real(double value)
 {
     json_real_t *real;
@@ -919,10 +924,11 @@ static json_t *json_real_copy(const json_t *real)
 {
     return json_real(json_real_value(real));
 }
-
+#endif
 
 /*** number ***/
 
+#if JSON_HAVE_FLOAT
 double json_number_value(const json_t *json)
 {
     if(json_is_integer(json))
@@ -932,6 +938,15 @@ double json_number_value(const json_t *json)
     else
         return 0.0;
 }
+#else
+json_int_t json_number_value(const json_t *json)
+{
+    if (json_is_integer(json))
+        return json_integer_value(json);
+    else
+        return 0;
+}
+#endif
 
 
 /*** simple values ***/
@@ -977,9 +992,11 @@ void json_delete(json_t *json)
         case JSON_INTEGER:
             json_delete_integer(json_to_integer(json));
             break;
+#if JSON_HAVE_FLOAT
         case JSON_REAL:
             json_delete_real(json_to_real(json));
             break;
+#endif
         default:
             return;
     }
@@ -1011,8 +1028,10 @@ int json_equal(const json_t *json1, const json_t *json2)
             return json_string_equal(json1, json2);
         case JSON_INTEGER:
             return json_integer_equal(json1, json2);
+#if JSON_HAVE_FLOAT
         case JSON_REAL:
             return json_real_equal(json1, json2);
+#endif
         default:
             return 0;
     }
@@ -1035,8 +1054,10 @@ json_t *json_copy(json_t *json)
             return json_string_copy(json);
         case JSON_INTEGER:
             return json_integer_copy(json);
+#if JSON_HAVE_FLOAT
         case JSON_REAL:
             return json_real_copy(json);
+#endif
         case JSON_TRUE:
         case JSON_FALSE:
         case JSON_NULL:
@@ -1064,8 +1085,10 @@ json_t *json_deep_copy(const json_t *json)
             return json_string_copy(json);
         case JSON_INTEGER:
             return json_integer_copy(json);
+#if JSON_HAVE_FLOAT
         case JSON_REAL:
             return json_real_copy(json);
+#endif
         case JSON_TRUE:
         case JSON_FALSE:
         case JSON_NULL:

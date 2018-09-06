@@ -51,6 +51,7 @@ static int dump_to_buffer(const char *buffer, size_t size, void *data)
     return 0;
 }
 
+#if JSON_HAVE_FILE
 static int dump_to_file(const char *buffer, size_t size, void *data)
 {
     FILE *dest = (FILE *)data;
@@ -68,6 +69,7 @@ static int dump_to_fd(const char *buffer, size_t size, void *data)
 #endif
     return -1;
 }
+#endif
 
 /* 32 spaces (the maximum indentation size) */
 static const char whitespace[] = "                                ";
@@ -239,6 +241,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             return dump(buffer, size, data);
         }
 
+#if JSON_HAVE_FLOAT
         case JSON_REAL:
         {
             char buffer[MAX_REAL_STR_LENGTH];
@@ -252,6 +255,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
 
             return dump(buffer, size, data);
         }
+#endif
 
         case JSON_STRING:
             return dump_string(json_string_value(json), json_string_length(json), dump, data, flags);
@@ -459,6 +463,7 @@ size_t json_dumpb(const json_t *json, char *buffer, size_t size, size_t flags)
     return buf.used;
 }
 
+#if JSON_HAVE_FILE
 int json_dumpf(const json_t *json, FILE *output, size_t flags)
 {
     return json_dump_callback(json, dump_to_file, (void *)output, flags);
@@ -484,6 +489,7 @@ int json_dump_file(const json_t *json, const char *path, size_t flags)
 
     return result;
 }
+#endif
 
 int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data, size_t flags)
 {

@@ -58,9 +58,11 @@ void print_json_aux(json_t *element, int indent) {
     case JSON_INTEGER:
         print_json_integer(element, indent);
         break;
+#if JSON_HAVE_FLOAT
     case JSON_REAL:
         print_json_real(element, indent);
         break;
+#endif
     case JSON_TRUE:
         print_json_true(element, indent);
         break;
@@ -122,10 +124,12 @@ void print_json_integer(json_t *element, int indent) {
     printf("JSON Integer: \"%" JSON_INTEGER_FORMAT "\"\n", json_integer_value(element));
 }
 
+#if JSON_HAVE_FLOAT
 void print_json_real(json_t *element, int indent) {
     print_json_indent(indent);
     printf("JSON Real: %f\n", json_real_value(element));
 }
+#endif
 
 void print_json_true(json_t *element, int indent) {
     (void)element;

@@ -1,12 +1,17 @@
+#include "jansson_private.h"
+
+#if JSON_HAVE_FLOAT
+
 #include <assert.h>
+#if JSON_HAVE_ERRNO
 #include <errno.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 #ifdef __MINGW32__
 #undef __NO_ISOCEXT /* ensure stdlib.h will declare prototypes for mingw own 'strtod' replacement, called '__strtod' */
 #endif
-#include "jansson_private.h"
 #include "strbuffer.h"
 
 /* need jansson_private_config.h to get the correct snprintf */
@@ -73,14 +78,19 @@ int jsonp_strtod(strbuffer_t *strbuffer, double *out)
     to_locale(strbuffer);
 #endif
 
+#if JSON_HAVE_ERRNO
     errno = 0;
     value = strtod(strbuffer->value, &end);
-    assert(end == strbuffer->value + strbuffer->length);
 
     if((value == HUGE_VAL || value == -HUGE_VAL) && errno == ERANGE) {
         /* Overflow */
         return -1;
     }
+#else
+    value = strtod(strbuffer->value, &end);
+#endif
+
+    assert(end == strbuffer->value + strbuffer->length);
 
     *out = value;
     return 0;
@@ -143,3 +153,4 @@ int jsonp_dtostr(char *buffer, size_t size, double value, int precision)
 
     return (int)length;
 }
+#endif

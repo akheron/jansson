@@ -98,8 +98,10 @@ static void run_tests()
     if(!json_is_integer(value))
         fail("json_is_integer failed");
 
+#if JSON_HAVE_FLOAT
     if(json_is_real(value))
         fail("json_is_real failed");
+#endif
 
     if(!json_is_number(value))
         fail("json_is_number failed");
@@ -212,6 +214,7 @@ static void run_tests()
 
     json_decref(value);
 
+#if JSON_HAVE_FLOAT
     value = json_real(123.123);
     if(!value)
         fail("json_real failed");
@@ -228,6 +231,7 @@ static void run_tests()
         fail("invalid number value");
 
     json_decref(value);
+#endif
 
     value = json_true();
     if(!value)

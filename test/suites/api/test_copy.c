@@ -72,6 +72,7 @@ static void test_copy_simple(void)
     json_decref(value);
     json_decref(copy);
 
+#if JSON_HAVE_FLOAT
     /* real */
     value = json_real(123e9);
     if(!value)
@@ -87,6 +88,7 @@ static void test_copy_simple(void)
         fail("invalid refcounts");
     json_decref(value);
     json_decref(copy);
+#endif
 }
 
 static void test_deep_copy_simple(void)
@@ -152,6 +154,7 @@ static void test_deep_copy_simple(void)
     json_decref(value);
     json_decref(copy);
 
+#if JSON_HAVE_FLOAT
     /* real */
     value = json_real(123e9);
     if(!value)
@@ -167,6 +170,7 @@ static void test_deep_copy_simple(void)
         fail("invalid refcounts");
     json_decref(value);
     json_decref(copy);
+#endif
 }
 
 static void test_copy_array(void)
