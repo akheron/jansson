@@ -522,7 +522,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
             c = lex_get_save(lex, error);
         while(l_isdigit(c));
     }
-#if JSON_HAVE_FLOAT
+#if !(JSON_HAVE_FLOAT)
     else if(c == '.' || c == 'E' || c == 'e') {
         error_set(error, lex, json_error_real_numbers_not_supported, "real numbers are not supported");
         goto out;
