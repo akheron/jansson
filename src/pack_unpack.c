@@ -261,7 +261,7 @@ static json_t *pack_object(scanner_t *s, va_list *ap)
                 jsonp_free(key);
 
             if(valueOptional != '*') {
-                set_error(s, "<args>", json_error_null_value, "NULL object value\n");
+                set_error(s, "<args>", json_error_null_value, "NULL object value");
                 s->has_error = 1;
             }
 
@@ -396,9 +396,45 @@ static json_t *pack_object_inter(scanner_t *s, va_list *ap, int need_incref)
             break;
     }
 
-    set_error(s, "<args>", json_error_null_value, "NULL object key");
+    set_error(s, "<args>", json_error_null_value, "NULL object");
     s->has_error = 1;
     return NULL;
+}
+
+static json_t *pack_integer(scanner_t *s, json_int_t value)
+{
+    json_t *json = json_integer(value);
+
+    if (!json) {
+        set_error(s, "<internal>", json_error_out_of_memory, "Out of memory");
+        s->has_error = 1;
+    }
+
+    return json;
+}
+
+static json_t *pack_real(scanner_t *s, double value)
+{
+    /* Allocate without setting value so we can identify OOM error. */
+    json_t *json = json_real(0.0);
+
+    if (!json) {
+        set_error(s, "<internal>", json_error_out_of_memory, "Out of memory");
+        s->has_error = 1;
+
+        return NULL;
+    }
+
+    if (json_real_set(json, value)) {
+        json_decref(json);
+
+        set_error(s, "<args>", json_error_numeric_overflow, "Invalid floating point value");
+        s->has_error = 1;
+
+        return NULL;
+    }
+
+    return json;
 }
 
 static json_t *pack(scanner_t *s, va_list *ap)
@@ -420,13 +456,13 @@ static json_t *pack(scanner_t *s, va_list *ap)
             return va_arg(*ap, int) ? json_true() : json_false();
 
         case 'i': /* integer from int */
-            return json_integer(va_arg(*ap, int));
+            return pack_integer(s, va_arg(*ap, int));
 
         case 'I': /* integer from json_int_t */
-            return json_integer(va_arg(*ap, json_int_t));
+            return pack_integer(s, va_arg(*ap, json_int_t));
 
         case 'f': /* real */
-            return json_real(va_arg(*ap, double));
+            return pack_real(s, va_arg(*ap, double));
 
         case 'O': /* a json_t object; increments refcount */
             return pack_object_inter(s, ap, 1);

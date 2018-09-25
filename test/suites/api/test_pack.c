@@ -15,7 +15,38 @@
 #include <string.h>
 #include <jansson.h>
 #include <stdio.h>
+#include <math.h>
 #include "util.h"
+
+#ifdef INFINITY
+// This test triggers "warning C4756: overflow in constant arithmetic"
+// in Visual Studio. This warning is triggered here by design, so disable it.
+// (This can only be done on function level so we keep these tests separate)
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning (disable: 4756)
+#endif
+static void test_inifity()
+{
+    json_error_t error;
+
+    if (json_pack_ex(&error, 0, "f", INFINITY))
+       fail("json_pack infinity incorrectly succeeded");
+    check_error(json_error_numeric_overflow, "Invalid floating point value", "<args>", 1, 1, 1);
+
+    if (json_pack_ex(&error, 0, "[f]", INFINITY))
+       fail("json_pack infinity array element incorrectly succeeded");
+    check_error(json_error_numeric_overflow, "Invalid floating point value", "<args>", 1, 2, 2);
+
+    if (json_pack_ex(&error, 0, "{s:f}", "key", INFINITY))
+       fail("json_pack infinity object value incorrectly succeeded");
+    check_error(json_error_numeric_overflow, "Invalid floating point value", "<args>", 1, 4, 4);
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+}
+#endif // INFINITY
 
 static void run_tests()
 {
@@ -313,6 +344,25 @@ static void run_tests()
         fail("json_pack array optional failed");
     json_decref(value);
 
+#ifdef NAN
+    /* Invalid float values */
+    if (json_pack_ex(&error, 0, "f", NAN))
+        fail("json_pack NAN incorrectly succeeded");
+    check_error(json_error_numeric_overflow, "Invalid floating point value", "<args>", 1, 1, 1);
+
+    if (json_pack_ex(&error, 0, "[f]", NAN))
+       fail("json_pack NAN array element incorrectly succeeded");
+    check_error(json_error_numeric_overflow, "Invalid floating point value", "<args>", 1, 2, 2);
+
+    if (json_pack_ex(&error, 0, "{s:f}", "key", NAN))
+       fail("json_pack NAN object value incorrectly succeeded");
+    check_error(json_error_numeric_overflow, "Invalid floating point value", "<args>", 1, 4, 4);
+#endif
+
+#ifdef INFINITY
+    test_inifity();
+#endif
+
     /* Whitespace; regular string */
     value = json_pack(" s\t ", "test");
     if(!json_is_string(value) || strcmp("test", json_string_value(value)))
@@ -439,9 +489,9 @@ static void run_tests()
 
     if(json_pack_ex(&error, 0, "{s:o}", "foo", NULL))
         fail("json_pack failed to catch nullable object");
-    check_error(json_error_null_value, "NULL object key", "<args>", 1, 4, 4);
+    check_error(json_error_null_value, "NULL object", "<args>", 1, 4, 4);
 
     if(json_pack_ex(&error, 0, "{s:O}", "foo", NULL))
         fail("json_pack failed to catch nullable incref object");
-    check_error(json_error_null_value, "NULL object key", "<args>", 1, 4, 4);
+    check_error(json_error_null_value, "NULL object", "<args>", 1, 4, 4);
 }
