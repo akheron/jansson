@@ -99,6 +99,16 @@ static void run_tests()
         fail("json_pack nullable string (NULL case) refcount failed");
     json_decref(value);
 
+    /* nullable string concatenation */
+    if(json_pack_ex(&error, 0, "s?+", "test", "ing"))
+        fail("json_pack failed to catch invalid format 's?+'");
+    check_error(json_error_invalid_format, "Cannot use '+' on optional strings", "<format>", 1, 2, 2);
+
+    /* nullable string with integer length */
+    if(json_pack_ex(&error, 0, "s?#", "test", 4))
+        fail("json_pack failed to catch invalid format 's?#'");
+    check_error(json_error_invalid_format, "Cannot use '#' on optional strings", "<format>", 1, 2, 2);
+
     /* string and length (int) */
     value = json_pack("s#", "test asdf", 4);
     if(!json_is_string(value) || strcmp("test", json_string_value(value)))
@@ -247,13 +257,31 @@ static void run_tests()
     value = json_pack("{s:s,s:o,s:O}", "a", NULL, "b", NULL, "c", NULL);
     if(value)
         fail("json_pack object optional incorrectly succeeded");
+
     value = json_pack("{s:**}", "a", NULL);
     if(value)
         fail("json_pack object optional invalid incorrectly succeeded");
+
+    if (json_pack_ex(&error, 0, "{s:i*}", "a", 1))
+        fail("json_pack object optional invalid incorrectly succeeded");
+    check_error(json_error_invalid_format, "Expected format 's', got '*'", "<format>", 1, 5, 5);
+
     value = json_pack("{s:s*,s:o*,s:O*}", "a", NULL, "b", NULL, "c", NULL);
     if(!json_is_object(value) || json_object_size(value) != 0)
         fail("json_pack object optional failed");
     json_decref(value);
+
+    value = json_pack("{s:s*}", "key", "\xff\xff");
+    if(value)
+        fail("json_pack object optional with invalid UTF-8 incorrectly succeeded");
+
+    if(json_pack_ex(&error, 0, "{s: s*#}", "key", "test", 1))
+        fail("json_pack failed to catch invalid format 's*#'");
+    check_error(json_error_invalid_format, "Cannot use '#' on optional strings", "<format>", 1, 6, 6);
+
+    if(json_pack_ex(&error, 0, "{s: s*+}", "key", "test", "ing"))
+        fail("json_pack failed to catch invalid format 's*+'");
+    check_error(json_error_invalid_format, "Cannot use '+' on optional strings", "<format>", 1, 6, 6);
 
     /* simple array */
     value = json_pack("[i,i,i]", 0, 1, 2);
@@ -272,6 +300,11 @@ static void run_tests()
     value = json_pack("[s,o,O]", NULL, NULL, NULL);
     if(value)
         fail("json_pack array optional incorrectly succeeded");
+
+    if (json_pack_ex(&error, 0, "[i*]", 1))
+        fail("json_pack array optional invalid incorrectly succeeded");
+    check_error(json_error_invalid_format, "Unexpected format character '*'", "<format>", 1, 3, 3);
+
     value = json_pack("[**]", NULL);
     if(value)
         fail("json_pack array optional invalid incorrectly succeeded");
@@ -338,7 +371,7 @@ static void run_tests()
     /* NULL string */
     if(json_pack_ex(&error, 0, "s", NULL))
         fail("json_pack failed to catch null argument string");
-    check_error(json_error_null_value, "NULL string argument", "<args>", 1, 1, 1);
+    check_error(json_error_null_value, "NULL string", "<args>", 1, 1, 1);
 
     /* + on its own */
     if(json_pack_ex(&error, 0, "+", NULL))
@@ -353,13 +386,13 @@ static void run_tests()
     /* NULL key */
     if(json_pack_ex(&error, 0, "{s:i}", NULL, 1))
         fail("json_pack failed to catch NULL key");
-    check_error(json_error_null_value, "NULL string argument", "<args>", 1, 2, 2);
+    check_error(json_error_null_value, "NULL object key", "<args>", 1, 2, 2);
 
     /* NULL value followed by object still steals the object's ref */
     value = json_incref(json_object());
     if(json_pack_ex(&error, 0, "{s:s,s:o}", "badnull", NULL, "dontleak", value))
         fail("json_pack failed to catch NULL value");
-    check_error(json_error_null_value, "NULL string argument", "<args>", 1, 4, 4);
+    check_error(json_error_null_value, "NULL string", "<args>", 1, 4, 4);
     if(value->refcount != (size_t)1)
         fail("json_pack failed to steal reference after error.");
     json_decref(value);
@@ -388,6 +421,16 @@ static void run_tests()
     if(json_pack_ex(&error, 0, "{s:s}", "foo", "\xff\xff"))
         fail("json_pack failed to catch invalid UTF-8 in a string");
     check_error(json_error_invalid_utf8, "Invalid UTF-8 string", "<args>", 1, 4, 4);
+
+    /* Invalid UTF-8 in an optional '?' string */
+    if(json_pack_ex(&error, 0, "{s:s?}", "foo", "\xff\xff"))
+        fail("json_pack failed to catch invalid UTF-8 in an optional '?' string");
+    check_error(json_error_invalid_utf8, "Invalid UTF-8 string", "<args>", 1, 5, 5);
+
+    /* Invalid UTF-8 in an optional '*' string */
+    if(json_pack_ex(&error, 0, "{s:s*}", "foo", "\xff\xff"))
+        fail("json_pack failed to catch invalid UTF-8 in an optional '*' string");
+    check_error(json_error_invalid_utf8, "Invalid UTF-8 string", "<args>", 1, 5, 5);
 
     /* Invalid UTF-8 in a concatenated key */
     if(json_pack_ex(&error, 0, "{s+:i}", "\xff\xff", "concat", 42))
