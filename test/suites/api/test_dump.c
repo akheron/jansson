@@ -154,6 +154,22 @@ static void encode_other_than_array_or_object()
     free(result);
     json_decref(json);
 
+    json = json_dump_raw_new(json_array(), 0);
+    if(json_dumps(json, 0) != NULL)
+        fail("json_dumps encoded a raw!");
+    if(json_dumpf(json, NULL, 0) == 0)
+        fail("json_dumpf encoded a raw!");
+    if(json_dumpfd(json, -1, 0) == 0)
+        fail("json_dumpfd encoded a raw!");
+
+    result = json_dumps(json, JSON_ENCODE_ANY);
+    if(!result || strcmp(result, "[]") != 0)
+        fail("json_dumps failed to encode a raw with JSON_ENCODE_ANY");
+
+    free(result);
+    json_decref(json);
+
+
     json = json_integer(42);
     if(json_dumps(json, 0) != NULL)
         fail("json_dumps encoded an integer!");

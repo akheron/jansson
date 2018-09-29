@@ -65,6 +65,7 @@ typedef struct {
 #define json_to_string(json_)  container_of(json_, json_string_t, json)
 #define json_to_real(json_)    container_of(json_, json_real_t, json)
 #define json_to_integer(json_) container_of(json_, json_integer_t, json)
+#define json_to_raw(json_)     container_of(json_, json_string_t, json)
 
 /* Create a string by taking ownership of an existing buffer */
 json_t *jsonp_stringn_nocheck_own(const char *value, size_t len);

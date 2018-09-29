@@ -634,8 +634,9 @@ static json_t *json_array_deep_copy(const json_t *array)
 
 /*** string ***/
 
-static json_t *string_create(const char *value, size_t len, int own)
+static json_t *string_create(const char *value, size_t len, int own, json_type type)
 {
+    /* This function is used for JSON_STRING and JSON_RAW. */
     char *v;
     json_string_t *string;
 
@@ -655,7 +656,7 @@ static json_t *string_create(const char *value, size_t len, int own)
         jsonp_free(v);
         return NULL;
     }
-    json_init(&string->json, JSON_STRING);
+    json_init(&string->json, type);
     string->value = v;
     string->length = len;
 
@@ -667,18 +668,18 @@ json_t *json_string_nocheck(const char *value)
     if(!value)
         return NULL;
 
-    return string_create(value, strlen(value), 0);
+    return string_create(value, strlen(value), 0, JSON_STRING);
 }
 
 json_t *json_stringn_nocheck(const char *value, size_t len)
 {
-    return string_create(value, len, 0);
+    return string_create(value, len, 0, JSON_STRING);
 }
 
 /* this is private; "steal" is not a public API concept */
 json_t *jsonp_stringn_nocheck_own(const char *value, size_t len)
 {
-    return string_create(value, len, 1);
+    return string_create(value, len, 1, JSON_STRING);
 }
 
 json_t *json_string(const char *value)
@@ -759,12 +760,14 @@ int json_string_setn(json_t *json, const char *value, size_t len)
 
 static void json_delete_string(json_string_t *string)
 {
+    /* This function is used by JSON_STRING and JSON_RAW */
     jsonp_free(string->value);
     jsonp_free(string);
 }
 
 static int json_string_equal(const json_t *string1, const json_t *string2)
 {
+    /* This function is used for JSON_STRING and JSON_RAW. */
     json_string_t *s1, *s2;
 
     s1 = json_to_string(string1);
@@ -957,6 +960,43 @@ json_t *json_null(void)
 }
 
 
+/*** raw ***/
+json_t *json_dump_raw_new(json_t *json, size_t flags)
+{
+    char *raw = json_dumps(json, JSON_ENCODE_ANY | flags);
+
+    json_decref(json);
+
+    if (!raw) {
+        return NULL;
+    }
+
+    return string_create(raw, strlen(raw), 1, JSON_RAW);
+}
+
+const char *json_raw_value(const json_t *json)
+{
+    if(!json_is_raw(json))
+        return NULL;
+
+    return json_to_raw(json)->value;
+}
+
+size_t json_raw_length(const json_t *json)
+{
+    if(!json_is_raw(json))
+        return 0;
+
+    return json_to_raw(json)->length;
+}
+
+static json_t *json_raw_copy(const json_t *raw)
+{
+    json_string_t *s = json_to_raw(raw);
+
+    return string_create(s->value, s->length, 0, JSON_RAW);
+}
+
 /*** deletion ***/
 
 void json_delete(json_t *json)
@@ -972,6 +1012,7 @@ void json_delete(json_t *json)
             json_delete_array(json_to_array(json));
             break;
         case JSON_STRING:
+        case JSON_RAW:
             json_delete_string(json_to_string(json));
             break;
         case JSON_INTEGER:
@@ -1013,6 +1054,8 @@ int json_equal(const json_t *json1, const json_t *json2)
             return json_integer_equal(json1, json2);
         case JSON_REAL:
             return json_real_equal(json1, json2);
+        case JSON_RAW:
+            return json_string_equal(json1, json2);
         default:
             return 0;
     }
@@ -1041,6 +1084,8 @@ json_t *json_copy(json_t *json)
         case JSON_FALSE:
         case JSON_NULL:
             return json;
+        case JSON_RAW:
+            return json_raw_copy(json);
         default:
             return NULL;
     }
@@ -1068,6 +1113,8 @@ json_t *json_deep_copy(const json_t *json)
         case JSON_FALSE:
         case JSON_NULL:
             return (json_t *)json;
+        case JSON_RAW:
+            return json_raw_copy(json);
         default:
             return NULL;
     }

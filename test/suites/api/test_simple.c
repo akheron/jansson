@@ -11,10 +11,10 @@
 
 static void test_bad_args(void)
 {
-    json_t *num = json_integer(1);
+    json_t *raw = json_dump_raw_new(json_object(), 0);
     json_t *txt = json_string("test");
 
-    if (!num || !txt)
+    if (!raw || !txt)
         fail("failed to allocate test objects");
 
     if(json_string_nocheck(NULL) != NULL)
@@ -28,17 +28,17 @@ static void test_bad_args(void)
 
     if(json_string_length(NULL) != 0)
         fail("json_string_length with non-string argument did not return 0");
-    if(json_string_length(num) != 0)
+    if(json_string_length(raw) != 0)
         fail("json_string_length with non-string argument did not return 0");
 
     if(json_string_value(NULL) != NULL)
         fail("json_string_value with non-string argument did not return NULL");
-    if(json_string_value(num) != NULL)
+    if(json_string_value(raw) != NULL)
         fail("json_string_value with non-string argument did not return NULL");
 
     if(!json_string_setn_nocheck(NULL, "", 0))
         fail("json_string_setn with non-string argument did not return error");
-    if(!json_string_setn_nocheck(num, "", 0))
+    if(!json_string_setn_nocheck(raw, "", 0))
         fail("json_string_setn with non-string argument did not return error");
     if(!json_string_setn_nocheck(txt, NULL, 0))
         fail("json_string_setn_nocheck with NULL value did not return error");
@@ -50,12 +50,24 @@ static void test_bad_args(void)
     if(!json_string_setn(txt, NULL, 0))
         fail("json_string_setn with NULL value did not return error");
 
-    if(num->refcount != 1)
-        fail("unexpected reference count for num");
+
+    if(json_raw_length(NULL) != 0)
+        fail("json_raw_length with NULL argument did not return 0");
+    if(json_raw_length(txt) != 0)
+        fail("json_raw_length with non-raw argument did not return 0");
+
+    if(json_raw_value(NULL) != NULL)
+        fail("json_raw_value with NULL argument did not return NULL");
+    if(json_raw_value(txt) != NULL)
+        fail("json_raw_value with non-raw argument did not return NULL");
+
+
+    if(raw->refcount != 1)
+        fail("unexpected reference count for raw");
     if(txt->refcount != 1)
         fail("unexpected reference count for txt");
 
-    json_decref(num);
+    json_decref(raw);
     json_decref(txt);
 }
 
@@ -115,6 +127,9 @@ static void run_tests()
 
     if(json_is_null(value))
         fail("json_is_null failed");
+
+    if(json_is_raw(value))
+        fail("json_is_raw failed");
 
     json_decref(value);
 
@@ -191,6 +206,17 @@ static void run_tests()
         fail("invalid string value");
     if (json_string_length(value) != 3)
         fail("invalid string length");
+
+    json_decref(value);
+
+
+    value = json_dump_raw_new(json_object(), 0);
+    if(!value)
+        fail("json_raw failed");
+    if(strcmp(json_raw_value(value), "{}"))
+        fail("invalid raw value");
+    if (json_raw_length(value) != 2)
+        fail("invalid raw length");
 
     json_decref(value);
 

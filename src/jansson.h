@@ -55,7 +55,8 @@ typedef enum {
     JSON_REAL,
     JSON_TRUE,
     JSON_FALSE,
-    JSON_NULL
+    JSON_NULL,
+    JSON_RAW
 } json_type;
 
 typedef struct json_t {
@@ -89,6 +90,7 @@ typedef long json_int_t;
 #define json_boolean_value     json_is_true
 #define json_is_boolean(json)  (json_is_true(json) || json_is_false(json))
 #define json_is_null(json)     ((json) && json_typeof(json) == JSON_NULL)
+#define json_is_raw(json)      ((json) && json_typeof(json) == JSON_RAW)
 
 /* construction, destruction, reference counting */
 
@@ -281,6 +283,17 @@ int json_string_set_nocheck(json_t *string, const char *value);
 int json_string_setn_nocheck(json_t *string, const char *value, size_t len);
 int json_integer_set(json_t *integer, json_int_t value);
 int json_real_set(json_t *real, double value);
+
+json_t *json_dump_raw_new(json_t *json, size_t flags);
+static JSON_INLINE
+json_t *json_dump_raw(json_t *json, size_t flags)
+{
+    return json_dump_raw_new(json_incref(json), flags);
+}
+
+
+const char *json_raw_value(const json_t *raw);
+size_t json_raw_length(const json_t *raw);
 
 /* pack, unpack */
 

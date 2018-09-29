@@ -56,6 +56,22 @@ static void test_copy_simple(void)
     json_decref(value);
     json_decref(copy);
 
+    /* raw */
+    value = json_dump_raw(json_null(), JSON_DECODE_ANY);
+    if(!value)
+        fail("unable to create a raw");
+    copy = json_copy(value);
+    if(!copy)
+        fail("unable to copy a raw");
+    if(copy == value)
+        fail("copying a raw doesn't copy");
+    if(!json_equal(copy, value))
+        fail("copying a raw produces an inequal copy");
+    if(value->refcount != 1 || copy->refcount != 1)
+        fail("invalid refcounts");
+    json_decref(value);
+    json_decref(copy);
+
     /* integer */
     value = json_integer(543);
     if(!value)
@@ -131,6 +147,22 @@ static void test_deep_copy_simple(void)
         fail("deep copying a string doesn't copy");
     if(!json_equal(copy, value))
         fail("deep copying a string produces an inequal copy");
+    if(value->refcount != 1 || copy->refcount != 1)
+        fail("invalid refcounts");
+    json_decref(value);
+    json_decref(copy);
+
+    /* raw */
+    value = json_dump_raw(json_null(), JSON_DECODE_ANY);
+    if(!value)
+        fail("unable to create a raw");
+    copy = json_deep_copy(value);
+    if(!copy)
+        fail("unable to deep copy a raw");
+    if(copy == value)
+        fail("deep copying a raw doesn't copy");
+    if(!json_equal(copy, value))
+        fail("deep copying a raw produces an inequal copy");
     if(value->refcount != 1 || copy->refcount != 1)
         fail("invalid refcounts");
     json_decref(value);
