@@ -174,7 +174,7 @@ static int stream_get(stream_t *stream, json_error_t *error)
             return STREAM_STATE_EOF;
         }
 
-        stream->buffer[0] = (char) c;
+        stream->buffer[0] = c;
         stream->buffer_pos = 0;
 
         if(0x80 <= c && c <= 0xFF)
@@ -189,7 +189,7 @@ static int stream_get(stream_t *stream, json_error_t *error)
             assert(count >= 2);
 
             for(i = 1; i < count; i++)
-                stream->buffer[i] = (char) stream->get(stream->data);
+                stream->buffer[i] = stream->get(stream->data);
 
             if(!utf8_check_full(stream->buffer, count, NULL))
                 goto out;
