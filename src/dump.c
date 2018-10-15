@@ -351,7 +351,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 }
                 assert(i == size);
 
-                qsort((keys, size, sizeof(const char *), compare_keys);
+                qsort(keys, size, sizeof(const char *), compare_keys);
 
                 for(i = 0; i < size; i++)
                 {
