@@ -1044,8 +1044,6 @@ json_t *json_copy(json_t *json)
         default:
             return NULL;
     }
-
-    return NULL;
 }
 
 json_t *json_deep_copy(const json_t *json)
@@ -1073,6 +1071,4 @@ json_t *json_deep_copy(const json_t *json)
         default:
             return NULL;
     }
-
-    return NULL;
 }
