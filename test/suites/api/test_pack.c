@@ -428,6 +428,11 @@ static void run_tests()
         fail("json_pack failed to a lone +");
     check_error(json_error_invalid_format, "Unexpected format character '+'", "<format>", 1, 1, 1);
 
+    /* Empty format */
+    if(json_pack_ex(&error, 0, ""))
+        fail("json_pack failed to catch empty format string");
+    check_error(json_error_invalid_argument, "NULL or empty format string", "<format>", -1, -1, 0);
+
     /* NULL format */
     if(json_pack_ex(&error, 0, NULL))
         fail("json_pack failed to catch NULL format string");
@@ -494,4 +499,20 @@ static void run_tests()
     if(json_pack_ex(&error, 0, "{s:O}", "foo", NULL))
         fail("json_pack failed to catch nullable incref object");
     check_error(json_error_null_value, "NULL object", "<args>", 1, 4, 4);
+
+    if(json_pack_ex(&error, 0, "{s+:o}", "foo", "bar", NULL))
+        fail("json_pack failed to catch non-nullable object value");
+    check_error(json_error_null_value, "NULL object", "<args>", 1, 5, 5);
+
+    if(json_pack_ex(&error, 0, "[1s", "Hi"))
+        fail("json_pack failed to catch invalid format");
+    check_error(json_error_invalid_format, "Unexpected format character '1'", "<format>", 1, 2, 2);
+
+    if(json_pack_ex(&error, 0, "[1s+", "Hi", "ya"))
+        fail("json_pack failed to catch invalid format");
+    check_error(json_error_invalid_format, "Unexpected format character '1'", "<format>", 1, 2, 2);
+
+    if(json_pack_ex(&error, 0, "[so]", NULL, json_object()))
+        fail("json_pack failed to catch NULL value");
+    check_error(json_error_null_value, "NULL string", "<args>", 1, 2, 2);
 }
