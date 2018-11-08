@@ -359,9 +359,7 @@ static json_t *pack_string(scanner_t *s, va_list *ap)
         return t == '?' && !s->has_error ? json_null() : NULL;
 
     if (s->has_error) {
-        if (!ours)
-            jsonp_free(str);
-
+        /* It's impossible to reach this point if ours != 0, do not free str. */
         return NULL;
     }
 
@@ -853,6 +851,7 @@ json_t *json_vpack_ex(json_error_t *error, size_t flags,
     value = pack(&s, &ap_copy);
     va_end(ap_copy);
 
+    /* This will cover all situations where s.has_error is true */
     if(!value)
         return NULL;
 
@@ -860,10 +859,6 @@ json_t *json_vpack_ex(json_error_t *error, size_t flags,
     if(token(&s)) {
         json_decref(value);
         set_error(&s, "<format>", json_error_invalid_format, "Garbage after format string");
-        return NULL;
-    }
-    if(s.has_error) {
-        json_decref(value);
         return NULL;
     }
 
