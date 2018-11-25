@@ -30,7 +30,7 @@ source distribution for details.
 Compilation and Installation
 ----------------------------
 
-If you obtained a `source tarball`_, from the "Releases" section of the main
+If you obtained a `source tarball`_ from the "Releases" section of the main
 site just use the standard autotools commands::
 
    $ ./configure
