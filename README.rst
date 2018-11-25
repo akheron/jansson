@@ -30,8 +30,8 @@ source distribution for details.
 Compilation and Installation
 ----------------------------
 
-If you obtained a source tarball, just use the standard autotools
-commands::
+If you obtained a `source tarball`_ from the "Releases" section of the main
+site just use the standard autotools commands::
 
    $ ./configure
    $ make
@@ -65,4 +65,5 @@ Then, point your browser to ``doc/_build/html/index.html``. Sphinx_
 .. _Jansson: http://www.digip.org/jansson/
 .. _`Comprehensive documentation`: http://jansson.readthedocs.io/en/latest/
 .. _`MIT license`: http://www.opensource.org/licenses/mit-license.php
+.. _`source tarball`: http://www.digip.org/jansson#releases
 .. _Sphinx: http://sphinx.pocoo.org/
