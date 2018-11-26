@@ -1,3 +1,43 @@
+Version 2.12
+
+Released 2018-11-25
+
+* Bug fixes:
+
+  - Fix error message in `json_pack()` for NULL object (#409).
+
+  - Avoid invalid memory read in `json_pack()` (#421).
+
+  - Call va_end after va_copy in `json_vsprintf()` (#427).
+
+  - Improve handling of formats with '?' and '*' in `json_pack()` (#438).
+
+  - Remove inappropriate `jsonp_free()` which caused segmentation fault in
+    error handling (#444).
+
+* Build:
+
+  - Add function attributes for GCC and CLANG to provide warnings on improper
+    use of jansson routines (#404).
+
+  - Many CMake fixes (#408, #412, #415).
+
+  - Enable -Bsymbolic-functions linker flag whenever possible.
+
+  - Resolve various compiler warnings (#423, #430, #435, #436).
+
+  - Fix code coverage ignored paths (#439).
+
+* Other:
+
+  - Test coverage improvements (#398, #400).
+
+  - Add VS 2017 to appveyor, update Visual Studio documentation (#417).
+
+  - Update copyright for 2018 (#424).
+
+  - Update install instructions in README (#401).
+
 Version 2.11
 ============
 
