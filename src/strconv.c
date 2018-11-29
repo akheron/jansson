@@ -95,7 +95,10 @@ int jsonp_dtostr(char *buffer, size_t size, double value, int precision)
     if (precision == 0)
         precision = 17;
 
-    ret = snprintf(buffer, size, "%.*g", precision, value);
+    if (precision < 0)
+        ret = snprintf(buffer, size, "%.*f", -precision, value);
+    else
+        ret = snprintf(buffer, size, "%.*g", precision, value);
     if(ret < 0)
         return -1;
 

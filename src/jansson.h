@@ -287,7 +287,8 @@ json_t *json_load_callback(json_load_callback_t callback, void *data, size_t fla
 #define JSON_PRESERVE_ORDER     0x100
 #define JSON_ENCODE_ANY         0x200
 #define JSON_ESCAPE_SLASH       0x400
-#define JSON_REAL_PRECISION(n)  (((n) & 0x1F) << 11)
+#define SIGN(x) (((int) x > 0) - ((int) x < 0))
+#define JSON_REAL_PRECISION(n)  SIGN(n) * (((n) & 0x1F) << 11)
 
 typedef int (*json_dump_callback_t)(const char *buffer, size_t size, void *data);
 

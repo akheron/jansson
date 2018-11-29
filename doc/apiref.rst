@@ -932,8 +932,10 @@ can be ORed together to obtain *flags*.
 
 ``JSON_REAL_PRECISION(n)``
    Output all real numbers with at most *n* digits of precision. The
-   valid range for *n* is between 0 and 31 (inclusive), and other
-   values result in an undefined behavior.
+   valid range for *n* is between -31 and 31 (inclusive). Positive values
+   use the shortest representation (exponential or decimal point).
+   Negative values between -31 and -1 force decimal floating point output.
+   Other values result in an undefined behavior.
 
    By default, the precision is 17, to correctly and losslessly encode
    all IEEE 754 double precision floating point numbers.

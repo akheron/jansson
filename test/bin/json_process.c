@@ -199,7 +199,7 @@ int use_conf(char *test_path)
     if (conf.sort_keys)
         flags |= JSON_SORT_KEYS;
 
-    if (conf.precision < 0 || conf.precision > 31) {
+    if (conf.precision < -31 || conf.precision > 31) {
         fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n",
                 conf.precision);
         fclose(infile);
@@ -290,7 +290,7 @@ int use_env()
         flags |= JSON_SORT_KEYS;
 
     precision = getenv_int("JSON_REAL_PRECISION");
-    if(precision < 0 || precision > 31) {
+    if(precision < -31 || precision > 31) {
         fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n",
                 precision);
         return 2;
@@ -299,7 +299,7 @@ int use_env()
     if(getenv("HASHSEED"))
         json_object_seed(getenv_int("HASHSEED"));
 
-    if(precision > 0)
+    if(precision != 0)
         flags |= JSON_REAL_PRECISION(precision);
 
     if(getenv_int("STRIP")) {
