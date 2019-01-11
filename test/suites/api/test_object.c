@@ -207,6 +207,57 @@ static void test_conditional_updates()
     json_decref(other);
 }
 
+static void test_recursive_updates()
+{
+    json_t *invalid, *object, *other;
+
+    invalid = json_integer(42);
+
+    object = json_pack("{sis{si}}", "foo", 1, "bar", "baz", 2);
+    other = json_pack("{sisisi}", "foo", 3, "bar", 4, "baz", 5);
+
+    if(!json_object_update_recursive(invalid, other))
+        fail("json_object_update_recursive accepted non-object argument");
+
+    json_decref(invalid);
+
+    if(json_object_update_recursive(object, other))
+        fail("json_object_update_recursive failed");
+
+    if(json_object_size(object) != 3)
+        fail("invalid size after update");
+
+    if(json_integer_value(json_object_get(object, "foo")) != 3)
+        fail("json_object_update_recursive failed to update existing key");
+
+    if(json_integer_value(json_object_get(object, "bar")) != 4)
+        fail("json_object_update_recursive failed to overwrite object");
+
+    if(json_integer_value(json_object_get(object, "baz")) != 5)
+        fail("json_object_update_recursive didn't add new item");
+
+    json_decref(object);
+    json_decref(other);
+
+    object = json_pack("{sis{si}}", "foo", 1, "bar", "baz", 2);
+    other = json_pack("{s{si}}", "bar", "baz", 3);
+
+    if(json_object_update_recursive(object, other))
+        fail("json_object_update_recursive failed");
+
+    if(json_object_size(object) != 2)
+        fail("invalid size after update");
+
+    if(!json_object_get(object, "foo"))
+        fail("json_object_update_recursive removed existing key");
+
+    if(json_integer_value(json_object_get(json_object_get(object, "bar"), "baz")) != 3)
+        fail("json_object_update_recursive failed to update nested value");
+
+    json_decref(object);
+    json_decref(other);
+}
+
 static void test_circular()
 {
     json_t *object1, *object2;
@@ -667,6 +718,7 @@ static void run_tests()
     test_update();
     test_set_many_keys();
     test_conditional_updates();
+    test_recursive_updates();
     test_circular();
     test_set_nocheck();
     test_iterators();
