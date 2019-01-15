@@ -246,13 +246,13 @@ if (Sphinx-build_EXECUTABLE)
   # will include the Sphinx version information
   if (Sphinx_PYTHON_EXECUTABLE)
     execute_process (
-      COMMAND "${Sphinx_PYTHON_EXECUTABLE}" ${Sphinx_PYTHON_OPTIONS} "${Sphinx-build_EXECUTABLE}" -h
+      COMMAND "${Sphinx_PYTHON_EXECUTABLE}" ${Sphinx_PYTHON_OPTIONS} "${Sphinx-build_EXECUTABLE}" --version
       OUTPUT_VARIABLE _Sphinx_VERSION
       ERROR_VARIABLE  _Sphinx_VERSION
     )
   elseif (UNIX)
     execute_process (
-      COMMAND "${Sphinx-build_EXECUTABLE}" -h
+      COMMAND "${Sphinx-build_EXECUTABLE}" --version
       OUTPUT_VARIABLE _Sphinx_VERSION
       ERROR_VARIABLE  _Sphinx_VERSION
     )
@@ -260,7 +260,7 @@ if (Sphinx-build_EXECUTABLE)
 
   # The sphinx version can also contain a "b" instead of the last dot.
   # For example "Sphinx v1.2b1" so we cannot just split on "."
-  if (_Sphinx_VERSION MATCHES "Sphinx v([0-9]+\\.[0-9]+(\\.|b)[0-9]+)")
+  if (_Sphinx_VERSION MATCHES "sphinx-build ([0-9]+\\.[0-9]+(\\.|b)[0-9]+)")
     set (Sphinx_VERSION_STRING "${CMAKE_MATCH_1}")
     string(REGEX REPLACE "([0-9]+)\\.[0-9]+(\\.|b)[0-9]+" "\\1" Sphinx_VERSION_MAJOR ${Sphinx_VERSION_STRING})
     string(REGEX REPLACE "[0-9]+\\.([0-9]+)(\\.|b)[0-9]+" "\\1" Sphinx_VERSION_MINOR ${Sphinx_VERSION_STRING})
