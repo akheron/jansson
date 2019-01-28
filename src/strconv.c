@@ -21,6 +21,10 @@
 #if JSON_HAVE_LOCALECONV
 #include <locale.h>
 
+#ifndef FIXED_PRECISION
+#define FIXED_PRECISION false
+#endif
+
 /*
   - This code assumes that the decimal separator is exactly one
     character.
@@ -95,7 +99,12 @@ int jsonp_dtostr(char *buffer, size_t size, double value, int precision)
     if (precision == 0)
         precision = 17;
 
+#if FIXED_PRECISION
+    ret = snprintf(buffer, size, "%.*f", precision, value);
+#else
     ret = snprintf(buffer, size, "%.*g", precision, value);
+#endif
+
     if(ret < 0)
         return -1;
 
