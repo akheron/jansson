@@ -655,6 +655,22 @@ static void lex_close(lex_t *lex) {
     strbuffer_close(&lex->saved_text);
 }
 
+static void store_location_from_lex(json_t *json, size_t flags, const lex_t *lex)
+{
+    int tlen = lex->saved_text.length;
+
+    if (!(flags & JSON_STORE_LOCATION))
+        return;
+
+    if (tlen)
+        tlen--;
+
+    jsonp_store_location(json, lex->stream.line,
+                         lex->stream.column - tlen,
+                         lex->stream.position - tlen,
+                         tlen + 1);
+}
+
 /*** parser ***/
 
 static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error);
@@ -664,6 +680,7 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error) {
     if (!object)
         return NULL;
 
+    store_location_from_lex(object, flags, lex);
     lex_scan(lex, error);
     if (lex->token == '}')
         return object;
@@ -741,6 +758,7 @@ static json_t *parse_array(lex_t *lex, size_t flags, json_error_t *error) {
     if (!array)
         return NULL;
 
+    store_location_from_lex(array, flags, lex);
     lex_scan(lex, error);
     if (lex->token == ']')
         return array;
@@ -796,6 +814,7 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error) {
             }
 
             json = jsonp_stringn_nocheck_own(value, len);
+            store_location_from_lex(json, flags, lex);
             lex->value.string.val = NULL;
             lex->value.string.len = 0;
             break;
@@ -803,24 +822,29 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error) {
 
         case TOKEN_INTEGER: {
             json = json_integer(lex->value.integer);
+            store_location_from_lex(json, flags, lex);
             break;
         }
 
         case TOKEN_REAL: {
             json = json_real(lex->value.real);
+            store_location_from_lex(json, flags, lex);
             break;
         }
 
         case TOKEN_TRUE:
             json = jsonp_simple(json_true(), flags);
+            store_location_from_lex(json, flags, lex);
             break;
 
         case TOKEN_FALSE:
             json = jsonp_simple(json_false(), flags);
+            store_location_from_lex(json, flags, lex);
             break;
 
         case TOKEN_NULL:
             json = jsonp_simple(json_null(), flags);
+            store_location_from_lex(json, flags, lex);
             break;
 
         case '{':

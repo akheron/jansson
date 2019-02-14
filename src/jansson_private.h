@@ -101,6 +101,8 @@ int jsonp_loop_check(hashtable_t *parents, const json_t *json, char *key, size_t
 
 /* Helpers for location information */
 json_t *jsonp_simple(json_t *json, size_t flags);
+void jsonp_store_location(json_t *json, int line, int column,
+                          int position, int length);
 
 /* Windows compatibility */
 #if defined(_WIN32) || defined(WIN32)

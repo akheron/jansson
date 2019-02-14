@@ -1026,10 +1026,13 @@ static void json_delete_simple(json_simple_t *simple)
 
 /*** deletion ***/
 
+static void delete_location(json_t *json);
+
 void json_delete(json_t *json) {
     if (!json)
         return;
 
+    delete_location(json);
     switch (json_typeof(json)) {
         case JSON_OBJECT:
             json_delete_object(json_to_object(json));
@@ -1147,4 +1150,100 @@ json_t *do_deep_copy(const json_t *json, hashtable_t *parents) {
         default:
             return NULL;
     }
+}
+
+/*** location information ***/
+
+typedef struct {
+    json_t json; /* just to integrate with hashtable */
+    int line;
+    int column;
+    int position;
+    int length;
+} json_location_t;
+
+static hashtable_t location_hash;
+static int location_hash_initialized;
+
+static void location_atexit(void)
+{
+    if (location_hash_initialized)
+        hashtable_close(&location_hash);
+}
+
+void jsonp_store_location(json_t *json, int line, int column,
+                          int position, int length)
+{
+    json_location_t *loc = NULL;
+
+    /* not possible to store location for the singleton primitives
+     * as one can't distinguish them by their memory location */
+    if (json->refcount == (size_t)-1)
+        return;
+
+    if (!location_hash_initialized) {
+        if (!hashtable_seed) {
+            /* Autoseed */
+            json_object_seed(0);
+        }
+        if (hashtable_init(&location_hash))
+            return;
+
+        atexit(location_atexit);
+        location_hash_initialized = 1;
+    } else {
+        loc = hashtable_get(&location_hash, (void *)&json, sizeof(json));
+    }
+    if (!loc) {
+        loc = jsonp_malloc(sizeof(*loc));
+        if (!loc)
+            return;
+
+        loc->json.refcount = (size_t)-1;
+
+        if (hashtable_set(&location_hash,
+                          (void *)&json, sizeof(json), (void *)loc))
+            return;
+    }
+
+    loc->line     = line;
+    loc->column   = column;
+    loc->position = position;
+    loc->length   = length;
+}
+
+int json_get_location(json_t *json, int *line, int *column,
+                      int *position, int *length)
+{
+    json_location_t *loc = NULL;
+
+    if (location_hash_initialized)
+        loc = hashtable_get(&location_hash, (void *)&json, sizeof(json));
+
+    if (!loc)
+        return -1;
+
+    if (line)
+        *line = loc->line;
+    if (column)
+        *column = loc->column;
+    if (position)
+        *position = loc->position;
+    if (length)
+        *length = loc->length;
+
+    return 0;
+}
+
+static void delete_location(json_t *json)
+{
+    struct json_location_t *loc;
+
+    if (!location_hash_initialized)
+        return;
+
+    loc = hashtable_get(&location_hash, (void *)&json, sizeof(json));
+    hashtable_del(&location_hash, (void *)&json, sizeof(json));
+    if (loc)
+        jsonp_free(loc);
 }

@@ -413,6 +413,10 @@ void json_get_alloc_funcs(json_malloc_t *malloc_fn, json_free_t *free_fn);
 const char *jansson_version_str(void);
 int jansson_version_cmp(int major, int minor, int micro);
 
+/* location information */
+
+int json_get_location(json_t *json, int *line, int *column, int *position, int *length);
+
 #ifdef __cplusplus
 }
 #endif
