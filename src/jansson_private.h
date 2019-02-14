@@ -33,8 +33,16 @@
 #endif
 
 typedef struct {
+    int line;
+    int column;
+    int position;
+    int length;
+} json_location_t;
+
+typedef struct {
     json_t json;
     hashtable_t hashtable;
+    json_location_t *location;
 } json_object_t;
 
 typedef struct {
@@ -42,29 +50,39 @@ typedef struct {
     size_t size;
     size_t entries;
     json_t **table;
+    json_location_t *location;
 } json_array_t;
 
 typedef struct {
     json_t json;
     char *value;
     size_t length;
+    json_location_t *location;
 } json_string_t;
 
 typedef struct {
     json_t json;
     double value;
+    json_location_t *location;
 } json_real_t;
 
 typedef struct {
     json_t json;
     json_int_t value;
+    json_location_t *location;
 } json_integer_t;
+
+typedef struct {
+    json_t json;
+    json_location_t *location;
+} json_simple_t;
 
 #define json_to_object(json_)  container_of(json_, json_object_t, json)
 #define json_to_array(json_)   container_of(json_, json_array_t, json)
 #define json_to_string(json_)  container_of(json_, json_string_t, json)
 #define json_to_real(json_)    container_of(json_, json_real_t, json)
 #define json_to_integer(json_) container_of(json_, json_integer_t, json)
+#define json_to_simple(json_)  container_of(json_, json_simple_t, json)
 
 /* Create a string by taking ownership of an existing buffer */
 json_t *jsonp_stringn_nocheck_own(const char *value, size_t len);
@@ -90,6 +108,9 @@ char *jsonp_strndup(const char *str, size_t length) JANSSON_ATTRS(warn_unused_re
 char *jsonp_strdup(const char *str) JANSSON_ATTRS(warn_unused_result);
 char *jsonp_strndup(const char *str, size_t len) JANSSON_ATTRS(warn_unused_result);
 
+/* Helpers for location information */
+json_t *jsonp_simple(json_t *json, size_t flags);
+json_location_t **jsonp_to_location_pptr(json_t *json);
 
 /* Windows compatibility */
 #if defined(_WIN32) || defined(WIN32)

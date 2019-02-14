@@ -60,6 +60,7 @@ json_t *json_object(void)
     }
 
     json_init(&object->json, JSON_OBJECT);
+    object->location = NULL;
 
     if(hashtable_init(&object->hashtable))
     {
@@ -73,6 +74,7 @@ json_t *json_object(void)
 static void json_delete_object(json_object_t *object)
 {
     hashtable_close(&object->hashtable);
+    jsonp_free(object->location);
     jsonp_free(object);
 }
 
@@ -345,6 +347,7 @@ json_t *json_array(void)
 
     array->entries = 0;
     array->size = 8;
+    array->location = NULL;
 
     array->table = jsonp_malloc(array->size * sizeof(json_t *));
     if(!array->table) {
@@ -363,6 +366,7 @@ static void json_delete_array(json_array_t *array)
         json_decref(array->table[i]);
 
     jsonp_free(array->table);
+    jsonp_free(array->location);
     jsonp_free(array);
 }
 
@@ -658,6 +662,7 @@ static json_t *string_create(const char *value, size_t len, int own)
     json_init(&string->json, JSON_STRING);
     string->value = v;
     string->length = len;
+    string->location = NULL;
 
     return &string->json;
 }
@@ -760,6 +765,7 @@ int json_string_setn(json_t *json, const char *value, size_t len)
 static void json_delete_string(json_string_t *string)
 {
     jsonp_free(string->value);
+    jsonp_free(string->location);
     jsonp_free(string);
 }
 
@@ -830,8 +836,9 @@ json_t *json_integer(json_int_t value)
     if(!integer)
         return NULL;
     json_init(&integer->json, JSON_INTEGER);
-
     integer->value = value;
+    integer->location = NULL;
+
     return &integer->json;
 }
 
@@ -855,6 +862,7 @@ int json_integer_set(json_t *json, json_int_t value)
 
 static void json_delete_integer(json_integer_t *integer)
 {
+    jsonp_free(integer->location);
     jsonp_free(integer);
 }
 
@@ -882,8 +890,9 @@ json_t *json_real(double value)
     if(!real)
         return NULL;
     json_init(&real->json, JSON_REAL);
-
     real->value = value;
+    real->location = NULL;
+
     return &real->json;
 }
 
@@ -907,6 +916,7 @@ int json_real_set(json_t *json, double value)
 
 static void json_delete_real(json_real_t *real)
 {
+    jsonp_free(real->location);
     jsonp_free(real);
 }
 
@@ -956,6 +966,31 @@ json_t *json_null(void)
     return &the_null;
 }
 
+/*** refcounted simple values ***/
+
+json_t *jsonp_simple(json_t *json, size_t flags)
+{
+    json_simple_t *simple;
+
+    if (!(flags & JSON_STORE_LOCATION))
+        return json;
+
+    simple = jsonp_malloc(sizeof(json_simple_t));
+    if (!simple)
+        return NULL;
+
+    simple->json.type = json->type;
+    simple->json.refcount = 1;
+    simple->location = NULL;
+
+    return &simple->json;
+}
+
+static void json_delete_simple(json_simple_t *simple)
+{
+    jsonp_free(simple->location);
+    jsonp_free(simple);
+}
 
 /*** deletion ***/
 
@@ -979,6 +1014,14 @@ void json_delete(json_t *json)
             break;
         case JSON_REAL:
             json_delete_real(json_to_real(json));
+            break;
+        case JSON_TRUE:
+        case JSON_FALSE:
+        case JSON_NULL:
+            /* this function is public, be cautious */
+            if (json->refcount != 0)
+                break;
+            json_delete_simple(json_to_simple(json));
             break;
         default:
             return;
@@ -1071,4 +1114,26 @@ json_t *json_deep_copy(const json_t *json)
         default:
             return NULL;
     }
+}
+
+/*** location information ***/
+
+int json_get_location(json_t *json, int *line, int *column,
+                      int *position, int *length)
+{
+    json_location_t **location_pptr = jsonp_to_location_pptr(json);
+
+    if (!location_pptr || !*location_pptr)
+        return -1;
+
+    if (line)
+        *line = (*location_pptr)->line;
+    if (column)
+        *column = (*location_pptr)->column;
+    if (position)
+        *position = (*location_pptr)->column;
+    if (length)
+        *length = (*location_pptr)->length;
+
+    return 0;
 }

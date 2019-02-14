@@ -686,6 +686,66 @@ static void lex_close(lex_t *lex)
     strbuffer_close(&lex->saved_text);
 }
 
+json_location_t **jsonp_to_location_pptr(json_t *json)
+{
+	if (!json)
+		return NULL;
+
+	switch(json_typeof(json)) {
+	case JSON_OBJECT:
+		return &json_to_object(json)->location;
+	case JSON_ARRAY:
+		return &json_to_array(json)->location;
+	case JSON_STRING:
+		return &json_to_string(json)->location;
+	case JSON_REAL:
+		return &json_to_real(json)->location;
+	case JSON_INTEGER:
+		return &json_to_integer(json)->location;
+	case JSON_TRUE:
+	case JSON_FALSE:
+	case JSON_NULL:
+		if (json->refcount == (size_t)-1)
+			return NULL;
+		return &json_to_simple(json)->location;
+	default:
+		return NULL;
+	}
+}
+
+static void __store_location(json_location_t *location, const lex_t *lex)
+{
+	int tlen = lex->saved_text.length;
+
+	location->line = lex->stream.line;
+	location->column = lex->stream.column;
+	location->position = lex->stream.position;
+	if (tlen) {
+		location->column -= tlen - 1;
+		location->position -= tlen - 1;
+		location->length = tlen;
+	} else {
+		location->length = 1;
+	}
+}
+
+static void store_location(json_t *json, size_t flags, const lex_t *lex)
+{
+	json_location_t **location_pptr;
+
+	if (!(flags & JSON_STORE_LOCATION))
+		return;
+
+	location_pptr = jsonp_to_location_pptr(json);
+	if (!location_pptr)
+		return;
+
+	*location_pptr = jsonp_malloc(sizeof(json_location_t));
+	if (!*location_pptr)
+		return;
+
+	__store_location(*location_pptr, lex);
+}
 
 /*** parser ***/
 
@@ -697,6 +757,7 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error)
     if(!object)
         return NULL;
 
+    store_location(object, flags, lex);
     lex_scan(lex, error);
     if(lex->token == '}')
         return object;
@@ -774,6 +835,7 @@ static json_t *parse_array(lex_t *lex, size_t flags, json_error_t *error)
     if(!array)
         return NULL;
 
+    store_location(array, flags, lex);
     lex_scan(lex, error);
     if(lex->token == ']')
         return array;
@@ -829,6 +891,7 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
             }
 
             json = jsonp_stringn_nocheck_own(value, len);
+            store_location(json, flags, lex);
             lex->value.string.val = NULL;
             lex->value.string.len = 0;
             break;
@@ -836,24 +899,29 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
 
         case TOKEN_INTEGER: {
             json = json_integer(lex->value.integer);
+            store_location(json, flags, lex);
             break;
         }
 
         case TOKEN_REAL: {
             json = json_real(lex->value.real);
+            store_location(json, flags, lex);
             break;
         }
 
         case TOKEN_TRUE:
-            json = json_true();
+            json = jsonp_simple(json_true(), flags);
+            store_location(json, flags, lex);
             break;
 
         case TOKEN_FALSE:
-            json = json_false();
+            json = jsonp_simple(json_false(), flags);
+            store_location(json, flags, lex);
             break;
 
         case TOKEN_NULL:
-            json = json_null();
+            json = jsonp_simple(json_null(), flags);
+            store_location(json, flags, lex);
             break;
 
         case '{':
