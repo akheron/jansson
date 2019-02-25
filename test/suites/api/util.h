@@ -29,6 +29,13 @@
         exit(1);                                                 \
     } while(0)
 
+#define fail_args(msg, ...)                                      \
+    do {                                                         \
+        failhdr;                                                 \
+        fprintf(stderr, msg "\n", __VA_ARGS__);                  \
+        exit(1);                                                 \
+    } while(0)
+
 /* Assumes json_error_t error */
 #define check_errors(code_, texts_, num_, source_,                      \
     line_, column_, position_)                                          \
