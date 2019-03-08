@@ -72,4 +72,6 @@ EXPORTS
     json_vunpack_ex
     json_set_alloc_funcs
     json_get_alloc_funcs
+    jansson_version_str
+    jansson_version_cmp
 
