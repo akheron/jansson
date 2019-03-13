@@ -20,7 +20,8 @@ libjansson_la_SOURCES = \
 	strconv.c \
 	utf.c \
 	utf.h \
-	value.c
+	value.c \
+	version.c
 libjansson_la_LDFLAGS = \
 	-no-undefined \
 	-export-symbols-regex '^json_' \
