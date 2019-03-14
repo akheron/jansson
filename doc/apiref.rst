@@ -58,6 +58,25 @@ the library:
       /* Code specific to version 1.3 and above */
       #endif
 
+Additionally, there are functions to determine the version of Jansson at
+runtime:
+
+.. function:: const char *jansson_version_str()
+
+   Return the version of the Jansson library, in the same format as
+   the ``JANSSON_VERSION`` preprocessor constant.
+
+   .. versionadded:: 2.13
+
+.. function:: int jansson_version_cmp(int major, int minor, int micro)
+
+   Returns an integer less than, equal to, or greater than zero if
+   the runtime version of Jansson is found, respectively, to be less
+   than, to match, or be greater than the provided *major*, *minor*, and
+   *micro*.
+
+   .. versionadded:: 2.13
+
 ``JANSSON_THREAD_SAFE_REFCOUNT``
   If this value is defined all read-only operations and reference counting in
   Jansson are thread safe.  This value is not defined for versions older than

@@ -17,6 +17,7 @@ suites/api/test_pack
 suites/api/test_simple
 suites/api/test_sprintf
 suites/api/test_unpack
+suites/api/test_version
 run-suites.log
 run-suites.trs
 test-suite.log
