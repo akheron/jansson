@@ -3,6 +3,7 @@ env:
     - JANSSON_BUILD_METHOD=cmake JANSSON_CMAKE_OPTIONS="-DJANSSON_TEST_WITH_VALGRIND=ON" JANSSON_EXTRA_INSTALL="valgrind"
     - JANSSON_BUILD_METHOD=autotools
     - JANSSON_BUILD_METHOD=coverage JANSSON_CMAKE_OPTIONS="-DJANSSON_COVERAGE=ON -DJANSSON_COVERALLS=ON -DCMAKE_BUILD_TYPE=Debug" JANSSON_EXTRA_INSTALL="lcov curl"
+    - JANSSON_BUILD_METHOD=fuzzer
 language: c
 compiler:
   - gcc
@@ -20,3 +21,4 @@ script:
   - if [ "$JANSSON_BUILD_METHOD" = "autotools" ]; then autoreconf -f -i && CFLAGS=-Werror ./configure && make check; fi
   - if [ "$JANSSON_BUILD_METHOD" = "cmake" ]; then mkdir build && cd build && cmake $JANSSON_CMAKE_OPTIONS .. && cmake --build . && ctest --output-on-failure; fi
   - if [ "$JANSSON_BUILD_METHOD" = "coverage" ]; then mkdir build && cd build && cmake $JANSSON_CMAKE_OPTIONS .. && cmake --build . && cmake --build . --target coveralls; fi
+  - if [ "$JANSSON_BUILD_METHOD" = "fuzzer" ]; then ./ossfuzz/travisoss.sh; fi
