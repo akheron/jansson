@@ -20,9 +20,8 @@ apt-get -y install automake libtool
 
 # Compile the fuzzer.
 autoreconf -i
-./configure
+./configure --enable-ossfuzzers
 make
-make json_load_fuzzer
 
 # Copy the fuzzer to the output directory.
-cp -v json_load_fuzzer $OUT/
+cp -v test/ossfuzz/json_load_dump_fuzzer $OUT/
