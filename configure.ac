@@ -147,7 +147,7 @@ AM_CONDITIONAL([USE_OSSFUZZERS], [test "x$have_ossfuzzers" = "xyes"])
 
 AC_SUBST([LIB_FUZZING_ENGINE])
 AM_CONDITIONAL([USE_OSSFUZZ_FLAG], [test "x$LIB_FUZZING_ENGINE" = "x-fsanitize=fuzzer"])
-AM_CONDITIONAL([USE_OSSFUZZ_STATIC], [test -f "x$LIB_FUZZING_ENGINE"])
+AM_CONDITIONAL([USE_OSSFUZZ_STATIC], [test -f "$LIB_FUZZING_ENGINE"])
 
 
 if test x$GCC = xyes; then
