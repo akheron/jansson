@@ -28,7 +28,7 @@ static void encode_null()
         fail("json_dumps didn't fail for NULL");
 
     if(json_dumpb(NULL, NULL, 0, JSON_ENCODE_ANY) != 0)
-        fail("json_dumps didn't fail for NULL");
+        fail("json_dumpb didn't fail for NULL");
 
     if(json_dumpf(NULL, stderr, JSON_ENCODE_ANY) != -1)
         fail("json_dumpf didn't fail for NULL");
