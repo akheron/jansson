@@ -12,6 +12,8 @@ matrix:
   exclude:
     - compiler: clang
       env: JANSSON_BUILD_METHOD=coverage JANSSON_CMAKE_OPTIONS="-DJANSSON_COVERAGE=ON -DJANSSON_COVERALLS=ON -DCMAKE_BUILD_TYPE=Debug" JANSSON_EXTRA_INSTALL="lcov curl"
+    - compiler: clang
+      env: JANSSON_BUILD_METHOD=fuzzer
   allow_failures:
     - env: JANSSON_BUILD_METHOD=coverage JANSSON_CMAKE_OPTIONS="-DJANSSON_COVERAGE=ON -DJANSSON_COVERALLS=ON -DCMAKE_BUILD_TYPE=Debug" JANSSON_EXTRA_INSTALL="lcov curl"
 install:
