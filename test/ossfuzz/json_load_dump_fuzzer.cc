@@ -23,16 +23,22 @@ static int json_dump_counter(const char *buffer, size_t size, void *data)
 }
 
 
+#define NUM_COMMAND_BYTES  (sizeof(size_t) + sizeof(size_t) + 1)
+
+#define FUZZ_DUMP_CALLBACK 0x00
+#define FUZZ_DUMP_STRING   0x01
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
   json_error_t error;
+  unsigned char dump_mode;
 
   // Enable or disable diagnostics based on the FUZZ_VERBOSE environment flag.
   enable_diags = (getenv("FUZZ_VERBOSE") != NULL);
 
   FUZZ_DEBUG("Input data length: %zd", size);
 
-  if (size < sizeof(size_t) + sizeof(size_t))
+  if (size < NUM_COMMAND_BYTES)
   {
     return 0;
   }
@@ -40,7 +46,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   // Use the first sizeof(size_t) bytes as load flags.
   size_t load_flags = *(const size_t*)data;
   data += sizeof(size_t);
-  size -= sizeof(size_t);
 
   FUZZ_DEBUG("load_flags: 0x%zx\n"
              "& JSON_REJECT_DUPLICATES =  0x%zx\n"
@@ -58,7 +63,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   // Use the next sizeof(size_t) bytes as dump flags.
   size_t dump_flags = *(const size_t*)data;
   data += sizeof(size_t);
-  size -= sizeof(size_t);
 
   FUZZ_DEBUG("dump_flags: 0x%zx\n"
              "& JSON_MAX_INDENT =     0x%zx\n"
@@ -81,6 +85,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
              ((dump_flags >> 11) & 0x1F) << 11,
              dump_flags & JSON_EMBED);
 
+  // Use the next byte as the dump mode.
+  dump_mode = data[0];
+  data++;
+
+  FUZZ_DEBUG("dump_mode: 0x%x", (unsigned int)dump_mode);
+
+  // Remove the command bytes from the size total.
+  size -= NUM_COMMAND_BYTES;
+
   // Attempt to load the remainder of the data with the given load flags.
   const char* text = reinterpret_cast<const char *>(data);
   json_t* jobj = json_loadb(text, size, load_flags, &error);
@@ -90,11 +103,25 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     return 0;
   }
 
-  // Attempt to dump the loaded json object with the given dump flags.
-  uint64_t counter = 0;
+  if (dump_mode & FUZZ_DUMP_STRING)
+  {
+    // Dump as a string. Remove indents so that we don't run out of memory.
+    char *out = json_dumps(jobj, dump_flags & ~JSON_MAX_INDENT);
+    if (out != NULL)
+    {
+      free(out);
+    }
+  }
+  else
+  {
+    // Default is callback mode.
+    //
+    // Attempt to dump the loaded json object with the given dump flags.
+    uint64_t counter = 0;
 
-  json_dump_callback(jobj, json_dump_counter, &counter, dump_flags);
-  FUZZ_DEBUG("Counter function counted %" PRIu64 " bytes.", counter);
+    json_dump_callback(jobj, json_dump_counter, &counter, dump_flags);
+    FUZZ_DEBUG("Counter function counted %" PRIu64 " bytes.", counter);
+  }
 
   if (jobj)
   {
