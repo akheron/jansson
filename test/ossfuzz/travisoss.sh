@@ -21,13 +21,15 @@ if [[ ${TRAVIS_PULL_REQUEST} != "false" ]]
 then
     # Pull-request branch
     REPO=${TRAVIS_PULL_REQUEST_SLUG}
+    BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}
 else
     # Push build.
     REPO=${TRAVIS_REPO_SLUG}
+    BRANCH=${TRAVIS_BRANCH}
 fi
 
 # Modify the oss-fuzz Dockerfile so that we're checking out the current branch on travis.
-sed -i "s@https://github.com/akheron/jansson.git@-b ${TRAVIS_BRANCH} https://github.com/${REPO}.git@" /tmp/ossfuzz/projects/${PROJECT_NAME}/Dockerfile
+sed -i "s@https://github.com/akheron/jansson.git@-b ${BRANCH} https://github.com/${REPO}.git@" /tmp/ossfuzz/projects/${PROJECT_NAME}/Dockerfile
 
 # Try and build the fuzzers
 pushd /tmp/ossfuzz
