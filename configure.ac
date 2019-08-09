@@ -9,6 +9,7 @@ AC_CONFIG_HEADERS([jansson_private_config.h])
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_LIBTOOL
 AM_CONDITIONAL([GCC], [test x$GCC = xyes])
 
@@ -136,6 +137,19 @@ fi
 AS_IF([test "x$with_Bsymbolic" = "xyes"], [JSON_BSYMBOLIC_LDFLAGS=-Wl[,]-Bsymbolic-functions])
 AC_SUBST(JSON_BSYMBOLIC_LDFLAGS)
 
+
+AC_ARG_ENABLE([ossfuzzers],
+  [AS_HELP_STRING([--enable-ossfuzzers],
+    [Whether to generate the fuzzers for OSS-Fuzz])],
+  [have_ossfuzzers=yes], [have_ossfuzzers=no])
+AM_CONDITIONAL([USE_OSSFUZZERS], [test "x$have_ossfuzzers" = "xyes"])
+
+
+AC_SUBST([LIB_FUZZING_ENGINE])
+AM_CONDITIONAL([USE_OSSFUZZ_FLAG], [test "x$LIB_FUZZING_ENGINE" = "x-fsanitize=fuzzer"])
+AM_CONDITIONAL([USE_OSSFUZZ_STATIC], [test -f "$LIB_FUZZING_ENGINE"])
+
+
 if test x$GCC = xyes; then
     AC_MSG_CHECKING(for -Wno-format-truncation)
     wnoformat_truncation="-Wno-format-truncation"
@@ -156,6 +170,7 @@ AC_CONFIG_FILES([
         src/jansson_config.h
         test/Makefile
         test/bin/Makefile
+        test/ossfuzz/Makefile
         test/suites/Makefile
         test/suites/api/Makefile
 ])
