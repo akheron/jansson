@@ -100,6 +100,13 @@ include (CheckFunctionKeywords)
 include (CheckIncludeFiles)
 include (CheckTypeSize)
 
+# supress format-truncation warning
+include (CheckCCompilerFlag)
+check_c_compiler_flag(-Wno-format-truncation HAS_NO_FORMAT_TRUNCATION)
+if (HAS_NO_FORMAT_TRUNCATION)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation")
+endif()
+
 if (MSVC)
    # Turn off Microsofts "security" warnings.
    add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo" )
