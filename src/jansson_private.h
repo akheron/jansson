@@ -90,6 +90,9 @@ char *jsonp_strndup(const char *str, size_t length) JANSSON_ATTRS(warn_unused_re
 char *jsonp_strdup(const char *str) JANSSON_ATTRS(warn_unused_result);
 char *jsonp_strndup(const char *str, size_t len) JANSSON_ATTRS(warn_unused_result);
 
+/* Circular reference check*/
+int jsonp_loop_check(hashtable_t *parents, const json_t *json, char *key, size_t key_size);
+
 
 /* Windows compatibility */
 #if defined(_WIN32) || defined(WIN32)

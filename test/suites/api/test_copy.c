@@ -323,6 +323,58 @@ static void test_deep_copy_object(void)
     json_decref(copy);
 }
 
+static void test_deep_copy_circular_references(void)
+{
+     /* Construct a JSON object/array with a circular reference:
+
+       object: {"a": {"b": {"c": <circular reference to $.a>}}}
+       array: [[[<circular reference to the $[0] array>]]]
+
+       Deep copy it, remove the circular reference and deep copy again.
+    */
+
+    json_t *json;
+    json_t *copy;
+
+    json = json_object();
+    json_object_set_new(json, "a", json_object());
+    json_object_set_new(json_object_get(json, "a"), "b", json_object());
+    json_object_set(json_object_get(json_object_get(json, "a"), "b"), "c",
+                    json_object_get(json, "a"));
+
+    copy = json_deep_copy(json);
+    if(copy)
+        fail("json_deep_copy copied a circular reference!");
+
+    json_object_del(json_object_get(json_object_get(json, "a"), "b"), "c");
+
+    copy = json_deep_copy(json);
+    if(!copy)
+        fail("json_deep_copy failed!");
+
+    json_decref(copy);
+    json_decref(json);
+
+    json = json_array();
+    json_array_append_new(json, json_array());
+    json_array_append_new(json_array_get(json, 0), json_array());
+    json_array_append(json_array_get(json_array_get(json, 0), 0),
+                      json_array_get(json, 0));
+
+    copy = json_deep_copy(json);
+    if(copy)
+        fail("json_deep_copy copied a circular reference!");
+
+    json_array_remove(json_array_get(json_array_get(json, 0), 0), 0);
+
+    copy = json_deep_copy(json);
+    if(!copy)
+        fail("json_deep_copy failed!");
+
+    json_decref(copy);
+    json_decref(json);
+}
+
 static void run_tests()
 {
     test_copy_simple();
@@ -331,4 +383,5 @@ static void run_tests()
     test_deep_copy_array();
     test_copy_object();
     test_deep_copy_object();
+    test_deep_copy_circular_references();
 }
