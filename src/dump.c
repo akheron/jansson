@@ -296,8 +296,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             void *iter;
             const char *separator;
             int separator_length;
-            /* Space for "0x", double the sizeof a pointer for the hex and a terminator. */
-            char loop_key[2 + (sizeof(json) * 2) + 1];
+            char loop_key[LOOP_KEY_LEN];
 
             if(flags & JSON_COMPACT) {
                 separator = ":";

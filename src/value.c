@@ -322,10 +322,10 @@ static json_t *json_object_deep_copy(const json_t *object, hashtable_t *parents)
 {
     json_t *result;
     void *iter;
-    char loop_key[2 + (sizeof(object) * 2) + 1];
+    char loop_key[LOOP_KEY_LEN];
 
     if (jsonp_loop_check(parents, object, loop_key, sizeof(loop_key)))
-            return NULL;
+        return NULL;
 
     result = json_object();
     if(!result)
@@ -641,7 +641,7 @@ static json_t *json_array_deep_copy(const json_t *array, hashtable_t *parents)
 {
     json_t *result;
     size_t i;
-    char loop_key[2 + (sizeof(array) * 2) + 1];
+    char loop_key[LOOP_KEY_LEN];
 
     if (jsonp_loop_check(parents, array, loop_key, sizeof(loop_key)))
         return NULL;
