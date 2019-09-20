@@ -186,7 +186,7 @@ static void test_insert(void)
 
     for(i = 0; i < 20; i++) {
         if(json_array_insert(array, 0, seven))
-            fail("unable to insert value at the begining of an array");
+            fail("unable to insert value at the beginning of an array");
     }
 
     for(i = 0; i < 20; i++) {
@@ -479,9 +479,9 @@ static void test_bad_args(void)
     if(!json_array_extend(num, arr))
         fail("json_array_extend did not return error for first argument non-array");
     if(!json_array_extend(arr, NULL))
-        fail("json_array_extend did not return error for second arguemnt non-array");
+        fail("json_array_extend did not return error for second argument non-array");
     if(!json_array_extend(arr, num))
-        fail("json_array_extend did not return error for second arguemnt non-array");
+        fail("json_array_extend did not return error for second argument non-array");
 
     if(num->refcount != 1)
         fail("unexpected reference count on num");

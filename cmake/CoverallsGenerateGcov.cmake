@@ -102,8 +102,8 @@ if (GIT_FOUND)
 	message("Git branch: ${GIT_BRANCH}")
 	message("Git author: ${GIT_AUTHOR_NAME}")
 	message("Git e-mail: ${GIT_AUTHOR_EMAIL}")
-	message("Git commiter name: ${GIT_COMMITTER_NAME}")
-	message("Git commiter e-mail: ${GIT_COMMITTER_EMAIL}")
+	message("Git committer name: ${GIT_COMMITTER_NAME}")
+	message("Git committer e-mail: ${GIT_COMMITTER_EMAIL}")
 	message("Git commit message: ${GIT_COMMIT_MESSAGE}")
 
 endif()
@@ -265,7 +265,7 @@ foreach (GCOV_FILE ${GCOV_FILES})
 	# Instead of trying to parse the source from the
 	# gcov file, simply read the file contents from the source file.
 	# (Parsing it from the gcov is hard because C-code uses ; in many places
-	#  which also happens to be the same as the CMake list delimeter).
+	#  which also happens to be the same as the CMake list delimiter).
 	file(READ ${GCOV_SRC_PATH} GCOV_FILE_SOURCE)
 
 	string(REPLACE "\\" "\\\\" GCOV_FILE_SOURCE "${GCOV_FILE_SOURCE}")

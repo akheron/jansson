@@ -59,7 +59,7 @@ static void test_update()
     /* update an empty object with an empty object */
 
     if(json_object_update(object, other))
-        fail("unable to update an emtpy object with an empty object");
+        fail("unable to update an empty object with an empty object");
 
     if(json_object_size(object) != 0)
         fail("invalid size after update");
