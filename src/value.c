@@ -37,12 +37,22 @@ static JSON_INLINE int isnan(double x) { return x != x; }
 static JSON_INLINE int isinf(double x) { return !isnan(x) && isnan(x - x); }
 #endif
 
+json_t *do_deep_copy(const json_t *, hashtable_t *);
+
 static JSON_INLINE void json_init(json_t *json, json_type type)
 {
     json->type = type;
     json->refcount = 1;
 }
 
+int jsonp_loop_check(hashtable_t *parents, const json_t *json, char *key, size_t key_size)
+{
+    snprintf(key, key_size, "%p", json);
+    if (hashtable_get(parents, key))
+        return -1;
+
+    return hashtable_set(parents, key, json_null());
+}
 
 /*** object ***/
 
@@ -308,10 +318,14 @@ static json_t *json_object_copy(json_t *object)
     return result;
 }
 
-static json_t *json_object_deep_copy(const json_t *object)
+static json_t *json_object_deep_copy(const json_t *object, hashtable_t *parents)
 {
     json_t *result;
     void *iter;
+    char loop_key[LOOP_KEY_LEN];
+
+    if (jsonp_loop_check(parents, object, loop_key, sizeof(loop_key)))
+        return NULL;
 
     result = json_object();
     if(!result)
@@ -326,9 +340,15 @@ static json_t *json_object_deep_copy(const json_t *object)
         key = json_object_iter_key(iter);
         value = json_object_iter_value(iter);
 
-        json_object_set_new_nocheck(result, key, json_deep_copy(value));
+        if (json_object_set_new_nocheck(result, key, do_deep_copy(value, parents)))
+        {
+            json_decref(result);
+            result = NULL;
+            break;
+        }
         iter = json_object_iter_next((json_t *)object, iter);
     }
+    hashtable_del(parents, loop_key);
 
     return result;
 }
@@ -617,17 +637,29 @@ static json_t *json_array_copy(json_t *array)
     return result;
 }
 
-static json_t *json_array_deep_copy(const json_t *array)
+static json_t *json_array_deep_copy(const json_t *array, hashtable_t *parents)
 {
     json_t *result;
     size_t i;
+    char loop_key[LOOP_KEY_LEN];
+
+    if (jsonp_loop_check(parents, array, loop_key, sizeof(loop_key)))
+        return NULL;
 
     result = json_array();
     if(!result)
         return NULL;
 
     for(i = 0; i < json_array_size(array); i++)
-        json_array_append_new(result, json_deep_copy(json_array_get(array, i)));
+    {
+        if (json_array_append_new(result, do_deep_copy(json_array_get(array, i), parents)))
+        {
+            json_decref(result);
+            result = NULL;
+            break;
+        }
+    }
+    hashtable_del(parents, loop_key);
 
     return result;
 }
@@ -1048,14 +1080,27 @@ json_t *json_copy(json_t *json)
 
 json_t *json_deep_copy(const json_t *json)
 {
+    json_t *res;
+    hashtable_t parents_set;
+
+    if (hashtable_init(&parents_set))
+        return NULL;
+    res = do_deep_copy(json, &parents_set);
+    hashtable_close(&parents_set);
+
+    return res;
+}
+
+json_t *do_deep_copy(const json_t *json, hashtable_t *parents)
+{
     if(!json)
         return NULL;
 
     switch(json_typeof(json)) {
         case JSON_OBJECT:
-            return json_object_deep_copy(json);
+            return json_object_deep_copy(json, parents);
         case JSON_ARRAY:
-            return json_array_deep_copy(json);
+            return json_array_deep_copy(json, parents);
             /* for the rest of the types, deep copying doesn't differ from
                shallow copying */
         case JSON_STRING:

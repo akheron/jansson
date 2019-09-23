@@ -196,15 +196,6 @@ static int compare_keys(const void *key1, const void *key2)
     return strcmp(*(const char **)key1, *(const char **)key2);
 }
 
-static int loop_check(hashtable_t *parents, const json_t *json, char *key, size_t key_size)
-{
-    snprintf(key, key_size, "%p", json);
-    if (hashtable_get(parents, key))
-        return -1;
-
-    return hashtable_set(parents, key, json_null());
-}
-
 static int do_dump(const json_t *json, size_t flags, int depth,
                    hashtable_t *parents, json_dump_callback_t dump, void *data)
 {
@@ -264,7 +255,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             char key[2 + (sizeof(json) * 2) + 1];
 
             /* detect circular references */
-            if (loop_check(parents, json, key, sizeof(key)))
+            if (jsonp_loop_check(parents, json, key, sizeof(key)))
                 return -1;
 
             n = json_array_size(json);
@@ -305,8 +296,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             void *iter;
             const char *separator;
             int separator_length;
-            /* Space for "0x", double the sizeof a pointer for the hex and a terminator. */
-            char loop_key[2 + (sizeof(json) * 2) + 1];
+            char loop_key[LOOP_KEY_LEN];
 
             if(flags & JSON_COMPACT) {
                 separator = ":";
@@ -318,7 +308,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
             }
 
             /* detect circular references */
-            if (loop_check(parents, json, loop_key, sizeof(loop_key)))
+            if (jsonp_loop_check(parents, json, loop_key, sizeof(loop_key)))
                 return -1;
 
             iter = json_object_iter((json_t *)json);

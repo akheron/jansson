@@ -1091,7 +1091,9 @@ These functions output UTF-8:
 
    Returns the JSON representation of *json* as a string, or *NULL* on
    error. *flags* is described above. The return value must be freed
-   by the caller using :func:`free()`.
+   by the caller using :func:`free()`. Note that if you have called
+   :func:`json_set_alloc_funcs()` to override :func:`free()`, you should
+   call your custom free function instead to free the return value.
 
 .. function:: size_t json_dumpb(const json_t *json, char *buffer, size_t size, size_t flags)
 
