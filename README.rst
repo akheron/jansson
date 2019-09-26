@@ -30,6 +30,18 @@ source distribution for details.
 Compilation and Installation
 ----------------------------
 
+You can download and install Jansson using the `vcpkg <https://github.com/Microsoft/vcpkg/>`_ dependency manager:
+
+.. code-block:: bash
+
+    git clone https://github.com/Microsoft/vcpkg.git
+    cd vcpkg
+    ./bootstrap-vcpkg.sh
+    ./vcpkg integrate install
+    vcpkg install jansson
+
+The Jansson port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please `create an issue or pull request <https://github.com/Microsoft/vcpkg/>`_ on the vcpkg repository.
+
 If you obtained a `source tarball`_ from the "Releases" section of the main
 site just use the standard autotools commands::
 
