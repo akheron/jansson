@@ -148,6 +148,30 @@ static void decode_int_as_real()
 
 }
 
+static void decode_number_as_string()
+{
+    json_t *json;
+    json_error_t error;
+
+    char big[311];
+
+    json = json_loads("42", JSON_DECODE_NUMBER_AS_STRING | JSON_DECODE_ANY, &error);
+    if (!json || !json_is_string(json))
+        fail("json_load decode number as string failed");
+    json_decref(json);
+
+    big[0] = '1';
+    memset(big + 1, '0', 309);
+    big[310] = '\0';
+
+    json = json_loads(big, JSON_DECODE_NUMBER_AS_STRING | JSON_DECODE_ANY, &error);
+    if (!json || !json_is_string(json))
+        fail("json_load decode number as string failed");
+    
+    json_decref(json);
+
+}
+
 static void allow_nul()
 {
     const char *text = "\"nul byte \\u0000 in string\"";
@@ -243,4 +267,5 @@ static void run_tests()
     load_wrong_args();
     position();
     error_code();
+    decode_number_as_string();
 }
