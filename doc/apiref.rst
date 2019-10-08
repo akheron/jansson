@@ -708,6 +708,24 @@ allowed in object keys.
 
    .. versionadded:: 2.3
 
+.. function:: int json_object_update_new(json_t *object, json_t *other)
+
+   Like :func:`json_object_update()`, but steals the reference to
+   *other*. This is useful when *other* is newly created and not used
+   after the call.
+
+.. function:: int json_object_update_existing_new(json_t *object, json_t *other)
+
+   Like :func:`json_object_update_new()`, but only the values of existing
+   keys are updated. No new keys are created. Returns 0 on success or
+   -1 on error.
+
+.. function:: int json_object_update_missing_new(json_t *object, json_t *other)
+
+   Like :func:`json_object_update_new()`, but only new keys are created.
+   The value of any existing key is not changed. Returns 0 on success
+   or -1 on error.
+
 .. function:: json_object_foreach(object, key, value)
 
    Iterate over every key-value pair of ``object``, running the block
