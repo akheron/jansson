@@ -14,10 +14,6 @@
 #include <jansson_private_config.h>
 #endif
 
-#ifdef __MINGW32__
-#define strtod __strtod
-#endif
-
 #if JSON_HAVE_LOCALECONV
 #include <locale.h>
 
