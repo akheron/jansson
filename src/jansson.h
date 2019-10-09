@@ -271,6 +271,8 @@ int json_array_insert(json_t *array, size_t ind, json_t *value)
 
 const char *json_string_value(const json_t *string);
 size_t json_string_length(const json_t *string);
+int json_string_is_number(const json_t *json);
+int json_string_set_is_number(const json_t *json, int bool);
 json_int_t json_integer_value(const json_t *integer);
 double json_real_value(const json_t *real);
 double json_number_value(const json_t *json);
@@ -319,6 +321,7 @@ json_t *json_deep_copy(const json_t *value) JANSSON_ATTRS(warn_unused_result);
 #define JSON_DECODE_ANY         0x4
 #define JSON_DECODE_INT_AS_REAL 0x8
 #define JSON_ALLOW_NUL          0x10
+#define JSON_DECODE_NUMBER_AS_STRING  0x20
 
 typedef size_t (*json_load_callback_t)(void *buffer, size_t buflen, void *data);
 

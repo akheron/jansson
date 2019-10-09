@@ -835,12 +835,22 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
         }
 
         case TOKEN_INTEGER: {
-            json = json_integer(lex->value.integer);
+            if (flags & JSON_DECODE_NUMBER_AS_STRING) {
+            	json = json_string_nocheck(strbuffer_value(&lex->saved_text));
+            	json_string_set_is_number(json, 1);
+            } else {
+            	json = json_integer(lex->value.integer);
+            }
             break;
         }
 
         case TOKEN_REAL: {
-            json = json_real(lex->value.real);
+            if (flags & JSON_DECODE_NUMBER_AS_STRING) {
+                   	json = json_string_nocheck(strbuffer_value(&lex->saved_text));
+                   	json_string_set_is_number(json, 1);
+            } else {
+            	json = json_real(lex->value.real);
+            }
             break;
         }
 

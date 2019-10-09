@@ -6,12 +6,14 @@ EXPORTS
     json_sprintf
     json_vsprintf
     json_string
+    json_string_is_number
     json_stringn
     json_string_nocheck
     json_stringn_nocheck
     json_string_value
     json_string_length
     json_string_set
+    json_string_set_is_number
     json_string_setn
     json_string_set_nocheck
     json_string_setn_nocheck
