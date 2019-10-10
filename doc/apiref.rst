@@ -1085,6 +1085,13 @@ can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.10
 
+``JSON_FRACTIONAL_DIGITS``
+   When combined with `JSON_REAL_PRECISION(n), output all real numbers
+   with at most *n* digits after the decimal (rather than *n* total
+   digits).
+
+   .. versionadded:: 2.13
+
 These functions output UTF-8:
 
 .. function:: char *json_dumps(const json_t *json, size_t flags)

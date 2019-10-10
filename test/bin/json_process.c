@@ -40,6 +40,7 @@ struct config {
     int have_hashseed;
     int hashseed;
     int precision;
+    int fractional_digits;
 } conf;
 
 #define l_isspace(c) ((c) == ' ' || (c) == '\n' || (c) == '\r' || (c) == '\t')
@@ -111,6 +112,8 @@ static void read_conf(FILE *conffile)
             conf.sort_keys = atoi(val);
         if (!strcmp(line, "JSON_REAL_PRECISION"))
             conf.precision = atoi(val);
+        if (!strcmp(line, "JSON_FRACTIONAL_DIGITS"))
+            conf.fractional_digits = atoi(val);
         if (!strcmp(line, "STRIP"))
             conf.strip = atoi(val);
         if (!strcmp(line, "HASHSEED")) {
@@ -208,6 +211,9 @@ int use_conf(char *test_path)
     if (conf.precision)
         flags |= JSON_REAL_PRECISION(conf.precision);
 
+    if (conf.fractional_digits)
+        flags |= JSON_FRACTIONAL_DIGITS;
+
     if (conf.have_hashseed)
         json_object_seed(conf.hashseed);
 
@@ -301,6 +307,9 @@ int use_env()
 
     if(precision > 0)
         flags |= JSON_REAL_PRECISION(precision);
+
+    if(getenv_int("JSON_FRACTIONAL_DIGITS"))
+        flags |= JSON_FRACTIONAL_DIGITS;
 
     if(getenv_int("STRIP")) {
         /* Load to memory, strip leading and trailing whitespace */

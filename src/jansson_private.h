@@ -81,7 +81,7 @@ void jsonp_error_vset(json_error_t *error, int line, int column,
 
 /* Locale independent string<->double conversions */
 int jsonp_strtod(strbuffer_t *strbuffer, double *out);
-int jsonp_dtostr(char *buffer, size_t size, double value, int prec);
+int jsonp_dtostr(char *buffer, size_t size, double value, int prec, int frac_digits);
 
 /* Wrappers for custom memory functions */
 void* jsonp_malloc(size_t size) JANSSON_ATTRS(warn_unused_result);
