@@ -209,7 +209,7 @@ static void test_conditional_updates()
 
 static void test_recursive_updates()
 {
-    json_t *invalid, *object, *other;
+    json_t *invalid, *object, *other, *barBefore, *barAfter;
 
     invalid = json_integer(42);
 
@@ -241,6 +241,10 @@ static void test_recursive_updates()
 
     object = json_pack("{sis{si}}", "foo", 1, "bar", "baz", 2);
     other = json_pack("{s{si}}", "bar", "baz", 3);
+    barBefore = json_object_get(object, "bar");
+
+    if(!barBefore)
+        fail("can't get bar object before json_object_update_recursive");
 
     if(json_object_update_recursive(object, other))
         fail("json_object_update_recursive failed");
@@ -253,6 +257,33 @@ static void test_recursive_updates()
 
     if(json_integer_value(json_object_get(json_object_get(object, "bar"), "baz")) != 3)
         fail("json_object_update_recursive failed to update nested value");
+
+    barAfter = json_object_get(object, "bar");
+    if(!barAfter)
+        fail("can't get bar object after json_object_update_recursive");
+
+    if(barBefore != barAfter)
+        fail("bar object reference changed after json_object_update_recursive");
+
+    json_decref(object);
+    json_decref(other);
+
+    /* check circular reference */
+    object = json_pack("{s{s{si}}}", "foo", "bar", "baz", 2);
+    other = json_pack("{s{s{si}}}", "foo", "bar", "baz", 2);
+    json_object_set(json_object_get(json_object_get(object, "foo"), "bar"), "baz",
+                    json_object_get(other, "foo"));
+    json_object_set(json_object_get(json_object_get(other, "foo"), "bar"), "baz",
+                    json_object_get(other, "foo"));
+
+    if(!json_object_update_recursive(object, other))
+        fail("json_object_update_recursive update a circular reference!");
+
+    json_object_set_new(json_object_get(json_object_get(other, "foo"), "bar"), "baz",
+                        json_integer(1));
+
+    if(json_object_update_recursive(object, other))
+        fail("json_object_update_recursive failed!");
 
     json_decref(object);
     json_decref(other);

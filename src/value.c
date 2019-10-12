@@ -37,7 +37,7 @@ static JSON_INLINE int isnan(double x) { return x != x; }
 static JSON_INLINE int isinf(double x) { return !isnan(x) && isnan(x - x); }
 #endif
 
-json_t *do_deep_copy(const json_t *, hashtable_t *);
+json_t *do_deep_copy(const json_t *json, hashtable_t *parents);
 
 static JSON_INLINE void json_init(json_t *json, json_type type)
 {
@@ -214,24 +214,56 @@ int json_object_update_missing(json_t *object, json_t *other)
     return 0;
 }
 
-int json_object_update_recursive(json_t *object, json_t *other)
+int do_object_update_recursive(json_t *object, json_t *other, hashtable_t *parents)
 {
     const char *key;
     json_t *value;
+    char loop_key[LOOP_KEY_LEN];
+    int res = 0;
 
     if(!json_is_object(object) || !json_is_object(other))
+        return -1;
+
+    if(jsonp_loop_check(parents, other, loop_key, sizeof(loop_key)))
         return -1;
 
     json_object_foreach(other, key, value) {
         json_t *v = json_object_get(object, key);
 
         if(json_is_object(v) && json_is_object(value))
-            json_object_update_recursive(v, value);
+        {
+            if(do_object_update_recursive(v, value, parents))
+            {
+                res = -1;
+                break;
+            }
+        }
         else
-            json_object_set_nocheck(object, key, value);
+        {
+            if(json_object_set_nocheck(object, key, value))
+            {
+                res = -1;
+                break;
+            }
+        }
     }
 
-    return 0;
+    hashtable_del(parents, loop_key);
+
+    return res;
+}
+
+int json_object_update_recursive(json_t *object, json_t *other)
+{
+    int res;
+    hashtable_t parents_set;
+
+    if (hashtable_init(&parents_set))
+        return -1;
+    res = do_object_update_recursive(object, other, &parents_set);
+    hashtable_close(&parents_set);
+
+    return res;
 }
 
 void *json_object_iter(json_t *json)
@@ -349,7 +381,7 @@ static json_t *json_object_deep_copy(const json_t *object, hashtable_t *parents)
 
     result = json_object();
     if(!result)
-        return NULL;
+        goto out;
 
     /* Cannot use json_object_foreach because object has to be cast
        non-const */
@@ -368,6 +400,8 @@ static json_t *json_object_deep_copy(const json_t *object, hashtable_t *parents)
         }
         iter = json_object_iter_next((json_t *)object, iter);
     }
+
+out:
     hashtable_del(parents, loop_key);
 
     return result;
@@ -668,7 +702,7 @@ static json_t *json_array_deep_copy(const json_t *array, hashtable_t *parents)
 
     result = json_array();
     if(!result)
-        return NULL;
+        goto out;
 
     for(i = 0; i < json_array_size(array); i++)
     {
@@ -679,6 +713,8 @@ static json_t *json_array_deep_copy(const json_t *array, hashtable_t *parents)
             break;
         }
     }
+
+out:
     hashtable_del(parents, loop_key);
 
     return result;
