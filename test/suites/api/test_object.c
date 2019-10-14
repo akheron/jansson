@@ -269,10 +269,8 @@ static void test_recursive_updates()
     json_decref(other);
 
     /* check circular reference */
-    object = json_pack("{s{s{si}}}", "foo", "bar", "baz", 2);
+    object = json_pack("{s{s{s{si}}}}", "foo", "bar", "baz", "xxx", 2);
     other = json_pack("{s{s{si}}}", "foo", "bar", "baz", 2);
-    json_object_set(json_object_get(json_object_get(object, "foo"), "bar"), "baz",
-                    json_object_get(other, "foo"));
     json_object_set(json_object_get(json_object_get(other, "foo"), "bar"), "baz",
                     json_object_get(other, "foo"));
 
