@@ -1333,7 +1333,11 @@ If no error or position information is needed, you can pass *NULL*.
    It is important to note that this function can only succeed on stream
    file descriptors (such as SOCK_STREAM). Using this function on a
    non-stream file descriptor will result in undefined behavior. For
-   non-stream file descriptors, see instead :func:`json_loadb()`.
+   non-stream file descriptors, see instead :func:`json_loadb()`. In
+   addition, please note that this function cannot be used on non-blocking 
+   file descriptors (such as a non-blocking socket). Using this function 
+   on non-blocking file descriptors has a high risk of data loss because 
+   it does not support resuming.
 
    This function requires POSIX and fails on all non-POSIX systems.
 
