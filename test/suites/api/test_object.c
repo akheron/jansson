@@ -207,6 +207,86 @@ static void test_conditional_updates()
     json_decref(other);
 }
 
+static void test_recursive_updates()
+{
+    json_t *invalid, *object, *other, *barBefore, *barAfter;
+
+    invalid = json_integer(42);
+
+    object = json_pack("{sis{si}}", "foo", 1, "bar", "baz", 2);
+    other = json_pack("{sisisi}", "foo", 3, "bar", 4, "baz", 5);
+
+    if(!json_object_update_recursive(invalid, other))
+        fail("json_object_update_recursive accepted non-object argument");
+
+    json_decref(invalid);
+
+    if(json_object_update_recursive(object, other))
+        fail("json_object_update_recursive failed");
+
+    if(json_object_size(object) != 3)
+        fail("invalid size after update");
+
+    if(json_integer_value(json_object_get(object, "foo")) != 3)
+        fail("json_object_update_recursive failed to update existing key");
+
+    if(json_integer_value(json_object_get(object, "bar")) != 4)
+        fail("json_object_update_recursive failed to overwrite object");
+
+    if(json_integer_value(json_object_get(object, "baz")) != 5)
+        fail("json_object_update_recursive didn't add new item");
+
+    json_decref(object);
+    json_decref(other);
+
+    object = json_pack("{sis{si}}", "foo", 1, "bar", "baz", 2);
+    other = json_pack("{s{si}}", "bar", "baz", 3);
+    barBefore = json_object_get(object, "bar");
+
+    if(!barBefore)
+        fail("can't get bar object before json_object_update_recursive");
+
+    if(json_object_update_recursive(object, other))
+        fail("json_object_update_recursive failed");
+
+    if(json_object_size(object) != 2)
+        fail("invalid size after update");
+
+    if(!json_object_get(object, "foo"))
+        fail("json_object_update_recursive removed existing key");
+
+    if(json_integer_value(json_object_get(json_object_get(object, "bar"), "baz")) != 3)
+        fail("json_object_update_recursive failed to update nested value");
+
+    barAfter = json_object_get(object, "bar");
+    if(!barAfter)
+        fail("can't get bar object after json_object_update_recursive");
+
+    if(barBefore != barAfter)
+        fail("bar object reference changed after json_object_update_recursive");
+
+    json_decref(object);
+    json_decref(other);
+
+    /* check circular reference */
+    object = json_pack("{s{s{s{si}}}}", "foo", "bar", "baz", "xxx", 2);
+    other = json_pack("{s{s{si}}}", "foo", "bar", "baz", 2);
+    json_object_set(json_object_get(json_object_get(other, "foo"), "bar"), "baz",
+                    json_object_get(other, "foo"));
+
+    if(!json_object_update_recursive(object, other))
+        fail("json_object_update_recursive update a circular reference!");
+
+    json_object_set_new(json_object_get(json_object_get(other, "foo"), "bar"), "baz",
+                        json_integer(1));
+
+    if(json_object_update_recursive(object, other))
+        fail("json_object_update_recursive failed!");
+
+    json_decref(object);
+    json_decref(other);
+}
+
 static void test_circular()
 {
     json_t *object1, *object2;
@@ -667,6 +747,7 @@ static void run_tests()
     test_update();
     test_set_many_keys();
     test_conditional_updates();
+    test_recursive_updates();
     test_circular();
     test_set_nocheck();
     test_iterators();

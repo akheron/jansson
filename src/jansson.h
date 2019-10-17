@@ -199,6 +199,7 @@ int json_object_clear(json_t *object);
 int json_object_update(json_t *object, json_t *other);
 int json_object_update_existing(json_t *object, json_t *other);
 int json_object_update_missing(json_t *object, json_t *other);
+int json_object_update_recursive(json_t *object, json_t *other);
 void *json_object_iter(json_t *object);
 void *json_object_iter_at(json_t *object, const char *key);
 void *json_object_key_to_iter(const char *key);

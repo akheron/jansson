@@ -708,6 +708,12 @@ allowed in object keys.
 
    .. versionadded:: 2.3
 
+.. function:: int json_object_update_recursive(json_t *object, json_t *other)
+
+   Like :func:`json_object_update()`, but object values in *other* are
+   recursively merged with the corresponding values in *object* if they are also
+   objects, instead of overwriting them. Returns 0 on success or -1 on error.
+
 .. function:: json_object_foreach(object, key, value)
 
    Iterate over every key-value pair of ``object``, running the block
