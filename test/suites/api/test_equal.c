@@ -159,7 +159,7 @@ static void test_equal_object()
 
 static void test_equal_complex()
 {
-    json_t *value1, *value2;
+    json_t *value1, *value2, *value3;
 
     const char *complex_json =
 "{"
@@ -176,15 +176,25 @@ static void test_equal_complex()
 
     value1 = json_loads(complex_json, 0, NULL);
     value2 = json_loads(complex_json, 0, NULL);
+    value3 = json_loads(complex_json, 0, NULL);
     if(!value1 || !value2)
         fail("unable to parse JSON");
     if(!json_equal(value1, value2))
-        fail("json_equal fails for two inequal strings");
+        fail("json_equal fails for two equal objects");
+
+    json_array_set_new(json_object_get(json_object_get(value2, "object"), 
+            "array-in-object"), 1, json_false());
+    if(json_equal(value1, value2))
+        fail("json_equal fails for two inequal objects");
+
+    json_object_set_new(json_object_get(json_object_get(value3, "object"), 
+            "object-in-object"), "foo", json_string("baz"));
+    if(json_equal(value1, value3))
+        fail("json_equal fails for two inequal objects");
 
     json_decref(value1);
     json_decref(value2);
-
-    /* TODO: There's no negative test case here */
+    json_decref(value3);
 }
 
 static void run_tests()
