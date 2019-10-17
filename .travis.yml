@@ -57,6 +57,20 @@ matrix:
       env:
         - JANSSON_BUILD_METHOD=fuzzer
 
+    # lint (requires clang 9.0 for new enough clang-format)
+    - os: linux
+      dist: bionic
+      compiler: gcc
+      env:
+        - JANSSON_BUILD_METHOD=lint
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-bionic-9.0
+          packages:
+            - clang-9.0
+
   allow_failures:
     - env: JANSSON_BUILD_METHOD=coverage JANSSON_CMAKE_OPTIONS="-DJANSSON_COVERAGE=ON -DJANSSON_COVERALLS=ON -DCMAKE_BUILD_TYPE=Debug"
 
@@ -65,3 +79,4 @@ script:
   - if [ "$JANSSON_BUILD_METHOD" = "cmake" ]; then mkdir build && cd build && cmake $JANSSON_CMAKE_OPTIONS .. && cmake --build . && ctest --output-on-failure; fi
   - if [ "$JANSSON_BUILD_METHOD" = "coverage" ]; then mkdir build && cd build && cmake $JANSSON_CMAKE_OPTIONS .. && cmake --build . && cmake --build . --target coveralls; fi
   - if [ "$JANSSON_BUILD_METHOD" = "fuzzer" ]; then ./test/ossfuzz/travisoss.sh; fi
+  - if [ "$JANSSON_BUILD_METHOD" = "lint" ]; then ./scripts/clang-format-ci; fi
