@@ -8,12 +8,11 @@ env:
   - BUILD_TYPE=autotools
   - BUILD_TYPE=coverage
   - BUILD_TYPE=fuzz
-jobs:
+matrix:
   include:
     # gcc + valgrind (cmake)
     - compiler: gcc
-      env:
-        - BUILD_TYPE=cmake
+      env: BUILD_TYPE=cmake
       addons:
         apt:
           packages:
@@ -28,8 +27,7 @@ jobs:
 
     # clang + valgrind (cmake)
     - compiler: clang
-      env:
-        - BUILD_TYPE=cmake
+      env: BUILD_TYPE=cmake
       addons:
         apt:
           packages:
@@ -44,8 +42,7 @@ jobs:
 
     # gcc (autotools)
     - compiler: gcc
-      env:
-        - BUILD_TYPE=autotools
+      env: BUILD_TYPE=autotools
       script:
         - autoreconf -f -i
         - CFLAGS=-Werror ./configure
@@ -53,8 +50,7 @@ jobs:
 
     # clang (autotools)
     - compiler: clang
-      env:
-        - BUILD_TYPE=autotools
+      env: BUILD_TYPE=autotools
       script:
         - autoreconf -f -i
         - CFLAGS=-Werror ./configure
@@ -62,8 +58,7 @@ jobs:
 
     # coverage (cmake)
     - compiler: gcc
-      env:
-        - BUILD_TYPE=coverage
+      env: BUILD_TYPE=coverage
       addons:
         apt:
           package:
@@ -77,17 +72,15 @@ jobs:
         - cmake --build .
         - cmake --build . --target coveralls
 
-    # fuzzer
+    # fuzz
     - compiler: gcc
-      env:
-        - BUILD_TYPE=fuzzer
+      env: BUILD_TYPE=fuzz
       script:
         - ./test/ossfuzz/travisoss.sh
 
     # lint (requires clang 9.0 for new enough clang-format)
     - compiler: gcc
-      env:
-        - BUILD_TYPE=lint
+      env: BUILD_TYPE=lint
       dist: bionic
       addons:
         apt:
@@ -100,4 +93,5 @@ jobs:
         - ./scripts/clang-format-ci
 
   allow_failures:
-    - env: BUILD_TYPE=coverage
+    - compiler: gcc
+      env: BUILD_TYPE=coverage
