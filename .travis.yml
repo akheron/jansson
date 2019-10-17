@@ -1,68 +1,94 @@
+os: linux
 language: c
-matrix:
+compiler:
+  - gcc
+  - clang
+env:
+  - BUILD_TYPE=cmake
+  - BUILD_TYPE=autotools
+  - BUILD_TYPE=coverage
+  - BUILD_TYPE=fuzz
+jobs:
   include:
     # gcc + valgrind (cmake)
-    - os: linux
-      compiler: gcc
+    - compiler: gcc
       env:
-        - JANSSON_BUILD_METHOD=cmake
-        - JANSSON_CMAKE_OPTIONS="-DJANSSON_TEST_WITH_VALGRIND=ON"
+        - BUILD_TYPE=cmake
       addons:
         apt:
           packages:
             - cmake
             - valgrind
+      script:
+        - mkdir build
+        - build
+        - cmake -DJANSSON_TEST_WITH_VALGRIND=ON ..
+        - cmake --build .
+        - ctest --output-on-failure
 
     # clang + valgrind (cmake)
-    - os: linux
-      compiler: clang
+    - compiler: clang
       env:
-        - JANSSON_BUILD_METHOD=cmake
-        - JANSSON_CMAKE_OPTIONS="-DJANSSON_TEST_WITH_VALGRIND=ON"
+        - BUILD_TYPE=cmake
       addons:
         apt:
           packages:
             - cmake
             - valgrind
+      script:
+        - mkdir build
+        - build
+        - cmake -DJANSSON_TEST_WITH_VALGRIND=ON ..
+        - cmake --build .
+        - ctest --output-on-failure
 
     # gcc (autotools)
-    - os: linux
-      compiler: gcc
+    - compiler: gcc
       env:
-        - JANSSON_BUILD_METHOD=autotools
+        - BUILD_TYPE=autotools
+      script:
+        - autoreconf -f -i
+        - CFLAGS=-Werror ./configure
+        - make check
 
     # clang (autotools)
-    - os: linux
-      compiler: clang
+    - compiler: clang
       env:
-        - JANSSON_BUILD_METHOD=autotools
+        - BUILD_TYPE=autotools
+      script:
+        - autoreconf -f -i
+        - CFLAGS=-Werror ./configure
+        - make check
 
     # coverage (cmake)
-    - os: linux
-      compiler: gcc
-      allow_failures: true
+    - compiler: gcc
       env:
-        - JANSSON_BUILD_METHOD=coverage
-        - JANSSON_CMAKE_OPTIONS="-DJANSSON_COVERAGE=ON -DJANSSON_COVERALLS=ON -DCMAKE_BUILD_TYPE=Debug"
+        - BUILD_TYPE=coverage
       addons:
         apt:
           package:
             - cmake
             - lcov
             - curl
+      script:
+        - mkdir build
+        - build
+        - cmake -DJANSSON_COVERAGE=ON -DJANSSON_COVERALLS=ON -DCMAKE_BUILD_TYPE=Debug ..
+        - cmake --build .
+        - cmake --build . --target coveralls
 
     # fuzzer
-    - os: linux
-      compiler: gcc
+    - compiler: gcc
       env:
-        - JANSSON_BUILD_METHOD=fuzzer
+        - BUILD_TYPE=fuzzer
+      script:
+        - ./test/ossfuzz/travisoss.sh
 
     # lint (requires clang 9.0 for new enough clang-format)
-    - os: linux
-      dist: bionic
-      compiler: gcc
+    - compiler: gcc
       env:
-        - JANSSON_BUILD_METHOD=lint
+        - BUILD_TYPE=lint
+      dist: bionic
       addons:
         apt:
           sources:
@@ -70,13 +96,8 @@ matrix:
             - llvm-toolchain-bionic-9.0
           packages:
             - clang-9.0
+      script:
+        - ./scripts/clang-format-ci
 
   allow_failures:
-    - env: JANSSON_BUILD_METHOD=coverage JANSSON_CMAKE_OPTIONS="-DJANSSON_COVERAGE=ON -DJANSSON_COVERALLS=ON -DCMAKE_BUILD_TYPE=Debug"
-
-script:
-  - if [ "$JANSSON_BUILD_METHOD" = "autotools" ]; then autoreconf -f -i && CFLAGS=-Werror ./configure && make check; fi
-  - if [ "$JANSSON_BUILD_METHOD" = "cmake" ]; then mkdir build && cd build && cmake $JANSSON_CMAKE_OPTIONS .. && cmake --build . && ctest --output-on-failure; fi
-  - if [ "$JANSSON_BUILD_METHOD" = "coverage" ]; then mkdir build && cd build && cmake $JANSSON_CMAKE_OPTIONS .. && cmake --build . && cmake --build . --target coveralls; fi
-  - if [ "$JANSSON_BUILD_METHOD" = "fuzzer" ]; then ./test/ossfuzz/travisoss.sh; fi
-  - if [ "$JANSSON_BUILD_METHOD" = "lint" ]; then ./scripts/clang-format-ci; fi
+    - env: BUILD_TYPE=coverage
