@@ -9,7 +9,7 @@
 
 static int chaos_pos = 0;
 static int chaos_fail = 0;
-#define CHAOS_MAX_FAILURE 100
+#define CHAOS_MAX_FAILURE 200
 
 void *chaos_malloc(size_t size)
 {
@@ -160,6 +160,7 @@ static void test_chaos()
 
     chaos_loop(json_array_extend(arr1, arr2),,);
     chaos_loop(json_string_set_nocheck(txt, "test"),,);
+    chaos_loop_new_value(json, json_dump_raw(obj, 0));
 
     json_set_alloc_funcs(orig_malloc, orig_free);
     json_decref(obj);

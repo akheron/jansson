@@ -15,6 +15,9 @@ EXPORTS
     json_string_setn
     json_string_set_nocheck
     json_string_setn_nocheck
+    json_dump_raw_new
+    json_raw_length
+    json_raw_value
     json_integer
     json_integer_value
     json_integer_set
