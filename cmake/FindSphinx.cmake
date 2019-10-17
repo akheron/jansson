@@ -241,27 +241,42 @@ endif ()
 
 # ----------------------------------------------------------------------------
 # determine Sphinx version
+# some quick experiments by @ploxiln
+# - sphinx 1.7 and later have the version output format like "sphinx-build 1.7.2"
+# - sphinx 1.2 through 1.6 have the version output format like "Sphinx (sphinx-build) 1.2.2"
+# - sphinx 1.1 and before do not have a "--version" flag, but it causes the help output like "-h" does which includes version like "Sphinx v1.0.2"
 if (Sphinx-build_EXECUTABLE)
   # intentionally use invalid -h option here as the help that is shown then
   # will include the Sphinx version information
   if (Sphinx_PYTHON_EXECUTABLE)
     execute_process (
-      COMMAND "${Sphinx_PYTHON_EXECUTABLE}" ${Sphinx_PYTHON_OPTIONS} "${Sphinx-build_EXECUTABLE}" -h
+      COMMAND "${Sphinx_PYTHON_EXECUTABLE}" ${Sphinx_PYTHON_OPTIONS} "${Sphinx-build_EXECUTABLE}" --version
       OUTPUT_VARIABLE _Sphinx_VERSION
       ERROR_VARIABLE  _Sphinx_VERSION
     )
   elseif (UNIX)
     execute_process (
-      COMMAND "${Sphinx-build_EXECUTABLE}" -h
+      COMMAND "${Sphinx-build_EXECUTABLE}" --version
       OUTPUT_VARIABLE _Sphinx_VERSION
       ERROR_VARIABLE  _Sphinx_VERSION
     )
   endif ()
 
   # The sphinx version can also contain a "b" instead of the last dot.
-  # For example "Sphinx v1.2b1" so we cannot just split on "."
-  if (_Sphinx_VERSION MATCHES "Sphinx v([0-9]+\\.[0-9]+(\\.|b)[0-9]+)")
+  # For example "Sphinx v1.2b1" or "Sphinx 1.7.0b2" so we cannot just split on "."
+  if (_Sphinx_VERSION MATCHES "sphinx-build ([0-9]+\\.[0-9]+(\\.|a?|b?)([0-9]*)(b?)([0-9]*))")
     set (Sphinx_VERSION_STRING "${CMAKE_MATCH_1}")
+    set (_SPHINX_VERSION_FOUND)
+  elseif (_Sphinx_VERSION MATCHES "Sphinx v([0-9]+\\.[0-9]+(\\.|b?)([0-9]*)(b?)([0-9]*))")
+    set (Sphinx_VERSION_STRING "${CMAKE_MATCH_1}")
+    set (_SPHINX_VERSION_FOUND)
+  elseif (_Sphinx_VERSION MATCHES "Sphinx \\(sphinx-build\\) ([0-9]+\\.[0-9]+(\\.|a?|b?)([0-9]*)(b?)([0-9]*))")
+    set (Sphinx_VERSION_STRING "${CMAKE_MATCH_1}")
+    set (_SPHINX_VERSION_FOUND)
+  endif ()
+endif ()
+
+if(_SPHINX_VERSION_FOUND)
     string(REGEX REPLACE "([0-9]+)\\.[0-9]+(\\.|b)[0-9]+" "\\1" Sphinx_VERSION_MAJOR ${Sphinx_VERSION_STRING})
     string(REGEX REPLACE "[0-9]+\\.([0-9]+)(\\.|b)[0-9]+" "\\1" Sphinx_VERSION_MINOR ${Sphinx_VERSION_STRING})
     string(REGEX REPLACE "[0-9]+\\.[0-9]+(\\.|b)([0-9]+)" "\\1" Sphinx_VERSION_PATCH ${Sphinx_VERSION_STRING})
@@ -270,7 +285,6 @@ if (Sphinx-build_EXECUTABLE)
     if (Sphinx_VERSION_PATCH EQUAL 0)
       string (REGEX REPLACE "\\.0$" "" Sphinx_VERSION_STRING "${Sphinx_VERSION_STRING}")
     endif ()
-  endif()
 endif ()
 
 # ----------------------------------------------------------------------------

@@ -13,6 +13,10 @@
 #include <unistd.h>
 #endif
 #include "util.h"
+#ifdef __MINGW32__
+#include <fcntl.h>
+#define pipe(fds) _pipe(fds, 1024, _O_BINARY)
+#endif
 
 static int encode_null_callback(const char *buffer, size_t size, void *data)
 {

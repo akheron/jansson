@@ -74,7 +74,7 @@ function::
 
     static char *request(const char *url);
 
-It takes the URL as a parameter, preforms a HTTP GET request, and
+It takes the URL as a parameter, performs a HTTP GET request, and
 returns a newly allocated string that contains the response body. If
 the request fails, an error message is printed to stderr and the
 return value is *NULL*. For full details, refer to :download:`the code

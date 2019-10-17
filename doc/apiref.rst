@@ -726,6 +726,12 @@ allowed in object keys.
    The value of any existing key is not changed. Returns 0 on success
    or -1 on error.
 
+.. function:: int json_object_update_recursive(json_t *object, json_t *other)
+
+   Like :func:`json_object_update()`, but object values in *other* are
+   recursively merged with the corresponding values in *object* if they are also
+   objects, instead of overwriting them. Returns 0 on success or -1 on error.
+
 .. function:: json_object_foreach(object, key, value)
 
    Iterate over every key-value pair of ``object``, running the block
@@ -1351,7 +1357,11 @@ If no error or position information is needed, you can pass *NULL*.
    It is important to note that this function can only succeed on stream
    file descriptors (such as SOCK_STREAM). Using this function on a
    non-stream file descriptor will result in undefined behavior. For
-   non-stream file descriptors, see instead :func:`json_loadb()`.
+   non-stream file descriptors, see instead :func:`json_loadb()`. In
+   addition, please note that this function cannot be used on non-blocking 
+   file descriptors (such as a non-blocking socket). Using this function 
+   on non-blocking file descriptors has a high risk of data loss because 
+   it does not support resuming.
 
    This function requires POSIX and fails on all non-POSIX systems.
 
