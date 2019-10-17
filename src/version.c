@@ -11,13 +11,9 @@
 
 #include "jansson.h"
 
-const char *jansson_version_str(void)
-{
-    return JANSSON_VERSION;
-}
+const char *jansson_version_str(void) { return JANSSON_VERSION; }
 
-int jansson_version_cmp(int major, int minor, int micro)
-{
+int jansson_version_cmp(int major, int minor, int micro) {
     int diff;
 
     if ((diff = JANSSON_MAJOR_VERSION - major)) {
