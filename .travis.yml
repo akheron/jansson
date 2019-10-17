@@ -29,4 +29,4 @@ script:
   - if [ "$JANSSON_BUILD_METHOD" = "cmake" ]; then mkdir build && cd build && cmake $JANSSON_CMAKE_OPTIONS .. && cmake --build . && ctest --output-on-failure; fi
   - if [ "$JANSSON_BUILD_METHOD" = "coverage" ]; then mkdir build && cd build && cmake $JANSSON_CMAKE_OPTIONS .. && cmake --build . && cmake --build . --target coveralls; fi
   - if [ "$JANSSON_BUILD_METHOD" = "fuzzer" ]; then ./test/ossfuzz/travisoss.sh; fi
-  - if [ "$JANSSON_BUILD_METHOD" = "lint" ]; then ./scripts/clang-format-ci; fi
+  - if [ "$JANSSON_BUILD_METHOD" = "lint" ]; then ./scripts/clang-format-ci 9; fi

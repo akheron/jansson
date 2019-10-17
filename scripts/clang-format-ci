@@ -1,10 +1,15 @@
 #!/bin/bash
 
+clangformat="clang-format"
+if [ -n "$1" ]; then
+    clangformat="clang-format-$1"
+fi
+
 errors=0
 paths=$(find . -type f -a '(' -name '*.c' -o -name '*.h' ')')
 for path in $paths; do
     in=$(cat $path)
-    out=$(clang-format $path)
+    out=$($clangformat $path)
 
     if [ "$in" != "$out" ]; then
         diff -u -L $path -L "$path.formatted" $path - <<<$out
