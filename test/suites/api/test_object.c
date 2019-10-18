@@ -133,6 +133,32 @@ static void test_update()
        json_object_get(object, "h") != nine)
         fail("update works incorrectly");
 
+    /* update_new check */
+    if(json_object_clear(object))
+        fail("clear failed");
+
+    if(json_object_set(object, "a", ten) ||
+       json_object_set(object, "b", ten) ||
+       json_object_set(object, "c", ten) ||
+       json_object_set(object, "d", ten) ||
+       json_object_set(object, "e", ten))
+        fail("unable to set value");
+
+    if(json_object_update_new(object, json_pack("{s:O, s:O, s:O}", "b", nine, "f", nine, "g", nine)))
+        fail("unable to update_new a nonempty object");
+
+    if(json_object_size(object) != 7)
+        fail("invalid size after update_new");
+
+    if(json_object_get(object, "a") != ten ||
+       json_object_get(object, "b") != nine ||
+       json_object_get(object, "c") != ten ||
+       json_object_get(object, "d") != ten ||
+       json_object_get(object, "e") != ten ||
+       json_object_get(object, "f") != nine ||
+       json_object_get(object, "g") != nine)
+        fail("update_new works incorrectly");
+
     json_decref(nine);
     json_decref(ten);
     json_decref(other);
@@ -186,6 +212,23 @@ static void test_conditional_updates()
 
     json_decref(object);
 
+    /* json_object_update_existing_new check */
+    object = json_pack("{sisi}", "foo", 1, "bar", 2);
+
+    if(json_object_update_existing_new(object, json_pack("{sisi}", "foo", 3, "baz", 4)))
+        fail("json_object_update_existing_new failed");
+
+    if(json_object_size(object) != 2)
+        fail("json_object_update_existing_new added new items");
+
+    if(json_integer_value(json_object_get(object, "foo")) != 3)
+        fail("json_object_update_existing_new failed to update existing key");
+
+    if(json_integer_value(json_object_get(object, "bar")) != 2)
+        fail("json_object_update_existing_new updated wrong key");
+
+    json_decref(object);
+
     object = json_pack("{sisi}", "foo", 1, "bar", 2);
 
     if(json_object_update_missing(object, other))
@@ -202,6 +245,26 @@ static void test_conditional_updates()
 
     if(json_integer_value(json_object_get(object, "baz")) != 4)
         fail("json_object_update_missing didn't add new items");
+
+    json_decref(object);
+
+    /* json_object_update_missing_new check */
+    object = json_pack("{sisi}", "foo", 1, "bar", 2);
+
+    if(json_object_update_missing_new(object, json_pack("{sisi}", "foo", 3, "baz", 4)))
+        fail("json_object_update_missing_new failed");
+
+    if(json_object_size(object) != 3)
+        fail("json_object_update_missing_new didn't add new items");
+
+    if(json_integer_value(json_object_get(object, "foo")) != 1)
+        fail("json_object_update_missing_new updated existing key");
+
+    if(json_integer_value(json_object_get(object, "bar")) != 2)
+        fail("json_object_update_missing_new updated wrong key");
+
+    if(json_integer_value(json_object_get(object, "baz")) != 4)
+        fail("json_object_update_missing_new didn't add new items");
 
     json_decref(object);
     json_decref(other);

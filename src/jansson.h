@@ -243,6 +243,30 @@ int json_object_iter_set(json_t *object, void *iter, json_t *value)
     return json_object_iter_set_new(object, iter, json_incref(value));
 }
 
+static JSON_INLINE
+int json_object_update_new(json_t *object, json_t *other)
+{
+    int ret = json_object_update(object, other);
+    json_decref(other);
+    return ret;
+}
+
+static JSON_INLINE
+int json_object_update_existing_new(json_t *object, json_t *other)
+{
+    int ret = json_object_update_existing(object, other);
+    json_decref(other);
+    return ret;
+}
+
+static JSON_INLINE
+int json_object_update_missing_new(json_t *object, json_t *other)
+{
+    int ret = json_object_update_missing(object, other);
+    json_decref(other);
+    return ret;
+}
+
 size_t json_array_size(const json_t *array);
 json_t *json_array_get(const json_t *array, size_t index) JANSSON_ATTRS((warn_unused_result));
 int json_array_set_new(json_t *array, size_t index, json_t *value);
