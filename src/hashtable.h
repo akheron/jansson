@@ -40,7 +40,7 @@ typedef struct hashtable {
     struct hashtable_list ordered_list;
 } hashtable_t;
 
-#define hashtable_key_to_iter(key_)                                            \
+#define hashtable_key_to_iter(key_)                                                      \
     (&(container_of(key_, struct hashtable_pair, key)->ordered_list))
 
 /**

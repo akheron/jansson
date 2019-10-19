@@ -16,8 +16,7 @@ struct my_source {
     size_t cap;
 };
 
-static const char my_str[] =
-    "[\"A\", {\"B\": \"C\", \"e\": false}, 1, null, \"foo\"]";
+static const char my_str[] = "[\"A\", {\"B\": \"C\", \"e\": false}, 1, null, \"foo\"]";
 
 static size_t greedy_reader(void *buf, size_t buflen, void *arg) {
     struct my_source *s = arg;

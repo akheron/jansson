@@ -143,8 +143,8 @@ static void run_tests() {
     j = json_integer(42);
     if (!json_unpack_ex(j, &error, 0, "z"))
         fail("json_unpack succeeded with invalid format character");
-    check_error(json_error_invalid_format, "Unexpected format character 'z'",
-                "<format>", 1, 1, 1);
+    check_error(json_error_invalid_format, "Unexpected format character 'z'", "<format>",
+                1, 1, 1);
 
     if (!json_unpack_ex(NULL, &error, 0, "[i]"))
         fail("json_unpack succeeded with NULL root");
@@ -155,62 +155,61 @@ static void run_tests() {
     j = json_pack("[]");
     if (!json_unpack_ex(j, &error, 0, "[}"))
         fail("json_unpack failed to catch mismatched ']'");
-    check_error(json_error_invalid_format, "Unexpected format character '}'",
-                "<format>", 1, 2, 2);
+    check_error(json_error_invalid_format, "Unexpected format character '}'", "<format>",
+                1, 2, 2);
     json_decref(j);
 
     j = json_pack("{}");
     if (!json_unpack_ex(j, &error, 0, "{]"))
         fail("json_unpack failed to catch mismatched '}'");
-    check_error(json_error_invalid_format, "Expected format 's', got ']'",
-                "<format>", 1, 2, 2);
+    check_error(json_error_invalid_format, "Expected format 's', got ']'", "<format>", 1,
+                2, 2);
     json_decref(j);
 
     /* missing close array */
     j = json_pack("[]");
     if (!json_unpack_ex(j, &error, 0, "["))
         fail("json_unpack failed to catch missing ']'");
-    check_error(json_error_invalid_format, "Unexpected end of format string",
-                "<format>", 1, 2, 2);
+    check_error(json_error_invalid_format, "Unexpected end of format string", "<format>",
+                1, 2, 2);
     json_decref(j);
 
     /* missing close object */
     j = json_pack("{}");
     if (!json_unpack_ex(j, &error, 0, "{"))
         fail("json_unpack failed to catch missing '}'");
-    check_error(json_error_invalid_format, "Unexpected end of format string",
-                "<format>", 1, 2, 2);
+    check_error(json_error_invalid_format, "Unexpected end of format string", "<format>",
+                1, 2, 2);
     json_decref(j);
 
     /* garbage after format string */
     j = json_pack("[i]", 42);
     if (!json_unpack_ex(j, &error, 0, "[i]a", &i1))
         fail("json_unpack failed to catch garbage after format string");
-    check_error(json_error_invalid_format, "Garbage after format string",
-                "<format>", 1, 4, 4);
+    check_error(json_error_invalid_format, "Garbage after format string", "<format>", 1,
+                4, 4);
     json_decref(j);
 
     j = json_integer(12345);
     if (!json_unpack_ex(j, &error, 0, "ia", &i1))
         fail("json_unpack failed to catch garbage after format string");
-    check_error(json_error_invalid_format, "Garbage after format string",
-                "<format>", 1, 2, 2);
+    check_error(json_error_invalid_format, "Garbage after format string", "<format>", 1,
+                2, 2);
     json_decref(j);
 
     /* NULL format string */
     j = json_pack("[]");
     if (!json_unpack_ex(j, &error, 0, NULL))
         fail("json_unpack failed to catch null format string");
-    check_error(json_error_invalid_argument, "NULL or empty format string",
-                "<format>", -1, -1, 0);
+    check_error(json_error_invalid_argument, "NULL or empty format string", "<format>",
+                -1, -1, 0);
     json_decref(j);
 
     /* NULL string pointer */
     j = json_string("foobie");
     if (!json_unpack_ex(j, &error, 0, "s", NULL))
         fail("json_unpack failed to catch null string pointer");
-    check_error(json_error_null_value, "NULL string argument", "<args>", 1, 1,
-                1);
+    check_error(json_error_null_value, "NULL string argument", "<args>", 1, 1, 1);
     json_decref(j);
 
     /* invalid types */
@@ -218,13 +217,13 @@ static void run_tests() {
     j2 = json_string("foo");
     if (!json_unpack_ex(j, &error, 0, "s"))
         fail("json_unpack failed to catch invalid type");
-    check_error(json_error_wrong_type, "Expected string, got integer",
-                "<validation>", 1, 1, 1);
+    check_error(json_error_wrong_type, "Expected string, got integer", "<validation>", 1,
+                1, 1);
 
     if (!json_unpack_ex(j, &error, 0, "n"))
         fail("json_unpack failed to catch invalid type");
-    check_error(json_error_wrong_type, "Expected null, got integer",
-                "<validation>", 1, 1, 1);
+    check_error(json_error_wrong_type, "Expected null, got integer", "<validation>", 1, 1,
+                1);
 
     if (!json_unpack_ex(j, &error, 0, "b"))
         fail("json_unpack failed to catch invalid type");
@@ -233,18 +232,18 @@ static void run_tests() {
 
     if (!json_unpack_ex(j2, &error, 0, "i"))
         fail("json_unpack failed to catch invalid type");
-    check_error(json_error_wrong_type, "Expected integer, got string",
-                "<validation>", 1, 1, 1);
+    check_error(json_error_wrong_type, "Expected integer, got string", "<validation>", 1,
+                1, 1);
 
     if (!json_unpack_ex(j2, &error, 0, "I"))
         fail("json_unpack failed to catch invalid type");
-    check_error(json_error_wrong_type, "Expected integer, got string",
-                "<validation>", 1, 1, 1);
+    check_error(json_error_wrong_type, "Expected integer, got string", "<validation>", 1,
+                1, 1);
 
     if (!json_unpack_ex(j, &error, 0, "f"))
         fail("json_unpack failed to catch invalid type");
-    check_error(json_error_wrong_type, "Expected real, got integer",
-                "<validation>", 1, 1, 1);
+    check_error(json_error_wrong_type, "Expected real, got integer", "<validation>", 1, 1,
+                1);
 
     if (!json_unpack_ex(j2, &error, 0, "F"))
         fail("json_unpack failed to catch invalid type");
@@ -253,13 +252,13 @@ static void run_tests() {
 
     if (!json_unpack_ex(j, &error, 0, "[i]"))
         fail("json_unpack failed to catch invalid type");
-    check_error(json_error_wrong_type, "Expected array, got integer",
-                "<validation>", 1, 1, 1);
+    check_error(json_error_wrong_type, "Expected array, got integer", "<validation>", 1,
+                1, 1);
 
     if (!json_unpack_ex(j, &error, 0, "{si}", "foo"))
         fail("json_unpack failed to catch invalid type");
-    check_error(json_error_wrong_type, "Expected object, got integer",
-                "<validation>", 1, 1, 1);
+    check_error(json_error_wrong_type, "Expected object, got integer", "<validation>", 1,
+                1, 1);
 
     json_decref(j);
     json_decref(j2);
@@ -283,8 +282,8 @@ static void run_tests() {
     j = json_pack("{si}", "foo", 42);
     if (!json_unpack_ex(j, &error, 0, "{si}", "baz", &i1))
         fail("json_unpack failed to catch null string pointer");
-    check_error(json_error_item_not_found, "Object item not found: baz",
-                "<validation>", 1, 3, 3);
+    check_error(json_error_item_not_found, "Object item not found: baz", "<validation>",
+                1, 3, 3);
     json_decref(j);
 
     /*
@@ -300,16 +299,16 @@ static void run_tests() {
     j = json_pack("[iii]", 1, 2, 3);
     if (!json_unpack_ex(j, &error, 0, "[ii!]", &i1, &i2))
         fail("json_unpack array with strict validation failed");
-    check_error(json_error_end_of_input_expected,
-                "1 array item(s) left unpacked", "<validation>", 1, 5, 5);
+    check_error(json_error_end_of_input_expected, "1 array item(s) left unpacked",
+                "<validation>", 1, 5, 5);
     json_decref(j);
 
     /* Like above, but with JSON_STRICT instead of '!' format */
     j = json_pack("[iii]", 1, 2, 3);
     if (!json_unpack_ex(j, &error, JSON_STRICT, "[ii]", &i1, &i2))
         fail("json_unpack array with strict validation failed");
-    check_error(json_error_end_of_input_expected,
-                "1 array item(s) left unpacked", "<validation>", 1, 4, 4);
+    check_error(json_error_end_of_input_expected, "1 array item(s) left unpacked",
+                "<validation>", 1, 4, 4);
     json_decref(j);
 
     j = json_pack("{s:s, s:i}", "foo", "bar", "baz", 42);
@@ -323,17 +322,16 @@ static void run_tests() {
     if (!json_unpack_ex(j, &error, 0, "{s:s,s:s!}", "foo", &s, "foo", &s))
         fail("json_unpack object with strict validation failed");
     {
-        const char *possible_errors[] = {
-            "2 object item(s) left unpacked: baz, quux",
-            "2 object item(s) left unpacked: quux, baz"};
-        check_errors(json_error_end_of_input_expected, possible_errors, 2,
-                     "<validation>", 1, 10, 10);
+        const char *possible_errors[] = {"2 object item(s) left unpacked: baz, quux",
+                                         "2 object item(s) left unpacked: quux, baz"};
+        check_errors(json_error_end_of_input_expected, possible_errors, 2, "<validation>",
+                     1, 10, 10);
     }
     json_decref(j);
 
     j = json_pack("[i,{s:i,s:n},[i,i]]", 1, "foo", 2, "bar", 3, 4);
-    if (json_unpack_ex(j, NULL, JSON_STRICT | JSON_VALIDATE_ONLY,
-                       "[i{sisn}[ii]]", "foo", "bar"))
+    if (json_unpack_ex(j, NULL, JSON_STRICT | JSON_VALIDATE_ONLY, "[i{sisn}[ii]]", "foo",
+                       "bar"))
         fail("json_unpack complex value with strict validation failed");
     json_decref(j);
 
@@ -341,41 +339,41 @@ static void run_tests() {
     j = json_pack("[ii]", 1, 2);
     if (!json_unpack_ex(j, &error, 0, "[i!i]", &i1, &i2))
         fail("json_unpack failed to catch ! in the middle of an array");
-    check_error(json_error_invalid_format, "Expected ']' after '!', got 'i'",
-                "<format>", 1, 4, 4);
+    check_error(json_error_invalid_format, "Expected ']' after '!', got 'i'", "<format>",
+                1, 4, 4);
 
     if (!json_unpack_ex(j, &error, 0, "[i*i]", &i1, &i2))
         fail("json_unpack failed to catch * in the middle of an array");
-    check_error(json_error_invalid_format, "Expected ']' after '*', got 'i'",
-                "<format>", 1, 4, 4);
+    check_error(json_error_invalid_format, "Expected ']' after '*', got 'i'", "<format>",
+                1, 4, 4);
     json_decref(j);
 
     j = json_pack("{sssi}", "foo", "bar", "baz", 42);
     if (!json_unpack_ex(j, &error, 0, "{ss!si}", "foo", &s, "baz", &i1))
         fail("json_unpack failed to catch ! in the middle of an object");
-    check_error(json_error_invalid_format, "Expected '}' after '!', got 's'",
-                "<format>", 1, 5, 5);
+    check_error(json_error_invalid_format, "Expected '}' after '!', got 's'", "<format>",
+                1, 5, 5);
 
     if (!json_unpack_ex(j, &error, 0, "{ss*si}", "foo", &s, "baz", &i1))
         fail("json_unpack failed to catch ! in the middle of an object");
-    check_error(json_error_invalid_format, "Expected '}' after '*', got 's'",
-                "<format>", 1, 5, 5);
+    check_error(json_error_invalid_format, "Expected '}' after '*', got 's'", "<format>",
+                1, 5, 5);
     json_decref(j);
 
     /* Error in nested object */
     j = json_pack("{s{snsn}}", "foo", "bar", "baz");
     if (!json_unpack_ex(j, &error, 0, "{s{sn!}}", "foo", "bar"))
         fail("json_unpack nested object with strict validation failed");
-    check_error(json_error_end_of_input_expected,
-                "1 object item(s) left unpacked: baz", "<validation>", 1, 7, 7);
+    check_error(json_error_end_of_input_expected, "1 object item(s) left unpacked: baz",
+                "<validation>", 1, 7, 7);
     json_decref(j);
 
     /* Error in nested array */
     j = json_pack("[[ii]]", 1, 2);
     if (!json_unpack_ex(j, &error, 0, "[[i!]]", &i1))
         fail("json_unpack nested array with strict validation failed");
-    check_error(json_error_end_of_input_expected,
-                "1 array item(s) left unpacked", "<validation>", 1, 5, 5);
+    check_error(json_error_end_of_input_expected, "1 array item(s) left unpacked",
+                "<validation>", 1, 5, 5);
     json_decref(j);
 
     /* Optional values */
@@ -397,8 +395,7 @@ static void run_tests() {
 
     j = json_object();
     i1 = i2 = i3 = 0;
-    if (json_unpack(j, "{s?[ii]s?{s{si}}}", "foo", &i1, &i2, "bar", "baz",
-                    "quux", &i3))
+    if (json_unpack(j, "{s?[ii]s?{s{si}}}", "foo", &i1, &i2, "bar", "baz", "quux", &i3))
         fail("json_unpack failed for complex optional values");
     if (i1 != 0 || i2 != 0 || i3 != 0)
         fail("json_unpack unexpectedly unpacked something");
@@ -428,7 +425,7 @@ static void run_tests() {
     if (!json_unpack_ex(j, &error, 0, "{sis?i!}", "foo", &i1, "bar", &i2))
         fail("json_unpack failed for optional values with strict mode and "
              "compensation");
-    check_error(json_error_end_of_input_expected,
-                "1 object item(s) left unpacked: baz", "<validation>", 1, 8, 8);
+    check_error(json_error_end_of_input_expected, "1 object item(s) left unpacked: baz",
+                "<validation>", 1, 8, 8);
     json_decref(j);
 }

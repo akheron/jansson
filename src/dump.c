@@ -68,19 +68,17 @@ static int dump_to_fd(const char *buffer, size_t size, void *data) {
 /* 32 spaces (the maximum indentation size) */
 static const char whitespace[] = "                                ";
 
-static int dump_indent(size_t flags, int depth, int space,
-                       json_dump_callback_t dump, void *data) {
+static int dump_indent(size_t flags, int depth, int space, json_dump_callback_t dump,
+                       void *data) {
     if (FLAGS_TO_INDENT(flags) > 0) {
-        unsigned int ws_count = FLAGS_TO_INDENT(flags),
-                     n_spaces = depth * ws_count;
+        unsigned int ws_count = FLAGS_TO_INDENT(flags), n_spaces = depth * ws_count;
 
         if (dump("\n", 1, data))
             return -1;
 
         while (n_spaces > 0) {
-            int cur_n = n_spaces < sizeof whitespace - 1
-                            ? n_spaces
-                            : sizeof whitespace - 1;
+            int cur_n =
+                n_spaces < sizeof whitespace - 1 ? n_spaces : sizeof whitespace - 1;
 
             if (dump(whitespace, cur_n, data))
                 return -1;
@@ -93,8 +91,8 @@ static int dump_indent(size_t flags, int depth, int space,
     return 0;
 }
 
-static int dump_string(const char *str, size_t len, json_dump_callback_t dump,
-                       void *data, size_t flags) {
+static int dump_string(const char *str, size_t len, json_dump_callback_t dump, void *data,
+                       size_t flags) {
     const char *pos, *end, *lim;
     int32_t codepoint = 0;
 
@@ -139,19 +137,34 @@ static int dump_string(const char *str, size_t len, json_dump_callback_t dump,
         /* handle \, /, ", and control codes */
         length = 2;
         switch (codepoint) {
-            case '\\': text = "\\\\"; break;
-            case '\"': text = "\\\""; break;
-            case '\b': text = "\\b"; break;
-            case '\f': text = "\\f"; break;
-            case '\n': text = "\\n"; break;
-            case '\r': text = "\\r"; break;
-            case '\t': text = "\\t"; break;
-            case '/': text = "\\/"; break;
+            case '\\':
+                text = "\\\\";
+                break;
+            case '\"':
+                text = "\\\"";
+                break;
+            case '\b':
+                text = "\\b";
+                break;
+            case '\f':
+                text = "\\f";
+                break;
+            case '\n':
+                text = "\\n";
+                break;
+            case '\r':
+                text = "\\r";
+                break;
+            case '\t':
+                text = "\\t";
+                break;
+            case '/':
+                text = "\\/";
+                break;
             default: {
                 /* codepoint is in BMP */
                 if (codepoint < 0x10000) {
-                    snprintf(seq, sizeof(seq), "\\u%04X",
-                             (unsigned int)codepoint);
+                    snprintf(seq, sizeof(seq), "\\u%04X", (unsigned int)codepoint);
                     length = 6;
                 }
 
@@ -163,8 +176,8 @@ static int dump_string(const char *str, size_t len, json_dump_callback_t dump,
                     first = 0xD800 | ((codepoint & 0xffc00) >> 10);
                     last = 0xDC00 | (codepoint & 0x003ff);
 
-                    snprintf(seq, sizeof(seq), "\\u%04X\\u%04X",
-                             (unsigned int)first, (unsigned int)last);
+                    snprintf(seq, sizeof(seq), "\\u%04X\\u%04X", (unsigned int)first,
+                             (unsigned int)last);
                     length = 12;
                 }
 
@@ -186,9 +199,8 @@ static int compare_keys(const void *key1, const void *key2) {
     return strcmp(*(const char **)key1, *(const char **)key2);
 }
 
-static int do_dump(const json_t *json, size_t flags, int depth,
-                   hashtable_t *parents, json_dump_callback_t dump,
-                   void *data) {
+static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *parents,
+                   json_dump_callback_t dump, void *data) {
     int embed = flags & JSON_EMBED;
 
     flags &= ~JSON_EMBED;
@@ -197,18 +209,21 @@ static int do_dump(const json_t *json, size_t flags, int depth,
         return -1;
 
     switch (json_typeof(json)) {
-        case JSON_NULL: return dump("null", 4, data);
+        case JSON_NULL:
+            return dump("null", 4, data);
 
-        case JSON_TRUE: return dump("true", 4, data);
+        case JSON_TRUE:
+            return dump("true", 4, data);
 
-        case JSON_FALSE: return dump("false", 5, data);
+        case JSON_FALSE:
+            return dump("false", 5, data);
 
         case JSON_INTEGER: {
             char buffer[MAX_INTEGER_STR_LENGTH];
             int size;
 
-            size = snprintf(buffer, MAX_INTEGER_STR_LENGTH,
-                            "%" JSON_INTEGER_FORMAT, json_integer_value(json));
+            size = snprintf(buffer, MAX_INTEGER_STR_LENGTH, "%" JSON_INTEGER_FORMAT,
+                            json_integer_value(json));
             if (size < 0 || size >= MAX_INTEGER_STR_LENGTH)
                 return -1;
 
@@ -229,8 +244,8 @@ static int do_dump(const json_t *json, size_t flags, int depth,
         }
 
         case JSON_STRING:
-            return dump_string(json_string_value(json),
-                               json_string_length(json), dump, data, flags);
+            return dump_string(json_string_value(json), json_string_length(json), dump,
+                               data, flags);
 
         case JSON_ARRAY: {
             size_t n;
@@ -255,8 +270,8 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 return -1;
 
             for (i = 0; i < n; ++i) {
-                if (do_dump(json_array_get(json, i), flags, depth + 1, parents,
-                            dump, data))
+                if (do_dump(json_array_get(json, i), flags, depth + 1, parents, dump,
+                            data))
                     return -1;
 
                 if (i < n - 1) {
@@ -360,8 +375,8 @@ static int do_dump(const json_t *json, size_t flags, int depth,
 
                     dump_string(key, strlen(key), dump, data, flags);
                     if (dump(separator, separator_length, data) ||
-                        do_dump(json_object_iter_value(iter), flags, depth + 1,
-                                parents, dump, data))
+                        do_dump(json_object_iter_value(iter), flags, depth + 1, parents,
+                                dump, data))
                         return -1;
 
                     if (next) {
@@ -435,8 +450,8 @@ int json_dump_file(const json_t *json, const char *path, size_t flags) {
     return result;
 }
 
-int json_dump_callback(const json_t *json, json_dump_callback_t callback,
-                       void *data, size_t flags) {
+int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data,
+                       size_t flags) {
     int res;
     hashtable_t parents_set;
 

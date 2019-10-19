@@ -14,7 +14,7 @@
 #include "strbuffer.h"
 #include <stddef.h>
 
-#define container_of(ptr_, type_, member_)                                     \
+#define container_of(ptr_, type_, member_)                                               \
     ((type_ *)((char *)ptr_ - offsetof(type_, member_)))
 
 /* On some platforms, max() may already be defined */
@@ -74,9 +74,8 @@ void jsonp_error_init(json_error_t *error, const char *source);
 void jsonp_error_set_source(json_error_t *error, const char *source);
 void jsonp_error_set(json_error_t *error, int line, int column, size_t position,
                      enum json_error_code code, const char *msg, ...);
-void jsonp_error_vset(json_error_t *error, int line, int column,
-                      size_t position, enum json_error_code code,
-                      const char *msg, va_list ap);
+void jsonp_error_vset(json_error_t *error, int line, int column, size_t position,
+                      enum json_error_code code, const char *msg, va_list ap);
 
 /* Locale independent string<->double conversions */
 int jsonp_strtod(strbuffer_t *strbuffer, double *out);
@@ -85,11 +84,9 @@ int jsonp_dtostr(char *buffer, size_t size, double value, int prec);
 /* Wrappers for custom memory functions */
 void *jsonp_malloc(size_t size) JANSSON_ATTRS((warn_unused_result));
 void jsonp_free(void *ptr);
-char *jsonp_strndup(const char *str, size_t length)
-    JANSSON_ATTRS((warn_unused_result));
+char *jsonp_strndup(const char *str, size_t length) JANSSON_ATTRS((warn_unused_result));
 char *jsonp_strdup(const char *str) JANSSON_ATTRS((warn_unused_result));
-char *jsonp_strndup(const char *str, size_t len)
-    JANSSON_ATTRS((warn_unused_result));
+char *jsonp_strndup(const char *str, size_t len) JANSSON_ATTRS((warn_unused_result));
 
 /* Circular reference check*/
 /* Space for "0x", double the sizeof a pointer for the hex and a terminator. */
@@ -100,11 +97,11 @@ int jsonp_loop_check(hashtable_t *parents, const json_t *json, char *key,
 /* Windows compatibility */
 #if defined(_WIN32) || defined(WIN32)
 #if defined(_MSC_VER) /* MS compiller */
-#if (_MSC_VER < 1900) &&                                                       \
+#if (_MSC_VER < 1900) &&                                                                 \
     !defined(snprintf) /* snprintf not defined yet & not introduced */
 #define snprintf _snprintf
 #endif
-#if (_MSC_VER < 1500) &&                                                       \
+#if (_MSC_VER < 1500) &&                                                                 \
     !defined(vsnprintf) /* vsnprintf not defined yet & not introduced */
 #define vsnprintf(b, c, f, a) _vsnprintf(b, c, f, a)
 #endif

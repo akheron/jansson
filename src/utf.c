@@ -113,8 +113,7 @@ size_t utf8_check_full(const char *buffer, size_t size, int32_t *codepoint) {
     return 1;
 }
 
-const char *utf8_iterate(const char *buffer, size_t bufsize,
-                         int32_t *codepoint) {
+const char *utf8_iterate(const char *buffer, size_t bufsize, int32_t *codepoint) {
     size_t count;
     int32_t value;
 

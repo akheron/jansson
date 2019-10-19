@@ -31,8 +31,7 @@ struct write_result {
     int pos;
 };
 
-static size_t write_response(void *ptr, size_t size, size_t nmemb,
-                             void *stream) {
+static size_t write_response(void *ptr, size_t size, size_t nmemb, void *stream) {
     struct write_result *result = (struct write_result *)stream;
 
     if (result->pos + size * nmemb >= BUFFER_SIZE - 1) {
@@ -146,38 +145,34 @@ int main(int argc, char *argv[]) {
 
         data = json_array_get(root, i);
         if (!json_is_object(data)) {
-            fprintf(stderr, "error: commit data %d is not an object\n",
-                    (int)(i + 1));
+            fprintf(stderr, "error: commit data %d is not an object\n", (int)(i + 1));
             json_decref(root);
             return 1;
         }
 
         sha = json_object_get(data, "sha");
         if (!json_is_string(sha)) {
-            fprintf(stderr, "error: commit %d: sha is not a string\n",
-                    (int)(i + 1));
+            fprintf(stderr, "error: commit %d: sha is not a string\n", (int)(i + 1));
             return 1;
         }
 
         commit = json_object_get(data, "commit");
         if (!json_is_object(commit)) {
-            fprintf(stderr, "error: commit %d: commit is not an object\n",
-                    (int)(i + 1));
+            fprintf(stderr, "error: commit %d: commit is not an object\n", (int)(i + 1));
             json_decref(root);
             return 1;
         }
 
         message = json_object_get(commit, "message");
         if (!json_is_string(message)) {
-            fprintf(stderr, "error: commit %d: message is not a string\n",
-                    (int)(i + 1));
+            fprintf(stderr, "error: commit %d: message is not a string\n", (int)(i + 1));
             json_decref(root);
             return 1;
         }
 
         message_text = json_string_value(message);
-        printf("%.8s %.*s\n", json_string_value(sha),
-               newline_offset(message_text), message_text);
+        printf("%.8s %.*s\n", json_string_value(sha), newline_offset(message_text),
+               message_text);
     }
 
     json_decref(root);

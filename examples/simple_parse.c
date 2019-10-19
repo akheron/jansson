@@ -44,17 +44,32 @@ void print_json(json_t *root) { print_json_aux(root, 0); }
 
 void print_json_aux(json_t *element, int indent) {
     switch (json_typeof(element)) {
-        case JSON_OBJECT: print_json_object(element, indent); break;
-        case JSON_ARRAY: print_json_array(element, indent); break;
-        case JSON_STRING: print_json_string(element, indent); break;
-        case JSON_INTEGER: print_json_integer(element, indent); break;
-        case JSON_REAL: print_json_real(element, indent); break;
-        case JSON_TRUE: print_json_true(element, indent); break;
-        case JSON_FALSE: print_json_false(element, indent); break;
-        case JSON_NULL: print_json_null(element, indent); break;
+        case JSON_OBJECT:
+            print_json_object(element, indent);
+            break;
+        case JSON_ARRAY:
+            print_json_array(element, indent);
+            break;
+        case JSON_STRING:
+            print_json_string(element, indent);
+            break;
+        case JSON_INTEGER:
+            print_json_integer(element, indent);
+            break;
+        case JSON_REAL:
+            print_json_real(element, indent);
+            break;
+        case JSON_TRUE:
+            print_json_true(element, indent);
+            break;
+        case JSON_FALSE:
+            print_json_false(element, indent);
+            break;
+        case JSON_NULL:
+            print_json_null(element, indent);
+            break;
         default:
-            fprintf(stderr, "unrecognized JSON type %d\n",
-                    json_typeof(element));
+            fprintf(stderr, "unrecognized JSON type %d\n", json_typeof(element));
     }
 }
 
@@ -101,8 +116,7 @@ void print_json_string(json_t *element, int indent) {
 
 void print_json_integer(json_t *element, int indent) {
     print_json_indent(indent);
-    printf("JSON Integer: \"%" JSON_INTEGER_FORMAT "\"\n",
-           json_integer_value(element));
+    printf("JSON Integer: \"%" JSON_INTEGER_FORMAT "\"\n", json_integer_value(element));
 }
 
 void print_json_real(json_t *element, int indent) {

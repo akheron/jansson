@@ -94,12 +94,10 @@ static int seed_from_urandom(uint32_t *seed) {
 #if defined(_WIN32) && defined(USE_WINDOWS_CRYPTOAPI)
 #include <wincrypt.h>
 
-typedef BOOL(WINAPI *CRYPTACQUIRECONTEXTA)(HCRYPTPROV *phProv,
-                                           LPCSTR pszContainer,
+typedef BOOL(WINAPI *CRYPTACQUIRECONTEXTA)(HCRYPTPROV *phProv, LPCSTR pszContainer,
                                            LPCSTR pszProvider, DWORD dwProvType,
                                            DWORD dwFlags);
-typedef BOOL(WINAPI *CRYPTGENRANDOM)(HCRYPTPROV hProv, DWORD dwLen,
-                                     BYTE *pbBuffer);
+typedef BOOL(WINAPI *CRYPTGENRANDOM)(HCRYPTPROV hProv, DWORD dwLen, BYTE *pbBuffer);
 typedef BOOL(WINAPI *CRYPTRELEASECONTEXT)(HCRYPTPROV hProv, DWORD dwFlags);
 
 static int seed_from_windows_cryptoapi(uint32_t *seed) {
@@ -120,8 +118,7 @@ static int seed_from_windows_cryptoapi(uint32_t *seed) {
     if (!pCryptAcquireContext)
         return 1;
 
-    pCryptGenRandom =
-        (CRYPTGENRANDOM)GetProcAddress(hAdvAPI32, "CryptGenRandom");
+    pCryptGenRandom = (CRYPTGENRANDOM)GetProcAddress(hAdvAPI32, "CryptGenRandom");
     if (!pCryptGenRandom)
         return 1;
 
@@ -196,8 +193,7 @@ static uint32_t generate_seed() {
 
 volatile uint32_t hashtable_seed = 0;
 
-#if defined(HAVE_ATOMIC_BUILTINS) &&                                           \
-    (defined(HAVE_SCHED_YIELD) || !defined(_WIN32))
+#if defined(HAVE_ATOMIC_BUILTINS) && (defined(HAVE_SCHED_YIELD) || !defined(_WIN32))
 static volatile char seed_initialized = 0;
 
 void json_object_seed(size_t seed) {
@@ -220,8 +216,7 @@ void json_object_seed(size_t seed) {
         }
     }
 }
-#elif defined(HAVE_SYNC_BUILTINS) &&                                           \
-    (defined(HAVE_SCHED_YIELD) || !defined(_WIN32))
+#elif defined(HAVE_SYNC_BUILTINS) && (defined(HAVE_SCHED_YIELD) || !defined(_WIN32))
 void json_object_seed(size_t seed) {
     uint32_t new_seed = (uint32_t)seed;
 

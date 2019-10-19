@@ -20,10 +20,9 @@ static void test_clear() {
     if (!ten)
         fail("unable to create integer");
 
-    if (json_object_set(object, "a", ten) ||
-        json_object_set(object, "b", ten) ||
-        json_object_set(object, "c", ten) ||
-        json_object_set(object, "d", ten) || json_object_set(object, "e", ten))
+    if (json_object_set(object, "a", ten) || json_object_set(object, "b", ten) ||
+        json_object_set(object, "c", ten) || json_object_set(object, "d", ten) ||
+        json_object_set(object, "e", ten))
         fail("unable to set value");
 
     if (json_object_size(object) != 5)
@@ -76,10 +75,8 @@ static void test_update() {
     if (json_object_size(object) != 5)
         fail("invalid size after update");
 
-    if (json_object_get(object, "a") != ten ||
-        json_object_get(object, "b") != ten ||
-        json_object_get(object, "c") != ten ||
-        json_object_get(object, "d") != ten ||
+    if (json_object_get(object, "a") != ten || json_object_get(object, "b") != ten ||
+        json_object_get(object, "c") != ten || json_object_get(object, "d") != ten ||
         json_object_get(object, "e") != ten)
         fail("update works incorrectly");
 
@@ -91,10 +88,8 @@ static void test_update() {
     if (json_object_size(object) != 5)
         fail("invalid size after update");
 
-    if (json_object_get(object, "a") != ten ||
-        json_object_get(object, "b") != ten ||
-        json_object_get(object, "c") != ten ||
-        json_object_get(object, "d") != ten ||
+    if (json_object_get(object, "a") != ten || json_object_get(object, "b") != ten ||
+        json_object_get(object, "c") != ten || json_object_get(object, "d") != ten ||
         json_object_get(object, "e") != ten)
         fail("update works incorrectly");
 
@@ -104,10 +99,9 @@ static void test_update() {
     if (json_object_clear(other))
         fail("clear failed");
 
-    if (json_object_set(other, "a", nine) ||
-        json_object_set(other, "b", nine) ||
-        json_object_set(other, "f", nine) ||
-        json_object_set(other, "g", nine) || json_object_set(other, "h", nine))
+    if (json_object_set(other, "a", nine) || json_object_set(other, "b", nine) ||
+        json_object_set(other, "f", nine) || json_object_set(other, "g", nine) ||
+        json_object_set(other, "h", nine))
         fail("unable to set value");
 
     if (json_object_update(object, other))
@@ -116,10 +110,8 @@ static void test_update() {
     if (json_object_size(object) != 8)
         fail("invalid size after update");
 
-    if (json_object_get(object, "a") != nine ||
-        json_object_get(object, "b") != nine ||
-        json_object_get(object, "f") != nine ||
-        json_object_get(object, "g") != nine ||
+    if (json_object_get(object, "a") != nine || json_object_get(object, "b") != nine ||
+        json_object_get(object, "f") != nine || json_object_get(object, "g") != nine ||
         json_object_get(object, "h") != nine)
         fail("update works incorrectly");
 
@@ -301,8 +293,7 @@ static void test_recursive_updates() {
     if (!json_object_get(object, "foo"))
         fail("json_object_update_recursive removed existing key");
 
-    if (json_integer_value(
-            json_object_get(json_object_get(object, "bar"), "baz")) != 3)
+    if (json_integer_value(json_object_get(json_object_get(object, "bar"), "baz")) != 3)
         fail("json_object_update_recursive failed to update nested value");
 
     barAfter = json_object_get(object, "bar");
@@ -318,14 +309,14 @@ static void test_recursive_updates() {
     /* check circular reference */
     object = json_pack("{s{s{s{si}}}}", "foo", "bar", "baz", "xxx", 2);
     other = json_pack("{s{s{si}}}", "foo", "bar", "baz", 2);
-    json_object_set(json_object_get(json_object_get(other, "foo"), "bar"),
-                    "baz", json_object_get(other, "foo"));
+    json_object_set(json_object_get(json_object_get(other, "foo"), "bar"), "baz",
+                    json_object_get(other, "foo"));
 
     if (!json_object_update_recursive(object, other))
         fail("json_object_update_recursive update a circular reference!");
 
-    json_object_set_new(json_object_get(json_object_get(other, "foo"), "bar"),
-                        "baz", json_integer(1));
+    json_object_set_new(json_object_get(json_object_get(other, "foo"), "bar"), "baz",
+                        json_integer(1));
 
     if (json_object_update_recursive(object, other))
         fail("json_object_update_recursive failed!");
@@ -347,8 +338,7 @@ static void test_circular() {
         fail("able to set self");
 
     /* create circular references */
-    if (json_object_set(object1, "a", object2) ||
-        json_object_set(object2, "a", object1))
+    if (json_object_set(object1, "a", object2) || json_object_set(object2, "a", object1))
         fail("unable to set value");
 
     /* circularity is detected when dumping */
@@ -418,8 +408,8 @@ static void test_iterators() {
     if (json_object_iter_next(object, NULL))
         fail("able to increment a NULL iterator");
 
-    if (json_object_set(object, "a", foo) ||
-        json_object_set(object, "b", bar) || json_object_set(object, "c", baz))
+    if (json_object_set(object, "a", foo) || json_object_set(object, "b", bar) ||
+        json_object_set(object, "c", baz))
         fail("unable to populate object");
 
     iter = json_object_iter(object);
@@ -518,8 +508,7 @@ static void test_misc() {
         fail("got different value than what was added");
 
     /* "a", "lp" and "px" collide in a five-bucket hashtable */
-    if (json_object_set(object, "b", string) ||
-        json_object_set(object, "lp", string) ||
+    if (json_object_set(object, "b", string) || json_object_set(object, "lp", string) ||
         json_object_set(object, "px", string))
         fail("unable to set value");
 
@@ -630,8 +619,7 @@ static void test_object_foreach() {
     object1 = json_pack("{sisisi}", "foo", 1, "bar", 2, "baz", 3);
     object2 = json_object();
 
-    json_object_foreach(object1, key, value)
-        json_object_set(object2, key, value);
+    json_object_foreach(object1, key, value) json_object_set(object2, key, value);
 
     if (!json_equal(object1, object2))
         fail("json_object_foreach failed to iterate all key-value pairs");
@@ -647,9 +635,7 @@ static void test_object_foreach_safe() {
 
     object = json_pack("{sisisi}", "foo", 1, "bar", 2, "baz", 3);
 
-    json_object_foreach_safe(object, tmp, key, value) {
-        json_object_del(object, key);
-    }
+    json_object_foreach_safe(object, tmp, key, value) { json_object_del(object, key); }
 
     if (json_object_size(object) != 0)
         fail("json_object_foreach_safe failed to iterate all key-value pairs");
@@ -762,8 +748,7 @@ static void test_bad_args(void) {
     if (json_object_iter_next(obj, NULL) != NULL)
         fail("json_object_iter_next with NULL iter returned non-NULL");
     if (json_object_iter_next(num, iter) != NULL)
-        fail(
-            "json_object_iter_next with non-object argument returned non-NULL");
+        fail("json_object_iter_next with non-object argument returned non-NULL");
 
     if (json_object_iter_key(NULL) != NULL)
         fail("json_object_iter_key with NULL iter returned non-NULL");

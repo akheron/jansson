@@ -39,9 +39,8 @@ void jsonp_error_set(json_error_t *error, int line, int column, size_t position,
     va_end(ap);
 }
 
-void jsonp_error_vset(json_error_t *error, int line, int column,
-                      size_t position, enum json_error_code code,
-                      const char *msg, va_list ap) {
+void jsonp_error_vset(json_error_t *error, int line, int column, size_t position,
+                      enum json_error_code code, const char *msg, va_list ap) {
     if (!error)
         return;
 

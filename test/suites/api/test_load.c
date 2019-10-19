@@ -29,8 +29,7 @@ static void file_not_found() {
 
     *pos = '\0';
 
-    if (strcmp(error.text, "unable to open /path/to/nonexistent/file.json") !=
-        0)
+    if (strcmp(error.text, "unable to open /path/to/nonexistent/file.json") != 0)
         fail("json_load_file returned an invalid error message");
     if (json_error_code(&error) != json_error_cannot_open_file)
         fail("json_load_file returned an invalid error code");
@@ -71,8 +70,8 @@ static void disable_eof_check() {
 
     if (json_loads(text, 0, &error))
         fail("json_loads did not detect garbage after JSON text");
-    check_error(json_error_end_of_input_expected,
-                "end of file expected near 'garbage'", "<string>", 1, 18, 18);
+    check_error(json_error_end_of_input_expected, "end of file expected near 'garbage'",
+                "<string>", 1, 18, 18);
 
     json = json_loads(text, JSON_DISABLE_EOF_CHECK, &error);
     if (!json)
@@ -127,10 +126,8 @@ static void decode_int_as_real() {
     imprecise = "9007199254740993";
     expected = 9007199254740992ll;
 
-    json = json_loads(imprecise, JSON_DECODE_INT_AS_REAL | JSON_DECODE_ANY,
-                      &error);
-    if (!json || !json_is_real(json) ||
-        expected != (json_int_t)json_real_value(json))
+    json = json_loads(imprecise, JSON_DECODE_INT_AS_REAL | JSON_DECODE_ANY, &error);
+    if (!json || !json_is_real(json) || expected != (json_int_t)json_real_value(json))
         fail("json_load decode int as real failed - expected imprecision");
     json_decref(json);
 #endif

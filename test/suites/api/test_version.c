@@ -26,8 +26,7 @@ static void test_version_cmp() {
     }
 
     if (JANSSON_MINOR_VERSION) {
-        if (jansson_version_cmp(JANSSON_MAJOR_VERSION,
-                                JANSSON_MINOR_VERSION - 1,
+        if (jansson_version_cmp(JANSSON_MAJOR_VERSION, JANSSON_MINOR_VERSION - 1,
                                 JANSSON_MICRO_VERSION) <= 0) {
             fail("jansson_version_cmp less than check failed");
         }

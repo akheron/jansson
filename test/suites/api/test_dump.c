@@ -42,8 +42,7 @@ static void encode_null() {
 
     /* Don't test json_dump_file to avoid creating a file */
 
-    if (json_dump_callback(NULL, encode_null_callback, NULL, JSON_ENCODE_ANY) !=
-        -1)
+    if (json_dump_callback(NULL, encode_null_callback, NULL, JSON_ENCODE_ANY) != -1)
         fail("json_dump_callback didn't fail for NULL");
 }
 
@@ -176,20 +175,17 @@ static void escape_slashes() {
     char *result;
 
     json = json_object();
-    json_object_set_new(json, "url",
-                        json_string("https://github.com/akheron/jansson"));
+    json_object_set_new(json, "url", json_string("https://github.com/akheron/jansson"));
 
     result = json_dumps(json, 0);
-    if (!result ||
-        strcmp(result, "{\"url\": \"https://github.com/akheron/jansson\"}"))
+    if (!result || strcmp(result, "{\"url\": \"https://github.com/akheron/jansson\"}"))
         fail("json_dumps failed to not escape slashes");
 
     free(result);
 
     result = json_dumps(json, JSON_ESCAPE_SLASH);
     if (!result ||
-        strcmp(result,
-               "{\"url\": \"https:\\/\\/github.com\\/akheron\\/jansson\"}"))
+        strcmp(result, "{\"url\": \"https:\\/\\/github.com\\/akheron\\/jansson\"}"))
         fail("json_dumps failed to escape slashes");
 
     free(result);
@@ -275,8 +271,8 @@ static void dumpfd() {
 }
 
 static void embed() {
-    static const char *plains[] = {"{\"bar\":[],\"foo\":{}}", "[[],{}]", "{}",
-                                   "[]", NULL};
+    static const char *plains[] = {"{\"bar\":[],\"foo\":{}}", "[[],{}]", "{}", "[]",
+                                   NULL};
 
     size_t i;
 
@@ -290,8 +286,8 @@ static void embed() {
         psize = strlen(plain) - 2;
         embed = calloc(1, psize);
         parse = json_loads(plain, 0, NULL);
-        esize = json_dumpb(parse, embed, psize,
-                           JSON_COMPACT | JSON_SORT_KEYS | JSON_EMBED);
+        esize =
+            json_dumpb(parse, embed, psize, JSON_COMPACT | JSON_SORT_KEYS | JSON_EMBED);
         json_decref(parse);
         if (esize != psize)
             fail("json_dumpb(JSON_EMBED) returned an invalid size");

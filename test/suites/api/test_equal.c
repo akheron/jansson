@@ -157,18 +157,17 @@ static void test_equal_object() {
 static void test_equal_complex() {
     json_t *value1, *value2, *value3;
 
-    const char *complex_json =
-        "{"
-        "    \"integer\": 1, "
-        "    \"real\": 3.141592, "
-        "    \"string\": \"foobar\", "
-        "    \"true\": true, "
-        "    \"object\": {"
-        "        \"array-in-object\": [1,true,\"foo\",{}],"
-        "        \"object-in-object\": {\"foo\": \"bar\"}"
-        "    },"
-        "    \"array\": [\"foo\", false, null, 1.234]"
-        "}";
+    const char *complex_json = "{"
+                               "    \"integer\": 1, "
+                               "    \"real\": 3.141592, "
+                               "    \"string\": \"foobar\", "
+                               "    \"true\": true, "
+                               "    \"object\": {"
+                               "        \"array-in-object\": [1,true,\"foo\",{}],"
+                               "        \"object-in-object\": {\"foo\": \"bar\"}"
+                               "    },"
+                               "    \"array\": [\"foo\", false, null, 1.234]"
+                               "}";
 
     value1 = json_loads(complex_json, 0, NULL);
     value2 = json_loads(complex_json, 0, NULL);
@@ -179,14 +178,14 @@ static void test_equal_complex() {
         fail("json_equal fails for two equal objects");
 
     json_array_set_new(
-        json_object_get(json_object_get(value2, "object"), "array-in-object"),
-        1, json_false());
+        json_object_get(json_object_get(value2, "object"), "array-in-object"), 1,
+        json_false());
     if (json_equal(value1, value2))
         fail("json_equal fails for two inequal objects");
 
     json_object_set_new(
-        json_object_get(json_object_get(value3, "object"), "object-in-object"),
-        "foo", json_string("baz"));
+        json_object_get(json_object_get(value3, "object"), "object-in-object"), "foo",
+        json_string("baz"));
     if (json_equal(value1, value3))
         fail("json_equal fails for two inequal objects");
 

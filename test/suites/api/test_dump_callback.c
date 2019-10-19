@@ -29,8 +29,7 @@ static int my_writer(const char *buffer, size_t len, void *data) {
 static void run_tests() {
     struct my_sink s;
     json_t *json;
-    const char str[] =
-        "[\"A\", {\"B\": \"C\", \"e\": false}, 1, null, \"foo\"]";
+    const char str[] = "[\"A\", {\"B\": \"C\", \"e\": false}, 1, null, \"foo\"]";
     char *dumped_to_string;
 
     json = json_loads(str, 0, NULL);

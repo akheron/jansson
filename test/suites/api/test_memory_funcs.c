@@ -11,8 +11,8 @@ static size_t malloc_used = 0;
 static void create_and_free_complex_object() {
     json_t *obj;
 
-    obj = json_pack("{s:i,s:n,s:b,s:b,s:{s:s},s:[i,i,i]}", "foo", 42, "bar",
-                    "baz", 1, "qux", 0, "alice", "bar", "baz", "bob", 9, 8, 7);
+    obj = json_pack("{s:i,s:n,s:b,s:b,s:{s:s},s:[i,i,i]}", "foo", 42, "bar", "baz", 1,
+                    "qux", 0, "alice", "bar", "baz", "bob", 9, 8, 7);
 
     json_decref(obj);
 }
@@ -48,8 +48,7 @@ static void test_simple() {
     json_get_alloc_funcs(&mfunc, &ffunc);
     create_and_free_complex_object();
 
-    if (malloc_called != 1 || free_called != 1 || mfunc != my_malloc ||
-        ffunc != my_free)
+    if (malloc_called != 1 || free_called != 1 || mfunc != my_malloc || ffunc != my_free)
         fail("Custom allocation failed");
 }
 

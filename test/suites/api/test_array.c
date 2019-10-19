@@ -387,9 +387,7 @@ static void test_array_foreach() {
     array1 = json_pack("[sisisi]", "foo", 1, "bar", 2, "baz", 3);
     array2 = json_array();
 
-    json_array_foreach(array1, index, value) {
-        json_array_append(array2, value);
-    }
+    json_array_foreach(array1, index, value) { json_array_append(array2, value); }
 
     if (!json_equal(array1, array2))
         fail("json_array_foreach failed to iterate all elements");

@@ -43,7 +43,7 @@
 #define l_islower(c) ('a' <= (c) && (c) <= 'z')
 #define l_isalpha(c) (l_isupper(c) || l_islower(c))
 #define l_isdigit(c) ('0' <= (c) && (c) <= '9')
-#define l_isxdigit(c)                                                          \
+#define l_isxdigit(c)                                                                    \
     (l_isdigit(c) || ('A' <= (c) && (c) <= 'F') || ('a' <= (c) && (c) <= 'f'))
 
 /* Read one byte from stream, convert to unsigned char, then int, and
@@ -82,8 +82,8 @@ typedef struct {
 
 /*** error reporting ***/
 
-static void error_set(json_error_t *error, const lex_t *lex,
-                      enum json_error_code code, const char *msg, ...) {
+static void error_set(json_error_t *error, const lex_t *lex, enum json_error_code code,
+                      const char *msg, ...) {
     va_list ap;
     char msg_text[JSON_ERROR_TEXT_LENGTH];
     char msg_with_context[JSON_ERROR_TEXT_LENGTH];
@@ -109,8 +109,8 @@ static void error_set(json_error_t *error, const lex_t *lex,
 
         if (saved_text && saved_text[0]) {
             if (lex->saved_text.length <= 20) {
-                snprintf(msg_with_context, JSON_ERROR_TEXT_LENGTH,
-                         "%s near '%s'", msg_text, saved_text);
+                snprintf(msg_with_context, JSON_ERROR_TEXT_LENGTH, "%s near '%s'",
+                         msg_text, saved_text);
                 msg_with_context[JSON_ERROR_TEXT_LENGTH - 1] = '\0';
                 result = msg_with_context;
             }
@@ -123,8 +123,8 @@ static void error_set(json_error_t *error, const lex_t *lex,
                 /* No context for UTF-8 decoding errors */
                 result = msg_text;
             } else {
-                snprintf(msg_with_context, JSON_ERROR_TEXT_LENGTH,
-                         "%s near end of file", msg_text);
+                snprintf(msg_with_context, JSON_ERROR_TEXT_LENGTH, "%s near end of file",
+                         msg_text);
                 msg_with_context[JSON_ERROR_TEXT_LENGTH - 1] = '\0';
                 result = msg_with_context;
             }
@@ -227,9 +227,7 @@ static int lex_get(lex_t *lex, json_error_t *error) {
     return stream_get(&lex->stream, error);
 }
 
-static void lex_save(lex_t *lex, int c) {
-    strbuffer_append_byte(&lex->saved_text, c);
-}
+static void lex_save(lex_t *lex, int c) { strbuffer_append_byte(&lex->saved_text, c); }
 
 static int lex_get_save(lex_t *lex, json_error_t *error) {
     int c = stream_get(&lex->stream, error);
@@ -320,11 +318,10 @@ static void lex_scan_string(lex_t *lex, json_error_t *error) {
             /* control character */
             lex_unget_unsave(lex, c);
             if (c == '\n')
-                error_set(error, lex, json_error_invalid_syntax,
-                          "unexpected newline");
+                error_set(error, lex, json_error_invalid_syntax, "unexpected newline");
             else
-                error_set(error, lex, json_error_invalid_syntax,
-                          "control character 0x%x", c);
+                error_set(error, lex, json_error_invalid_syntax, "control character 0x%x",
+                          c);
             goto out;
         }
 
@@ -340,12 +337,11 @@ static void lex_scan_string(lex_t *lex, json_error_t *error) {
                     }
                     c = lex_get_save(lex, error);
                 }
-            } else if (c == '"' || c == '\\' || c == '/' || c == 'b' ||
-                       c == 'f' || c == 'n' || c == 'r' || c == 't')
+            } else if (c == '"' || c == '\\' || c == '/' || c == 'b' || c == 'f' ||
+                       c == 'n' || c == 'r' || c == 't')
                 c = lex_get_save(lex, error);
             else {
-                error_set(error, lex, json_error_invalid_syntax,
-                          "invalid escape");
+                error_set(error, lex, json_error_invalid_syntax, "invalid escape");
                 goto out;
             }
         } else
@@ -397,13 +393,12 @@ static void lex_scan_string(lex_t *lex, json_error_t *error) {
 
                         if (0xDC00 <= value2 && value2 <= 0xDFFF) {
                             /* valid second surrogate */
-                            value = ((value - 0xD800) << 10) +
-                                    (value2 - 0xDC00) + 0x10000;
+                            value =
+                                ((value - 0xD800) << 10) + (value2 - 0xDC00) + 0x10000;
                         } else {
                             /* invalid second surrogate */
                             error_set(error, lex, json_error_invalid_syntax,
-                                      "invalid Unicode '\\u%04X\\u%04X'", value,
-                                      value2);
+                                      "invalid Unicode '\\u%04X\\u%04X'", value, value2);
                             goto out;
                         }
                     } else {
@@ -425,13 +420,26 @@ static void lex_scan_string(lex_t *lex, json_error_t *error) {
                 switch (*p) {
                     case '"':
                     case '\\':
-                    case '/': *t = *p; break;
-                    case 'b': *t = '\b'; break;
-                    case 'f': *t = '\f'; break;
-                    case 'n': *t = '\n'; break;
-                    case 'r': *t = '\r'; break;
-                    case 't': *t = '\t'; break;
-                    default: assert(0);
+                    case '/':
+                        *t = *p;
+                        break;
+                    case 'b':
+                        *t = '\b';
+                        break;
+                    case 'f':
+                        *t = '\f';
+                        break;
+                    case 'n':
+                        *t = '\n';
+                        break;
+                    case 'r':
+                        *t = '\r';
+                        break;
+                    case 't':
+                        *t = '\t';
+                        break;
+                    default:
+                        assert(0);
                 }
                 t++;
                 p++;
@@ -485,8 +493,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error) {
         goto out;
     }
 
-    if (!(lex->flags & JSON_DECODE_INT_AS_REAL) && c != '.' && c != 'E' &&
-        c != 'e') {
+    if (!(lex->flags & JSON_DECODE_INT_AS_REAL) && c != '.' && c != 'E' && c != 'e') {
         json_int_t intval;
 
         lex_unget_unsave(lex, c);
@@ -500,8 +507,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error) {
                 error_set(error, lex, json_error_numeric_overflow,
                           "too big negative integer");
             else
-                error_set(error, lex, json_error_numeric_overflow,
-                          "too big integer");
+                error_set(error, lex, json_error_numeric_overflow, "too big integer");
             goto out;
         }
 
@@ -543,8 +549,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error) {
     lex_unget_unsave(lex, c);
 
     if (jsonp_strtod(&lex->saved_text, &doubleval)) {
-        error_set(error, lex, json_error_numeric_overflow,
-                  "real number overflow");
+        error_set(error, lex, json_error_numeric_overflow, "real number overflow");
         goto out;
     }
 
@@ -669,8 +674,7 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error) {
         json_t *value;
 
         if (lex->token != TOKEN_STRING) {
-            error_set(error, lex, json_error_invalid_syntax,
-                      "string or '}' expected");
+            error_set(error, lex, json_error_invalid_syntax, "string or '}' expected");
             goto error;
         }
 
@@ -687,8 +691,7 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error) {
         if (flags & JSON_REJECT_DUPLICATES) {
             if (json_object_get(object, key)) {
                 jsonp_free(key);
-                error_set(error, lex, json_error_duplicate_key,
-                          "duplicate object key");
+                error_set(error, lex, json_error_duplicate_key, "duplicate object key");
                 goto error;
             }
         }
@@ -775,8 +778,7 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error) {
 
     lex->depth++;
     if (lex->depth > JSON_PARSER_MAX_DEPTH) {
-        error_set(error, lex, json_error_stack_overflow,
-                  "maximum parsing depth reached");
+        error_set(error, lex, json_error_stack_overflow, "maximum parsing depth reached");
         return NULL;
     }
 
@@ -809,23 +811,32 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error) {
             break;
         }
 
-        case TOKEN_TRUE: json = json_true(); break;
+        case TOKEN_TRUE:
+            json = json_true();
+            break;
 
-        case TOKEN_FALSE: json = json_false(); break;
+        case TOKEN_FALSE:
+            json = json_false();
+            break;
 
-        case TOKEN_NULL: json = json_null(); break;
+        case TOKEN_NULL:
+            json = json_null();
+            break;
 
-        case '{': json = parse_object(lex, flags, error); break;
+        case '{':
+            json = parse_object(lex, flags, error);
+            break;
 
-        case '[': json = parse_array(lex, flags, error); break;
+        case '[':
+            json = parse_array(lex, flags, error);
+            break;
 
         case TOKEN_INVALID:
             error_set(error, lex, json_error_invalid_syntax, "invalid token");
             return NULL;
 
         default:
-            error_set(error, lex, json_error_invalid_syntax,
-                      "unexpected token");
+            error_set(error, lex, json_error_invalid_syntax, "unexpected token");
             return NULL;
     }
 
@@ -844,8 +855,7 @@ static json_t *parse_json(lex_t *lex, size_t flags, json_error_t *error) {
     lex_scan(lex, error);
     if (!(flags & JSON_DECODE_ANY)) {
         if (lex->token != '[' && lex->token != '{') {
-            error_set(error, lex, json_error_invalid_syntax,
-                      "'[' or '{' expected");
+            error_set(error, lex, json_error_invalid_syntax, "'[' or '{' expected");
             return NULL;
         }
     }
@@ -930,8 +940,7 @@ static int buffer_get(void *data) {
     return (unsigned char)c;
 }
 
-json_t *json_loadb(const char *buffer, size_t buflen, size_t flags,
-                   json_error_t *error) {
+json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t *error) {
     lex_t lex;
     json_t *result;
     buffer_data_t stream_data;
@@ -1032,8 +1041,8 @@ json_t *json_load_file(const char *path, size_t flags, json_error_t *error) {
 
     fp = fopen(path, "rb");
     if (!fp) {
-        error_set(error, NULL, json_error_cannot_open_file,
-                  "unable to open %s: %s", path, strerror(errno));
+        error_set(error, NULL, json_error_cannot_open_file, "unable to open %s: %s", path,
+                  strerror(errno));
         return NULL;
     }
 
@@ -1069,8 +1078,8 @@ static int callback_get(void *data) {
     return (unsigned char)c;
 }
 
-json_t *json_load_callback(json_load_callback_t callback, void *arg,
-                           size_t flags, json_error_t *error) {
+json_t *json_load_callback(json_load_callback_t callback, void *arg, size_t flags,
+                           json_error_t *error) {
     lex_t lex;
     json_t *result;
 

@@ -54,13 +54,11 @@ static JSON_INLINE void list_remove(list_t *list) {
     list->next->prev = list->prev;
 }
 
-static JSON_INLINE int bucket_is_empty(hashtable_t *hashtable,
-                                       bucket_t *bucket) {
+static JSON_INLINE int bucket_is_empty(hashtable_t *hashtable, bucket_t *bucket) {
     return bucket->first == &hashtable->list && bucket->first == bucket->last;
 }
 
-static void insert_to_bucket(hashtable_t *hashtable, bucket_t *bucket,
-                             list_t *list) {
+static void insert_to_bucket(hashtable_t *hashtable, bucket_t *bucket, list_t *list) {
     if (bucket_is_empty(hashtable, bucket)) {
         list_insert(&hashtable->list, list);
         bucket->first = bucket->last = list;
@@ -94,8 +92,7 @@ static pair_t *hashtable_find_pair(hashtable_t *hashtable, bucket_t *bucket,
 }
 
 /* returns 0 on success, -1 if key was not found */
-static int hashtable_do_del(hashtable_t *hashtable, const char *key,
-                            size_t hash) {
+static int hashtable_do_del(hashtable_t *hashtable, const char *key, size_t hash) {
     pair_t *pair;
     bucket_t *bucket;
     size_t index;
@@ -156,8 +153,7 @@ static int hashtable_do_rehash(hashtable_t *hashtable) {
     hashtable->order = new_order;
 
     for (i = 0; i < hashsize(hashtable->order); i++) {
-        hashtable->buckets[i].first = hashtable->buckets[i].last =
-            &hashtable->list;
+        hashtable->buckets[i].first = hashtable->buckets[i].last = &hashtable->list;
     }
 
     list = hashtable->list.next;
@@ -178,8 +174,7 @@ int hashtable_init(hashtable_t *hashtable) {
 
     hashtable->size = 0;
     hashtable->order = INITIAL_HASHTABLE_ORDER;
-    hashtable->buckets =
-        jsonp_malloc(hashsize(hashtable->order) * sizeof(bucket_t));
+    hashtable->buckets = jsonp_malloc(hashsize(hashtable->order) * sizeof(bucket_t));
     if (!hashtable->buckets)
         return -1;
 
@@ -187,8 +182,7 @@ int hashtable_init(hashtable_t *hashtable) {
     list_init(&hashtable->ordered_list);
 
     for (i = 0; i < hashsize(hashtable->order); i++) {
-        hashtable->buckets[i].first = hashtable->buckets[i].last =
-            &hashtable->list;
+        hashtable->buckets[i].first = hashtable->buckets[i].last = &hashtable->list;
     }
 
     return 0;
@@ -272,8 +266,7 @@ void hashtable_clear(hashtable_t *hashtable) {
     hashtable_do_clear(hashtable);
 
     for (i = 0; i < hashsize(hashtable->order); i++) {
-        hashtable->buckets[i].first = hashtable->buckets[i].last =
-            &hashtable->list;
+        hashtable->buckets[i].first = hashtable->buckets[i].last = &hashtable->list;
     }
 
     list_init(&hashtable->list);

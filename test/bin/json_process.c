@@ -191,8 +191,7 @@ int use_conf(char *test_path) {
         flags |= JSON_SORT_KEYS;
 
     if (conf.precision < 0 || conf.precision > 31) {
-        fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n",
-                conf.precision);
+        fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n", conf.precision);
         fclose(infile);
         return 2;
     }
@@ -213,8 +212,8 @@ int use_conf(char *test_path) {
     fclose(infile);
 
     if (!json) {
-        sprintf(errstr, "%d %d %d\n%s\n", error.line, error.column,
-                error.position, error.text);
+        sprintf(errstr, "%d %d %d\n%s\n", error.line, error.column, error.position,
+                error.text);
 
         ret = cmpfile(errstr, test_path, "error");
         return ret;
@@ -278,8 +277,7 @@ int use_env() {
 
     precision = getenv_int("JSON_REAL_PRECISION");
     if (precision < 0 || precision > 31) {
-        fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n",
-                precision);
+        fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n", precision);
         return 2;
     }
 
@@ -320,8 +318,8 @@ int use_env() {
         json = json_loadf(stdin, 0, &error);
 
     if (!json) {
-        fprintf(stderr, "%d %d %d\n%s\n", error.line, error.column,
-                error.position, error.text);
+        fprintf(stderr, "%d %d %d\n%s\n", error.line, error.column, error.position,
+                error.text);
         return 1;
     }
 
