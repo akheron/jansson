@@ -3,9 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#ifdef __MINGW32__
-#undef __NO_ISOCEXT /* ensure stdlib.h will declare prototypes for mingw own 'strtod' replacement, called '__strtod' */
-#endif
 #include "jansson_private.h"
 #include "strbuffer.h"
 
