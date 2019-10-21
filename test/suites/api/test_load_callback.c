@@ -5,10 +5,10 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#include <jansson.h>
-#include <string.h>
-#include <stdlib.h>
 #include "util.h"
+#include <jansson.h>
+#include <stdlib.h>
+#include <string.h>
 
 struct my_source {
     const char *buf;
@@ -18,8 +18,7 @@ struct my_source {
 
 static const char my_str[] = "[\"A\", {\"B\": \"C\", \"e\": false}, 1, null, \"foo\"]";
 
-static size_t greedy_reader(void *buf, size_t buflen, void *arg)
-{
+static size_t greedy_reader(void *buf, size_t buflen, void *arg) {
     struct my_source *s = arg;
     if (buflen > s->cap - s->off)
         buflen = s->cap - s->off;
@@ -32,8 +31,7 @@ static size_t greedy_reader(void *buf, size_t buflen, void *arg)
     }
 }
 
-static void run_tests()
-{
+static void run_tests() {
     struct my_source s;
     json_t *json;
     json_error_t error;
@@ -55,21 +53,25 @@ static void run_tests()
     json = json_load_callback(greedy_reader, &s, 0, &error);
     if (json) {
         json_decref(json);
-        fail("json_load_callback should have failed on an incomplete stream, but it didn't");
+        fail("json_load_callback should have failed on an incomplete stream, "
+             "but it didn't");
     }
     if (strcmp(error.source, "<callback>") != 0) {
         fail("json_load_callback returned an invalid error source");
     }
     if (strcmp(error.text, "']' expected near end of file") != 0) {
-        fail("json_load_callback returned an invalid error message for an unclosed top-level array");
+        fail("json_load_callback returned an invalid error message for an "
+             "unclosed top-level array");
     }
 
     json = json_load_callback(NULL, NULL, 0, &error);
     if (json) {
         json_decref(json);
-        fail("json_load_callback should have failed on NULL load callback, but it didn't");
+        fail("json_load_callback should have failed on NULL load callback, but "
+             "it didn't");
     }
     if (strcmp(error.text, "wrong arguments") != 0) {
-        fail("json_load_callback returned an invalid error message for a NULL load callback");
+        fail("json_load_callback returned an invalid error message for a NULL "
+             "load callback");
     }
 }

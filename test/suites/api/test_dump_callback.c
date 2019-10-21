@@ -5,10 +5,10 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#include <jansson.h>
-#include <string.h>
-#include <stdlib.h>
 #include "util.h"
+#include <jansson.h>
+#include <stdlib.h>
+#include <string.h>
 
 struct my_sink {
     char *buf;
@@ -26,15 +26,14 @@ static int my_writer(const char *buffer, size_t len, void *data) {
     return 0;
 }
 
-static void run_tests()
-{
+static void run_tests() {
     struct my_sink s;
     json_t *json;
     const char str[] = "[\"A\", {\"B\": \"C\", \"e\": false}, 1, null, \"foo\"]";
     char *dumped_to_string;
 
     json = json_loads(str, 0, NULL);
-    if(!json) {
+    if (!json) {
         fail("json_loads failed");
     }
 
@@ -64,7 +63,8 @@ static void run_tests()
         json_decref(json);
         free(dumped_to_string);
         free(s.buf);
-        fail("json_dump_callback and json_dumps did not produce identical output");
+        fail("json_dump_callback and json_dumps did not produce identical "
+             "output");
     }
 
     s.off = 1;
@@ -72,7 +72,8 @@ static void run_tests()
         json_decref(json);
         free(dumped_to_string);
         free(s.buf);
-        fail("json_dump_callback succeeded on a short buffer when it should have failed");
+        fail("json_dump_callback succeeded on a short buffer when it should "
+             "have failed");
     }
 
     json_decref(json);
