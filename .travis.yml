@@ -1,10 +1,12 @@
 env:
+  global:
+    - CLANG_FORMAT_VERSION=9
   matrix:
     - JANSSON_BUILD_METHOD=cmake JANSSON_CMAKE_OPTIONS="-DJANSSON_TEST_WITH_VALGRIND=ON" JANSSON_EXTRA_INSTALL="valgrind"
     - JANSSON_BUILD_METHOD=autotools
     - JANSSON_BUILD_METHOD=coverage JANSSON_CMAKE_OPTIONS="-DJANSSON_COVERAGE=ON -DJANSSON_COVERALLS=ON -DCMAKE_BUILD_TYPE=Debug" JANSSON_EXTRA_INSTALL="lcov curl"
     - JANSSON_BUILD_METHOD=fuzzer
-    - JANSSON_BUILD_METHOD=lint
+    - JANSSON_BUILD_METHOD=lint CLANG_FORMAT=clang-format-9
 dist: bionic
 language: c
 compiler:
@@ -17,7 +19,7 @@ matrix:
     - compiler: clang
       env: JANSSON_BUILD_METHOD=fuzzer
     - compiler: gcc
-      env: JANSSON_BUILD_METHOD=lint
+      env: JANSSON_BUILD_METHOD=lint CLANG_FORMAT=clang-format-9
   allow_failures:
     - env: JANSSON_BUILD_METHOD=coverage JANSSON_CMAKE_OPTIONS="-DJANSSON_COVERAGE=ON -DJANSSON_COVERALLS=ON -DCMAKE_BUILD_TYPE=Debug" JANSSON_EXTRA_INSTALL="lcov curl"
 install:
@@ -29,4 +31,4 @@ script:
   - if [ "$JANSSON_BUILD_METHOD" = "cmake" ]; then mkdir build && cd build && cmake $JANSSON_CMAKE_OPTIONS .. && cmake --build . && ctest --output-on-failure; fi
   - if [ "$JANSSON_BUILD_METHOD" = "coverage" ]; then mkdir build && cd build && cmake $JANSSON_CMAKE_OPTIONS .. && cmake --build . && cmake --build . --target coveralls; fi
   - if [ "$JANSSON_BUILD_METHOD" = "fuzzer" ]; then ./test/ossfuzz/travisoss.sh; fi
-  - if [ "$JANSSON_BUILD_METHOD" = "lint" ]; then ./scripts/clang-format-check 9; fi
+  - if [ "$JANSSON_BUILD_METHOD" = "lint" ]; then ./scripts/clang-format-check; fi
