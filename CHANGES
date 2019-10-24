@@ -15,23 +15,19 @@ Released xxxx-xx-xx
 
 * Build:
 
-  - Add -Wno-format-truncation to suppress format truncation warnings (#489).
+  - Add ``-Wno-format-truncation`` to suppress format truncation warnings (#489).
 
 * Bug fixes:
 
-  - Remove `strtod` macro definition for MinGW (#498).
+  - Remove ``strtod`` macro definition for MinGW (#498).
 
   - Add infinite loop check in `json_deep_copy()` (#490).
 
-  - Add `pipe` macro definition for MinGW (#500).
+  - Add ``pipe`` macro definition for MinGW (#500).
 
-  - Enhance `JANSSON_ATTRS` macro to support earlier C standard(C89) (#501).
+  - Enhance ``JANSSON_ATTRS`` macro to support earlier C standard(C89) (#501).
 
   - Update version detection for sphinx-build (#502).
-
-* Tests:
-
-  - Add negative test case for `test_equal_complex()` (#506).
 
 * Documentation:
 
@@ -45,12 +41,6 @@ Released xxxx-xx-xx
   - Document that non-blocking file descriptor is not supported on
     `json_loadfd()` (#503).
 
-  - Format code with clang-format (#508).
-
-* Other:
-
-  - Add fuzz target for jansson to integrate jansson with OSS-Fuzz (#480,
-    #484, #485, #486, #487).
 
 Version 2.12
 ============
