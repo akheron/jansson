@@ -143,7 +143,7 @@ for the project, run::
     cmake -LH ..
 
 Windows (MinGW)
-^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 If you prefer using MinGW on Windows, make sure MinGW installed and ``{MinGW}/bin`` has been added to  ``PATH``, then do the following commands:
 
 .. parsed-literal::
