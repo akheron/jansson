@@ -1,4 +1,49 @@
+Version 2.13
+============
+
+Released xxxx-xx-xx
+
+* New Features:
+
+  - Add `jansson_version_str()` and `jansson_version_cmp()` for runtime
+    version checking (#465).
+
+  - Add `json_object_update_new()`, `json_object_update_existing_new()`
+    and `json_object_update_missing_new()` functions (#499).
+
+  - Add `json_object_update_recursive()` (#505).
+
+* Build:
+
+  - Add ``-Wno-format-truncation`` to suppress format truncation warnings (#489).
+
+* Bug fixes:
+
+  - Remove ``strtod`` macro definition for MinGW (#498).
+
+  - Add infinite loop check in `json_deep_copy()` (#490).
+
+  - Add ``pipe`` macro definition for MinGW (#500).
+
+  - Enhance ``JANSSON_ATTRS`` macro to support earlier C standard(C89) (#501).
+
+  - Update version detection for sphinx-build (#502).
+
+* Documentation:
+
+  - Fix typos (#483, #494).
+
+  - Document that call the custom free function to free the return value 
+    of `json_dumps()` if you have a custom malloc/free (#490).
+
+  - Add vcpkg installation instructions (#496).
+
+  - Document that non-blocking file descriptor is not supported on
+    `json_loadfd()` (#503).
+
+
 Version 2.12
+============
 
 Released 2018-11-26
 
