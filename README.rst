@@ -10,6 +10,10 @@ Jansson README
 .. image:: https://coveralls.io/repos/akheron/jansson/badge.png?branch=master
   :target: https://coveralls.io/r/akheron/jansson?branch=master
 
+
+.. image:: https://oss-fuzz-build-logs.storage.googleapis.com/badges/jansson.svg
+  :target: https://oss-fuzz-build-logs.storage.googleapis.com/index.html#jansson
+
 Jansson_ is a C library for encoding, decoding and manipulating JSON
 data. Its main features and design principles are:
 
