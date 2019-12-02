@@ -868,6 +868,45 @@ static json_t *json_integer_copy(const json_t *integer) {
     return json_integer(json_integer_value(integer));
 }
 
+/*** uinteger ***/
+
+json_t *json_uinteger(json_uint_t value) {
+    json_uinteger_t *uinteger = jsonp_malloc(sizeof(json_uinteger_t));
+    if (!uinteger)
+        return NULL;
+    json_init(&uinteger->json, JSON_UINTEGER);
+
+    uinteger->value = value;
+    return &uinteger->json;
+}
+
+json_uint_t json_uinteger_value(const json_t *json) {
+    if (!json_is_uinteger(json))
+        return 0;
+
+    return json_to_uinteger(json)->value;
+}
+
+int json_uinteger_set(json_t *json, json_uint_t value) {
+    if (!json_is_uinteger(json))
+        return -1;
+
+    json_to_uinteger(json)->value = value;
+
+    return 0;
+}
+
+static void json_delete_uinteger(json_uinteger_t *uinteger) { jsonp_free(uinteger); }
+
+static int json_uinteger_equal(const json_t *uinteger1, const json_t *uinteger2) {
+    return json_uinteger_value(uinteger1) == json_uinteger_value(uinteger2);
+}
+
+static json_t *json_uinteger_copy(const json_t *uinteger) {
+    return json_uinteger(json_uinteger_value(uinteger));
+}
+
+
 /*** real ***/
 
 json_t *json_real(double value) {
@@ -958,6 +997,9 @@ void json_delete(json_t *json) {
         case JSON_INTEGER:
             json_delete_integer(json_to_integer(json));
             break;
+        case JSON_UINTEGER:
+            json_delete_uinteger(json_to_uinteger(json));
+            break;
         case JSON_REAL:
             json_delete_real(json_to_real(json));
             break;
@@ -990,6 +1032,8 @@ int json_equal(const json_t *json1, const json_t *json2) {
             return json_string_equal(json1, json2);
         case JSON_INTEGER:
             return json_integer_equal(json1, json2);
+        case JSON_UINTEGER:
+            return json_uinteger_equal(json1, json2);
         case JSON_REAL:
             return json_real_equal(json1, json2);
         default:
@@ -1012,6 +1056,8 @@ json_t *json_copy(json_t *json) {
             return json_string_copy(json);
         case JSON_INTEGER:
             return json_integer_copy(json);
+        case JSON_UINTEGER:
+            return json_uinteger_copy(json);
         case JSON_REAL:
             return json_real_copy(json);
         case JSON_TRUE:
