@@ -25,7 +25,7 @@ static int encode_null_callback(const char *buffer, size_t size, void *data) {
     return 0;
 }
 
-static void encode_null() {
+static void encode_null(void) {
     if (json_dumps(NULL, JSON_ENCODE_ANY) != NULL)
         fail("json_dumps didn't fail for NULL");
 
@@ -46,7 +46,7 @@ static void encode_null() {
         fail("json_dump_callback didn't fail for NULL");
 }
 
-static void encode_twice() {
+static void encode_twice(void) {
     /* Encode an empty object/array, add an item, encode again */
 
     json_t *json;
@@ -81,7 +81,7 @@ static void encode_twice() {
     json_decref(json);
 }
 
-static void circular_references() {
+static void circular_references(void) {
     /* Construct a JSON object/array with a circular reference:
 
        object: {"a": {"b": {"c": <circular reference to $.a>}}}
@@ -130,7 +130,7 @@ static void circular_references() {
     json_decref(json);
 }
 
-static void encode_other_than_array_or_object() {
+static void encode_other_than_array_or_object(void) {
     /* Encoding anything other than array or object should only
      * succeed if the JSON_ENCODE_ANY flag is used */
 
@@ -168,7 +168,7 @@ static void encode_other_than_array_or_object() {
     json_decref(json);
 }
 
-static void escape_slashes() {
+static void escape_slashes(void) {
     /* Test dump escaping slashes */
 
     json_t *json;
@@ -192,7 +192,7 @@ static void escape_slashes() {
     json_decref(json);
 }
 
-static void encode_nul_byte() {
+static void encode_nul_byte(void) {
     json_t *json;
     char *result;
 
@@ -205,7 +205,7 @@ static void encode_nul_byte() {
     json_decref(json);
 }
 
-static void dump_file() {
+static void dump_file(void) {
     json_t *json;
     int result;
 
@@ -222,7 +222,7 @@ static void dump_file() {
     remove("json_dump_file.json");
 }
 
-static void dumpb() {
+static void dumpb(void) {
     char buf[2];
     json_t *obj;
     size_t size;
@@ -243,7 +243,7 @@ static void dumpb() {
     json_decref(obj);
 }
 
-static void dumpfd() {
+static void dumpfd(void) {
 #ifdef HAVE_UNISTD_H
     int fds[2] = {-1, -1};
     json_t *a, *b;
@@ -270,7 +270,7 @@ static void dumpfd() {
 #endif
 }
 
-static void embed() {
+static void embed(void) {
     static const char *plains[] = {"{\"bar\":[],\"foo\":{}}", "[[],{}]", "{}", "[]",
                                    NULL};
 
@@ -297,7 +297,7 @@ static void embed() {
     }
 }
 
-static void run_tests() {
+static void run_tests(void) {
     encode_null();
     encode_twice();
     circular_references();

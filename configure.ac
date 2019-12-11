@@ -158,7 +158,14 @@ if test x$GCC = xyes; then
       [AC_MSG_RESULT(no)
       wnoformat_truncation=""])
 
-    AM_CFLAGS="-Wall -Wextra -Wdeclaration-after-statement -Wshadow ${wnoformat_truncation}"
+    AC_MSG_CHECKING(for -Wstrict-prototypes)
+    wstrict_prototypes="-Wstrict-prototypes"
+    AS_IF([${CC} -Wstrict-prototypes -Werror -S -o /dev/null -xc /dev/null > /dev/null 2>&1],
+      [AC_MSG_RESULT(yes)],
+      [AC_MSG_RESULT(no)
+      wstrict_prototypes=""])
+
+    AM_CFLAGS="-pedantic -Wall -Wextra -Wdeclaration-after-statement -Wshadow ${wnoformat_truncation} ${wstrict_prototypes}"
 fi
 AC_SUBST([AM_CFLAGS])
 

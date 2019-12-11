@@ -80,9 +80,9 @@
 #define check_error(code_, text_, source_, line_, column_, position_)                    \
     check_errors(code_, &text_, 1, source_, line_, column_, position_)
 
-static void run_tests();
+static void run_tests(void);
 
-int main() {
+int main(void) {
 #ifdef HAVE_SETLOCALE
     setlocale(LC_ALL, "");
 #endif

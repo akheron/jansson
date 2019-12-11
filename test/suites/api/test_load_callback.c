@@ -31,7 +31,7 @@ static size_t greedy_reader(void *buf, size_t buflen, void *arg) {
     }
 }
 
-static void run_tests() {
+static void run_tests(void) {
     struct my_source s;
     json_t *json;
     json_error_t error;

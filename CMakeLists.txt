@@ -104,7 +104,12 @@ include (CheckTypeSize)
 include (CheckCCompilerFlag)
 check_c_compiler_flag(-Wno-format-truncation HAS_NO_FORMAT_TRUNCATION)
 if (HAS_NO_FORMAT_TRUNCATION)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation")
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation")
+endif()
+
+check_c_compiler_flag(-Wstrict-prototypes HAS_STRICT_PROTOTYPES)
+if (HAS_STRICT_PROTOTYPES)
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes")
 endif()
 
 if (MSVC)
@@ -496,7 +501,7 @@ if (NOT JANSSON_WITHOUT_TESTS)
    # Test suites.
    #
    if (CMAKE_COMPILER_IS_GNUCC)
-      add_definitions(-Wall -Wextra -Wdeclaration-after-statement)
+      add_definitions(-pedantic -Wall -Wextra -Wdeclaration-after-statement)
    endif ()
 
    set(api_tests
