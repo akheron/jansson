@@ -9,7 +9,7 @@
 #include <jansson.h>
 #include <string.h>
 
-static void file_not_found() {
+static void file_not_found(void) {
     json_t *json;
     json_error_t error;
     char *pos;
@@ -35,7 +35,7 @@ static void file_not_found() {
         fail("json_load_file returned an invalid error code");
 }
 
-static void very_long_file_name() {
+static void very_long_file_name(void) {
     json_t *json;
     json_error_t error;
 
@@ -53,7 +53,7 @@ static void very_long_file_name() {
         fail("error code was set incorrectly");
 }
 
-static void reject_duplicates() {
+static void reject_duplicates(void) {
     json_error_t error;
 
     if (json_loads("{\"foo\": 1, \"foo\": 2}", JSON_REJECT_DUPLICATES, &error))
@@ -62,7 +62,7 @@ static void reject_duplicates() {
                 "<string>", 1, 16, 16);
 }
 
-static void disable_eof_check() {
+static void disable_eof_check(void) {
     json_error_t error;
     json_t *json;
 
@@ -80,7 +80,7 @@ static void disable_eof_check() {
     json_decref(json);
 }
 
-static void decode_any() {
+static void decode_any(void) {
     json_t *json;
     json_error_t error;
 
@@ -105,7 +105,7 @@ static void decode_any() {
     json_decref(json);
 }
 
-static void decode_int_as_real() {
+static void decode_int_as_real(void) {
     json_t *json;
     json_error_t error;
 
@@ -145,7 +145,7 @@ static void decode_int_as_real() {
     json_decref(json);
 }
 
-static void allow_nul() {
+static void allow_nul(void) {
     const char *text = "\"nul byte \\u0000 in string\"";
     const char *expected = "nul byte \0 in string";
     size_t len = 20;
@@ -164,7 +164,7 @@ static void allow_nul() {
     json_decref(json);
 }
 
-static void load_wrong_args() {
+static void load_wrong_args(void) {
     json_t *json;
     json_error_t error;
 
@@ -189,7 +189,7 @@ static void load_wrong_args() {
         fail("json_load_file should return NULL if the first argument is NULL");
 }
 
-static void position() {
+static void position(void) {
     json_t *json;
     size_t flags = JSON_DISABLE_EOF_CHECK;
     json_error_t error;
@@ -205,7 +205,7 @@ static void position() {
     json_decref(json);
 }
 
-static void error_code() {
+static void error_code(void) {
     json_error_t error;
     json_t *json = json_loads("[123] garbage", 0, &error);
     if (json != NULL)
@@ -224,7 +224,7 @@ static void error_code() {
         fail("json_loads returned incorrect error code");
 }
 
-static void run_tests() {
+static void run_tests(void) {
     file_not_found();
     very_long_file_name();
     reject_duplicates();

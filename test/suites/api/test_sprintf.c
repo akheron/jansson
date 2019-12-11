@@ -2,7 +2,7 @@
 #include <jansson.h>
 #include <string.h>
 
-static void test_sprintf() {
+static void test_sprintf(void) {
     json_t *s = json_sprintf("foo bar %d", 42);
     if (!s)
         fail("json_sprintf returned NULL");
@@ -26,4 +26,4 @@ static void test_sprintf() {
         fail("json_sprintf unexpected success with invalid UTF");
 }
 
-static void run_tests() { test_sprintf(); }
+static void run_tests(void) { test_sprintf(); }

@@ -337,7 +337,7 @@ static void test_extend(void) {
     json_decref(array2);
 }
 
-static void test_circular() {
+static void test_circular(void) {
     json_t *array1, *array2;
 
     /* the simple cases are checked */
@@ -380,7 +380,7 @@ static void test_circular() {
     json_decref(array1);
 }
 
-static void test_array_foreach() {
+static void test_array_foreach(void) {
     size_t index;
     json_t *array1, *array2, *value;
 
@@ -472,7 +472,7 @@ static void test_bad_args(void) {
     json_decref(arr);
 }
 
-static void run_tests() {
+static void run_tests(void) {
     test_misc();
     test_insert();
     test_remove();

@@ -26,7 +26,7 @@
 #pragma warning(push)
 #pragma warning(disable : 4756)
 #endif
-static void test_inifity() {
+static void test_inifity(void) {
     json_error_t error;
 
     if (json_pack_ex(&error, 0, "f", INFINITY))
@@ -50,7 +50,7 @@ static void test_inifity() {
 }
 #endif // INFINITY
 
-static void run_tests() {
+static void run_tests(void) {
     json_t *value;
     int i;
     char buffer[4] = {'t', 'e', 's', 't'};

@@ -8,7 +8,7 @@ static int free_called = 0;
 static size_t malloc_used = 0;
 
 /* helpers */
-static void create_and_free_complex_object() {
+static void create_and_free_complex_object(void) {
     json_t *obj;
 
     obj = json_pack("{s:i,s:n,s:b,s:b,s:{s:s},s:[i,i,i]}", "foo", 42, "bar", "baz", 1,
@@ -17,7 +17,7 @@ static void create_and_free_complex_object() {
     json_decref(obj);
 }
 
-static void create_and_free_object_with_oom() {
+static void create_and_free_object_with_oom(void) {
     int i;
     char key[4];
     json_t *obj = json_object();
@@ -40,7 +40,7 @@ static void my_free(void *ptr) {
     free(ptr);
 }
 
-static void test_simple() {
+static void test_simple(void) {
     json_malloc_t mfunc = NULL;
     json_free_t ffunc = NULL;
 
@@ -65,7 +65,7 @@ static void oom_free(void *ptr) {
     free(ptr);
 }
 
-static void test_oom() {
+static void test_oom(void) {
     free_called = 0;
     json_set_alloc_funcs(oom_malloc, oom_free);
     create_and_free_object_with_oom();
@@ -107,7 +107,7 @@ static void test_bad_args(void) {
     json_get_alloc_funcs(NULL, NULL);
 }
 
-static void run_tests() {
+static void run_tests(void) {
     test_simple();
     test_secure_funcs();
     test_oom();

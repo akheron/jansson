@@ -38,7 +38,7 @@ void chaos_free(void *obj) { free(obj); }
 #define chaos_loop_new_value(json, initcall)                                             \
     chaos_loop(!json, json = initcall;, json_decref(json); json = NULL;)
 
-int test_unpack() {
+int test_unpack(void) {
     int ret = -1;
     int v1;
     int v2;
@@ -83,7 +83,7 @@ int dump_chaos_callback(const char *buffer, size_t size, void *data) {
     return 0;
 }
 
-static void test_chaos() {
+static void test_chaos(void) {
     json_malloc_t orig_malloc;
     json_free_t orig_free;
     json_t *json = NULL;
@@ -165,4 +165,4 @@ static void test_chaos() {
     json_decref(dumpobj);
 }
 
-static void run_tests() { test_chaos(); }
+static void run_tests(void) { test_chaos(); }

@@ -46,7 +46,7 @@ static JSON_INLINE void json_init(json_t *json, json_type type) {
 
 int jsonp_loop_check(hashtable_t *parents, const json_t *json, char *key, size_t key_size,
                      size_t *key_len_out) {
-    size_t key_len = snprintf(key, key_size, "%p", json);
+    size_t key_len = snprintf(key, key_size, "%p", (void *)json);
 
     if (key_len_out)
         *key_len_out = key_len;
