@@ -648,12 +648,28 @@ allowed in object keys.
    Get a value corresponding to *key* from *object*. Returns *NULL* if
    *key* is not found and on error.
 
+.. function:: json_t *json_object_getn(const json_t *object, const char *key, size_t key_len)
+
+   .. refcounting:: borrow
+
+   Like :func:`json_object_get`, but give the fixed-length *key* with length *key_len*.
+   See :ref:`fixed_length_keys` for details.
+
+   .. versionadded:: 2.14
+
 .. function:: int json_object_set(json_t *object, const char *key, json_t *value)
 
    Set the value of *key* to *value* in *object*. *key* must be a
    valid null terminated UTF-8 encoded Unicode string. If there
    already is a value for *key*, it is replaced by the new value.
    Returns 0 on success and -1 on error.
+
+.. function:: int json_object_setn(json_t *object, const char *key, size_t key_len, json_t *value)
+
+   Like :func:`json_object_set`, but give the fixed-length *key* with length *key_len*.
+   See :ref:`fixed_length_keys` for details.
+
+   .. versionadded:: 2.14
 
 .. function:: int json_object_set_nocheck(json_t *object, const char *key, json_t *value)
 
@@ -662,11 +678,25 @@ allowed in object keys.
    really is the case (e.g. you have already checked it by other
    means).
 
+.. function:: int json_object_setn_nocheck(json_t *object, const char *key, size_t key_len, json_t *value)
+
+   Like :func:`json_object_set_nocheck`, but give the fixed-length *key* with length *key_len*.
+   See :ref:`fixed_length_keys` for details.
+
+   .. versionadded:: 2.14
+
 .. function:: int json_object_set_new(json_t *object, const char *key, json_t *value)
 
    Like :func:`json_object_set()` but steals the reference to
    *value*. This is useful when *value* is newly created and not used
    after the call.
+
+.. function:: int json_object_setn_new(json_t *object, const char *key, size_t key_len, json_t *value)
+
+   Like :func:`json_object_set_new`, but give the fixed-length *key* with length *key_len*.
+   See :ref:`fixed_length_keys` for details.
+
+   .. versionadded:: 2.14
 
 .. function:: int json_object_set_new_nocheck(json_t *object, const char *key, json_t *value)
 
@@ -675,11 +705,25 @@ allowed in object keys.
    really is the case (e.g. you have already checked it by other
    means).
 
+.. function:: int json_object_setn_new_nocheck(json_t *object, const char *key, size_t key_len, json_t *value)
+
+   Like :func:`json_object_set_new_nocheck`, but give the fixed-length *key* with length *key_len*.
+   See :ref:`fixed_length_keys` for details.
+
+   .. versionadded:: 2.14
+
 .. function:: int json_object_del(json_t *object, const char *key)
 
    Delete *key* from *object* if it exists. Returns 0 on success, or
    -1 if *key* was not found. The reference count of the removed value
    is decremented.
+
+.. function:: int json_object_deln(json_t *object, const char *key, size_t key_len)
+
+   Like :func:`json_object_del`, but give the fixed-length *key* with length *key_len*.
+   See :ref:`fixed_length_keys` for details.
+
+   .. versionadded:: 2.14
 
 .. function:: int json_object_clear(json_t *object)
 
@@ -750,7 +794,7 @@ allowed in object keys.
    The items are returned in the order they were inserted to the
    object.
 
-   **Note:** It's not safe to call ``json_object_del(object, key)``
+   **Note:** It's not safe to call ``json_object_del(object, key)`` or ``json_object_deln(object, key, key_len)``
    during iteration. If you need to, use
    :func:`json_object_foreach_safe` instead.
 
@@ -767,11 +811,39 @@ allowed in object keys.
 .. function:: void json_object_foreach_safe(object, tmp, key, value)
 
    Like :func:`json_object_foreach()`, but it's safe to call
-   ``json_object_del(object, key)`` during iteration. You need to pass
-   an extra ``void *`` parameter ``tmp`` that is used for temporary storage.
+   ``json_object_del(object, key)`` or ``json_object_deln(object, key, key_len)`` during iteration.
+   You need to pass an extra ``void *`` parameter ``tmp`` that is used for temporary storage.
 
    .. versionadded:: 2.8
 
+.. function:: void json_object_keylen_foreach(object, key, key_len, value)
+
+   Like :c:func:`json_object_foreach`, but in *key_len* stored length of the *key*.
+   Example::
+
+       /* obj is a JSON object */
+       const char *key;
+       json_t *value;
+       size_t len;
+
+       json_object_keylen_foreach(obj, key, len, value) {
+            printf("got key %s with length %zu\n", key, len);
+       }
+
+   **Note:** It's not safe to call ``json_object_deln(object, key, key_len)``
+   during iteration. If you need to, use
+   :func:`json_object_keylen_foreach_safe` instead.
+
+   .. versionadded:: 2.14
+
+
+.. function:: void json_object_keylen_foreach_safe(object, tmp, key, key_len, value)
+
+   Like :func:`json_object_keylen_foreach()`, but it's safe to call
+   ``json_object_deln(object, key, key_len)`` during iteration.
+   You need to pass an extra ``void *`` parameter ``tmp`` that is used for temporary storage.
+
+   .. versionadded:: 2.14
 
 The following functions can be used to iterate through all key-value
 pairs in an object. The items are returned in the order they were
@@ -799,6 +871,12 @@ inserted to the object.
 .. function:: const char *json_object_iter_key(void *iter)
 
    Extract the associated key from *iter*.
+
+.. function:: size_t json_object_iter_key_len(void *iter)
+
+   Extract the associated key length from *iter*.
+
+   .. versionadded:: 2.14
 
 .. function:: json_t *json_object_iter_value(void *iter)
 
@@ -1909,3 +1987,79 @@ memory, see
 http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO/protect-secrets.html.
 The page also explains the :func:`guaranteed_memset()` function used
 in the example and gives a sample implementation for it.
+
+.. _fixed_length_keys:
+
+Fixed-Length keys
+=================
+
+The Jansson API allows work with fixed-length keys. This can be useful in the following cases:
+
+* The key is contained inside a buffer and is not null-terminated. In this case creating a new temporary buffer is not needed.
+* The key contains U+0000 inside it.
+
+List of API for fixed-length keys:
+
+* :c:func:`json_object_getn`
+* :c:func:`json_object_setn`
+* :c:func:`json_object_setn_nocheck`
+* :c:func:`json_object_setn_new`
+* :c:func:`json_object_setn_new_nocheck`
+* :c:func:`json_object_deln`
+* :c:func:`json_object_iter_key_len`
+* :c:func:`json_object_keylen_foreach`
+* :c:func:`json_object_keylen_foreach_safe`
+
+**Examples:**
+
+Try to write a new function to get :c:struct:`json_t` by path separated by ``.``
+
+This requires:
+
+* string iterator (no need to modify the input for better performance)
+* API for working with fixed-size keys
+
+The iterator::
+
+    struct string {
+        const char *string;
+        size_t length;
+    };
+
+    size_t string_try_next(struct string *str, const char *delimiter) {
+        str->string += strspn(str->string, delimiter);
+        str->length = strcspn(str->string, delimiter);
+        return str->length;
+    }
+
+    #define string_foreach(_string, _delimiter) \
+            for (; string_try_next(&(_string), _delimiter); (_string).string += (_string).length)
+
+
+The function::
+
+    json_t *json_object_get_by_path(json_t *object, const char *path) {
+        struct string str;
+        json_t *out = object;
+
+        str.string = path;
+
+        string_foreach(str, ".") {
+            out = json_object_getn(out, str.string, str.length);
+            if (out == NULL)
+                return NULL;
+        }
+
+        return out;
+    }
+
+And usage::
+
+    int main(void) {
+        json_t *obj = json_pack("{s:{s:{s:b}}}", "a", "b", "c", 1);
+
+        json_t *c = json_object_get_by_path(obj, "a.b.c");
+        assert(json_is_true(c));
+
+        json_decref(obj);
+    }

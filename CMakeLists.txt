@@ -513,6 +513,7 @@ if (NOT JANSSON_WITHOUT_TESTS)
          test_dump
          test_dump_callback
          test_equal
+         test_fixed_size
          test_load
          test_load_callback
          test_loadb

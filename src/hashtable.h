@@ -162,6 +162,13 @@ void *hashtable_iter_next(hashtable_t *hashtable, void *iter);
 void *hashtable_iter_key(void *iter);
 
 /**
+ * hashtable_iter_key_len - Retrieve the key length pointed by an iterator
+ *
+ * @iter: The iterator
+ */
+size_t hashtable_iter_key_len(void *iter);
+
+/**
  * hashtable_iter_value - Retrieve the value pointed by an iterator
  *
  * @iter: The iterator

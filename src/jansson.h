@@ -188,9 +188,15 @@ void json_object_seed(size_t seed);
 size_t json_object_size(const json_t *object);
 json_t *json_object_get(const json_t *object, const char *key)
     JANSSON_ATTRS((warn_unused_result));
+json_t *json_object_getn(const json_t *object, const char *key, size_t key_len)
+    JANSSON_ATTRS((warn_unused_result));
 int json_object_set_new(json_t *object, const char *key, json_t *value);
+int json_object_setn_new(json_t *object, const char *key, size_t key_len, json_t *value);
 int json_object_set_new_nocheck(json_t *object, const char *key, json_t *value);
+int json_object_setn_new_nocheck(json_t *object, const char *key, size_t key_len,
+                                 json_t *value);
 int json_object_del(json_t *object, const char *key);
+int json_object_deln(json_t *object, const char *key, size_t key_len);
 int json_object_clear(json_t *object);
 int json_object_update(json_t *object, json_t *other);
 int json_object_update_existing(json_t *object, json_t *other);
@@ -201,6 +207,7 @@ void *json_object_iter_at(json_t *object, const char *key);
 void *json_object_key_to_iter(const char *key);
 void *json_object_iter_next(json_t *object, void *iter);
 const char *json_object_iter_key(void *iter);
+size_t json_object_iter_key_len(void *iter);
 json_t *json_object_iter_value(void *iter);
 int json_object_iter_set_new(json_t *object, void *iter, json_t *value);
 
@@ -210,11 +217,27 @@ int json_object_iter_set_new(json_t *object, void *iter, json_t *value);
          key = json_object_iter_key(                                                     \
              json_object_iter_next(object, json_object_key_to_iter(key))))
 
+#define json_object_keylen_foreach(object, key, key_len, value)                          \
+    for (key = json_object_iter_key(json_object_iter(object)),                           \
+        key_len = json_object_iter_key_len(json_object_key_to_iter(key));                \
+         key && (value = json_object_iter_value(json_object_key_to_iter(key)));          \
+         key = json_object_iter_key(                                                     \
+             json_object_iter_next(object, json_object_key_to_iter(key))),               \
+        key_len = json_object_iter_key_len(json_object_key_to_iter(key)))
+
 #define json_object_foreach_safe(object, n, key, value)                                  \
     for (key = json_object_iter_key(json_object_iter(object)),                           \
         n = json_object_iter_next(object, json_object_key_to_iter(key));                 \
          key && (value = json_object_iter_value(json_object_key_to_iter(key)));          \
          key = json_object_iter_key(n),                                                  \
+        n = json_object_iter_next(object, json_object_key_to_iter(key)))
+
+#define json_object_keylen_foreach_safe(object, n, key, key_len, value)                  \
+    for (key = json_object_iter_key(json_object_iter(object)),                           \
+        n = json_object_iter_next(object, json_object_key_to_iter(key)),                 \
+        key_len = json_object_iter_key_len(json_object_key_to_iter(key));                \
+         key && (value = json_object_iter_value(json_object_key_to_iter(key)));          \
+         key = json_object_iter_key(n), key_len = json_object_iter_key_len(n),           \
         n = json_object_iter_next(object, json_object_key_to_iter(key)))
 
 #define json_array_foreach(array, index, value)                                          \
@@ -226,9 +249,19 @@ static JSON_INLINE int json_object_set(json_t *object, const char *key, json_t *
     return json_object_set_new(object, key, json_incref(value));
 }
 
+static JSON_INLINE int json_object_setn(json_t *object, const char *key, size_t key_len,
+                                        json_t *value) {
+    return json_object_setn_new(object, key, key_len, json_incref(value));
+}
+
 static JSON_INLINE int json_object_set_nocheck(json_t *object, const char *key,
                                                json_t *value) {
     return json_object_set_new_nocheck(object, key, json_incref(value));
+}
+
+static JSON_INLINE int json_object_setn_nocheck(json_t *object, const char *key,
+                                                size_t key_len, json_t *value) {
+    return json_object_setn_new_nocheck(object, key, key_len, json_incref(value));
 }
 
 static JSON_INLINE int json_object_iter_set(json_t *object, void *iter, json_t *value) {

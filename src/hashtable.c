@@ -322,6 +322,11 @@ void *hashtable_iter_key(void *iter) {
     return pair->key;
 }
 
+size_t hashtable_iter_key_len(void *iter) {
+    pair_t *pair = ordered_list_to_pair((list_t *)iter);
+    return pair->key_len;
+}
+
 void *hashtable_iter_value(void *iter) {
     pair_t *pair = ordered_list_to_pair((list_t *)iter);
     return pair->value;
