@@ -263,7 +263,7 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
             if (!embed && dump("[", 1, data))
                 return -1;
             if (n == 0) {
-                hashtable_del(parents, key);
+                hashtable_del(parents, key, strlen(key));
                 return embed ? 0 : dump("]", 1, data);
             }
             if (dump_indent(flags, depth + 1, 0, dump, data))
@@ -284,7 +284,7 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
                 }
             }
 
-            hashtable_del(parents, key);
+            hashtable_del(parents, key, strlen(key));
             return embed ? 0 : dump("]", 1, data);
         }
 
@@ -311,7 +311,7 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
             if (!embed && dump("{", 1, data))
                 return -1;
             if (!iter) {
-                hashtable_del(parents, loop_key);
+                hashtable_del(parents, loop_key, strlen(loop_key));
                 return embed ? 0 : dump("}", 1, data);
             }
             if (dump_indent(flags, depth + 1, 0, dump, data))
@@ -392,7 +392,7 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
                 }
             }
 
-            hashtable_del(parents, loop_key);
+            hashtable_del(parents, loop_key, strlen(loop_key));
             return embed ? 0 : dump("}", 1, data);
         }
 

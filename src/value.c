@@ -46,11 +46,12 @@ static JSON_INLINE void json_init(json_t *json, json_type type) {
 
 int jsonp_loop_check(hashtable_t *parents, const json_t *json, char *key,
                      size_t key_size) {
-    snprintf(key, key_size, "%p", json);
-    if (hashtable_get(parents, key))
+    size_t key_len = snprintf(key, key_size, "%p", json);
+
+    if (hashtable_get(parents, key, key_len))
         return -1;
 
-    return hashtable_set(parents, key, json_null());
+    return hashtable_set(parents, key, key_len, json_null());
 }
 
 /*** object ***/
@@ -99,7 +100,7 @@ json_t *json_object_get(const json_t *json, const char *key) {
         return NULL;
 
     object = json_to_object(json);
-    return hashtable_get(&object->hashtable, key);
+    return hashtable_get(&object->hashtable, key, strlen(key));
 }
 
 int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value) {
@@ -114,7 +115,7 @@ int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value) {
     }
     object = json_to_object(json);
 
-    if (hashtable_set(&object->hashtable, key, value)) {
+    if (hashtable_set(&object->hashtable, key, strlen(key), value)) {
         json_decref(value);
         return -1;
     }
@@ -138,7 +139,7 @@ int json_object_del(json_t *json, const char *key) {
         return -1;
 
     object = json_to_object(json);
-    return hashtable_del(&object->hashtable, key);
+    return hashtable_del(&object->hashtable, key, strlen(key));
 }
 
 int json_object_clear(json_t *json) {
@@ -226,7 +227,7 @@ int do_object_update_recursive(json_t *object, json_t *other, hashtable_t *paren
         }
     }
 
-    hashtable_del(parents, loop_key);
+    hashtable_del(parents, loop_key, strlen(loop_key));
 
     return res;
 }
@@ -260,7 +261,7 @@ void *json_object_iter_at(json_t *json, const char *key) {
         return NULL;
 
     object = json_to_object(json);
-    return hashtable_iter_at(&object->hashtable, key);
+    return hashtable_iter_at(&object->hashtable, key, strlen(key));
 }
 
 void *json_object_iter_next(json_t *json, void *iter) {
@@ -366,7 +367,7 @@ static json_t *json_object_deep_copy(const json_t *object, hashtable_t *parents)
     }
 
 out:
-    hashtable_del(parents, loop_key);
+    hashtable_del(parents, loop_key, strlen(loop_key));
 
     return result;
 }
@@ -651,7 +652,7 @@ static json_t *json_array_deep_copy(const json_t *array, hashtable_t *parents) {
     }
 
 out:
-    hashtable_del(parents, loop_key);
+    hashtable_del(parents, loop_key, strlen(loop_key));
 
     return result;
 }

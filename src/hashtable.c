@@ -35,7 +35,7 @@ extern volatile uint32_t hashtable_seed;
 
 #define list_to_pair(list_)         container_of(list_, pair_t, list)
 #define ordered_list_to_pair(list_) container_of(list_, pair_t, ordered_list)
-#define hash_str(key)               ((size_t)hashlittle((key), strlen(key), hashtable_seed))
+#define hash_str(key, len)          ((size_t)hashlittle((key), len, hashtable_seed))
 
 static JSON_INLINE void list_init(list_t *list) {
     list->next = list;
@@ -69,7 +69,7 @@ static void insert_to_bucket(hashtable_t *hashtable, bucket_t *bucket, list_t *l
 }
 
 static pair_t *hashtable_find_pair(hashtable_t *hashtable, bucket_t *bucket,
-                                   const char *key, size_t hash) {
+                                   const char *key, size_t key_len, size_t hash) {
     list_t *list;
     pair_t *pair;
 
@@ -79,7 +79,8 @@ static pair_t *hashtable_find_pair(hashtable_t *hashtable, bucket_t *bucket,
     list = bucket->first;
     while (1) {
         pair = list_to_pair(list);
-        if (pair->hash == hash && strcmp(pair->key, key) == 0)
+        if (pair->hash == hash && pair->key_len == key_len &&
+            memcmp(pair->key, key, key_len) == 0)
             return pair;
 
         if (list == bucket->last)
@@ -92,7 +93,8 @@ static pair_t *hashtable_find_pair(hashtable_t *hashtable, bucket_t *bucket,
 }
 
 /* returns 0 on success, -1 if key was not found */
-static int hashtable_do_del(hashtable_t *hashtable, const char *key, size_t hash) {
+static int hashtable_do_del(hashtable_t *hashtable, const char *key, size_t key_len,
+                            size_t hash) {
     pair_t *pair;
     bucket_t *bucket;
     size_t index;
@@ -100,7 +102,7 @@ static int hashtable_do_del(hashtable_t *hashtable, const char *key, size_t hash
     index = hash & hashmask(hashtable->order);
     bucket = &hashtable->buckets[index];
 
-    pair = hashtable_find_pair(hashtable, bucket, key, hash);
+    pair = hashtable_find_pair(hashtable, bucket, key, key_len, hash);
     if (!pair)
         return -1;
 
@@ -193,7 +195,37 @@ void hashtable_close(hashtable_t *hashtable) {
     jsonp_free(hashtable->buckets);
 }
 
-int hashtable_set(hashtable_t *hashtable, const char *key, json_t *value) {
+static pair_t *init_pair(json_t *value, const char *key, size_t key_len, size_t hash) {
+    pair_t *pair;
+
+    /* offsetof(...) returns the size of pair_t without the last,
+   flexible member. This way, the correct amount is
+   allocated. */
+
+    if (key_len >= (size_t)-1 - offsetof(pair_t, key)) {
+        /* Avoid an overflow if the key is very long */
+        return NULL;
+    }
+
+    pair = jsonp_malloc(offsetof(pair_t, key) + key_len + 1);
+
+    if (!pair)
+        return NULL;
+
+    pair->hash = hash;
+    memcpy(pair->key, key, key_len);
+    pair->key[key_len] = '\0';
+    pair->key_len = key_len;
+    pair->value = value;
+
+    list_init(&pair->list);
+    list_init(&pair->ordered_list);
+
+    return pair;
+}
+
+int hashtable_set(hashtable_t *hashtable, const char *key, size_t key_len,
+                  json_t *value) {
     pair_t *pair;
     bucket_t *bucket;
     size_t hash, index;
@@ -203,34 +235,19 @@ int hashtable_set(hashtable_t *hashtable, const char *key, json_t *value) {
         if (hashtable_do_rehash(hashtable))
             return -1;
 
-    hash = hash_str(key);
+    hash = hash_str(key, key_len);
     index = hash & hashmask(hashtable->order);
     bucket = &hashtable->buckets[index];
-    pair = hashtable_find_pair(hashtable, bucket, key, hash);
+    pair = hashtable_find_pair(hashtable, bucket, key, key_len, hash);
 
     if (pair) {
         json_decref(pair->value);
         pair->value = value;
     } else {
-        /* offsetof(...) returns the size of pair_t without the last,
-           flexible member. This way, the correct amount is
-           allocated. */
+        pair = init_pair(value, key, key_len, hash);
 
-        size_t len = strlen(key);
-        if (len >= (size_t)-1 - offsetof(pair_t, key)) {
-            /* Avoid an overflow if the key is very long */
-            return -1;
-        }
-
-        pair = jsonp_malloc(offsetof(pair_t, key) + len + 1);
         if (!pair)
             return -1;
-
-        pair->hash = hash;
-        strncpy(pair->key, key, len + 1);
-        pair->value = value;
-        list_init(&pair->list);
-        list_init(&pair->ordered_list);
 
         insert_to_bucket(hashtable, bucket, &pair->list);
         list_insert(&hashtable->ordered_list, &pair->ordered_list);
@@ -240,24 +257,24 @@ int hashtable_set(hashtable_t *hashtable, const char *key, json_t *value) {
     return 0;
 }
 
-void *hashtable_get(hashtable_t *hashtable, const char *key) {
+void *hashtable_get(hashtable_t *hashtable, const char *key, size_t key_len) {
     pair_t *pair;
     size_t hash;
     bucket_t *bucket;
 
-    hash = hash_str(key);
+    hash = hash_str(key, key_len);
     bucket = &hashtable->buckets[hash & hashmask(hashtable->order)];
 
-    pair = hashtable_find_pair(hashtable, bucket, key, hash);
+    pair = hashtable_find_pair(hashtable, bucket, key, key_len, hash);
     if (!pair)
         return NULL;
 
     return pair->value;
 }
 
-int hashtable_del(hashtable_t *hashtable, const char *key) {
-    size_t hash = hash_str(key);
-    return hashtable_do_del(hashtable, key, hash);
+int hashtable_del(hashtable_t *hashtable, const char *key, size_t key_len) {
+    size_t hash = hash_str(key, key_len);
+    return hashtable_do_del(hashtable, key, key_len, hash);
 }
 
 void hashtable_clear(hashtable_t *hashtable) {
@@ -278,15 +295,15 @@ void *hashtable_iter(hashtable_t *hashtable) {
     return hashtable_iter_next(hashtable, &hashtable->ordered_list);
 }
 
-void *hashtable_iter_at(hashtable_t *hashtable, const char *key) {
+void *hashtable_iter_at(hashtable_t *hashtable, const char *key, size_t key_len) {
     pair_t *pair;
     size_t hash;
     bucket_t *bucket;
 
-    hash = hash_str(key);
+    hash = hash_str(key, key_len);
     bucket = &hashtable->buckets[hash & hashmask(hashtable->order)];
 
-    pair = hashtable_find_pair(hashtable, bucket, key, hash);
+    pair = hashtable_find_pair(hashtable, bucket, key, key_len, hash);
     if (!pair)
         return NULL;
 
