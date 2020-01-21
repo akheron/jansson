@@ -1658,7 +1658,7 @@ type whose address should be passed.
     Convert each item in the JSON object according to the inner format
     string ``fmt``. The first, third, etc. format specifier represent
     a key, and must be ``s``. The corresponding argument to unpack
-    functions is read as the object key. The second fourth, etc.
+    functions is read as the object key. The second, fourth, etc.
     format specifier represent a value and is written to the address
     given as the corresponding argument. **Note** that every other
     argument is read from and every other is written to.
