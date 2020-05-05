@@ -1,5 +1,5 @@
 AC_PREREQ([2.60])
-AC_INIT([jansson], [2.12], [https://github.com/akheron/jansson/issues])
+AC_INIT([jansson], [2.13], [https://github.com/akheron/jansson/issues])
 
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([1.10 foreign])
