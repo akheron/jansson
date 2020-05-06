@@ -7,7 +7,7 @@ SOFILE="../src/.libs/libjansson.so"
 
 # The list of symbols, which the shared object should export, is read
 # from the def file, which is used in Windows builds
-grep 'json_' $top_srcdir/src/jansson.def \
+grep 'json_\|jansson_' $top_srcdir/src/jansson.def \
     | sed -e 's/ //g' \
     | sort \
     >$test_log/exports
