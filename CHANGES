@@ -1,3 +1,16 @@
+Version 2.13.1
+==============
+
+Released 2020-05-07
+
+* Build:
+
+  - Include `jansson_version_str()` and `jansson_version_cmp()` in
+    shared library. (#534)
+
+  - Include `scripts/` in tarball. (#535)
+
+
 Version 2.13
 ============
 
