@@ -797,16 +797,18 @@ json_t *json_vsprintf(const char *fmt, va_list ap) {
     va_copy(aq, ap);
 
     length = vsnprintf(NULL, 0, fmt, ap);
+    if (length < 0)
+        goto out;
     if (length == 0) {
         json = json_string("");
         goto out;
     }
 
-    buf = jsonp_malloc(length + 1);
+    buf = jsonp_malloc((size_t)length + 1);
     if (!buf)
         goto out;
 
-    vsnprintf(buf, length + 1, fmt, aq);
+    vsnprintf(buf, (size_t)length + 1, fmt, aq);
     if (!utf8_check_string(buf, length)) {
         jsonp_free(buf);
         goto out;
