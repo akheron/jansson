@@ -1,7 +1,7 @@
 # Notes:
 #
 # Author: Paul Harris, June 2012
-# Additions: Joakim Soderberg, Febuary 2013
+# Additions: Joakim Soderberg, February 2013
 #
 # Supports: building static/shared, release/debug/etc, can also build html docs
 # and some of the tests.
@@ -35,7 +35,7 @@
 # >> make test (to run the tests, if you enabled them)
 #
 # Brief description on how it works:
-# There is a small heirachy of CMakeLists.txt files which define how the
+# There is a small hierarchy of CMakeLists.txt files which define how the
 # project is built.
 # Header file detection etc is done, and the results are written into config.h
 # and jansson_config.h, which are generated from the corresponding
@@ -89,10 +89,10 @@ endif()
 # set (JANSSON_VERSION "2.3.1")
 # set (JANSSON_SOVERSION 2)
 
-set(JANSSON_DISPLAY_VERSION "2.12")
+set(JANSSON_DISPLAY_VERSION "2.13.1")
 
 # This is what is required to match the same numbers as automake's
-set(JANSSON_VERSION "4.11.1")
+set(JANSSON_VERSION "4.13.0")
 set(JANSSON_SOVERSION 4)
 
 # for CheckFunctionKeywords
@@ -103,6 +103,13 @@ include (CheckFunctionExists)
 include (CheckFunctionKeywords)
 include (CheckIncludeFiles)
 include (CheckTypeSize)
+
+# suppress format-truncation warning
+include (CheckCCompilerFlag)
+check_c_compiler_flag(-Wno-format-truncation HAS_NO_FORMAT_TRUNCATION)
+if (HAS_NO_FORMAT_TRUNCATION)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation")
+endif()
 
 if (MSVC)
    # Turn off Microsofts "security" warnings.
@@ -212,7 +219,7 @@ else ()
    set (JSON_UINT8 "unsigned char")
 endif ()
 
-# Check for ssize_t and SSIZE_T existance.
+# Check for ssize_t and SSIZE_T existence.
 check_type_size(ssize_t SSIZE_T)
 check_type_size(SSIZE_T UPPERCASE_SSIZE_T)
 if(NOT HAVE_SSIZE_T)

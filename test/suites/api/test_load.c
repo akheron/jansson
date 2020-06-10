@@ -5,34 +5,33 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
+#include "util.h"
 #include <jansson.h>
 #include <string.h>
-#include "util.h"
 
-static void file_not_found()
-{
+static void file_not_found() {
     json_t *json;
     json_error_t error;
     char *pos;
 
     json = json_load_file("/path/to/nonexistent/file.json", 0, &error);
-    if(json)
+    if (json)
         fail("json_load_file returned non-NULL for a nonexistent file");
-    if(error.line != -1)
+    if (error.line != -1)
         fail("json_load_file returned an invalid line number");
 
     /* The error message is locale specific, only check the beginning
        of the error message. */
 
     pos = strchr(error.text, ':');
-    if(!pos)
+    if (!pos)
         fail("json_load_file returne an invalid error message");
 
     *pos = '\0';
 
-    if(strcmp(error.text, "unable to open /path/to/nonexistent/file.json") != 0)
+    if (strcmp(error.text, "unable to open /path/to/nonexistent/file.json") != 0)
         fail("json_load_file returned an invalid error message");
-    if(json_error_code(&error) != json_error_cannot_open_file)
+    if (json_error_code(&error) != json_error_cannot_open_file)
         fail("json_load_file returned an invalid error code");
 }
 
@@ -40,47 +39,48 @@ static void very_long_file_name() {
     json_t *json;
     json_error_t error;
 
-    json = json_load_file("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 0, &error);
-    if(json)
+    json = json_load_file("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                          0, &error);
+    if (json)
         fail("json_load_file returned non-NULL for a nonexistent file");
-    if(error.line != -1)
+    if (error.line != -1)
         fail("json_load_file returned an invalid line number");
 
     if (strncmp(error.source, "...aaa", 6) != 0)
         fail("error source was set incorrectly");
-    if(json_error_code(&error) != json_error_cannot_open_file)
+    if (json_error_code(&error) != json_error_cannot_open_file)
         fail("error code was set incorrectly");
 }
 
-static void reject_duplicates()
-{
+static void reject_duplicates() {
     json_error_t error;
 
-    if(json_loads("{\"foo\": 1, \"foo\": 2}", JSON_REJECT_DUPLICATES, &error))
+    if (json_loads("{\"foo\": 1, \"foo\": 2}", JSON_REJECT_DUPLICATES, &error))
         fail("json_loads did not detect a duplicate key");
-    check_error(json_error_duplicate_key, "duplicate object key near '\"foo\"'", "<string>", 1, 16, 16);
+    check_error(json_error_duplicate_key, "duplicate object key near '\"foo\"'",
+                "<string>", 1, 16, 16);
 }
 
-static void disable_eof_check()
-{
+static void disable_eof_check() {
     json_error_t error;
     json_t *json;
 
     const char *text = "{\"foo\": 1} garbage";
 
-    if(json_loads(text, 0, &error))
+    if (json_loads(text, 0, &error))
         fail("json_loads did not detect garbage after JSON text");
-    check_error(json_error_end_of_input_expected, "end of file expected near 'garbage'", "<string>", 1, 18, 18);
+    check_error(json_error_end_of_input_expected, "end of file expected near 'garbage'",
+                "<string>", 1, 18, 18);
 
     json = json_loads(text, JSON_DISABLE_EOF_CHECK, &error);
-    if(!json)
+    if (!json)
         fail("json_loads failed with JSON_DISABLE_EOF_CHECK");
 
     json_decref(json);
 }
 
-static void decode_any()
-{
+static void decode_any() {
     json_t *json;
     json_error_t error;
 
@@ -105,8 +105,7 @@ static void decode_any()
     json_decref(json);
 }
 
-static void decode_int_as_real()
-{
+static void decode_int_as_real() {
     json_t *json;
     json_error_t error;
 
@@ -127,8 +126,7 @@ static void decode_int_as_real()
     imprecise = "9007199254740993";
     expected = 9007199254740992ll;
 
-    json = json_loads(imprecise, JSON_DECODE_INT_AS_REAL | JSON_DECODE_ANY,
-                      &error);
+    json = json_loads(imprecise, JSON_DECODE_INT_AS_REAL | JSON_DECODE_ANY, &error);
     if (!json || !json_is_real(json) || expected != (json_int_t)json_real_value(json))
         fail("json_load decode int as real failed - expected imprecision");
     json_decref(json);
@@ -145,31 +143,28 @@ static void decode_int_as_real()
         json_error_code(&error) != json_error_numeric_overflow)
         fail("json_load decode int as real failed - expected overflow");
     json_decref(json);
-
 }
 
-static void allow_nul()
-{
+static void allow_nul() {
     const char *text = "\"nul byte \\u0000 in string\"";
     const char *expected = "nul byte \0 in string";
     size_t len = 20;
     json_t *json;
 
     json = json_loads(text, JSON_ALLOW_NUL | JSON_DECODE_ANY, NULL);
-    if(!json || !json_is_string(json))
+    if (!json || !json_is_string(json))
         fail("unable to decode embedded NUL byte");
 
-    if(json_string_length(json) != len)
+    if (json_string_length(json) != len)
         fail("decoder returned wrong string length");
 
-    if(memcmp(json_string_value(json), expected, len + 1))
+    if (memcmp(json_string_value(json), expected, len + 1))
         fail("decoder returned wrong string content");
 
     json_decref(json);
 }
 
-static void load_wrong_args()
-{
+static void load_wrong_args() {
     json_t *json;
     json_error_t error;
 
@@ -194,45 +189,42 @@ static void load_wrong_args()
         fail("json_load_file should return NULL if the first argument is NULL");
 }
 
-static void position()
-{
+static void position() {
     json_t *json;
     size_t flags = JSON_DISABLE_EOF_CHECK;
     json_error_t error;
 
     json = json_loads("{\"foo\": \"bar\"}", 0, &error);
-    if(error.position != 14)
+    if (error.position != 14)
         fail("json_loads returned a wrong position");
     json_decref(json);
 
     json = json_loads("{\"foo\": \"bar\"} baz quux", flags, &error);
-    if(error.position != 14)
+    if (error.position != 14)
         fail("json_loads returned a wrong position");
     json_decref(json);
 }
 
-static void error_code()
-{
+static void error_code() {
     json_error_t error;
     json_t *json = json_loads("[123] garbage", 0, &error);
-    if(json != NULL)
+    if (json != NULL)
         fail("json_loads returned not NULL");
-    if(strlen(error.text) >= JSON_ERROR_TEXT_LENGTH)
+    if (strlen(error.text) >= JSON_ERROR_TEXT_LENGTH)
         fail("error.text longer than expected");
-    if(json_error_code(&error) != json_error_end_of_input_expected)
+    if (json_error_code(&error) != json_error_end_of_input_expected)
         fail("json_loads returned incorrect error code");
 
     json = json_loads("{\"foo\": ", 0, &error);
-    if(json != NULL)
+    if (json != NULL)
         fail("json_loads returned not NULL");
-    if(strlen(error.text) >= JSON_ERROR_TEXT_LENGTH)
+    if (strlen(error.text) >= JSON_ERROR_TEXT_LENGTH)
         fail("error.text longer than expected");
-    if(json_error_code(&error) != json_error_premature_end_of_input)
+    if (json_error_code(&error) != json_error_premature_end_of_input)
         fail("json_loads returned incorrect error code");
 }
 
-static void run_tests()
-{
+static void run_tests() {
     file_not_found();
     very_long_file_name();
     reject_duplicates();

@@ -1,7 +1,6 @@
-#include <string.h>
-#include <jansson.h>
 #include "util.h"
-
+#include <jansson.h>
+#include <string.h>
 
 static void test_sprintf() {
     json_t *s = json_sprintf("foo bar %d", 42);
@@ -27,8 +26,4 @@ static void test_sprintf() {
         fail("json_sprintf unexpected success with invalid UTF");
 }
 
-
-static void run_tests()
-{
-    test_sprintf();
-}
+static void run_tests() { test_sprintf(); }

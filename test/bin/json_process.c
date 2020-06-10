@@ -9,25 +9,24 @@
 #include <jansson_private_config.h>
 #endif
 
+#include <ctype.h>
+#include <jansson.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <jansson.h>
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
- #endif
+#endif
 
 #if _WIN32
-#include <io.h>  /* for _setmode() */
-#include <fcntl.h>  /* for _O_BINARY */
+#include <fcntl.h> /* for _O_BINARY */
+#include <io.h>    /* for _setmode() */
 
 static const char dir_sep = '\\';
 #else
 static const char dir_sep = '/';
 #endif
-
 
 struct config {
     int indent;
@@ -47,8 +46,7 @@ struct config {
 /* Return a pointer to the first non-whitespace character of str.
    Modifies str so that all trailing whitespace characters are
    replaced by '\0'. */
-static const char *strip(char *str)
-{
+static const char *strip(char *str) {
     size_t length;
     char *result = str;
     while (*result && l_isspace(*result))
@@ -64,9 +62,7 @@ static const char *strip(char *str)
     return result;
 }
 
-
-static char *loadfile(FILE *file)
-{
+static char *loadfile(FILE *file) {
     long fsize, ret;
     char *buf;
 
@@ -74,7 +70,7 @@ static char *loadfile(FILE *file)
     fsize = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    buf = malloc(fsize+1);
+    buf = malloc(fsize + 1);
     ret = fread(buf, 1, fsize, file);
     if (ret != fsize)
         exit(1);
@@ -83,9 +79,7 @@ static char *loadfile(FILE *file)
     return buf;
 }
 
-
-static void read_conf(FILE *conffile)
-{
+static void read_conf(FILE *conffile) {
     char *buffer, *line, *val;
 
     buffer = loadfile(conffile);
@@ -124,9 +118,7 @@ static void read_conf(FILE *conffile)
     free(buffer);
 }
 
-
-static int cmpfile(const char *str, const char *path, const char *fname)
-{
+static int cmpfile(const char *str, const char *path, const char *fname) {
     char filename[1024], *buffer;
     int ret;
     FILE *file;
@@ -156,8 +148,7 @@ static int cmpfile(const char *str, const char *path, const char *fname)
     return ret;
 }
 
-int use_conf(char *test_path)
-{
+int use_conf(char *test_path) {
     int ret;
     size_t flags = 0;
     char filename[1024], errstr[1024];
@@ -200,8 +191,7 @@ int use_conf(char *test_path)
         flags |= JSON_SORT_KEYS;
 
     if (conf.precision < 0 || conf.precision > 31) {
-        fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n",
-                conf.precision);
+        fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n", conf.precision);
         fclose(infile);
         return 2;
     }
@@ -216,15 +206,13 @@ int use_conf(char *test_path)
         buffer = loadfile(infile);
         json = json_loads(strip(buffer), 0, &error);
         free(buffer);
-    }
-    else
+    } else
         json = json_loadf(infile, 0, &error);
 
     fclose(infile);
 
     if (!json) {
-        sprintf(errstr, "%d %d %d\n%s\n",
-                error.line, error.column, error.position,
+        sprintf(errstr, "%d %d %d\n%s\n", error.line, error.column, error.position,
                 error.text);
 
         ret = cmpfile(errstr, test_path, "error");
@@ -239,80 +227,77 @@ int use_conf(char *test_path)
     return ret;
 }
 
-static int getenv_int(const char *name)
-{
+static int getenv_int(const char *name) {
     char *value, *end;
     long result;
 
     value = getenv(name);
-    if(!value)
+    if (!value)
         return 0;
 
     result = strtol(value, &end, 10);
-    if(*end != '\0')
+    if (*end != '\0')
         return 0;
 
     return (int)result;
 }
 
-int use_env()
-{
+int use_env() {
     int indent, precision;
     size_t flags = 0;
     json_t *json;
     json_error_t error;
 
-    #ifdef _WIN32
+#ifdef _WIN32
     /* On Windows, set stdout and stderr to binary mode to avoid
        outputting DOS line terminators */
     _setmode(_fileno(stdout), _O_BINARY);
     _setmode(_fileno(stderr), _O_BINARY);
-    #endif
+#endif
 
     indent = getenv_int("JSON_INDENT");
-    if(indent < 0 || indent > 31) {
+    if (indent < 0 || indent > 31) {
         fprintf(stderr, "invalid value for JSON_INDENT: %d\n", indent);
         return 2;
     }
-    if(indent > 0)
+    if (indent > 0)
         flags |= JSON_INDENT(indent);
 
-    if(getenv_int("JSON_COMPACT") > 0)
+    if (getenv_int("JSON_COMPACT") > 0)
         flags |= JSON_COMPACT;
 
-    if(getenv_int("JSON_ENSURE_ASCII"))
+    if (getenv_int("JSON_ENSURE_ASCII"))
         flags |= JSON_ENSURE_ASCII;
 
-    if(getenv_int("JSON_PRESERVE_ORDER"))
+    if (getenv_int("JSON_PRESERVE_ORDER"))
         flags |= JSON_PRESERVE_ORDER;
 
-    if(getenv_int("JSON_SORT_KEYS"))
+    if (getenv_int("JSON_SORT_KEYS"))
         flags |= JSON_SORT_KEYS;
 
     precision = getenv_int("JSON_REAL_PRECISION");
-    if(precision < 0 || precision > 31) {
-        fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n",
-                precision);
+    if (precision < 0 || precision > 31) {
+        fprintf(stderr, "invalid value for JSON_REAL_PRECISION: %d\n", precision);
         return 2;
     }
 
-    if(getenv("HASHSEED"))
+    if (getenv("HASHSEED"))
         json_object_seed(getenv_int("HASHSEED"));
 
-    if(precision > 0)
+    if (precision > 0)
         flags |= JSON_REAL_PRECISION(precision);
 
-    if(getenv_int("STRIP")) {
+    if (getenv_int("STRIP")) {
         /* Load to memory, strip leading and trailing whitespace */
         size_t size = 0, used = 0;
         char *buffer = NULL, *buf_ck = NULL;
 
-        while(1) {
+        while (1) {
             size_t count;
 
             size = (size == 0 ? 128 : size * 2);
             buf_ck = realloc(buffer, size);
-            if(!buf_ck) {
+            if (!buf_ck) {
                 fprintf(stderr, "Unable to allocate %d bytes\n", (int)size);
                 free(buffer);
                 return 1;
@@ -320,7 +305,7 @@ int use_env()
             buffer = buf_ck;
 
             count = fread(buffer + used, 1, size - used, stdin);
-            if(count < size - used) {
+            if (count < size - used) {
                 buffer[used + count] = '\0';
                 break;
             }
@@ -329,14 +314,12 @@ int use_env()
 
         json = json_loads(strip(buffer), 0, &error);
         free(buffer);
-    }
-    else
+    } else
         json = json_loadf(stdin, 0, &error);
 
-    if(!json) {
-        fprintf(stderr, "%d %d %d\n%s\n",
-            error.line, error.column,
-            error.position, error.text);
+    if (!json) {
+        fprintf(stderr, "%d %d %d\n%s\n", error.line, error.column, error.position,
+                error.text);
         return 1;
     }
 
@@ -346,14 +329,13 @@ int use_env()
     return 0;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int i;
     char *test_path = NULL;
 
-    #ifdef HAVE_SETLOCALE
+#ifdef HAVE_SETLOCALE
     setlocale(LC_ALL, "");
-    #endif
+#endif
 
     if (argc < 2) {
         goto usage;
@@ -370,8 +352,7 @@ int main(int argc, char *argv[])
 
     if (conf.use_env)
         return use_env();
-    else
-    {
+    else {
         if (!test_path)
             goto usage;
 

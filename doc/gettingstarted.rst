@@ -84,6 +84,11 @@ Generating make files on unix:
     cd build
     cmake .. # or ccmake .. for a GUI.
 
+.. note::
+
+   If you don't want to build docs or ``Sphinx`` is not installed, you should add ``"-DJANSSON_BUILD_DOCS=OFF"`` in the ``cmake`` command.
+
+
 Then to build::
 
     make
@@ -115,6 +120,7 @@ Creating Visual Studio project files from the command line:
    - ``Visual Studio 12 2013``
    - ``Visual Studio 14 2015``
    - ``Visual Studio 15 2017``
+   - ``Visual Studio 16 2019``
 
    Any later version should also work.
 
@@ -135,6 +141,21 @@ To list available CMake_ settings (and what they are currently set to)
 for the project, run::
 
     cmake -LH ..
+
+Windows (MinGW)
+^^^^^^^^^^^^^^^
+If you prefer using MinGW on Windows, make sure MinGW installed and ``{MinGW}/bin`` has been added to  ``PATH``, then do the following commands:
+
+.. parsed-literal::
+
+    <unpack>
+    cd jansson-|release|
+
+    md build
+    cd build
+    cmake -G "MinGW Makefiles" ..
+    mingw32-make
+
 
 Mac OSX (Xcode)
 ^^^^^^^^^^^^^^^

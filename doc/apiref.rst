@@ -708,6 +708,30 @@ allowed in object keys.
 
    .. versionadded:: 2.3
 
+.. function:: int json_object_update_new(json_t *object, json_t *other)
+
+   Like :func:`json_object_update()`, but steals the reference to
+   *other*. This is useful when *other* is newly created and not used
+   after the call.
+
+.. function:: int json_object_update_existing_new(json_t *object, json_t *other)
+
+   Like :func:`json_object_update_new()`, but only the values of existing
+   keys are updated. No new keys are created. Returns 0 on success or
+   -1 on error.
+
+.. function:: int json_object_update_missing_new(json_t *object, json_t *other)
+
+   Like :func:`json_object_update_new()`, but only new keys are created.
+   The value of any existing key is not changed. Returns 0 on success
+   or -1 on error.
+
+.. function:: int json_object_update_recursive(json_t *object, json_t *other)
+
+   Like :func:`json_object_update()`, but object values in *other* are
+   recursively merged with the corresponding values in *object* if they are also
+   objects, instead of overwriting them. Returns 0 on success or -1 on error.
+
 .. function:: json_object_foreach(object, key, value)
 
    Iterate over every key-value pair of ``object``, running the block
@@ -1091,7 +1115,9 @@ These functions output UTF-8:
 
    Returns the JSON representation of *json* as a string, or *NULL* on
    error. *flags* is described above. The return value must be freed
-   by the caller using :func:`free()`.
+   by the caller using :func:`free()`. Note that if you have called
+   :func:`json_set_alloc_funcs()` to override :func:`free()`, you should
+   call your custom free function instead to free the return value.
 
 .. function:: size_t json_dumpb(const json_t *json, char *buffer, size_t size, size_t flags)
 
@@ -1331,7 +1357,11 @@ If no error or position information is needed, you can pass *NULL*.
    It is important to note that this function can only succeed on stream
    file descriptors (such as SOCK_STREAM). Using this function on a
    non-stream file descriptor will result in undefined behavior. For
-   non-stream file descriptors, see instead :func:`json_loadb()`.
+   non-stream file descriptors, see instead :func:`json_loadb()`. In
+   addition, please note that this function cannot be used on non-blocking 
+   file descriptors (such as a non-blocking socket). Using this function 
+   on non-blocking file descriptors has a high risk of data loss because 
+   it does not support resuming.
 
    This function requires POSIX and fails on all non-POSIX systems.
 
@@ -1628,7 +1658,7 @@ type whose address should be passed.
     Convert each item in the JSON object according to the inner format
     string ``fmt``. The first, third, etc. format specifier represent
     a key, and must be ``s``. The corresponding argument to unpack
-    functions is read as the object key. The second fourth, etc.
+    functions is read as the object key. The second, fourth, etc.
     format specifier represent a value and is written to the address
     given as the corresponding argument. **Note** that every other
     argument is read from and every other is written to.

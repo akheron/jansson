@@ -33,3 +33,5 @@ stamp-h1
 *.exe
 .idea
 cmake-build-debug/
+*.log
+*.trs

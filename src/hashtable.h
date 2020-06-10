@@ -8,8 +8,8 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 
-#include <stdlib.h>
 #include "jansson.h"
+#include <stdlib.h>
 
 struct hashtable_list {
     struct hashtable_list *prev;
@@ -35,15 +35,13 @@ struct hashtable_bucket {
 typedef struct hashtable {
     size_t size;
     struct hashtable_bucket *buckets;
-    size_t order;  /* hashtable has pow(2, order) buckets */
+    size_t order; /* hashtable has pow(2, order) buckets */
     struct hashtable_list list;
     struct hashtable_list ordered_list;
 } hashtable_t;
 
-
-#define hashtable_key_to_iter(key_) \
+#define hashtable_key_to_iter(key_)                                                      \
     (&(container_of(key_, struct hashtable_pair, key)->ordered_list))
-
 
 /**
  * hashtable_init - Initialize a hashtable object
@@ -55,7 +53,7 @@ typedef struct hashtable {
  *
  * Returns 0 on success, -1 on error (out of memory).
  */
-int hashtable_init(hashtable_t *hashtable) JANSSON_ATTRS(warn_unused_result);
+int hashtable_init(hashtable_t *hashtable) JANSSON_ATTRS((warn_unused_result));
 
 /**
  * hashtable_close - Release all resources used by a hashtable object
