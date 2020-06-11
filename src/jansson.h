@@ -188,6 +188,8 @@ void json_object_seed(size_t seed);
 size_t json_object_size(const json_t *object);
 json_t *json_object_get(const json_t *object, const char *key)
     JANSSON_ATTRS((warn_unused_result));
+json_t *json_object_getn(const json_t *object, const char *key, size_t len)
+    JANSSON_ATTRS((warn_unused_result));
 int json_object_set_new(json_t *object, const char *key, json_t *value);
 int json_object_set_new_nocheck(json_t *object, const char *key, json_t *value);
 int json_object_del(json_t *object, const char *key);

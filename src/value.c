@@ -102,6 +102,16 @@ json_t *json_object_get(const json_t *json, const char *key) {
     return hashtable_get(&object->hashtable, key);
 }
 
+json_t *json_object_getn(const json_t *json, const char *key, size_t len) {
+    json_object_t *object;
+
+    if (!key || !json_is_object(json))
+        return NULL;
+
+    object = json_to_object(json);
+    return hashtable_getn(&object->hashtable, key, len);
+}
+
 int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value) {
     json_object_t *object;
 

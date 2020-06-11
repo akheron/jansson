@@ -92,6 +92,17 @@ int hashtable_set(hashtable_t *hashtable, const char *key, json_t *value);
 void *hashtable_get(hashtable_t *hashtable, const char *key);
 
 /**
+ * hashtable_get - Get a value associated with a key
+ *
+ * @hashtable: The hashtable object
+ * @key: The key
+ * @len: The lenght key
+ *
+ * Returns value if it is found, or NULL otherwise.
+ */
+void *hashtable_getn(hashtable_t *hashtable, const char *key, size_t len);
+
+/**
  * hashtable_del - Remove a value from the hashtable
  *
  * @hashtable: The hashtable object

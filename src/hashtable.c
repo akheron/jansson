@@ -36,6 +36,7 @@ extern volatile uint32_t hashtable_seed;
 #define list_to_pair(list_)         container_of(list_, pair_t, list)
 #define ordered_list_to_pair(list_) container_of(list_, pair_t, ordered_list)
 #define hash_str(key)               ((size_t)hashlittle((key), strlen(key), hashtable_seed))
+#define hash_strn(key, len)         ((size_t)hashlittle((key), (len), hashtable_seed))
 
 static JSON_INLINE void list_init(list_t *list) {
     list->next = list;
@@ -80,6 +81,29 @@ static pair_t *hashtable_find_pair(hashtable_t *hashtable, bucket_t *bucket,
     while (1) {
         pair = list_to_pair(list);
         if (pair->hash == hash && strcmp(pair->key, key) == 0)
+            return pair;
+
+        if (list == bucket->last)
+            break;
+
+        list = list->next;
+    }
+
+    return NULL;
+}
+
+static pair_t *hashtable_find_pairn(hashtable_t *hashtable, bucket_t *bucket,
+                                   const char *key, size_t len, size_t hash) {
+    list_t *list;
+    pair_t *pair;
+
+    if (bucket_is_empty(hashtable, bucket))
+        return NULL;
+
+    list = bucket->first;
+    while (1) {
+        pair = list_to_pair(list);
+        if (pair->hash == hash && strncmp(pair->key, key, len) == 0)
             return pair;
 
         if (list == bucket->last)
@@ -249,6 +273,21 @@ void *hashtable_get(hashtable_t *hashtable, const char *key) {
     bucket = &hashtable->buckets[hash & hashmask(hashtable->order)];
 
     pair = hashtable_find_pair(hashtable, bucket, key, hash);
+    if (!pair)
+        return NULL;
+
+    return pair->value;
+}
+
+void *hashtable_getn(hashtable_t * hashtable, const char * key, size_t len ) {
+    pair_t *pair;
+    size_t hash;
+    bucket_t *bucket;
+
+    hash = hash_strn(key, len);
+    bucket = &hashtable->buckets[hash & hashmask(hashtable->order)];
+
+    pair = hashtable_find_pairn(hashtable, bucket, key, len, hash);
     if (!pair)
         return NULL;
 
