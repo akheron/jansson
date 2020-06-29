@@ -107,6 +107,9 @@ if (HAS_NO_FORMAT_TRUNCATION)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation")
 endif()
 
+include (CheckSymbolExists)
+check_symbol_exists("__GLIBC__" "stdlib.h" LIBC_IS_GLIBC)
+
 if (MSVC)
    # Turn off Microsofts "security" warnings.
    add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo" )
@@ -365,6 +368,10 @@ if(JANSSON_BUILD_SHARED_LIBS)
       ${JANSSON_HDR_PRIVATE}
       ${JANSSON_HDR_PUBLIC}
       src/jansson.def)
+
+   if (LIBC_IS_GLIBC)
+      set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--default-symver")
+   endif()
 
    set_target_properties(jansson PROPERTIES
       VERSION ${JANSSON_VERSION}
