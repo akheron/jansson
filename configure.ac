@@ -137,6 +137,10 @@ fi
 AS_IF([test "x$with_Bsymbolic" = "xyes"], [JSON_BSYMBOLIC_LDFLAGS=-Wl[,]-Bsymbolic-functions])
 AC_SUBST(JSON_BSYMBOLIC_LDFLAGS)
 
+# Enable symbol versioning on GNU libc
+JSON_SYMVER_LDFLAGS=
+AC_CHECK_DECL([__GLIBC__], [JSON_SYMVER_LDFLAGS=-Wl,--default-symver])
+AC_SUBST([JSON_SYMVER_LDFLAGS])
 
 AC_ARG_ENABLE([ossfuzzers],
   [AS_HELP_STRING([--enable-ossfuzzers],
