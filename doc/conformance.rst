@@ -22,8 +22,7 @@ JSON strings are mapped to C-style null-terminated character arrays,
 and UTF-8 encoding is used internally.
 
 All Unicode codepoints U+0000 through U+10FFFF are allowed in string
-values. However, U+0000 is not allowed in object keys because of API
-restrictions.
+values. However, U+0000 is allowed in object keys only for length-aware functions.
 
 Unicode normalization or any other transformation is never performed
 on any strings (string values or object keys). When checking for
