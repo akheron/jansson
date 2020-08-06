@@ -91,8 +91,8 @@ char *jsonp_strndup(const char *str, size_t len) JANSSON_ATTRS((warn_unused_resu
 /* Circular reference check*/
 /* Space for "0x", double the sizeof a pointer for the hex and a terminator. */
 #define LOOP_KEY_LEN (2 + (sizeof(json_t *) * 2) + 1)
-int jsonp_loop_check(hashtable_t *parents, const json_t *json, char *key,
-                     size_t key_size);
+int jsonp_loop_check(hashtable_t *parents, const json_t *json, char *key, size_t key_size,
+                     size_t *key_len_out);
 
 /* Windows compatibility */
 #if defined(_WIN32) || defined(WIN32)
