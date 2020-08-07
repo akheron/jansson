@@ -148,30 +148,30 @@ Type
    ``int``). *json* MUST NOT be *NULL*. This function is actually
    implemented as a macro for speed.
 
-.. function:: json_is_object(const json_t *json)
-               json_is_array(const json_t *json)
-               json_is_string(const json_t *json)
-               json_is_integer(const json_t *json)
-               json_is_real(const json_t *json)
-               json_is_true(const json_t *json)
-               json_is_false(const json_t *json)
-               json_is_null(const json_t *json)
+.. function:: int json_is_object(const json_t *json)
+              int json_is_array(const json_t *json)
+              int json_is_string(const json_t *json)
+              int json_is_integer(const json_t *json)
+              int json_is_real(const json_t *json)
+              int json_is_true(const json_t *json)
+              int json_is_false(const json_t *json)
+              int json_is_null(const json_t *json)
 
    These functions (actually macros) return true (non-zero) for values
    of the given type, and false (zero) for values of other types and
    for *NULL*.
 
-.. function:: json_is_number(const json_t *json)
+.. function:: int json_is_number(const json_t *json)
 
    Returns true for values of types ``JSON_INTEGER`` and
    ``JSON_REAL``, and false for other types and for *NULL*.
 
-.. function:: json_is_boolean(const json_t *json)
+.. function:: int json_is_boolean(const json_t *json)
 
    Returns true for types ``JSON_TRUE`` and ``JSON_FALSE``, and false
    for values of other types and for *NULL*.
 
-.. function:: json_boolean_value(const json_t *json)
+.. function:: int json_boolean_value(const json_t *json)
 
    Alias of :func:`json_is_true()`, i.e. returns 1 for ``JSON_TRUE``
    and 0 otherwise.
@@ -594,7 +594,7 @@ A JSON array is an ordered collection of other JSON values.
    Appends all elements in *other_array* to the end of *array*.
    Returns 0 on success and -1 on error.
 
-.. function:: json_array_foreach(array, index, value)
+.. function:: void json_array_foreach(array, index, value)
 
    Iterate over every element of ``array``, running the block
    of code that follows each time with the proper values set to
@@ -764,7 +764,7 @@ allowed in object keys.
    .. versionadded:: 2.3
 
 
-.. function:: json_object_foreach_safe(object, tmp, key, value)
+.. function:: void json_object_foreach_safe(object, tmp, key, value)
 
    Like :func:`json_object_foreach()`, but it's safe to call
    ``json_object_del(object, key)`` during iteration. You need to pass
