@@ -110,7 +110,7 @@ to overflow semantics). Also, no support or hooks are provided for any
 supplemental "bignum" type add-on packages.
 
 Depth of nested values
-----------------------
+======================
 
 To avoid stack exhaustion, Jansson currently limits the nesting depth
 for arrays and objects to a certain value (default: 2048), defined as
