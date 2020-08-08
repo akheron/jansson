@@ -1021,7 +1021,7 @@ in which case no error information is returned to the caller.
 Encoding
 ========
 
-This sections describes the functions that can be used to encode
+This section describes the functions that can be used to encode
 values to JSON. By default, only objects and arrays can be encoded
 directly, since they are the only valid *root* values of a JSON text.
 To encode any JSON value, use the ``JSON_ENCODE_ANY`` flag (see
@@ -1206,7 +1206,7 @@ These functions output UTF-8:
 Decoding
 ========
 
-This sections describes the functions that can be used to decode JSON
+This section describes the functions that can be used to decode JSON
 text to the Jansson representation of JSON data. The JSON
 specification requires that a JSON text is either a serialized array
 or object, and this requirement is also enforced with the following
