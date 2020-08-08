@@ -47,13 +47,13 @@ List of Incompatible Changes
 
 **Underlying type of JSON integers**
     The underlying C type of JSON integers has been changed from
-    :type:`int` to the widest available signed integer type, i.e.
-    :type:`long long` or :type:`long`, depending on whether
-    :type:`long long` is supported on your system or not. This makes
+    ``int`` to the widest available signed integer type, i.e.
+    ``long long`` or ``long``, depending on whether
+    ``long long`` is supported on your system or not. This makes
     the whole 64-bit integer range available on most modern systems.
 
     ``jansson.h`` has a typedef :type:`json_int_t` to the underlying
-    integer type. :type:`int` should still be used in most cases when
+    integer type. ``int`` should still be used in most cases when
     dealing with smallish JSON integers, as the compiler handles
     implicit type coercion. Only when the full 64-bit range is needed,
     :type:`json_int_t` should be explicitly used.
@@ -69,8 +69,8 @@ List of Incompatible Changes
 
 **Unsigned integers in API functions**
     Version 2.0 unifies unsigned integer usage in the API. All uses of
-    :type:`unsigned int` and :type:`unsigned long` have been replaced
-    with :type:`size_t`. This includes flags, container sizes, etc.
+    ``unsigned int`` and ``unsigned long`` have been replaced
+    with ``size_t``. This includes flags, container sizes, etc.
     This should not require source code changes, as both
-    :type:`unsigned int` and :type:`unsigned long` are usually
-    compatible with :type:`size_t`.
+    ``unsigned int`` and ``unsigned long`` are usually
+    compatible with ``size_t``.

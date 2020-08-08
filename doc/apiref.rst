@@ -145,33 +145,33 @@ Type
 .. function:: int json_typeof(const json_t *json)
 
    Return the type of the JSON value (a :type:`json_type` cast to
-   :type:`int`). *json* MUST NOT be *NULL*. This function is actually
+   ``int``). *json* MUST NOT be *NULL*. This function is actually
    implemented as a macro for speed.
 
-.. function:: json_is_object(const json_t *json)
-               json_is_array(const json_t *json)
-               json_is_string(const json_t *json)
-               json_is_integer(const json_t *json)
-               json_is_real(const json_t *json)
-               json_is_true(const json_t *json)
-               json_is_false(const json_t *json)
-               json_is_null(const json_t *json)
+.. function:: int json_is_object(const json_t *json)
+              int json_is_array(const json_t *json)
+              int json_is_string(const json_t *json)
+              int json_is_integer(const json_t *json)
+              int json_is_real(const json_t *json)
+              int json_is_true(const json_t *json)
+              int json_is_false(const json_t *json)
+              int json_is_null(const json_t *json)
 
    These functions (actually macros) return true (non-zero) for values
    of the given type, and false (zero) for values of other types and
    for *NULL*.
 
-.. function:: json_is_number(const json_t *json)
+.. function:: int json_is_number(const json_t *json)
 
    Returns true for values of types ``JSON_INTEGER`` and
    ``JSON_REAL``, and false for other types and for *NULL*.
 
-.. function:: json_is_boolean(const json_t *json)
+.. function:: int json_is_boolean(const json_t *json)
 
    Returns true for types ``JSON_TRUE`` and ``JSON_FALSE``, and false
    for values of other types and for *NULL*.
 
-.. function:: json_boolean_value(const json_t *json)
+.. function:: int json_boolean_value(const json_t *json)
 
    Alias of :func:`json_is_true()`, i.e. returns 1 for ``JSON_TRUE``
    and 0 otherwise.
@@ -594,7 +594,7 @@ A JSON array is an ordered collection of other JSON values.
    Appends all elements in *other_array* to the end of *array*.
    Returns 0 on success and -1 on error.
 
-.. function:: json_array_foreach(array, index, value)
+.. function:: void json_array_foreach(array, index, value)
 
    Iterate over every element of ``array``, running the block
    of code that follows each time with the proper values set to
@@ -732,11 +732,11 @@ allowed in object keys.
    recursively merged with the corresponding values in *object* if they are also
    objects, instead of overwriting them. Returns 0 on success or -1 on error.
 
-.. function:: json_object_foreach(object, key, value)
+.. function:: void json_object_foreach(object, key, value)
 
    Iterate over every key-value pair of ``object``, running the block
    of code that follows each time with the proper values set to
-   variables ``key`` and ``value``, of types :type:`const char *` and
+   variables ``key`` and ``value``, of types ``const char *`` and
    :type:`json_t *` respectively. Example::
 
        /* obj is a JSON object */
@@ -764,7 +764,7 @@ allowed in object keys.
    .. versionadded:: 2.3
 
 
-.. function:: json_object_foreach_safe(object, tmp, key, value)
+.. function:: void json_object_foreach_safe(object, tmp, key, value)
 
    Like :func:`json_object_foreach()`, but it's safe to call
    ``json_object_del(object, key)`` during iteration. You need to pass
@@ -1488,17 +1488,17 @@ arguments.
     Output a JSON null value. No argument is consumed.
 
 ``b`` (boolean) [int]
-    Convert a C :type:`int` to JSON boolean value. Zero is converted
+    Convert a C ``int`` to JSON boolean value. Zero is converted
     to ``false`` and non-zero to ``true``.
 
 ``i`` (integer) [int]
-    Convert a C :type:`int` to JSON integer.
+    Convert a C ``int`` to JSON integer.
 
 ``I`` (integer) [json_int_t]
     Convert a C :type:`json_int_t` to JSON integer.
 
 ``f`` (real) [double]
-    Convert a C :type:`double` to JSON real.
+    Convert a C ``double`` to JSON real.
 
 ``o`` (any value) [json_t \*]
     Output any given JSON value as-is. If the value is added to an
@@ -1625,20 +1625,20 @@ type whose address should be passed.
     Expect a JSON null value. Nothing is extracted.
 
 ``b`` (boolean) [int]
-    Convert a JSON boolean value to a C :type:`int`, so that ``true``
+    Convert a JSON boolean value to a C ``int``, so that ``true``
     is converted to 1 and ``false`` to 0.
 
 ``i`` (integer) [int]
-    Convert a JSON integer to C :type:`int`.
+    Convert a JSON integer to C ``int``.
 
 ``I`` (integer) [json_int_t]
     Convert a JSON integer to C :type:`json_int_t`.
 
 ``f`` (real) [double]
-    Convert a JSON real to C :type:`double`.
+    Convert a JSON real to C ``double``.
 
 ``F`` (integer or real) [double]
-    Convert a JSON number (integer or real) to C :type:`double`.
+    Convert a JSON number (integer or real) to C ``double``.
 
 ``o`` (any value) [json_t \*]
     Store a JSON value with no conversion to a :type:`json_t` pointer.
