@@ -8,8 +8,8 @@ check_PROGRAMS = \
 	test_dump_callback \
 	test_equal \
 	test_load \
-	test_loadb \
 	test_load_callback \
+	test_loadb \
 	test_memory_funcs \
 	test_number \
 	test_object \
