@@ -30,7 +30,7 @@
 void print_json(json_t *root);
 void print_json_aux(json_t *element, int indent);
 void print_json_indent(int indent);
-const char *json_plural(int count);
+const char *json_plural(size_t count);
 void print_json_object(json_t *element, int indent);
 void print_json_array(json_t *element, int indent);
 void print_json_string(json_t *element, int indent);
@@ -80,7 +80,7 @@ void print_json_indent(int indent) {
     }
 }
 
-const char *json_plural(int count) { return count == 1 ? "" : "s"; }
+const char *json_plural(size_t count) { return count == 1 ? "" : "s"; }
 
 void print_json_object(json_t *element, int indent) {
     size_t size;
@@ -90,7 +90,11 @@ void print_json_object(json_t *element, int indent) {
     print_json_indent(indent);
     size = json_object_size(element);
 
-    printf("JSON Object of %ld pair%s:\n", size, json_plural(size));
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+    printf("JSON Object of %zd pair%s:\n", size, json_plural(size));
+#else
+    printf("JSON Object of %lld pair%s:\n", (long long)size, json_plural(size));
+#endif
     json_object_foreach(element, key, value) {
         print_json_indent(indent + 2);
         printf("JSON Key: \"%s\"\n", key);
@@ -103,7 +107,11 @@ void print_json_array(json_t *element, int indent) {
     size_t size = json_array_size(element);
     print_json_indent(indent);
 
-    printf("JSON Array of %ld element%s:\n", size, json_plural(size));
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+    printf("JSON Array of %zd element%s:\n", size, json_plural(size));
+#else
+    printf("JSON Array of %lld element%s:\n", (long long)size, json_plural(size));
+#endif
     for (i = 0; i < size; i++) {
         print_json_aux(json_array_get(element, i), indent + 2);
     }
