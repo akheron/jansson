@@ -933,8 +933,7 @@ inserted to the object.
     :func:`json_object()`, either explicit or implicit. If this
     function is not called by the user, the first call to
     :func:`json_object()` (either explicit or implicit) seeds the hash
-    function. See :ref:`portability-thread-safety` for notes on thread
-    safety.
+    function. See :ref:`thread-safety` for notes on thread safety.
 
     If repeatable results are required, for e.g. unit tests, the hash
     function can be "unrandomized" by calling :func:`json_object_seed`
