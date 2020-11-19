@@ -7,9 +7,10 @@ check_PROGRAMS = \
 	test_dump \
 	test_dump_callback \
 	test_equal \
+	test_fixed_size \
 	test_load \
-	test_loadb \
 	test_load_callback \
+	test_loadb \
 	test_memory_funcs \
 	test_number \
 	test_object \
@@ -24,6 +25,7 @@ test_chaos_SOURCES = test_chaos.c util.h
 test_copy_SOURCES = test_copy.c util.h
 test_dump_SOURCES = test_dump.c util.h
 test_dump_callback_SOURCES = test_dump_callback.c util.h
+test_fixed_size_SOURCES = test_fixed_size.c util.h
 test_load_SOURCES = test_load.c util.h
 test_loadb_SOURCES = test_loadb.c util.h
 test_memory_funcs_SOURCES = test_memory_funcs.c util.h

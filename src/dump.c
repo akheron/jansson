@@ -195,8 +195,21 @@ static int dump_string(const char *str, size_t len, json_dump_callback_t dump, v
     return dump("\"", 1, data);
 }
 
+struct key_len {
+    const char *key;
+    int len;
+};
+
 static int compare_keys(const void *key1, const void *key2) {
-    return strcmp(*(const char **)key1, *(const char **)key2);
+    const struct key_len *k1 = key1;
+    const struct key_len *k2 = key2;
+    const size_t min_size = k1->len < k2->len ? k1->len : k2->len;
+    int res = memcmp(k1->key, k2->key, min_size);
+
+    if (res)
+        return res;
+
+    return k1->len - k2->len;
 }
 
 static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *parents,
@@ -253,9 +266,10 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
             /* Space for "0x", double the sizeof a pointer for the hex and a
              * terminator. */
             char key[2 + (sizeof(json) * 2) + 1];
+            size_t key_len;
 
             /* detect circular references */
-            if (jsonp_loop_check(parents, json, key, sizeof(key)))
+            if (jsonp_loop_check(parents, json, key, sizeof(key), &key_len))
                 return -1;
 
             n = json_array_size(json);
@@ -263,7 +277,7 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
             if (!embed && dump("[", 1, data))
                 return -1;
             if (n == 0) {
-                hashtable_del(parents, key);
+                hashtable_del(parents, key, key_len);
                 return embed ? 0 : dump("]", 1, data);
             }
             if (dump_indent(flags, depth + 1, 0, dump, data))
@@ -284,7 +298,7 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
                 }
             }
 
-            hashtable_del(parents, key);
+            hashtable_del(parents, key, key_len);
             return embed ? 0 : dump("]", 1, data);
         }
 
@@ -293,6 +307,7 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
             const char *separator;
             int separator_length;
             char loop_key[LOOP_KEY_LEN];
+            size_t loop_key_len;
 
             if (flags & JSON_COMPACT) {
                 separator = ":";
@@ -303,7 +318,8 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
             }
 
             /* detect circular references */
-            if (jsonp_loop_check(parents, json, loop_key, sizeof(loop_key)))
+            if (jsonp_loop_check(parents, json, loop_key, sizeof(loop_key),
+                                 &loop_key_len))
                 return -1;
 
             iter = json_object_iter((json_t *)json);
@@ -311,40 +327,44 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
             if (!embed && dump("{", 1, data))
                 return -1;
             if (!iter) {
-                hashtable_del(parents, loop_key);
+                hashtable_del(parents, loop_key, loop_key_len);
                 return embed ? 0 : dump("}", 1, data);
             }
             if (dump_indent(flags, depth + 1, 0, dump, data))
                 return -1;
 
             if (flags & JSON_SORT_KEYS) {
-                const char **keys;
+                struct key_len *keys;
                 size_t size, i;
 
                 size = json_object_size(json);
-                keys = jsonp_malloc(size * sizeof(const char *));
+                keys = jsonp_malloc(size * sizeof(struct key_len));
                 if (!keys)
                     return -1;
 
                 i = 0;
                 while (iter) {
-                    keys[i] = json_object_iter_key(iter);
+                    struct key_len *keylen = &keys[i];
+
+                    keylen->key = json_object_iter_key(iter);
+                    keylen->len = json_object_iter_key_len(iter);
+
                     iter = json_object_iter_next((json_t *)json, iter);
                     i++;
                 }
                 assert(i == size);
 
-                qsort(keys, size, sizeof(const char *), compare_keys);
+                qsort(keys, size, sizeof(struct key_len), compare_keys);
 
                 for (i = 0; i < size; i++) {
-                    const char *key;
+                    const struct key_len *key;
                     json_t *value;
 
-                    key = keys[i];
-                    value = json_object_get(json, key);
+                    key = &keys[i];
+                    value = json_object_getn(json, key->key, key->len);
                     assert(value);
 
-                    dump_string(key, strlen(key), dump, data, flags);
+                    dump_string(key->key, key->len, dump, data, flags);
                     if (dump(separator, separator_length, data) ||
                         do_dump(value, flags, depth + 1, parents, dump, data)) {
                         jsonp_free(keys);
@@ -372,8 +392,9 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
                 while (iter) {
                     void *next = json_object_iter_next((json_t *)json, iter);
                     const char *key = json_object_iter_key(iter);
+                    const size_t key_len = json_object_iter_key_len(iter);
 
-                    dump_string(key, strlen(key), dump, data, flags);
+                    dump_string(key, key_len, dump, data, flags);
                     if (dump(separator, separator_length, data) ||
                         do_dump(json_object_iter_value(iter), flags, depth + 1, parents,
                                 dump, data))
@@ -392,7 +413,7 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
                 }
             }
 
-            hashtable_del(parents, loop_key);
+            hashtable_del(parents, loop_key, loop_key_len);
             return embed ? 0 : dump("}", 1, data);
         }
 

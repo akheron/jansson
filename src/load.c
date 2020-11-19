@@ -689,7 +689,7 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error) {
         }
 
         if (flags & JSON_REJECT_DUPLICATES) {
-            if (json_object_get(object, key)) {
+            if (json_object_getn(object, key, len)) {
                 jsonp_free(key);
                 error_set(error, lex, json_error_duplicate_key, "duplicate object key");
                 goto error;
@@ -710,7 +710,7 @@ static json_t *parse_object(lex_t *lex, size_t flags, json_error_t *error) {
             goto error;
         }
 
-        if (json_object_set_new_nocheck(object, key, value)) {
+        if (json_object_setn_new_nocheck(object, key, len, value)) {
             jsonp_free(key);
             goto error;
         }

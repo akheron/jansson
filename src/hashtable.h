@@ -24,6 +24,7 @@ struct hashtable_pair {
     struct hashtable_list ordered_list;
     size_t hash;
     json_t *value;
+    size_t key_len;
     char key[1];
 };
 
@@ -69,6 +70,7 @@ void hashtable_close(hashtable_t *hashtable);
  *
  * @hashtable: The hashtable object
  * @key: The key
+ * @key: The length of key
  * @serial: For addition order of keys
  * @value: The value
  *
@@ -79,27 +81,29 @@ void hashtable_close(hashtable_t *hashtable);
  *
  * Returns 0 on success, -1 on failure (out of memory).
  */
-int hashtable_set(hashtable_t *hashtable, const char *key, json_t *value);
+int hashtable_set(hashtable_t *hashtable, const char *key, size_t key_len, json_t *value);
 
 /**
  * hashtable_get - Get a value associated with a key
  *
  * @hashtable: The hashtable object
  * @key: The key
+ * @key: The length of key
  *
  * Returns value if it is found, or NULL otherwise.
  */
-void *hashtable_get(hashtable_t *hashtable, const char *key);
+void *hashtable_get(hashtable_t *hashtable, const char *key, size_t key_len);
 
 /**
  * hashtable_del - Remove a value from the hashtable
  *
  * @hashtable: The hashtable object
  * @key: The key
+ * @key: The length of key
  *
  * Returns 0 on success, or -1 if the key was not found.
  */
-int hashtable_del(hashtable_t *hashtable, const char *key);
+int hashtable_del(hashtable_t *hashtable, const char *key, size_t key_len);
 
 /**
  * hashtable_clear - Clear hashtable
@@ -132,11 +136,12 @@ void *hashtable_iter(hashtable_t *hashtable);
  *
  * @hashtable: The hashtable object
  * @key: The key that the iterator should point to
+ * @key: The length of key
  *
  * Like hashtable_iter() but returns an iterator pointing to a
  * specific key.
  */
-void *hashtable_iter_at(hashtable_t *hashtable, const char *key);
+void *hashtable_iter_at(hashtable_t *hashtable, const char *key, size_t key_len);
 
 /**
  * hashtable_iter_next - Advance an iterator
@@ -155,6 +160,13 @@ void *hashtable_iter_next(hashtable_t *hashtable, void *iter);
  * @iter: The iterator
  */
 void *hashtable_iter_key(void *iter);
+
+/**
+ * hashtable_iter_key_len - Retrieve the key length pointed by an iterator
+ *
+ * @iter: The iterator
+ */
+size_t hashtable_iter_key_len(void *iter);
 
 /**
  * hashtable_iter_value - Retrieve the value pointed by an iterator

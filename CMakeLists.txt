@@ -508,14 +508,15 @@ if (NOT JANSSON_WITHOUT_TESTS)
 
    set(api_tests
          test_array
-         test_copy
          test_chaos
+         test_copy
          test_dump
          test_dump_callback
          test_equal
+         test_fixed_size
          test_load
-         test_loadb
          test_load_callback
+         test_loadb
          test_number
          test_object
          test_pack
