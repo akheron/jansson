@@ -61,7 +61,7 @@ program startup. See :ref:`apiref-custom-memory-allocation`.
 
 
 Locale
-------
+======
 
 Jansson works fine under any locale.
 
