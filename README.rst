@@ -1,9 +1,9 @@
 Jansson README
 ==============
 
-.. image:: https://travis-ci.org/akheron/jansson.png
-  :target: https://travis-ci.org/akheron/jansson
-  
+.. image:: https://github.com/akheron/jansson/workflows/tests/badge.svg
+  :target: https://github.com/akheron/jansson/actions
+
 .. image:: https://ci.appveyor.com/api/projects/status/lmhkkc4q8cwc65ko
   :target: https://ci.appveyor.com/project/akheron/jansson
 
