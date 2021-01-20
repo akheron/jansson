@@ -935,3 +935,21 @@ int json_unpack(json_t *root, const char *fmt, ...) {
 
     return ret;
 }
+
+json_t *json_strtok(const char *str, const char *delim) {
+    json_t *value = NULL;
+    char *s;
+    char *token;
+
+    if (str != NULL) {
+        value = json_array();
+
+        s = strdup(str);
+        for (token = strtok(s, delim); token; token = strtok(NULL, delim)) {
+            json_array_append_new(value, json_string(token));
+        }
+        free(s);
+    }
+
+    return value;
+}

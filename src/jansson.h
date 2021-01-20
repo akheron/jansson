@@ -344,6 +344,10 @@ json_t *json_sprintf(const char *fmt, ...)
 json_t *json_vsprintf(const char *fmt, va_list ap)
     JANSSON_ATTRS((warn_unused_result, format(printf, 1, 0)));
 
+/* strtok */
+
+json_t *json_strtok(const char *str, const char *delim);
+
 /* equality */
 
 int json_equal(const json_t *value1, const json_t *value2);
