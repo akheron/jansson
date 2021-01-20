@@ -393,6 +393,12 @@ static void run_tests() {
         fail("json_pack array (with whitespace) failed");
     json_decref(value);
 
+    /* json_strtok() */
+    value = json_strtok("comma,separated,values", ",");
+    if (!json_is_array(value) || json_array_size(value) != 3)
+        fail("json_strtok comma-separated values failed");
+    json_decref(value);
+
     /*
      * Invalid cases
      */
