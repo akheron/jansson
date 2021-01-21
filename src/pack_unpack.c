@@ -938,14 +938,13 @@ int json_unpack(json_t *root, const char *fmt, ...) {
 
 json_t *json_strtok(const char *str, const char *delim) {
     json_t *value = NULL;
-    char *s;
-    char *token;
+    char *s, *p, *token;
 
     if (str != NULL) {
         value = json_array();
 
         s = strdup(str);
-        for (token = strtok(s, delim); token; token = strtok(NULL, delim)) {
+        for (token = strtok_r(s, delim, &p); token; token = strtok_r(NULL, delim, &p)) {
             json_array_append_new(value, json_string(token));
         }
         free(s);
