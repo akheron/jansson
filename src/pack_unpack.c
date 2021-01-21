@@ -936,6 +936,10 @@ int json_unpack(json_t *root, const char *fmt, ...) {
     return ret;
 }
 
+#if defined(_WIN32)
+#define strtok_r strtok_s
+#endif
+
 json_t *json_strtok(const char *str, const char *delim) {
     json_t *value = NULL;
     char *s, *p, *token;
