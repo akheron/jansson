@@ -80,11 +80,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           git clone https://github.com/google/oss-fuzz.git /tmp/ossfuzz
-          if [ "$GITHUB_HEAD_REF" ]; then
-              BRANCH=${GITHUB_HEAD_REF##*/}
-          else
-              BRANCH=${GITHUB_REF##*/}
-          fi
+          BRANCH=${GITHUB_REF##*/}
           sed -i "s@https://github.com/akheron/jansson.git@-b $BRANCH https://github.com/${{github.repository}}.git@" /tmp/ossfuzz/projects/jansson/Dockerfile
           pushd /tmp/ossfuzz
           python infra/helper.py build_image --pull jansson
