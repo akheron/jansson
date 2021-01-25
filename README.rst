@@ -1,6 +1,8 @@
 Jansson README
 ==============
 
+dummy change
+
 .. image:: https://github.com/akheron/jansson/workflows/tests/badge.svg
   :target: https://github.com/akheron/jansson/actions
 
