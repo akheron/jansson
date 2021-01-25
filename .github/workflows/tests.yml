@@ -77,13 +77,21 @@ jobs:
   fuzz:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: |
-          env
-          git clone https://github.com/google/oss-fuzz.git /tmp/ossfuzz
-          BRANCH=${GITHUB_REF##*/}
-          sed -i "s@https://github.com/akheron/jansson.git@-b $BRANCH https://github.com/${{github.repository}}.git@" /tmp/ossfuzz/projects/jansson/Dockerfile
-          pushd /tmp/ossfuzz
-          python infra/helper.py build_image --pull jansson
-          python infra/helper.py build_fuzzers jansson
-          popd
+    - name: Build Fuzzers
+      id: build
+      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+      with:
+        oss-fuzz-project-name: 'jansson'
+        dry-run: false
+    - name: Run Fuzzers
+      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+      with:
+        oss-fuzz-project-name: 'jansson'
+        fuzz-seconds: 600
+        dry-run: false
+    - name: Upload Crash
+      uses: actions/upload-artifact@v1
+      if: failure() && steps.build.outcome == 'success'
+      with:
+        name: artifacts
+        path: ./out/artifacts
