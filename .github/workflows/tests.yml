@@ -79,6 +79,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: |
+          env
           git clone https://github.com/google/oss-fuzz.git /tmp/ossfuzz
           BRANCH=${GITHUB_REF##*/}
           sed -i "s@https://github.com/akheron/jansson.git@-b $BRANCH https://github.com/${{github.repository}}.git@" /tmp/ossfuzz/projects/jansson/Dockerfile
