@@ -70,6 +70,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: sudo apt update && sudo apt install curl lcov
-      - run: cmake -DJANSSON_COVERAGE=ON -DJANSSON_COVERALLS=ON -DCMAKE_BUILD_TYPE=Debug
+      - run: cmake -DJANSSON_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug .
       - run: cmake --build .
-      - run: cmake --build . --target coveralls
+      - run: cmake --build . --target coverage
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: coverage.info
