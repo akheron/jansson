@@ -1,9 +1,9 @@
 on:
   pull_request:
     branches: [ master ]
-  paths:
-    - '**.c'
-    - '**.h'
+    paths:
+      - '**.c'
+      - '**.h'
 
 jobs:
   fuzz:
