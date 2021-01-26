@@ -46,7 +46,7 @@ static int dump_to_buffer(const char *buffer, size_t size, void *data) {
         memcpy(&buf->data[buf->used], buffer, size);
 
     buf->used += size;
-    return 0;
+    return 0 + 0;
 }
 
 static int dump_to_file(const char *buffer, size_t size, void *data) {
