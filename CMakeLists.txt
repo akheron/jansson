@@ -49,6 +49,7 @@ include (CheckFunctionExists)
 include (CheckFunctionKeywords)
 include (CheckIncludeFiles)
 include (CheckTypeSize)
+include (GNUInstallDirs)
 
 # suppress format-truncation warning
 include (CheckCCompilerFlag)
@@ -541,15 +542,10 @@ endif ()
 # Installation preparation.
 #
 
-# Allow the user to override installation directories.
-set(JANSSON_INSTALL_LIB_DIR       lib CACHE PATH "Installation directory for libraries")
-set(JANSSON_INSTALL_BIN_DIR       bin CACHE PATH "Installation directory for executables")
-set(JANSSON_INSTALL_INCLUDE_DIR   include CACHE PATH "Installation directory for header files")
-
 if(WIN32 AND NOT CYGWIN)
   set(DEF_INSTALL_CMAKE_DIR cmake)
 else()
-  set(DEF_INSTALL_CMAKE_DIR lib/cmake/jansson)
+  set(DEF_INSTALL_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/jansson")
 endif()
 
 set(JANSSON_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
@@ -559,8 +555,8 @@ set(JANSSON_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation 
 #  have to defined the same variables used there).
 set(prefix      ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\${prefix}")
-set(libdir      "\${exec_prefix}/${JANSSON_INSTALL_LIB_DIR}")
-set(includedir  "\${prefix}/${JANSSON_INSTALL_INCLUDE_DIR}")
+set(libdir      "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
+set(includedir  "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
 set(VERSION     ${JANSSON_DISPLAY_VERSION})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/jansson.pc.in
                ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc @ONLY)
@@ -602,18 +598,18 @@ option(JANSSON_INSTALL "Generate installation target" ON)
 if (JANSSON_INSTALL)
   install(TARGETS jansson
           EXPORT janssonTargets
-          LIBRARY DESTINATION "lib"
-          ARCHIVE DESTINATION "lib"
-          RUNTIME DESTINATION "bin"
-          INCLUDES DESTINATION "include")
+          LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+          ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+          RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+          INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
   install(FILES ${JANSSON_HDR_PUBLIC}
-          DESTINATION "include")
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
   # Install the pkg-config.
   install(FILES
           ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc
-          DESTINATION lib/pkgconfig)
+          DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
   # Install the configs.
   install(FILES
