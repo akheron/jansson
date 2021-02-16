@@ -57,9 +57,6 @@ if (HAS_NO_FORMAT_TRUNCATION)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation")
 endif()
 
-include (CheckSymbolExists)
-check_symbol_exists("__GLIBC__" "stdlib.h" LIBC_IS_GLIBC)
-
 if (MSVC)
    # Turn off Microsofts "security" warnings.
    add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo" )
@@ -311,8 +308,42 @@ if(JANSSON_BUILD_SHARED_LIBS)
       ${JANSSON_HDR_PUBLIC}
       src/jansson.def)
 
-   if (LIBC_IS_GLIBC)
+# check if linker support --default-symver
+   list(APPEND CMAKE_REQUIRED_LIBRARIES "-Wl,--default-symver")
+   check_c_source_compiles(
+   "
+   int main (void)
+   {
+      return 0;
+   }
+   "
+   DSYMVER_WORKS
+   )
+   list(REMOVE_ITEM CMAKE_REQUIRED_LIBRARIES "-Wl,--default-symver")
+
+   if (SYMVER_WORKS)
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--default-symver")
+   else()
+# some linkers may only support --version-script
+      file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/jansson.sym" "libjansson.so.${JANSSON_SOVERSION} {
+    global:
+          *;
+};
+")
+      list(APPEND CMAKE_REQUIRED_LIBRARIES "-Wl,--version-script,${CMAKE_CURRENT_BINARY_DIR}/jansson.sym")
+      check_c_source_compiles(
+   "
+   int main (void)
+   {
+      return 0;
+   }
+   "
+   VSCRIPT_WORKS
+   )
+      list(REMOVE_ITEM CMAKE_REQUIRED_LIBRARIES "-Wl,--version-script,${CMAKE_CURRENT_BINARY_DIR}/jansson.sym")
+      if (SYMVER_WORKS)
+         set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--version-script,${CMAKE_CURRENT_BINARY_DIR}/jansson.sym")
+      endif()
    endif()
 
    set_target_properties(jansson PROPERTIES
