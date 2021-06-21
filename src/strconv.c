@@ -71,6 +71,12 @@ int jsonp_strtod(strbuffer_t *strbuffer, double *out) {
         /* Overflow */
         return -1;
     }
+    if (isinf(value) || isnan(value)) {
+        /* "Numeric values that cannot be represented as sequences of digits
+           (such as Infinity and NaN) are not permitted."
+           https://datatracker.ietf.org/doc/html/rfc4627.html#section-2.4 */
+        return -1;
+    }
 
     *out = value;
     return 0;
