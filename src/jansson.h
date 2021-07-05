@@ -309,7 +309,7 @@ static JSON_INLINE int json_array_insert(json_t *array, size_t ind, json_t *valu
 }
 
 static JSON_INLINE int json_array_extend_new(json_t *array, json_t *other) {
-    int ret json_array_extend(array, other);
+    int ret = json_array_extend(array, other);
     json_decref(other);
     return ret;
 }
