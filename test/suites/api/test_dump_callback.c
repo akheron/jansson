@@ -26,7 +26,7 @@ static int my_writer(const char *buffer, size_t len, void *data) {
     return 0;
 }
 
-static void run_tests() {
+static void run_tests(void) {
     struct my_sink s;
     json_t *json;
     const char str[] = "[\"A\", {\"B\": \"C\", \"e\": false}, 1, null, \"foo\"]";

@@ -364,7 +364,7 @@ static void test_deep_copy_circular_references(void) {
     json_decref(json);
 }
 
-static void run_tests() {
+static void run_tests(void) {
     test_copy_simple();
     test_deep_copy_simple();
     test_copy_array();

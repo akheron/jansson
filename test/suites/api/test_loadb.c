@@ -9,7 +9,7 @@
 #include <jansson.h>
 #include <string.h>
 
-static void run_tests() {
+static void run_tests(void) {
     json_t *json;
     json_error_t error;
     const char str[] = "[\"A\", {\"B\": \"C\"}, 1, 2, 3]garbage";
