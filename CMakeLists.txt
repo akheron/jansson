@@ -325,7 +325,7 @@ if(JANSSON_BUILD_SHARED_LIBS)
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--default-symver")
    else()
 # some linkers may only support --version-script
-      file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/jansson.sym" "libjansson.so.${JANSSON_SOVERSION} {
+      file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/jansson.sym" "JANSSON_${JANSSON_SOVERSION} {
     global:
           *;
 };
@@ -341,7 +341,7 @@ if(JANSSON_BUILD_SHARED_LIBS)
    VSCRIPT_WORKS
    )
       list(REMOVE_ITEM CMAKE_REQUIRED_LIBRARIES "-Wl,--version-script,${CMAKE_CURRENT_BINARY_DIR}/jansson.sym")
-      if (SYMVER_WORKS)
+      if (VSCRIPT_WORKS)
          set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--version-script,${CMAKE_CURRENT_BINARY_DIR}/jansson.sym")
       endif()
    endif()
