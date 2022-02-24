@@ -26,7 +26,6 @@ data. Its main features and design principles are:
 Jansson is licensed under the `MIT license`_; see LICENSE in the
 source distribution for details.
 
-
 Compilation and Installation
 ----------------------------
 
@@ -73,6 +72,14 @@ HTML documentation, invoke::
 Then, point your browser to ``doc/_build/html/index.html``. Sphinx_
 1.0 or newer is required to generate the documentation.
 
+
+Community
+---------
+
+* `Documentation <http://jansson.readthedocs.io/en/latest/>`_
+* `Issue tracker <https://github.com/akheron/jansson/issues>`_
+* `Mailing list <http://groups.google.com/group/jansson-users>`_
+* `Wiki <https://github.com/akheron/jansson/wiki>`_ contains some development documentation
 
 .. _Jansson: http://www.digip.org/jansson/
 .. _`Comprehensive documentation`: http://jansson.readthedocs.io/en/latest/
