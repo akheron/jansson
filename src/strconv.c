@@ -1,9 +1,11 @@
+#include "jansson_config.h"
 #include "jansson_private.h"
 #include "strbuffer.h"
 #include <assert.h>
 #include <errno.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* need jansson_private_config.h to get the correct snprintf */
