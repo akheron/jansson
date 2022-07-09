@@ -9,7 +9,7 @@
 #include <string.h>
 
 #include <curl/curl.h>
-#include <jansson.h>
+#include "jansson.h"
 
 #define BUFFER_SIZE (256 * 1024) /* 256 KB */
 

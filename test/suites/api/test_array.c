@@ -6,7 +6,7 @@
  */
 
 #include "util.h"
-#include <jansson.h>
+#include "jansson.h"
 
 static void test_misc(void) {
     json_t *array, *five, *seven, *value;
