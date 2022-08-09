@@ -10,11 +10,13 @@
 #endif
 
 #ifdef HAVE_CONFIG_H
-#include <jansson_private_config.h>
+#include "jansson_private_config.h"
 #endif
 
 #include <math.h>
+#include <stdarg.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -24,6 +26,7 @@
 
 #include "hashtable.h"
 #include "jansson.h"
+#include "jansson_config.h"
 #include "jansson_private.h"
 #include "utf.h"
 
