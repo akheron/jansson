@@ -616,7 +616,7 @@ Released 2011-10-06
   - Fix identifier decoding under non-UTF-8 locales. (#35)
 
   - `json_load_file()`: Open the input file in binary mode for maximum
-    compatiblity.
+    compatibility.
 
 * Documentation:
 
