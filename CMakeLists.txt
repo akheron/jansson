@@ -602,9 +602,7 @@ foreach(p LIB BIN INCLUDE CMAKE)
 endforeach()
 
 # Generate the config file for the build-tree.
-set(JANSSON__INCLUDE_DIRS
-    "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    "${CMAKE_CURRENT_BINARY_DIR}/include")
+set(JANSSON__INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/include")
 set(JANSSON_INCLUDE_DIRS ${JANSSON__INCLUDE_DIRS} CACHE PATH "Jansson include directories")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/janssonConfig.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/janssonConfig.cmake
