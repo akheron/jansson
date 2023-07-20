@@ -59,7 +59,7 @@ static void test_bad_args(void) {
 }
 
 /* Call the simple functions not covered by other tests of the public API */
-static void run_tests() {
+static void run_tests(void) {
     json_t *value;
 
     value = json_boolean(1);

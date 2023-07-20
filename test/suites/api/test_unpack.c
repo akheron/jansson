@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static void run_tests() {
+static void run_tests(void) {
     json_t *j, *j2;
     int i1, i2, i3;
     json_int_t I1;

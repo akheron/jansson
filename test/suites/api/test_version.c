@@ -15,7 +15,7 @@ static void test_version_str(void) {
     }
 }
 
-static void test_version_cmp() {
+static void test_version_cmp(void) {
     if (jansson_version_cmp(JANSSON_MAJOR_VERSION, JANSSON_MINOR_VERSION,
                             JANSSON_MICRO_VERSION)) {
         fail("jansson_version_cmp equality check failed");
@@ -55,7 +55,7 @@ static void test_version_cmp() {
     }
 }
 
-static void run_tests() {
+static void run_tests(void) {
     test_version_str();
     test_version_cmp();
 }

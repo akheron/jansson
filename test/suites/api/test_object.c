@@ -9,7 +9,7 @@
 #include <jansson.h>
 #include <string.h>
 
-static void test_clear() {
+static void test_clear(void) {
     json_t *object, *ten;
 
     object = json_object();
@@ -37,7 +37,7 @@ static void test_clear() {
     json_decref(object);
 }
 
-static void test_update() {
+static void test_update(void) {
     json_t *object, *other, *nine, *ten;
 
     object = json_object();
@@ -143,7 +143,7 @@ static void test_update() {
     json_decref(object);
 }
 
-static void test_set_many_keys() {
+static void test_set_many_keys(void) {
     json_t *object, *value;
     const char *keys = "abcdefghijklmnopqrstuvwxyz";
     char buf[2];
@@ -168,7 +168,7 @@ static void test_set_many_keys() {
     json_decref(value);
 }
 
-static void test_conditional_updates() {
+static void test_conditional_updates(void) {
     json_t *object, *other;
 
     object = json_pack("{sisi}", "foo", 1, "bar", 2);
@@ -246,7 +246,7 @@ static void test_conditional_updates() {
     json_decref(other);
 }
 
-static void test_recursive_updates() {
+static void test_recursive_updates(void) {
     json_t *invalid, *object, *other, *barBefore, *barAfter;
 
     invalid = json_integer(42);
@@ -325,7 +325,7 @@ static void test_recursive_updates() {
     json_decref(other);
 }
 
-static void test_circular() {
+static void test_circular(void) {
     json_t *object1, *object2;
 
     object1 = json_object();
@@ -351,7 +351,7 @@ static void test_circular() {
     json_decref(object1);
 }
 
-static void test_set_nocheck() {
+static void test_set_nocheck(void) {
     json_t *object, *string;
 
     object = json_object();
@@ -388,7 +388,7 @@ static void test_set_nocheck() {
     json_decref(object);
 }
 
-static void test_iterators() {
+static void test_iterators(void) {
     json_t *object, *foo, *bar, *baz;
     void *iter;
 
@@ -467,7 +467,7 @@ static void test_iterators() {
     json_decref(baz);
 }
 
-static void test_misc() {
+static void test_misc(void) {
     json_t *object, *string, *other_string, *value;
 
     object = json_object();
@@ -577,7 +577,7 @@ static void test_misc() {
     json_decref(object);
 }
 
-static void test_preserve_order() {
+static void test_preserve_order(void) {
     json_t *object;
     char *result;
 
@@ -612,7 +612,7 @@ static void test_preserve_order() {
     json_decref(object);
 }
 
-static void test_object_foreach() {
+static void test_object_foreach(void) {
     const char *key;
     json_t *object1, *object2, *value;
 
@@ -628,7 +628,7 @@ static void test_object_foreach() {
     json_decref(object2);
 }
 
-static void test_object_foreach_safe() {
+static void test_object_foreach_safe(void) {
     const char *key;
     void *tmp;
     json_t *object, *value;
@@ -780,7 +780,7 @@ static void test_bad_args(void) {
     json_decref(num);
 }
 
-static void run_tests() {
+static void run_tests(void) {
     test_misc();
     test_clear();
     test_update();

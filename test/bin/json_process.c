@@ -242,7 +242,7 @@ static int getenv_int(const char *name) {
     return (int)result;
 }
 
-int use_env() {
+int use_env(void) {
     int indent, precision;
     size_t flags = 0;
     json_t *json;
