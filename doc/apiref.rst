@@ -1360,6 +1360,12 @@ macros can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.6
 
+``JSON_STORE_LOCATION``
+   Add location information to decoded :type:`json_t` objects. See
+   :ref:`apiref-location-information` for details.
+
+   .. versionadded:: 2.15
+
 Each function also takes an optional :type:`json_error_t` parameter
 that is filled with error information if decoding fails. It's also
 updated on success; the number of bytes of input read is written to
