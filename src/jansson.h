@@ -360,6 +360,7 @@ json_t *json_deep_copy(const json_t *value) JANSSON_ATTRS((warn_unused_result));
 #define JSON_DECODE_ANY         0x4
 #define JSON_DECODE_INT_AS_REAL 0x8
 #define JSON_ALLOW_NUL          0x10
+#define JSON_STORE_LOCATION     0x20
 
 typedef size_t (*json_load_callback_t)(void *buffer, size_t buflen, void *data);
 
