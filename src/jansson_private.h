@@ -60,11 +60,16 @@ typedef struct {
     json_int_t value;
 } json_integer_t;
 
+typedef struct {
+    json_t json;
+} json_simple_t;
+
 #define json_to_object(json_)  container_of(json_, json_object_t, json)
 #define json_to_array(json_)   container_of(json_, json_array_t, json)
 #define json_to_string(json_)  container_of(json_, json_string_t, json)
 #define json_to_real(json_)    container_of(json_, json_real_t, json)
 #define json_to_integer(json_) container_of(json_, json_integer_t, json)
+#define json_to_simple(json_)  container_of(json_, json_simple_t, json)
 
 /* Create a string by taking ownership of an existing buffer */
 json_t *jsonp_stringn_nocheck_own(const char *value, size_t len);
@@ -93,6 +98,9 @@ char *jsonp_strndup(const char *str, size_t len) JANSSON_ATTRS((warn_unused_resu
 #define LOOP_KEY_LEN (2 + (sizeof(json_t *) * 2) + 1)
 int jsonp_loop_check(hashtable_t *parents, const json_t *json, char *key, size_t key_size,
                      size_t *key_len_out);
+
+/* Helpers for location information */
+json_t *jsonp_simple(json_t *json, size_t flags);
 
 /* Windows compatibility */
 #if defined(_WIN32) || defined(WIN32)

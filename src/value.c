@@ -997,6 +997,33 @@ json_t *json_null(void) {
     return &the_null;
 }
 
+/*** refcounted simple values ***/
+
+json_t *jsonp_simple(json_t *json, size_t flags)
+{
+    json_simple_t *simple;
+
+    /* pointless if not recording object location */
+    if (!(flags & JSON_STORE_LOCATION))
+        return json;
+
+    simple = jsonp_malloc(sizeof(json_simple_t));
+    if (!simple)
+        return NULL;
+
+    simple->json.type = json->type;
+    simple->json.refcount = 1;
+
+    return &simple->json;
+}
+
+static void json_delete_simple(json_simple_t *simple)
+{
+    /* catch accidental calls for singletons */
+    if (simple && simple->json.refcount == 0)
+        jsonp_free(simple);
+}
+
 /*** deletion ***/
 
 void json_delete(json_t *json) {
@@ -1019,11 +1046,14 @@ void json_delete(json_t *json) {
         case JSON_REAL:
             json_delete_real(json_to_real(json));
             break;
+        case JSON_TRUE:
+        case JSON_FALSE:
+        case JSON_NULL:
+            json_delete_simple(json_to_simple(json));
+            break;
         default:
             return;
     }
-
-    /* json_delete is not called for true, false or null */
 }
 
 /*** equality ***/

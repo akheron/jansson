@@ -224,6 +224,35 @@ static void error_code() {
         fail("json_loads returned incorrect error code");
 }
 
+static void singleton_or_not() {
+    const char *simple_types[] = { "true", "false", "null", NULL };
+    size_t flags;
+    json_t *json;
+    int i;
+
+    for (i = 0; simple_types[i]; i++) {
+        flags = JSON_DECODE_ANY;
+        json = json_loads(simple_types[i], flags, NULL);
+        if (!json)
+            fail_args("json_loads failed for %s", simple_types[i]);
+        if (json->refcount != (size_t)-1)
+            fail_args("expected singleton when loading %s", simple_types[i]);
+        json_delete(json);
+
+        flags |= JSON_STORE_LOCATION;
+        json = json_loads(simple_types[i], flags, NULL);
+        if (!json)
+            fail_args("json_loads failed for %s when storing location",
+                      simple_types[i]);
+        if (json->refcount != 1)
+            fail_args("unexpected singleton when loading %s and storing location",
+                      simple_types[i]);
+        json_delete(json);
+        json_decref(json);
+    }
+}
+
+
 static void run_tests() {
     file_not_found();
     very_long_file_name();
@@ -235,4 +264,5 @@ static void run_tests() {
     load_wrong_args();
     position();
     error_code();
+    singleton_or_not();
 }
