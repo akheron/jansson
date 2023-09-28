@@ -812,15 +812,15 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error) {
         }
 
         case TOKEN_TRUE:
-            json = json_true();
+            json = jsonp_simple(json_true(), flags);
             break;
 
         case TOKEN_FALSE:
-            json = json_false();
+            json = jsonp_simple(json_false(), flags);
             break;
 
         case TOKEN_NULL:
-            json = json_null();
+            json = jsonp_simple(json_null(), flags);
             break;
 
         case '{':
