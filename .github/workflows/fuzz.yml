@@ -1,11 +1,6 @@
 name: oss-fuzz
 
-on:
-  pull_request:
-    branches: [ master ]
-    paths:
-      - '**.c'
-      - '**.h'
+on: [pull_request]
 
 jobs:
   fuzz:
