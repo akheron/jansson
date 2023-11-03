@@ -10,17 +10,23 @@ on:
 jobs:
   fuzz:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer: [address, undefined, memory]
     steps:
-    - name: Build Fuzzers
+    - name: Build Fuzzers (${{ matrix.sanitizer }})
       id: build
       uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
       with:
         oss-fuzz-project-name: 'jansson'
+        sanitizer: ${{ matrix.sanitizer }}
         dry-run: false
-    - name: Run Fuzzers
+    - name: Run Fuzzers (${{ matrix.sanitizer }})
       uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
       with:
         oss-fuzz-project-name: 'jansson'
+        sanitizer: ${{ matrix.sanitizer }}
         fuzz-seconds: 600
         dry-run: false
     - name: Upload Crash
