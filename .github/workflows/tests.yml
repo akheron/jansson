@@ -10,7 +10,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: ./scripts/clang-format-check
 
   autotools:
@@ -24,7 +24,7 @@ jobs:
     steps:
       - if: ${{runner.os == 'macOS'}}
         run: brew install autoconf automake libtool
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: autoreconf -fi
       - env:
           CC: ${{matrix.cc}}
@@ -49,7 +49,7 @@ jobs:
     runs-on: ${{matrix.os}}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - env:
           CC: ${{matrix.cc}}
         run: cmake .
@@ -59,7 +59,7 @@ jobs:
   valgrind:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: sudo apt update && sudo apt install valgrind
       - run: cmake -DJANSSON_TEST_WITH_VALGRIND=ON .
       - run: cmake --build .
@@ -68,13 +68,13 @@ jobs:
   coveralls:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: sudo apt update && sudo apt install curl lcov
       - run: cmake -DJANSSON_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug .
       - run: cmake --build .
       - run: cmake --build . --target coverage
       - name: Coveralls
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage.info
