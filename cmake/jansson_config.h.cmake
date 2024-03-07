@@ -56,9 +56,6 @@
 #define JSON_INTEGER_FORMAT @JSON_INTEGER_FORMAT@
 
 
-/* If locale.h and localeconv() are available, define to 1, otherwise to 0. */
-#define JSON_HAVE_LOCALECONV @JSON_HAVE_LOCALECONV@
-
 /* If __atomic builtins are available they will be used to manage
    reference counts of json_t. */
 #define JSON_HAVE_ATOMIC_BUILTINS @JSON_HAVE_ATOMIC_BUILTINS@

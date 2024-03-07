@@ -215,18 +215,7 @@ if (NOT DEFINED JSON_INT_T)
    endif ()
 endif ()
 
-
-# If locale.h and localeconv() are available, define to 1, otherwise to 0.
 check_include_files (locale.h HAVE_LOCALE_H)
-check_function_exists (localeconv HAVE_LOCALECONV)
-
-if (HAVE_LOCALECONV AND HAVE_LOCALE_H)
-   set (JSON_HAVE_LOCALECONV 1)
-else ()
-   set (JSON_HAVE_LOCALECONV 0)
-endif()
-
-# check if we have setlocale
 check_function_exists(setlocale HAVE_SETLOCALE)
 
 # Check what the inline keyword is.

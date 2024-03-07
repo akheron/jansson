@@ -32,10 +32,6 @@
    otherwise to 0. */
 #define JSON_INTEGER_IS_LONG_LONG 1
 
-/* If locale.h and localeconv() are available, define to 1,
-   otherwise to 0. */
-#define JSON_HAVE_LOCALECONV 0
-
 /* Maximum recursion depth for parsing JSON input.
    This limits the depth of e.g. array-within-array constructions. */
 #define JSON_PARSER_MAX_DEPTH 2048
