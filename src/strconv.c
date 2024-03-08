@@ -11,57 +11,57 @@
 #include <jansson_private_config.h>
 #endif
 
-#if JSON_HAVE_LOCALECONV
-#include <locale.h>
-
 /*
   - This code assumes that the decimal separator is exactly one
     character.
 
   - If setlocale() is called by another thread between the call to
-    localeconv() and the call to sprintf() or strtod(), the result may
-    be wrong. setlocale() is not thread-safe and should not be used
-    this way. Multi-threaded programs should use uselocale() instead.
+    get_decimal_point() and the call to sprintf() or strtod(), the
+    result may be wrong. setlocale() is not thread-safe and should
+    not be used this way. Multi-threaded programs should use
+    uselocale() instead.
 */
+static char get_decimal_point() {
+    char buf[3];
+    sprintf(buf, "%#.0f", 1.0); // "1." in the current locale
+    return buf[1];
+}
 
 static void to_locale(strbuffer_t *strbuffer) {
-    const char *point;
+    char point;
     char *pos;
 
-    point = localeconv()->decimal_point;
-    if (*point == '.') {
+    point = get_decimal_point();
+    if (point == '.') {
         /* No conversion needed */
         return;
     }
 
     pos = strchr(strbuffer->value, '.');
     if (pos)
-        *pos = *point;
+        *pos = point;
 }
 
 static void from_locale(char *buffer) {
-    const char *point;
+    char point;
     char *pos;
 
-    point = localeconv()->decimal_point;
-    if (*point == '.') {
+    point = get_decimal_point();
+    if (point == '.') {
         /* No conversion needed */
         return;
     }
 
-    pos = strchr(buffer, *point);
+    pos = strchr(buffer, point);
     if (pos)
         *pos = '.';
 }
-#endif
 
 int jsonp_strtod(strbuffer_t *strbuffer, double *out) {
     double value;
     char *end;
 
-#if JSON_HAVE_LOCALECONV
     to_locale(strbuffer);
-#endif
 
     errno = 0;
     value = strtod(strbuffer->value, &end);
@@ -92,9 +92,7 @@ int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
     if (length >= size)
         return -1;
 
-#if JSON_HAVE_LOCALECONV
     from_locale(buffer);
-#endif
 
     /* Make sure there's a dot or 'e' in the output. Otherwise
        a real is converted to an integer when decoding */

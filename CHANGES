@@ -1,3 +1,14 @@
+Version 2.14.1
+==============
+
+Work in progress
+
+* Fixes:
+
+  - Fix thread safety of encoding and decoding when `uselocale` or `newlocale`
+    is used to switch locales inside the threads (#674, #675, #677. Thanks to
+    Bruno Haible the report and help with fixing.)
+
 Version 2.14
 ============
 

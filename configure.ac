@@ -34,7 +34,7 @@ esac
 AC_SUBST([json_inline])
 
 # Checks for library functions.
-AC_CHECK_FUNCS([close getpid gettimeofday localeconv open read sched_yield strtoll])
+AC_CHECK_FUNCS([close getpid gettimeofday open read setlocale sched_yield strtoll])
 
 AC_MSG_CHECKING([for gcc __sync builtins])
 have_sync_builtins=no
@@ -73,12 +73,6 @@ case "$ac_cv_type_long_long_int$ac_cv_func_strtoll" in
      *) json_have_long_long=0;;
 esac
 AC_SUBST([json_have_long_long])
-
-case "$ac_cv_header_locale_h$ac_cv_func_localeconv" in
-     yesyes) json_have_localeconv=1;;
-     *) json_have_localeconv=0;;
-esac
-AC_SUBST([json_have_localeconv])
 
 # Features
 AC_ARG_ENABLE([urandom],
