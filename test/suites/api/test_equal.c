@@ -8,7 +8,7 @@
 #include "util.h"
 #include <jansson.h>
 
-static void test_equal_simple() {
+static void test_equal_simple(void) {
     json_t *value1, *value2;
 
     if (json_equal(NULL, NULL))
@@ -85,7 +85,7 @@ static void test_equal_simple() {
     json_decref(value2);
 }
 
-static void test_equal_array() {
+static void test_equal_array(void) {
     json_t *array1, *array2;
 
     array1 = json_array();
@@ -117,7 +117,7 @@ static void test_equal_array() {
     json_decref(array2);
 }
 
-static void test_equal_object() {
+static void test_equal_object(void) {
     json_t *object1, *object2;
 
     object1 = json_object();
@@ -154,7 +154,7 @@ static void test_equal_object() {
     json_decref(object2);
 }
 
-static void test_equal_complex() {
+static void test_equal_complex(void) {
     json_t *value1, *value2, *value3;
 
     const char *complex_json = "{"
@@ -194,7 +194,7 @@ static void test_equal_complex() {
     json_decref(value3);
 }
 
-static void run_tests() {
+static void run_tests(void) {
     test_equal_simple();
     test_equal_array();
     test_equal_object();
