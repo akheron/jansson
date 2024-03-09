@@ -1,0 +1,5 @@
+JANSSON_@jansson_soversion@ {
+	global:
+	*;
+};
+

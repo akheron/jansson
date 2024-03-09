@@ -25,6 +25,9 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT8_T
 AC_TYPE_LONG_LONG_INT
 
+jansson_soversion="4"
+AC_SUBST([jansson_soversion])
+
 AC_C_INLINE
 case $ac_cv_c_inline in
     yes) json_inline=inline;;
@@ -132,8 +135,12 @@ AS_IF([test "x$with_Bsymbolic" = "xyes"], [JSON_BSYMBOLIC_LDFLAGS=-Wl[,]-Bsymbol
 AC_SUBST(JSON_BSYMBOLIC_LDFLAGS)
 
 # Enable symbol versioning on GNU libc
+m4_pattern_forbid([^AX_CHECK_LINK_FLAG$])
 JSON_SYMVER_LDFLAGS=
-AC_CHECK_DECL([__GLIBC__], [JSON_SYMVER_LDFLAGS=-Wl,--default-symver])
+AC_CHECK_DECL([__GLIBC__],
+  [AX_CHECK_LINK_FLAG([-Wl,--default-symver],
+    [JSON_SYMVER_LDFLAGS=-Wl,--default-symver],
+    [JSON_SYMVER_LDFLAGS=-Wl,--version-script,$ac_abs_confdir/jansson.sym])])
 AC_SUBST([JSON_SYMVER_LDFLAGS])
 
 AC_ARG_ENABLE([ossfuzzers],
@@ -162,6 +169,7 @@ AC_SUBST([AM_CFLAGS])
 
 AC_CONFIG_FILES([
         jansson.pc
+	jansson.sym
         Makefile
         doc/Makefile
         src/Makefile
