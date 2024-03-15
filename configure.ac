@@ -25,6 +25,8 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT8_T
 AC_TYPE_LONG_LONG_INT
 
+AC_C_BIGENDIAN
+
 AC_C_INLINE
 case $ac_cv_c_inline in
     yes) json_inline=inline;;
@@ -135,6 +137,19 @@ AC_SUBST(JSON_BSYMBOLIC_LDFLAGS)
 JSON_SYMVER_LDFLAGS=
 AC_CHECK_DECL([__GLIBC__], [JSON_SYMVER_LDFLAGS=-Wl,--default-symver])
 AC_SUBST([JSON_SYMVER_LDFLAGS])
+
+AC_ARG_ENABLE([dtoa],
+  [AS_HELP_STRING([--enable-dtoa], [Use dtoa for optimal floating point to string conversion])],
+  [case "$enableval" in
+    yes) dtoa=yes ;;
+    no)  dtoa=no ;;
+    *) AC_MSG_ERROR([bad value ${enableval} for --enable-dtoa]) ;;
+  esac], [dtoa=yes])
+if test "$dtoa" = "yes"; then
+  AC_DEFINE([DTOA_ENABLED], [1],
+      [Define to 1 to use dtoa to convert floating points to strings])
+fi
+AM_CONDITIONAL([DTOA_ENABLED], [test "$dtoa" = "yes"])
 
 AC_ARG_ENABLE([ossfuzzers],
   [AS_HELP_STRING([--enable-ossfuzzers],
