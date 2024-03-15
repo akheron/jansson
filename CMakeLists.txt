@@ -535,6 +535,11 @@ if (NOT JANSSON_WITHOUT_TESTS)
          if (IS_DIRECTORY ${TESTDIR})
             get_filename_component(TNAME ${TESTDIR} NAME)
 
+            if ((USE_DTOA AND EXISTS ${TESTDIR}/skip_if_dtoa) OR
+                (NOT USE_DTOA AND EXISTS ${TESTDIR}/skip_unless_dtoa))
+               continue()
+            endif()
+
             if (JANSSON_TEST_WITH_VALGRIND)
                add_test(memcheck__${SUITE}__${TNAME}
                         ${MEMCHECK_COMMAND} ${SUITE_TEST_CMD} ${TESTDIR})
