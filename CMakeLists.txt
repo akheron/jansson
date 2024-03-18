@@ -310,7 +310,7 @@ if(JANSSON_BUILD_SHARED_LIBS)
    )
    list(REMOVE_ITEM CMAKE_REQUIRED_LIBRARIES "-Wl,--default-symver")
 
-   if (SYMVER_WORKS)
+   if (DSYMVER_WORKS)
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--default-symver")
    else()
 # some linkers may only support --version-script
