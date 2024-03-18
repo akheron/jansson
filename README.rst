@@ -29,6 +29,10 @@ source distribution for details.
 Compilation and Installation
 ----------------------------
 
+Unix-like building system
+
+It supports Unix-like Operating System and MingW.
+
 If you obtained a ``jansson-X.Y.tar.*`` tarball from GitHub Releases, just use
 the standard autotools commands::
 
@@ -45,6 +49,20 @@ script has to be generated first. The easiest way is to use autoreconf::
 
    $ autoreconf -i
 
+Cmake building system
+
+It supports Windows, MacOS, Linux, Android and many other OS.
+
+   $ mkdir build && cd build
+   $ cmake ..
+   $ make
+
+To run the test suite, invoke::
+
+   $ ctest
+
+If you want to building the shared libraries, please add
+-DJANSSON_BUILD_SHARED_LIBS=ON
 
 Documentation
 -------------
