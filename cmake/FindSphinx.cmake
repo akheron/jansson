@@ -218,7 +218,7 @@ endforeach ()
 # determine Python executable used by Sphinx
 if (Sphinx-build_EXECUTABLE)
   # extract python executable from shebang of sphinx-build
-  find_package (PythonInterp QUIET)
+  find_package (Python3 QUIET)
   set (Sphinx_PYTHON_EXECUTABLE "${PYTHON_EXECUTABLE}")
   set (Sphinx_PYTHON_OPTIONS)
   file (STRINGS "${Sphinx-build_EXECUTABLE}" FIRST_LINE LIMIT_COUNT 1)
