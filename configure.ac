@@ -1,5 +1,5 @@
-AC_PREREQ([2.60])
-AC_INIT([jansson], [2.14], [https://github.com/akheron/jansson/issues])
+AC_PREREQ([2.72])
+AC_INIT([jansson],[2.14],[https://github.com/akheron/jansson/issues])
 
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([1.10 foreign])
@@ -10,7 +10,7 @@ AC_CONFIG_HEADERS([jansson_private_config.h])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
-AC_PROG_LIBTOOL
+LT_INIT
 AM_CONDITIONAL([GCC], [test x$GCC = xyes])
 
 # Checks for libraries.
@@ -38,10 +38,7 @@ AC_CHECK_FUNCS([close getpid gettimeofday open read setlocale sched_yield strtol
 
 AC_MSG_CHECKING([for gcc __sync builtins])
 have_sync_builtins=no
-AC_TRY_LINK(
-  [], [unsigned long val; __sync_bool_compare_and_swap(&val, 0, 1); __sync_add_and_fetch(&val, 1); __sync_sub_and_fetch(&val, 1);],
-  [have_sync_builtins=yes],
-)
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[unsigned long val; __sync_bool_compare_and_swap(&val, 0, 1); __sync_add_and_fetch(&val, 1); __sync_sub_and_fetch(&val, 1);]])],[have_sync_builtins=yes],[])
 if test "x$have_sync_builtins" = "xyes"; then
   AC_DEFINE([HAVE_SYNC_BUILTINS], [1],
     [Define to 1 if gcc's __sync builtins are available])
@@ -54,10 +51,7 @@ AC_MSG_RESULT([$have_sync_builtins])
 
 AC_MSG_CHECKING([for gcc __atomic builtins])
 have_atomic_builtins=no
-AC_TRY_LINK(
-  [], [char l; unsigned long v; __atomic_test_and_set(&l, __ATOMIC_RELAXED); __atomic_store_n(&v, 1, __ATOMIC_RELEASE); __atomic_load_n(&v, __ATOMIC_ACQUIRE); __atomic_add_fetch(&v, 1, __ATOMIC_ACQUIRE); __atomic_sub_fetch(&v, 1, __ATOMIC_RELEASE);],
-  [have_atomic_builtins=yes],
-)
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[char l; unsigned long v; __atomic_test_and_set(&l, __ATOMIC_RELAXED); __atomic_store_n(&v, 1, __ATOMIC_RELEASE); __atomic_load_n(&v, __ATOMIC_ACQUIRE); __atomic_add_fetch(&v, 1, __ATOMIC_ACQUIRE); __atomic_sub_fetch(&v, 1, __ATOMIC_RELEASE);]])],[have_atomic_builtins=yes],[])
 if test "x$have_atomic_builtins" = "xyes"; then
   AC_DEFINE([HAVE_ATOMIC_BUILTINS], [1],
     [Define to 1 if gcc's __atomic builtins are available])
@@ -111,13 +105,10 @@ if test "x$with_Bsymbolic" != "xno" ; then
     AC_MSG_CHECKING([for -Bsymbolic-functions linker flag])
     saved_LDFLAGS="${LDFLAGS}"
     LDFLAGS=-Wl,-Bsymbolic-functions
-    AC_TRY_LINK(
-      [], [int main (void) { return 0; }],
-      [AC_MSG_RESULT([yes])
-       have_Bsymbolic=yes],
-      [AC_MSG_RESULT([no])
-       have_Bsymbolic=no]
-    )
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[int main (void) { return 0; }]])],[AC_MSG_RESULT([yes])
+       have_Bsymbolic=yes],[AC_MSG_RESULT([no])
+       have_Bsymbolic=no
+    ])
     LDFLAGS="${saved_LDFLAGS}"
 
     if test "x$with_Bsymbolic" = "xcheck" ; then
