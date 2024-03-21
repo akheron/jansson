@@ -54,7 +54,7 @@ jobs:
           CC: ${{matrix.cc}}
         run: cmake .
       - run: cmake --build .
-      - run: ctest
+      - run: ctest --output-on-failure
 
   valgrind:
     runs-on: ubuntu-latest
@@ -63,4 +63,4 @@ jobs:
       - run: sudo apt update && sudo apt install valgrind
       - run: cmake -DJANSSON_TEST_WITH_VALGRIND=ON .
       - run: cmake --build .
-      - run: ctest
+      - run: ctest --output-on-failure

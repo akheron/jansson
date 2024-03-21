@@ -7,6 +7,7 @@ suites/api/test_cpp
 suites/api/test_dump
 suites/api/test_dump_callback
 suites/api/test_equal
+suites/api/test_fixed_size
 suites/api/test_load
 suites/api/test_load_callback
 suites/api/test_loadb

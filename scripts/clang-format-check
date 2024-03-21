@@ -12,13 +12,16 @@ fi
 errors=0
 paths=$(git ls-files | grep '\.[ch]$')
 for path in $paths; do
+    echo "Checking $path"
+    $CLANG_FORMAT $path > $path.formatted
     in=$(cat $path)
-    out=$($CLANG_FORMAT $path)
+    out=$(cat $path.formatted)
 
     if [ "$in" != "$out" ]; then
-        diff -u -L $path -L "$path.formatted" $path - <<<$out
+        diff -u $path $path.formatted
         errors=1
     fi
+    rm $path.formatted
 done
 
 if [ $errors -ne 0 ]; then
