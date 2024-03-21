@@ -1613,7 +1613,7 @@ Balloc(int k MTd)
 #else
 		len = (sizeof(Bigint) + (x-1)*sizeof(ULong) + sizeof(double) - 1)
 			/sizeof(double);
-		if (k <= Kmax && pmem_next - private_mem + len <= PRIVATE_mem
+		if (k <= Kmax && (unsigned long)(pmem_next - private_mem + len) <= PRIVATE_mem
 #ifdef MULTIPLE_THREADS
 			&& TI == TI1
 #endif
@@ -2841,7 +2841,7 @@ gethex(const char **sp, U *rvp, int rounding, int sign MTd)
 		switch(*++s) {
 		  case '-':
 			esign = 1;
-			/* no break */
+			/* fall through */
 		  case '+':
 			s++;
 		  }
@@ -3536,7 +3536,7 @@ strtod__unused(const char *s00, char **se)
 	for(s = s00;;s++) switch(*s) {
 		case '-':
 			sign = 1;
-			/* no break */
+			/* fall through */
 		case '+':
 			if (*++s)
 				goto break2;
@@ -3667,6 +3667,7 @@ strtod__unused(const char *s00, char **se)
 		switch(c = *++s) {
 			case '-':
 				esign = 1;
+			    /* fall through */
 			case '+':
 				c = *++s;
 			}
@@ -4920,7 +4921,7 @@ rv_alloc(int i MTd)
 
 	j = sizeof(ULong);
 	for(k = 0;
-		sizeof(Bigint) - sizeof(ULong) - sizeof(int) + j <= i;
+		sizeof(Bigint) - sizeof(ULong) - sizeof(int) + j <= (size_t)i;
 		j <<= 1)
 			k++;
 	r = (int*)Balloc(k MTa);
@@ -4939,7 +4940,7 @@ nrv_alloc(const char *s, char *s0, size_t s0len, char **rve, int n MTd)
 
 	if (!s0)
 		s0 = rv_alloc(n MTa);
-	else if (s0len <= n) {
+	else if (s0len <= (size_t)n) {
 		rv = 0;
 		t = rv + n;
 		goto rve_chk;
@@ -5317,7 +5318,7 @@ dtoa_r(double dd, int mode, int ndigits, int *decpt, int *sign, char **rve, char
 			break;
 		case 2:
 			leftright = 0;
-			/* no break */
+			/* fall through */
 		case 4:
 			if (ndigits <= 0)
 				ndigits = 1;
@@ -5325,7 +5326,7 @@ dtoa_r(double dd, int mode, int ndigits, int *decpt, int *sign, char **rve, char
 			break;
 		case 3:
 			leftright = 0;
-			/* no break */
+			/* fall through */
 		case 5:
 			i = ndigits + k + 1;
 			ilim = i;
@@ -5337,7 +5338,7 @@ dtoa_r(double dd, int mode, int ndigits, int *decpt, int *sign, char **rve, char
 		buf = rv_alloc(i MTb);
 		blen = sizeof(Bigint) + ((1 << ((int*)buf)[-1]) - 1)*sizeof(ULong) - sizeof(int);
 		}
-	else if (blen <= i) {
+	else if (blen <= (size_t)i) {
 		buf = 0;
 		if (rve)
 			*rve = buf + i;
