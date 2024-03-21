@@ -9,6 +9,10 @@ Work in progress
     is used to switch locales inside the threads (#674, #675, #677. Thanks to
     Bruno Haible the report and help with fixing.)
 
+* Build:
+
+  - Make test output nicer in CMake based builds (#683)
+
 Version 2.14
 ============
 
