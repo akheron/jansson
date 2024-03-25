@@ -9,6 +9,12 @@ Work in progress
     is used to switch locales inside the threads (#674, #675, #677. Thanks to
     Bruno Haible the report and help with fixing.)
 
+  - Use David M. Gay's `dtoa()` algorithm to avoid misprinting issues of real
+    numbers that are not exactly representable as a `double` (#680).
+
+    If this is not desirable, use `./configure --disable-dtoa` or `cmake
+    -DUSE_DTOA=OFF .`
+
 * Build:
 
   - Make test output nicer in CMake based builds (#683)

@@ -5,11 +5,22 @@
 # Jansson is free software; you can redistribute it and/or modify
 # it under the terms of the MIT license. See LICENSE for details.
 
+dtoa_enabled() {
+    grep -q "DTOA_ENABLED 1" $top_builddir/jansson_private_config.h
+}
+
 is_test() {
     test -d $test_path
 }
 
 do_run() {
+    if [ -f $test_path/skip_unless_dtoa ]; then
+        dtoa_enabled || return 77
+    fi
+    if [ -f $test_path/skip_if_dtoa ]; then
+        dtoa_enabled && return 77
+    fi
+
     variant=$1
     s=".$1"
 
