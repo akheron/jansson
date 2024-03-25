@@ -12,6 +12,7 @@ Work in progress
 * Build:
 
   - Make test output nicer in CMake based builds (#683)
+  - Simplify tests (#685)
 
 Version 2.14
 ============
