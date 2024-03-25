@@ -80,11 +80,10 @@ static char *loadfile(FILE *file) {
 
 static void read_conf(FILE *conffile) {
     char *buffer, *line, *val;
+    conf.have_hashseed = 0;
 
     buffer = loadfile(conffile);
     for (line = strtok(buffer, "\r\n"); line; line = strtok(NULL, "\r\n")) {
-        if (!strncmp(line, "export ", 7))
-            continue;
         val = strchr(line, '=');
         if (!val) {
             printf("invalid configuration line\n");
@@ -109,8 +108,6 @@ static void read_conf(FILE *conffile) {
         if (!strcmp(line, "HASHSEED")) {
             conf.have_hashseed = 1;
             conf.hashseed = atoi(val);
-        } else {
-            conf.have_hashseed = 0;
         }
     }
 
