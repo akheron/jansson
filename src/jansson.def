@@ -68,6 +68,7 @@ EXPORTS
     json_load_file
     json_load_callback
     json_equal
+    json_compare
     json_copy
     json_deep_copy
     json_pack
