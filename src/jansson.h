@@ -348,6 +348,10 @@ json_t *json_vsprintf(const char *fmt, va_list ap)
 
 int json_equal(const json_t *value1, const json_t *value2);
 
+/* comparison */
+
+int json_compare(const json_t *value1, const json_t *value2);
+
 /* copying */
 
 json_t *json_copy(json_t *value) JANSSON_ATTRS((warn_unused_result));
