@@ -18,8 +18,9 @@ jobs:
       matrix:
         os: ["ubuntu-latest", "macos-latest"]
         cc: ["gcc", "clang"]
+        dtoa: ["yes", "no"]
 
-    runs-on: ${{matrix.os}}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - if: ${{runner.os == 'macOS'}}
@@ -27,9 +28,9 @@ jobs:
       - uses: actions/checkout@v4
       - run: autoreconf -fi
       - env:
-          CC: ${{matrix.cc}}
+          CC: ${{ matrix.cc }}
           CFLAGS: -Werror
-        run: ./configure
+        run: ./configure --enable-dtoa=${{ matrix.dtoa }}
       - run: make check
 
   cmake:

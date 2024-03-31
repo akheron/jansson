@@ -5,6 +5,7 @@ project(jansson C)
 option(JANSSON_BUILD_SHARED_LIBS "Build shared libraries." OFF)
 option(USE_URANDOM "Use /dev/urandom to seed the hash function." ON)
 option(USE_WINDOWS_CRYPTOAPI "Use CryptGenRandom to seed the hash function." ON)
+option(USE_DTOA "Use dtoa for optimal floating-point to string conversions." ON)
 
 if (MSVC)
    # This option must match the settings used in your program, in particular if you
@@ -92,6 +93,9 @@ check_function_exists (sched_yield HAVE_SCHED_YIELD)
 
 # Check for the int-type includes
 check_include_files (stdint.h HAVE_STDINT_H)
+
+include (TestBigEndian)
+TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 
 # Check our 64 bit integer sizes
 check_type_size (__int64 __INT64)
@@ -193,6 +197,8 @@ endif ()
 # detect what to use for the 64 bit type.
 # Note: I will prefer long long if I can get it, as that is what the automake system aimed for.
 if (NOT DEFINED JSON_INT_T)
+   set (JSON_INTEGER_IS_LONG_LONG 1)
+
    if (HAVE_LONG_LONG_INT AND (LONG_LONG_INT EQUAL 8))
       set (JSON_INT_T "long long")
    elseif (HAVE_INT64_T)
@@ -274,6 +280,9 @@ include_directories (${CMAKE_CURRENT_BINARY_DIR}/private_include)
 
 # Add the lib sources.
 file(GLOB JANSSON_SRC src/*.c)
+if (NOT USE_DTOA)
+   list(FILTER JANSSON_SRC EXCLUDE REGEX ".*dtoa\\.c$")
+endif()
 
 set(JANSSON_HDR_PRIVATE
    ${CMAKE_CURRENT_SOURCE_DIR}/src/hashtable.h
@@ -525,6 +534,11 @@ if (NOT JANSSON_WITHOUT_TESTS)
        foreach (TESTDIR ${TESTDIRS})
          if (IS_DIRECTORY ${TESTDIR})
             get_filename_component(TNAME ${TESTDIR} NAME)
+
+            if ((USE_DTOA AND EXISTS ${TESTDIR}/skip_if_dtoa) OR
+                (NOT USE_DTOA AND EXISTS ${TESTDIR}/skip_unless_dtoa))
+               continue()
+            endif()
 
             if (JANSSON_TEST_WITH_VALGRIND)
                add_test(memcheck__${SUITE}__${TNAME}

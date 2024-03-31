@@ -21,6 +21,8 @@
 #cmakedefine HAVE_LOCALE_H 1
 #cmakedefine HAVE_SETLOCALE 1
 
+#cmakedefine WORDS_BIGENDIAN 1
+
 #cmakedefine HAVE_INT32_T 1
 #ifndef HAVE_INT32_T
 #  define int32_t @JSON_INT32@
@@ -49,5 +51,12 @@
 
 #cmakedefine USE_URANDOM 1
 #cmakedefine USE_WINDOWS_CRYPTOAPI 1
+
+#cmakedefine USE_DTOA 1
+#if USE_DTOA
+#  define DTOA_ENABLED 1
+#else
+#  define DTOA_ENABLED 0
+#endif
 
 #define INITIAL_HASHTABLE_ORDER @JANSSON_INITIAL_HASHTABLE_ORDER@

@@ -1,4 +1,4 @@
-EXTRA_DIST = jansson.def
+EXTRA_DIST = jansson.def dtoa.c
 
 include_HEADERS = jansson.h
 nodist_include_HEADERS = jansson_config.h
@@ -22,6 +22,11 @@ libjansson_la_SOURCES = \
 	utf.h \
 	value.c \
 	version.c
+
+if DTOA_ENABLED
+libjansson_la_SOURCES += dtoa.c
+endif
+
 libjansson_la_LDFLAGS = \
 	-no-undefined \
 	-export-symbols-regex '^json_|^jansson_' \
