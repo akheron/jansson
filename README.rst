@@ -1,14 +1,10 @@
 Jansson README
 ==============
 
-.. image:: https://github.com/akheron/jansson/workflows/tests/badge.svg
-  :target: https://github.com/akheron/jansson/actions
+.. |tests|  image:: https://github.com/akheron/jansson/workflows/tests/badge.svg
+.. |appveyor|  image::  https://ci.appveyor.com/api/projects/status/lmhkkc4q8cwc65ko
 
-.. image:: https://ci.appveyor.com/api/projects/status/lmhkkc4q8cwc65ko
-  :target: https://ci.appveyor.com/project/akheron/jansson
-
-.. image:: https://coveralls.io/repos/akheron/jansson/badge.png?branch=master
-  :target: https://coveralls.io/r/akheron/jansson?branch=master
+|tests| |appveyor|
 
 Jansson_ is a C library for encoding, decoding and manipulating JSON
 data. Its main features and design principles are:
