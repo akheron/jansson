@@ -26,7 +26,7 @@
 #pragma warning(push)
 #pragma warning(disable : 4756)
 #endif
-static void test_inifity() {
+static void test_infinity() {
     json_error_t error;
 
     if (json_pack_ex(&error, 0, "f", INFINITY))
@@ -372,7 +372,7 @@ static void run_tests() {
 #endif
 
 #ifdef INFINITY
-    test_inifity();
+    test_infinity();
 #endif
 
     /* Whitespace; regular string */
