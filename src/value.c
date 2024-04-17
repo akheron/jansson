@@ -103,6 +103,33 @@ json_t *json_object_get(const json_t *json, const char *key) {
     return json_object_getn(json, key, strlen(key));
 }
 
+json_t *json_object_get_path(json_t* object, size_t depth, ...){
+    va_list path;
+    va_start(path, depth);
+    for (size_t i = 0; i < depth; i++)
+    {
+        json_type object_t = va_arg(path, json_type);
+        object = json_object_get(object, va_arg(path, const char*));
+        if(!object){
+            return NULL;
+        }
+        if(object->type != object_t){
+            return NULL;
+        }
+        if(object_t == JSON_ARRAY){
+            i++;
+            if(i<depth){
+                object = json_array_get(object, va_arg(path, size_t));
+                if(!object){
+                    return NULL;
+                }
+            }
+        }
+    }
+
+    return object;
+}
+
 json_t *json_object_getn(const json_t *json, const char *key, size_t key_len) {
     json_object_t *object;
 
