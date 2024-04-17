@@ -126,13 +126,29 @@ static void run_tests() {
     value = json_object_get_path(json, 2, JSON_OBJECT, "base", JSON_NULL, "null", JSON_OBJECT, "nest 1", JSON_OBJECT, "nest 2", JSON_OBJECT, "nest 3");
     if(!value) fail("did not ignore garbage arguments");
     
-    value = json_object_get_path(json, 2, JSON_OBJECT, "base", JSON_OBJECT, "nest 1", JSON_OBJECT, "nest 2", JSON_OBJECT, "nest 3");
+    value = json_object_get_path(json, 4, JSON_OBJECT, "base", JSON_OBJECT, "nest 1", JSON_OBJECT, "nest 2", JSON_OBJECT, "nest 3");
     if(!value) fail("did not find nested object");
 
-    /*
-        "nest 1",
-        "nest 2",
-        "nest 3"*/
+    json_decref(json);
+
+    json = json_pack(
+        "[sss]",
+        "base",
+        "array",
+        "string 1"
+    );
+
+    value = json_object_get_path(json, 1, (size_t) 0);
+    if(!value) fail("did not find object in list");
+    if(strcmp(json_string_value(value), "base")) fail("did not get appropriate string value");
+
+    value = json_object_get_path(json, 1, (size_t) 1);
+    if(!value) fail("did not find object in list");
+    if(strcmp(json_string_value(value), "array")) fail("did not get appropriate string value");
+
+    value = json_object_get_path(json, 1, (size_t) 2);
+    if(!value) fail("did not find object in list");
+    if(strcmp(json_string_value(value), "string 1")) fail("did not get appropriate string value");
 
     json_decref(json);
 }
