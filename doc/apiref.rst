@@ -648,6 +648,13 @@ allowed in object keys.
    Get a value corresponding to *key* from *object*. Returns *NULL* if
    *key* is not found and on error.
 
+.. function:: json_t *json_object_get_path(const json_t* object, size_t depth, ...)
+
+   .. refcounting:: borrow
+
+   Get a value corresponding to the path from *object*. Returns *NULL* if
+   the object is not found and on error.
+   
 .. function:: json_t *json_object_getn(const json_t *object, const char *key, size_t key_len)
 
    .. refcounting:: borrow
