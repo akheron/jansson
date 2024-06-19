@@ -283,20 +283,19 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
             if (dump_indent(flags, depth + 1, 0, dump, data))
                 return -1;
 
-            for (i = 0; i < n; ++i) {
+            for (i = 0; i < n - 1; ++i) {
                 if (do_dump(json_array_get(json, i), flags, depth + 1, parents, dump,
                             data))
                     return -1;
 
-                if (i < n - 1) {
-                    if (dump(",", 1, data) ||
-                        dump_indent(flags, depth + 1, 1, dump, data))
-                        return -1;
-                } else {
-                    if (dump_indent(flags, depth, 0, dump, data))
-                        return -1;
-                }
+                if (dump(",", 1, data) || dump_indent(flags, depth + 1, 1, dump, data))
+                    return -1;
             }
+
+            if (do_dump(json_array_get(json, i), flags, depth + 1, parents, dump, data))
+                return -1;
+            if (dump_indent(flags, depth, 0, dump, data))
+                return -1;
 
             hashtable_del(parents, key, key_len);
             return embed ? 0 : dump("]", 1, data);
@@ -322,10 +321,10 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
                                  &loop_key_len))
                 return -1;
 
-            iter = json_object_iter((json_t *)json);
-
             if (!embed && dump("{", 1, data))
                 return -1;
+
+            iter = json_object_iter((json_t *)json);
             if (!iter) {
                 hashtable_del(parents, loop_key, loop_key_len);
                 return embed ? 0 : dump("}", 1, data);
