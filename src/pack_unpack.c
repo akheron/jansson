@@ -258,7 +258,7 @@ static json_t *pack_object(scanner_t *s, va_list *ap) {
         if (s->has_error)
             json_decref(value);
 
-        if (!s->has_error && json_object_set_new_nocheck(object, key, value)) {
+        if (!s->has_error && json_object_setn_new_nocheck(object, key, len, value)) {
             set_error(s, "<internal>", json_error_out_of_memory,
                       "Unable to add key \"%s\"", key);
             s->has_error = 1;
@@ -488,6 +488,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap) {
 
     while (token(s) != '}') {
         const char *key;
+        size_t key_len;
         json_t *value;
         int opt = 0;
 
@@ -521,6 +522,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap) {
             set_error(s, "<args>", json_error_null_value, "NULL object key");
             goto out;
         }
+        key_len = strlen(key);
 
         next_token(s);
 
@@ -533,7 +535,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap) {
             /* skipping */
             value = NULL;
         } else {
-            value = json_object_get(root, key);
+            value = json_object_getn(root, key, key_len);
             if (!value && !opt) {
                 set_error(s, "<validation>", json_error_item_not_found,
                           "Object item not found: %s", key);
@@ -544,7 +546,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap) {
         if (unpack(s, value, ap))
             goto out;
 
-        hashtable_set(&key_set, key, strlen(key), json_null());
+        hashtable_set(&key_set, key, key_len, json_null());
         next_token(s);
     }
 
