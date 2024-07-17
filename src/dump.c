@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2009-2016 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2009-2021 Petri Lehtinen <petri@digip.org>
+ * and Basile Starynkevitch <basile@starynkevitch.net>
  *
  * Jansson is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
@@ -34,6 +35,207 @@ struct buffer {
     size_t used;
     char *data;
 };
+
+
+struct attribute_flag_entry {
+  const char* attr_key;
+  size_t attr_flags;
+};
+
+struct attribute_flag_table_st {
+  unsigned atflag_size;	/* allocated size of atflag_entries */
+  unsigned atflag_count;	/* counting number of used entries */
+  struct attribute_flag_entry atflag_entries[]; /* flexible array member */
+};
+
+static struct attribute_flag_table_st* attribute_flag_hashtable;
+
+static unsigned atflag_hash(const char*atkey)
+{
+  /* NB: most of the decimal integer constants here are prime numbers. */
+  unsigned kl = (unsigned)strlen(atkey);
+  unsigned h1 = 17*kl+3;
+  unsigned h2 = 0;
+  unsigned h = 0;
+  for (unsigned i=0; i<kl; i++) {
+    if (i%2 == 0) {
+      unsigned nh1 = (h1*31 + i) ^ (atkey[i]*1471 + h2);
+      unsigned nh2 = h2*11 + (h1&0xfff) - atkey[i]*13;
+      h1 = nh1;
+      h2 = nh2;
+    }
+    else {
+      unsigned nh1 = (h1*53 - i) ^ (atkey[i]*1181 + 7*h2);
+      unsigned nh2 = h2*89 - (h1&0xffff) + atkey[i]*67;
+      h1 = nh1;
+      h2 = nh2;
+    }
+  };
+  h = h1 ^ h2;
+  if (h==0) {
+    h = h1?h1:11;
+  }
+  /* h is never 0 */
+  return h;
+}
+
+static struct attribute_flag_entry*
+attr_flag_find(const char*atkey)
+{
+  unsigned h=0, hsiz=0;
+  if (!atkey || !atkey[0])
+    return NULL;
+  if (!attribute_flag_hashtable)
+    return NULL;
+  h = atflag_hash(atkey);
+  hsiz = attribute_flag_hashtable->atflag_size;
+  for (unsigned ix = h % hsiz; ix < hsiz; ix++)
+    {
+      struct attribute_flag_entry*curent
+	= attribute_flag_hashtable->atflag_entries + ix;
+      if (!curent->attr_key)
+	return NULL;
+      if (!strcmp(curent->attr_key, atkey))
+	return curent;
+    };
+  for (int ix = (int)h % hsiz; ix >= 0; ix--)
+    {
+      struct attribute_flag_entry*curent
+	= attribute_flag_hashtable->atflag_entries + ix;
+      if (!curent->attr_key)
+	return NULL;
+      if (!strcmp(curent->attr_key, atkey))
+	return curent;
+    };
+  return NULL;
+}
+
+
+static struct attribute_flag_entry*
+attr_flag_really_put(const char*atkey, size_t atflags)
+{
+  unsigned h = 0, hsiz = 0;
+  if (!atkey || !atkey[0]) return NULL;
+  if (!attribute_flag_hashtable)
+    return NULL;
+  h = atflag_hash(atkey);
+  hsiz = attribute_flag_hashtable->atflag_size;
+  for (unsigned ix = h % hsiz; ix < hsiz; ix++)
+    {
+      struct attribute_flag_entry*curent
+	= attribute_flag_hashtable->atflag_entries + ix;
+      if (!curent->attr_key) {
+	curent->attr_key = atkey;
+	curent->attr_flags = atflags;
+	attribute_flag_hashtable->atflag_count++;
+	return curent;
+      }
+      if (!strcmp(curent->attr_key, atkey)) {
+	curent->attr_key = atkey;
+	curent->attr_flags = atflags;
+	return curent;
+      }
+    };
+  for (int ix = (int)h % hsiz; ix >= 0; ix--)
+    {
+      struct attribute_flag_entry*curent
+	= attribute_flag_hashtable->atflag_entries + ix;
+      if (!curent->attr_key) {
+	curent->attr_key = atkey;
+	curent->attr_flags = atflags;
+	attribute_flag_hashtable->atflag_count++;
+	return curent;
+      }
+      if (!strcmp(curent->attr_key, atkey)) {
+	curent->attr_key = atkey;
+	curent->attr_flags = atflags;
+	return curent;
+      }
+    };
+  return NULL;
+}
+
+// an array of primes, gotten with something similar to
+//   /usr/games/primes 3  | awk '($1>p+p/9){print $1, ","; p=$1}' 
+static const unsigned primes_array[] = {
+  29, 37, 43, 53, 59, 67, 79, 89, 101, 113,
+  127, 149, 167, 191, 223, 251, 281, 313, 349, 389, 433, 487, 547, 613,
+  683, 761, 853, 953, 1061, 1181, 1319, 1471, 1637, 1823, 2027, 2267,
+  2521, 2803, 3119, 3467, 3853, 4283, 4759, 5297, 5897, 6553, 7283, 8093,
+  8999, 10007, 11119, 12373, 13751, 15287, 16987, 18899, 21001, 23339,
+  25933, 28817, 32027, 35591, 39551, 43951, 48847, 54277, 60317, 67021,
+  74471, 82757, 91957, 102181, 113537, 126173, 140197, 155777, 173087,
+  192319, 213713, 237467, 263863, 293201, 325781, 361979, 402221, 446921,
+  496579, 551767, 613097, 681221, 756919, 841063, 934517, 1038383, 1153759,
+  1281961, 1424407, 1582697, 1758553, 1953949, 2171077, 2412323, 2680367,
+  2978189, 3309107, 3676789, 4085339, 4539277, 5043653, 5604073, 6226757,
+  6918619, 7687387, 8541551, 9490631, 10545167, 11716879, 13018757,
+  14465291, 16072547, 17858389, 19842659, 22047401, 24497113, 27219019,
+  30243359, 33603743, 37337497, 41486111, 46095719, 51217477, 56908337,
+  63231499, 70257241, 78063641, 86737379, 96374881, 107083213, 118981367,
+  132201521, 146890631, 163211821, 181346479, 201496157, 223884629,
+  248760703, 276400823, 307112027, 341235667, 379150777, 421278643,
+  468087391, 520097111, 577885681, 642095213, 713439127, 792710159,
+  880789067, 978654533, 1087393949, 1208215531, 1342461719, 1491624137,
+  1657360153, 1841511311, 2046123679, 2273470799, 2526078691, 2806754123,
+  0
+};
+
+/* feature request #595 : https://github.com/akheron/jansson/issues/595 */
+void
+json_register_dump_attribute_flag(const char*attrname, size_t attrflags)
+{
+  unsigned ix;
+  if (!attrname || !attrname[0])
+    return;
+  if (!attribute_flag_hashtable) {
+    unsigned initsiz = 29;
+    size_t bytsiz = sizeof(struct attribute_flag_table_st) + initsiz * sizeof(struct attribute_flag_entry);
+    void *ptr = jsonp_malloc(bytsiz);
+    if (!ptr)
+      return;
+    memset (ptr, 0, bytsiz);
+    attribute_flag_hashtable = ptr;
+    attribute_flag_hashtable->atflag_size = initsiz;
+  }
+  else if (attribute_flag_hashtable->atflag_size * 4 < attribute_flag_hashtable->atflag_count * 3) {
+    struct attribute_flag_table_st*oldtable = attribute_flag_hashtable;
+    unsigned newsiz = 4 * attribute_flag_hashtable->atflag_count  / 3 + 17;
+    unsigned lowix = 0;
+    unsigned highix = sizeof(primes_array)/sizeof(primes_array[0]) - 1;
+    size_t bytsiz=0;
+    unsigned oldsiz=0;
+    void*ptr = NULL;
+    while (lowix + 4 < highix) {
+      unsigned midix = (lowix+highix)/2;
+      if (primes_array[midix] < lowix)
+	lowix = midix;
+      else highix = midix;
+    };
+    for (ix = lowix; ix<highix; ix++)
+      if (primes_array[ix] >= newsiz) {
+	newsiz = primes_array[ix];
+	break;
+      };
+    ptr = jsonp_malloc(bytsiz);
+    if (!ptr)
+      return;
+    memset (ptr, 0, bytsiz);
+    attribute_flag_hashtable = ptr;
+    attribute_flag_hashtable->atflag_size = newsiz;
+    oldsiz = oldtable->atflag_size;
+    for (unsigned oldix = 0; oldix < oldsiz; oldix++) {
+      struct attribute_flag_entry*oldent
+	= oldtable->atflag_entries + oldix;
+      if (oldent->attr_key)
+	attr_flag_really_put(oldent->attr_key, oldent->attr_flags);
+    };
+    jsonp_free(oldtable);
+  };
+  attr_flag_really_put(attrname, attrflags);
+}
+
+
 
 static int dump_to_strbuffer(const char *buffer, size_t size, void *data) {
     return strbuffer_append_bytes((strbuffer_t *)data, buffer, size);
@@ -359,12 +561,15 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
                 for (i = 0; i < size; i++) {
                     const struct key_len *key;
                     json_t *value;
-
+		    struct attribute_flag_entry*atent=NULL;
                     key = &keys[i];
                     value = json_object_getn(json, key->key, key->len);
                     assert(value);
-
+		    assert(key->key[key->len]==(char)0);
+		    atent= attr_flag_find(key->key);
                     dump_string(key->key, key->len, dump, data, flags);
+		    if (atent)
+		      flags |= atent->attr_flags;
                     if (dump(separator, separator_length, data) ||
                         do_dump(value, flags, depth + 1, parents, dump, data)) {
                         jsonp_free(keys);
@@ -393,8 +598,10 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
                     void *next = json_object_iter_next((json_t *)json, iter);
                     const char *key = json_object_iter_key(iter);
                     const size_t key_len = json_object_iter_key_len(iter);
-
+		    struct attribute_flag_entry*atent= attr_flag_find(key);
                     dump_string(key, key_len, dump, data, flags);
+		    if (atent)
+		      flags |= atent->attr_flags;
                     if (dump(separator, separator_length, data) ||
                         do_dump(json_object_iter_value(iter), flags, depth + 1, parents,
                                 dump, data))

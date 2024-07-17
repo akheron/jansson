@@ -21,11 +21,11 @@ extern "C" {
 /* version */
 
 #define JANSSON_MAJOR_VERSION 2
-#define JANSSON_MINOR_VERSION 14
+#define JANSSON_MINOR_VERSION 15
 #define JANSSON_MICRO_VERSION 0
 
 /* Micro version is omitted if it's 0 */
-#define JANSSON_VERSION "2.14"
+#define JANSSON_VERSION "2.15"
 
 /* Version as a 3-byte hex number, e.g. 0x010201 == 1.2.1. Use this
    for numeric comparisons, e.g. #if JANSSON_VERSION_HEX >= ... */
@@ -407,6 +407,10 @@ typedef void (*json_free_t)(void *);
 void json_set_alloc_funcs(json_malloc_t malloc_fn, json_free_t free_fn);
 void json_get_alloc_funcs(json_malloc_t *malloc_fn, json_free_t *free_fn);
 
+
+/* feature request #595 : https://github.com/akheron/jansson/issues/595 */
+void json_register_dump_attribute_flag(const char*attrname, size_t attrflags);
+  
 /* runtime version checking */
 
 const char *jansson_version_str(void);
