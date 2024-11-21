@@ -1,0 +1,47 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "authors": [
+      {
+        "name": "@VCS_SBOM_AUTHORS@"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/akheron/jansson@@VCS_TAG@",
+      "cpe": "cpe:2.3:a:akheron:jansson:@VCS_TAG@:*:*:*:*:*:*:*",
+      "name": "Jansson",
+      "version": "@VCS_VERSION@",
+      "description": "A C library for encoding, decoding and manipulating JSON data",
+      "authors": [
+        {
+          "name": "@VCS_AUTHORS@"
+        }
+      ],
+      "supplier": {
+        "name": "Jansson developers"
+      },
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://jansson.readthedocs.io/en/latest/"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/akheron/jansson"
+        }
+      ]
+    }
+  ]
+}
