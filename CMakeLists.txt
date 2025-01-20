@@ -630,6 +630,7 @@ configure_package_config_file(
 # Install targets.
 #
 option(JANSSON_INSTALL "Generate installation target" ON)
+option(JANSSON_INSTALL_TESTS "Install jansson tests" OFF)
 if (JANSSON_INSTALL)
   install(TARGETS jansson
           EXPORT janssonTargets
@@ -656,6 +657,21 @@ if (JANSSON_INSTALL)
   install(EXPORT janssonTargets
           NAMESPACE jansson::
           DESTINATION "${JANSSON_INSTALL_CMAKE_DIR}")
+
+   if(NOT JANSSON_WITHOUT_TESTS AND JANSSON_INSTALL_TESTS)
+      set(TEST_INSTALL_DIR "bin/jansson_tests")
+      set(DATA_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test/suites")
+      foreach(test ${api_tests})
+         install(TARGETS ${test}
+                 RUNTIME DESTINATION ${TEST_INSTALL_DIR})
+      endforeach()
+      install(TARGETS json_process
+              RUNTIME DESTINATION ${TEST_INSTALL_DIR})
+      foreach(suite ${SUITES})
+         install(DIRECTORY ${DATA_SRC_DIR}/${suite}
+                 DESTINATION ${TEST_INSTALL_DIR})
+      endforeach(suite ${SUITES})
+   endif()
 endif()
 
 # For use when simply using add_library from a parent project to build jansson.
