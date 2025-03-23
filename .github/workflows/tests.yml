@@ -32,6 +32,12 @@ jobs:
           CFLAGS: -Werror
         run: ./configure --enable-dtoa=${{ matrix.dtoa }}
       - run: make check
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-log
+          path: |
+            test/test-suite.log
 
   cmake:
     strategy:
