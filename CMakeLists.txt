@@ -36,7 +36,7 @@ endif()
 # set (JANSSON_VERSION "2.3.1")
 # set (JANSSON_SOVERSION 2)
 
-set(JANSSON_DISPLAY_VERSION "2.14")
+set(JANSSON_DISPLAY_VERSION "2.14.1")
 
 # This is what is required to match the same numbers as automake's
 set(JANSSON_VERSION "4.14.0")

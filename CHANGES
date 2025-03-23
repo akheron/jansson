@@ -1,13 +1,13 @@
 Version 2.14.1
 ==============
 
-Work in progress
+Released 2025-03-23
 
 * Fixes:
 
   - Fix thread safety of encoding and decoding when `uselocale` or `newlocale`
     is used to switch locales inside the threads (#674, #675, #677. Thanks to
-    Bruno Haible the report and help with fixing.)
+    Bruno Haible for the report and help with fixing.)
 
   - Use David M. Gay's `dtoa()` algorithm to avoid misprinting issues of real
     numbers that are not exactly representable as a `double` (#680).
