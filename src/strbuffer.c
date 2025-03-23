@@ -16,7 +16,7 @@
 
 #define STRBUFFER_MIN_SIZE 16
 #define STRBUFFER_FACTOR   2
-#define STRBUFFER_SIZE_MAX ((size_t)-1)
+#define STRBUFFER_SIZE_MAX ((size_t)(-1))
 
 int strbuffer_init(strbuffer_t *strbuff) {
     strbuff->size = STRBUFFER_MIN_SIZE;
