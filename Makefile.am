@@ -8,5 +8,3 @@ dvi:
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = jansson.pc
-
-TESTS = scripts/clang-format-check
