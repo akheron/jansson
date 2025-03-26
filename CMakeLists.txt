@@ -356,6 +356,19 @@ else()
       POSITION_INDEPENDENT_CODE true)
 endif()
 
+check_c_source_compiles("#include <math.h>
+                         int main() { return isnan(1.0); }" HAVE_ISNAN_WITHOUT_LIBM)
+if(NOT HAVE_ISNAN_WITHOUT_LIBM)
+   set(CMAKE_REQUIRED_LIBRARIES m)
+   check_c_source_compiles("#include <math.h>
+                            int main() { return isnan(1.0); }" ISNAN_REQUIRES_LIBM)
+   unset(CMAKE_REQUIRED_LIBRARIES)
+endif()
+
+if(ISNAN_REQUIRES_LIBM)
+   target_link_libraries(jansson m)
+endif()
+
 if (JANSSON_EXAMPLES)
 	add_executable(simple_parse "${CMAKE_CURRENT_SOURCE_DIR}/examples/simple_parse.c")
 	target_link_libraries(simple_parse jansson)
