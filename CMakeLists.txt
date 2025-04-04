@@ -322,6 +322,9 @@ if(JANSSON_BUILD_SHARED_LIBS)
 # some linkers may only support --version-script
       file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/jansson.sym" "JANSSON_${JANSSON_SOVERSION} {
     global:
+          json_*;
+          jansson_*;
+    local:
           *;
 };
 ")
