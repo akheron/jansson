@@ -84,7 +84,7 @@ static void run_tests();
 
 int main() {
 #ifdef HAVE_SETLOCALE
-    setlocale(LC_ALL, "");
+    setlocale(LC_ALL, "C");
 #endif
     run_tests();
     return 0;
