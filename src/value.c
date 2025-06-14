@@ -507,7 +507,7 @@ static void array_copy(json_t **dest, size_t dpos, json_t **src, size_t spos,
     memcpy(&dest[dpos], &src[spos], count * sizeof(json_t *));
 }
 
-static json_t **json_array_grow(json_array_t *array, size_t amount, int copy) {
+static json_t **json_array_grow(json_array_t *array, size_t amount) {
     size_t new_size;
     json_t **old_table, **new_table;
 
@@ -517,20 +517,15 @@ static json_t **json_array_grow(json_array_t *array, size_t amount, int copy) {
     old_table = array->table;
 
     new_size = max(array->size + amount, array->size * 2);
-    new_table = jsonp_malloc(new_size * sizeof(json_t *));
+    new_table = jsonp_realloc(old_table, array->size * sizeof(json_t *),
+                            new_size * sizeof(json_t *));
     if (!new_table)
         return NULL;
 
     array->size = new_size;
     array->table = new_table;
 
-    if (copy) {
-        array_copy(array->table, 0, old_table, 0, array->entries);
-        jsonp_free(old_table);
-        return array->table;
-    }
-
-    return old_table;
+    return array->table;
 }
 
 int json_array_append_new(json_t *json, json_t *value) {
@@ -545,7 +540,7 @@ int json_array_append_new(json_t *json, json_t *value) {
     }
     array = json_to_array(json);
 
-    if (!json_array_grow(array, 1, 1)) {
+    if (!json_array_grow(array, 1)) {
         json_decref(value);
         return -1;
     }
@@ -558,7 +553,6 @@ int json_array_append_new(json_t *json, json_t *value) {
 
 int json_array_insert_new(json_t *json, size_t index, json_t *value) {
     json_array_t *array;
-    json_t **old_table;
 
     if (!value)
         return -1;
@@ -574,17 +568,11 @@ int json_array_insert_new(json_t *json, size_t index, json_t *value) {
         return -1;
     }
 
-    old_table = json_array_grow(array, 1, 0);
-    if (!old_table) {
+    if (!json_array_grow(array, 1)) {
         json_decref(value);
         return -1;
     }
-
-    if (old_table != array->table) {
-        array_copy(array->table, 0, old_table, 0, index);
-        array_copy(array->table, index + 1, old_table, index, array->entries - index);
-        jsonp_free(old_table);
-    } else
+    if (index != array->entries)
         array_move(array, index + 1, index, array->entries - index);
 
     array->table[index] = value;
@@ -638,7 +626,7 @@ int json_array_extend(json_t *json, json_t *other_json) {
     array = json_to_array(json);
     other = json_to_array(other_json);
 
-    if (!json_array_grow(array, other->entries, 1))
+    if (!json_array_grow(array, other->entries))
         return -1;
 
     for (i = 0; i < other->entries; i++)
