@@ -145,6 +145,35 @@ static void decode_int_as_real() {
     json_decref(json);
 }
 
+static void decode_bigint_as_real() {
+#if JSON_INTEGER_IS_LONG_LONG
+    json_t *json;
+    json_error_t error;
+
+    json = json_loads("9223372036854775807", JSON_DECODE_BIGINT_AS_REAL | JSON_DECODE_ANY, &error);
+    if (!json || !json_is_integer(json) || json_integer_value(json) != 9223372036854775807) {
+        fail("json_load could not decode bigint as real failed - max int64 not an integer");
+    }
+    json_decref(json);
+
+    json = json_loads("9223372036854775808", JSON_DECODE_BIGINT_AS_REAL | JSON_DECODE_ANY, &error);
+    fprintf(stderr, "%f\n", json_real_value(json));
+    /* No rounding error because 9223372036854775808 = 2^63 */
+    if (!json || !json_is_real(json) || json_real_value(json) != 9223372036854775808.0) {
+        fail("json_load could not decode bigint as real failed - max int64 not an integer");
+    }
+    json_decref(json);
+
+    json = json_loads("9223372036854775809", JSON_DECODE_BIGINT_AS_REAL | JSON_DECODE_ANY, &error);
+    fprintf(stderr, "%f\n", json_real_value(json));
+    /* Round down to next fitting binary value which is 2^63 */
+    if (!json || !json_is_real(json) || json_real_value(json) != 9223372036854775808.0) {
+        fail("json_load could not decode bigint as real failed - max int64 not an integer");
+    }
+    json_decref(json);
+#endif
+}
+
 static void allow_nul() {
     const char *text = "\"nul byte \\u0000 in string\"";
     const char *expected = "nul byte \0 in string";
@@ -231,6 +260,7 @@ static void run_tests() {
     disable_eof_check();
     decode_any();
     decode_int_as_real();
+    decode_bigint_as_real();
     allow_nul();
     load_wrong_args();
     position();
