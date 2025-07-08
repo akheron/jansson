@@ -101,6 +101,8 @@ static void test_oom2() {
 static void *secure_malloc(size_t size) {
     /* Store the memory area size in the beginning of the block */
     void *ptr = malloc(size + 8);
+    if (!ptr)
+        return NULL;
     *((size_t *)ptr) = size;
     return (char *)ptr + 8;
 }
