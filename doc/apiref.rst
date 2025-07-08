@@ -1907,7 +1907,7 @@ Copying objects preserves the insertion order of keys.
 Custom Memory Allocation
 ========================
 
-By default, Jansson uses :func:`malloc()` and :func:`free()` for
+By default, Jansson uses :func:`malloc()`, :func:`realloc()` and :func:`free()` for
 memory allocation. These functions can be overridden if custom
 behavior is needed.
 
@@ -1917,6 +1917,16 @@ behavior is needed.
    signature::
 
        typedef void *(*json_malloc_t)(size_t);
+
+.. type:: json_realloc_t
+
+   A typedef for a function pointer with :func:`realloc()`'s
+   signature::
+
+       typedef void *(*json_malloc_t)(void*, size_t);
+
+
+   .. versionadded:: 2.15
 
 .. type:: json_free_t
 
@@ -1932,12 +1942,28 @@ behavior is needed.
    Jansson's API functions to ensure that all memory operations use
    the same functions.
 
+.. function:: void json_set_alloc_funcs2(json_malloc_t malloc_fn, json_relloc_t relloc_fn, json_free_t free_fn)
+
+   Use *malloc_fn* instead of :func:`malloc()`, *realloc_fn* instead of :func:`realloc()` and *free_fn* instead
+   of :func:`free()`. This function has to be called before any other
+   Jansson's API functions to ensure that all memory operations use
+   the same functions.
+
+   .. versionadded:: 2.15
+
 .. function:: void json_get_alloc_funcs(json_malloc_t *malloc_fn, json_free_t *free_fn)
 
    Fetch the current malloc_fn and free_fn used. Either parameter
    may be NULL.
 
    .. versionadded:: 2.8
+
+.. function:: void json_get_alloc_funcs2(json_malloc_t *malloc_fn, json_realloc_t *realloc_fn, json_free_t *free_fn)
+
+   Fetch the current malloc_fn,realloc_fn and free_fn used. Either parameter
+   may be NULL.
+
+   .. versionadded:: 2.15
 
 **Examples:**
 
@@ -1950,6 +1976,12 @@ Use the `Boehm's conservative garbage collector`_ for memory
 operations::
 
     json_set_alloc_funcs(GC_malloc, GC_free);
+         or
+    json_set_alloc_funcs2(GC_malloc, GC_realloc, GC_free);
+
+
+   When realloc is not defined is it emulated using malloc and free.
+
 
 .. _Boehm's conservative garbage collector: http://www.hboehm.info/gc/
 
