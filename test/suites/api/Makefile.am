@@ -3,6 +3,7 @@ EXTRA_DIST = run check-exports
 check_PROGRAMS = \
 	test_array \
 	test_chaos \
+	test_chaos_realloc \
 	test_copy \
 	test_dump \
 	test_dump_callback \
@@ -12,6 +13,7 @@ check_PROGRAMS = \
 	test_load_callback \
 	test_loadb \
 	test_memory_funcs \
+	test_memory_funcs_realloc \
 	test_number \
 	test_object \
 	test_pack \
@@ -22,6 +24,7 @@ check_PROGRAMS = \
 
 test_array_SOURCES = test_array.c util.h
 test_chaos_SOURCES = test_chaos.c util.h
+test_chaos_realloc_SOURCES = test_chaos_realloc.c util.h
 test_copy_SOURCES = test_copy.c util.h
 test_dump_SOURCES = test_dump.c util.h
 test_dump_callback_SOURCES = test_dump_callback.c util.h
@@ -29,6 +32,7 @@ test_fixed_size_SOURCES = test_fixed_size.c util.h
 test_load_SOURCES = test_load.c util.h
 test_loadb_SOURCES = test_loadb.c util.h
 test_memory_funcs_SOURCES = test_memory_funcs.c util.h
+test_memory_funcs_realloc_SOURCES = test_memory_funcs_realloc.c util.h
 test_number_SOURCES = test_number.c util.h
 test_object_SOURCES = test_object.c util.h
 test_pack_SOURCES = test_pack.c util.h

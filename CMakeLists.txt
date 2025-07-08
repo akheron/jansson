@@ -491,6 +491,7 @@ if (NOT JANSSON_WITHOUT_TESTS)
    set(api_tests
          test_array
          test_chaos
+         test_chaos_realloc
          test_copy
          test_dump
          test_dump_callback
@@ -510,6 +511,7 @@ if (NOT JANSSON_WITHOUT_TESTS)
    # such as secure_malloc and secure_free is doing, so exclude it for now.
    if (NOT MSVC)
       list(APPEND api_tests test_memory_funcs)
+      list(APPEND api_tests test_memory_funcs_realloc)
    endif()
 
    # Helper macro for building and linking a test program.
