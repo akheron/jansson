@@ -1923,7 +1923,7 @@ behavior is needed.
    A typedef for a function pointer with :func:`realloc()`'s
    signature::
 
-       typedef void *(*json_malloc_t)(void*, size_t);
+       typedef void *(*json_realloc_t)(void*, size_t);
 
 
    .. versionadded:: 2.15
