@@ -4,6 +4,7 @@
 #include "util.h"
 
 static int malloc_called = 0;
+static int realloc_called = 0;
 static int free_called = 0;
 static size_t malloc_used = 0;
 
@@ -40,15 +41,22 @@ static void my_free(void *ptr) {
     free(ptr);
 }
 
-static void test_simple() {
+static void *my_realloc(void *ptr, size_t size) {
+    realloc_called = 1;
+    return realloc(ptr, size);
+}
+
+static void test_simple2() {
     json_malloc_t mfunc = NULL;
+    json_realloc_t rfunc = NULL;
     json_free_t ffunc = NULL;
 
-    json_set_alloc_funcs(my_malloc, my_free);
-    json_get_alloc_funcs(&mfunc, &ffunc);
+    json_set_alloc_funcs2(my_malloc, my_realloc, my_free);
+    json_get_alloc_funcs2(&mfunc, &rfunc, &ffunc);
     create_and_free_complex_object();
 
-    if (malloc_called != 1 || free_called != 1 || mfunc != my_malloc || ffunc != my_free)
+    if (malloc_called != 1 || free_called != 1 || mfunc != my_malloc ||
+        rfunc != my_realloc || ffunc != my_free)
         fail("Custom allocation failed");
 }
 
@@ -65,9 +73,19 @@ static void oom_free(void *ptr) {
     free(ptr);
 }
 
-static void test_oom() {
+static void *oom_realloc(void *ptr, size_t size) {
+    if (malloc_used + size > 800) {
+        return NULL;
+    }
+
+    malloc_used += size;
+    return realloc(ptr, size);
+}
+
+static void test_oom2() {
     free_called = 0;
-    json_set_alloc_funcs(oom_malloc, oom_free);
+    malloc_used = 0;
+    json_set_alloc_funcs2(oom_malloc, oom_realloc, oom_free);
     create_and_free_object_with_oom();
 
     if (free_called == 0)
@@ -89,6 +107,13 @@ static void *secure_malloc(size_t size) {
     return (char *)ptr + 8;
 }
 
+static void *secure_realloc(void *ptr, size_t size) {
+    /* Store the memory area size in the beginning of the block */
+    ptr = realloc(ptr, size + 8);
+    *((size_t *)ptr) = size;
+    return (char *)ptr + 8;
+}
+
 static void secure_free(void *ptr) {
     size_t size;
 
@@ -99,19 +124,19 @@ static void secure_free(void *ptr) {
     free(ptr);
 }
 
-static void test_secure_funcs(void) {
-    json_set_alloc_funcs(secure_malloc, secure_free);
+static void test_secure_funcs2(void) {
+    json_set_alloc_funcs2(secure_malloc, secure_realloc, secure_free);
     create_and_free_complex_object();
 }
 
-static void test_bad_args(void) {
+static void test_bad_args2(void) {
     /* The result of this test is not crashing. */
-    json_get_alloc_funcs(NULL, NULL);
+    json_get_alloc_funcs2(NULL, NULL, NULL);
 }
 
 static void run_tests() {
-    test_simple();
-    test_secure_funcs();
-    test_oom();
-    test_bad_args();
+    test_simple2();
+    test_secure_funcs2();
+    test_oom2();
+    test_bad_args2();
 }
