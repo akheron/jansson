@@ -61,8 +61,6 @@ void *jsonp_realloc(void *ptr, size_t originalSize, size_t newSize) {
     }
 }
 
-char *jsonp_strdup(const char *str) { return jsonp_strndup(str, strlen(str)); }
-
 char *jsonp_strndup(const char *str, size_t len) {
     char *new_str;
 
