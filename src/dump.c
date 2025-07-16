@@ -431,8 +431,15 @@ char *json_dumps(const json_t *json, size_t flags) {
 
     if (json_dump_callback(json, dump_to_strbuffer, (void *)&strbuff, flags))
         result = NULL;
-    else
-        result = jsonp_strdup(strbuffer_value(&strbuff));
+    else {
+        char *new_result;
+        result = strbuffer_steal_value(&strbuff);
+        // technically the resizing is not needed.
+        new_result = jsonp_realloc(result, strbuff.size, strbuff.length + 1);
+        if (new_result) { // when realloc fails we just use the original pointer
+            result = new_result;
+        }
+    }
 
     strbuffer_close(&strbuff);
     return result;
