@@ -9,7 +9,7 @@
 #define UTF_H
 
 #ifdef HAVE_CONFIG_H
-#include <jansson_private_config.h>
+#include "jansson_private_config.h"
 #endif
 
 #include <stddef.h>

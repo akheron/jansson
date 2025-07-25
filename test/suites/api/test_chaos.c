@@ -3,7 +3,7 @@
 #endif
 
 #include "util.h"
-#include <jansson.h>
+#include "jansson.h"
 #include <stdio.h>
 #include <string.h>
 

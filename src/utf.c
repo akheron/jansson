@@ -6,7 +6,6 @@
  */
 
 #include "utf.h"
-#include <string.h>
 
 int utf8_encode(int32_t codepoint, char *buffer, size_t *size) {
     if (codepoint < 0)
