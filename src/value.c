@@ -915,8 +915,7 @@ static json_t *json_integer_copy(const json_t *integer) {
 }
 
 /*** real ***/
-
-json_t *json_real(double value) {
+json_t *json_real_with_precision(double value, int precision) {
     json_real_t *real;
 
     if (isnan(value) || isinf(value))
@@ -928,7 +927,12 @@ json_t *json_real(double value) {
     json_init(&real->json, JSON_REAL);
 
     real->value = value;
+    real->precision = precision;
     return &real->json;
+}
+
+json_t *json_real(double value) {
+    return json_real_with_precision(value, DEFAULT_PRECISION_SYSTEM); 
 }
 
 double json_real_value(const json_t *json) {
@@ -938,13 +942,33 @@ double json_real_value(const json_t *json) {
     return json_to_real(json)->value;
 }
 
-int json_real_set(json_t *json, double value) {
+int json_real_precision(const json_t *json) {
+    if (!json_is_real(json))
+        return -1;
+
+    return json_to_real(json)->precision;
+}
+
+int json_real_set_with_precision(json_t *json, double value, int precision) {
     if (!json_is_real(json) || isnan(value) || isinf(value))
         return -1;
 
     json_to_real(json)->value = value;
+    json_to_real(json)->precision = precision;
 
     return 0;
+}
+
+int json_real_set(json_t *json, double value) {
+    return(json_real_set_with_precision(json, value, DEFAULT_PRECISION_SYSTEM)); 
+}
+
+int json_real_set_precision(json_t *json, int precision) {
+    if (!json_is_real(json))
+        return -1;
+
+    json_to_real(json)->precision = precision;
+    return(0);
 }
 
 static void json_delete_real(json_real_t *real) { jsonp_free(real); }
