@@ -1872,6 +1872,21 @@ only if they are exactly the same value, but also if they have equal
    *NULL*.
 
 
+Comparison
+==========
+
+.. function:: int json_compare(json_t *value1, json_t *value2)
+
+   Returns -1 if *value1* is less than *value2*, 0 if they are equal and 1 if
+   *value1* is greater than *value2*. This is akin to `strcmp()` and can be
+   used for comparing whole JSON data structures for sorting.
+
+   *NULL* is a valid parameter for either argument and will compare equal if
+   both are *NULL* or greater/less than if only one is NULL.
+
+   Nested arrays or objects will be recursively compared and any differences in
+   values, number of elements, object keys etc will compare consistently.
+
 Copying
 =======
 
