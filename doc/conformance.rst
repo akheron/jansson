@@ -49,7 +49,9 @@ representation includes one of ``e``, ``E``, or ``.``; regardless if
 its actual numeric value is a true integer (e.g., all of ``1E6``,
 ``3.0``, ``400E-2``, and ``3.14E3`` are mathematical integers, but
 will be treated as real values). With the ``JSON_DECODE_INT_AS_REAL``
-decoder flag set all numbers are interpreted as real.
+decoder flag set all numbers are interpreted as real. With the
+``JSON_DECODE_BIGINT_AS_REAL`` decoder flag only numbers that do not
+fit in the integer data type ``json_int_t`` are interpreted as real.
 
 All other JSON numbers are considered integers.
 
