@@ -12,6 +12,7 @@ suites/api/test_fixed_size
 suites/api/test_load
 suites/api/test_load_callback
 suites/api/test_loadb
+suites/api/test_location
 suites/api/test_memory_funcs
 suites/api/test_memory_funcs_realloc
 suites/api/test_number

@@ -1360,6 +1360,12 @@ macros can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.6
 
+``JSON_STORE_LOCATION``
+   Add location information to decoded :type:`json_t` objects. See
+   :ref:`apiref-location-information` for details.
+
+   .. versionadded:: 2.15
+
 Each function also takes an optional :type:`json_error_t` parameter
 that is filled with error information if decoding fails. It's also
 updated on success; the number of bytes of input read is written to
@@ -2094,3 +2100,36 @@ And usage::
 
         json_decref(obj);
     }
+
+.. _apiref-location-information:
+
+Location Information
+====================
+
+Jansson supports storing decoded objects' locations in input for better
+reporting of semantic errors in applications. Since this comes with a certain
+overhead, location information is stored only if ``JSON_STORE_LOCATION`` flag
+was specified during decoding.
+
+.. function:: int json_get_location(json_t *json, int *line, int *column, int *position, int *length);
+
+   Retrieve location of *json* writing it to memory locations pointed to by
+   *line*, *column*, *position* and *length* if not *NULL*. Returns 0 on success
+   or -1 if no location information is available for *json*.
+
+``line``
+   The line number on which the object occurred.
+
+``column``
+   The column on which the object occurred. Note that this is the *character
+   column*, not the byte column, i.e. a multibyte UTF-8 character counts as one
+   column.
+
+``position``
+   The position in bytes from the start of the input. This is useful for
+   debugging Unicode encoding problems.
+
+``length``
+   The length of the object in bytes. For arrays and objects, length is always
+   1. For all other types, the value resembles the actual length as it appears
+   in input. Note that for strings, this includes the quotes.

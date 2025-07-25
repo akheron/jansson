@@ -360,6 +360,7 @@ json_t *json_deep_copy(const json_t *value) JANSSON_ATTRS((warn_unused_result));
 #define JSON_DECODE_ANY         0x4
 #define JSON_DECODE_INT_AS_REAL 0x8
 #define JSON_ALLOW_NUL          0x10
+#define JSON_STORE_LOCATION     0x20
 
 typedef size_t (*json_load_callback_t)(void *buffer, size_t buflen, void *data);
 
@@ -417,6 +418,10 @@ void json_get_alloc_funcs2(json_malloc_t *malloc_fn, json_realloc_t *realloc_fn,
 
 const char *jansson_version_str(void);
 int jansson_version_cmp(int major, int minor, int micro);
+
+/* location information */
+
+int json_get_location(json_t *json, int *line, int *column, int *position, int *length);
 
 #ifdef __cplusplus
 }
