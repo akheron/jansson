@@ -72,7 +72,7 @@ int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
      */
     char digits[25];
     char *digits_end;
-    int mode = precision == 0 ? 0 : 2;
+    int mode = precision == 0 ? 0 : 5;
     int decpt, sign, exp_len, exp = 0, use_exp = 0;
     int digits_len, vdigits_start, vdigits_end;
     char *p;
