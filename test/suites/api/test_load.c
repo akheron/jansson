@@ -25,7 +25,7 @@ static void file_not_found() {
 
     pos = strchr(error.text, ':');
     if (!pos)
-        fail("json_load_file returne an invalid error message");
+        fail("json_load_file returned an invalid error message");
 
     *pos = '\0';
 
