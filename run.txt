@@ -1,0 +1,8 @@
+here is how to run the project:
+
+mkdir build && cd build
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DJANSSON_BUILD_DOCS=OFF
+ninja
+
+to test the project you can use the ctest command:
+ctest
