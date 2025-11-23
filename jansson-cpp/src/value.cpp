@@ -22,10 +22,10 @@
 #include <stdint.h>
 #endif
 
-#include "hashtable.h"
-#include "jansson.h"
-#include "jansson_private.h"
-#include "utf.h"
+#include "hashtable.hpp"
+#include "jansson.hpp"
+#include "jansson_private.hpp"
+#include "utf.hpp"
 
 /* Work around nonstandard isnan() and isinf() implementations */
 #ifndef isnan
@@ -51,7 +51,7 @@ int jsonp_loop_check(hashtable_t *parents, const json_t *json, char *key, size_t
     if (key_len_out)
         *key_len_out = key_len;
 
-    if (hashtable_get(parents, key, key_len))
+    if (static_cast<json_t*>(hashtable_get(parents, key, key_len))
         return -1;
 
     return hashtable_set(parents, key, key_len, json_null());
@@ -62,7 +62,7 @@ int jsonp_loop_check(hashtable_t *parents, const json_t *json, char *key, size_t
 extern volatile uint32_t hashtable_seed;
 
 json_t *json_object(void) {
-    json_object_t *object = jsonp_malloc(sizeof(json_object_t));
+    json_object_t *object = static_cast<char*>(jsonp_malloc(sizeof(json_object_t));
     if (!object)
         return NULL;
 
@@ -110,7 +110,7 @@ json_t *json_object_getn(const json_t *json, const char *key, size_t key_len) {
         return NULL;
 
     object = json_to_object(json);
-    return hashtable_get(&object->hashtable, key, key_len);
+    return static_cast<json_t*>(hashtable_get(&object->hashtable, key, key_len);
 }
 
 int json_object_set_new_nocheck(json_t *json, const char *key, json_t *value) {
@@ -318,7 +318,7 @@ const char *json_object_iter_key(void *iter) {
     if (!iter)
         return NULL;
 
-    return hashtable_iter_key(iter);
+    return static_cast<const char*>(hashtable_iter_key(iter);
 }
 
 size_t json_object_iter_key_len(void *iter) {
@@ -429,7 +429,7 @@ out:
 /*** array ***/
 
 json_t *json_array(void) {
-    json_array_t *array = jsonp_malloc(sizeof(json_array_t));
+    json_array_t *array = static_cast<char*>(jsonp_malloc(sizeof(json_array_t));
     if (!array)
         return NULL;
     json_init(&array->json, JSON_ARRAY);
@@ -437,7 +437,7 @@ json_t *json_array(void) {
     array->entries = 0;
     array->size = 8;
 
-    array->table = jsonp_malloc(array->size * sizeof(json_t *));
+    array->table = static_cast<char*>(jsonp_malloc(array->size * sizeof(json_t *));
     if (!array->table) {
         jsonp_free(array);
         return NULL;
@@ -517,7 +517,7 @@ static json_t **json_array_grow(json_array_t *array, size_t amount) {
     old_table = array->table;
 
     new_size = max(array->size + amount, array->size * 2);
-    new_table = jsonp_realloc(old_table, array->size * sizeof(json_t *),
+    new_table = static_cast<char*>(jsonp_realloc(old_table, array->size * sizeof(json_t *),
                               new_size * sizeof(json_t *));
     if (!new_table)
         return NULL;
@@ -717,7 +717,7 @@ static json_t *string_create(const char *value, size_t len, int own) {
             return NULL;
     }
 
-    string = jsonp_malloc(sizeof(json_string_t));
+    string = static_cast<char*>(jsonp_malloc(sizeof(json_string_t));
     if (!string) {
         jsonp_free(v);
         return NULL;
@@ -848,7 +848,7 @@ json_t *json_vsprintf(const char *fmt, va_list ap) {
         goto out;
     }
 
-    buf = jsonp_malloc((size_t)length + 1);
+    buf = static_cast<char*>(jsonp_malloc((size_t)length + 1);
     if (!buf)
         goto out;
 
@@ -879,7 +879,7 @@ json_t *json_sprintf(const char *fmt, ...) {
 /*** integer ***/
 
 json_t *json_integer(json_int_t value) {
-    json_integer_t *integer = jsonp_malloc(sizeof(json_integer_t));
+    json_integer_t *integer = static_cast<char*>(jsonp_malloc(sizeof(json_integer_t));
     if (!integer)
         return NULL;
     json_init(&integer->json, JSON_INTEGER);
@@ -922,7 +922,7 @@ json_t *json_real(double value) {
     if (isnan(value) || isinf(value))
         return NULL;
 
-    real = jsonp_malloc(sizeof(json_real_t));
+    real = static_cast<char*>(jsonp_malloc(sizeof(json_real_t));
     if (!real)
         return NULL;
     json_init(&real->json, JSON_REAL);

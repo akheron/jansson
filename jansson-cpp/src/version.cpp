@@ -9,7 +9,7 @@
 #define _GNU_SOURCE
 #endif
 
-#include "jansson.h"
+#include "jansson.hpp"
 
 const char *jansson_version_str(void) { return JANSSON_VERSION; }
 

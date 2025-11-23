@@ -1,4 +1,6 @@
 /* Generate sizeof(uint32_t) bytes of as random data as possible to seed
+#include <cstdint>
+#include <sched.h>
    the hash function.
 */
 
@@ -42,7 +44,7 @@
 #include <windows.h>
 #endif
 
-#include "jansson.h"
+#include "jansson.hpp"
 
 static uint32_t buf_to_uint32(char *data) {
     size_t i;

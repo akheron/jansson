@@ -16,8 +16,8 @@
 #include <stdint.h>
 #endif
 
-#include "hashtable.h"
-#include "jansson_private.h" /* for container_of() */
+#include "hashtable.hpp"
+#include "jansson_private.hpp" /* for container_of() */
 #include <jansson_config.h>  /* for JSON_INLINE */
 
 #ifndef INITIAL_HASHTABLE_ORDER
@@ -31,7 +31,7 @@ typedef struct hashtable_bucket bucket_t;
 extern volatile uint32_t hashtable_seed;
 
 /* Implementation of the hash function */
-#include "lookup3.h"
+#include "lookup3.hpp"
 
 #define list_to_pair(list_)         container_of(list_, pair_t, list)
 #define ordered_list_to_pair(list_) container_of(list_, pair_t, ordered_list)
@@ -146,7 +146,7 @@ static int hashtable_do_rehash(hashtable_t *hashtable) {
     new_order = hashtable->order + 1;
     new_size = hashsize(new_order);
 
-    new_buckets = jsonp_malloc(new_size * sizeof(bucket_t));
+    new_buckets = static_cast<char*>(jsonp_malloc(new_size * sizeof(bucket_t));
     if (!new_buckets)
         return -1;
 
@@ -176,7 +176,7 @@ int hashtable_init(hashtable_t *hashtable) {
 
     hashtable->size = 0;
     hashtable->order = INITIAL_HASHTABLE_ORDER;
-    hashtable->buckets = jsonp_malloc(hashsize(hashtable->order) * sizeof(bucket_t));
+    hashtable->buckets = static_cast<char*>(jsonp_malloc(hashsize(hashtable->order) * sizeof(bucket_t));
     if (!hashtable->buckets)
         return -1;
 
@@ -207,7 +207,7 @@ static pair_t *init_pair(json_t *value, const char *key, size_t key_len, size_t 
         return NULL;
     }
 
-    pair = jsonp_malloc(offsetof(pair_t, key) + key_len + 1);
+    pair = static_cast<char*>(jsonp_malloc(offsetof(pair_t, key) + key_len + 1);
 
     if (!pair)
         return NULL;
@@ -257,7 +257,7 @@ int hashtable_set(hashtable_t *hashtable, const char *key, size_t key_len,
     return 0;
 }
 
-void *hashtable_get(hashtable_t *hashtable, const char *key, size_t key_len) {
+void *static_cast<json_t*>(hashtable_get(hashtable_t *hashtable, const char *key, size_t key_len) {
     pair_t *pair;
     size_t hash;
     bucket_t *bucket;
@@ -317,7 +317,7 @@ void *hashtable_iter_next(hashtable_t *hashtable, void *iter) {
     return list->next;
 }
 
-void *hashtable_iter_key(void *iter) {
+void *static_cast<const char*>(hashtable_iter_key(void *iter) {
     pair_t *pair = ordered_list_to_pair((list_t *)iter);
     return pair->key;
 }

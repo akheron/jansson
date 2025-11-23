@@ -9,8 +9,8 @@
 #define _GNU_SOURCE
 #endif
 
-#include "strbuffer.h"
-#include "jansson_private.h"
+#include "strbuffer.hpp"
+#include "jansson_private.hpp"
 #include <stdlib.h>
 #include <string.h>
 
@@ -22,7 +22,7 @@ int strbuffer_init(strbuffer_t *strbuff) {
     strbuff->size = STRBUFFER_MIN_SIZE;
     strbuff->length = 0;
 
-    strbuff->value = jsonp_malloc(strbuff->size);
+    strbuff->value = static_cast<char*>(jsonp_malloc(strbuff->size);
     if (!strbuff->value)
         return -1;
 
@@ -70,7 +70,7 @@ int strbuffer_append_bytes(strbuffer_t *strbuff, const char *data, size_t size) 
 
         new_size = max(strbuff->size * STRBUFFER_FACTOR, strbuff->length + size + 1);
 
-        new_value = jsonp_realloc(strbuff->value, strbuff->size, new_size);
+        new_value = static_cast<char*>(jsonp_realloc(strbuff->value, strbuff->size, new_size);
         if (!new_value)
             return -1;
 

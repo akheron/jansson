@@ -8,7 +8,7 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 
-#include "jansson.h"
+#include "jansson.hpp"
 #include <stdlib.h>
 
 struct hashtable_list {

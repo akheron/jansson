@@ -9,7 +9,7 @@
 #define _GNU_SOURCE
 #endif
 
-#include "jansson_private.h"
+#include "jansson_private.hpp"
 
 #include <assert.h>
 #include <errno.h>
@@ -21,9 +21,9 @@
 #include <unistd.h>
 #endif
 
-#include "jansson.h"
-#include "strbuffer.h"
-#include "utf.h"
+#include "jansson.hpp"
+#include "strbuffer.hpp"
+#include "utf.hpp"
 
 #define STREAM_STATE_OK    0
 #define STREAM_STATE_EOF   -1
@@ -355,7 +355,7 @@ static void lex_scan_string(lex_t *lex, json_error_t *error) {
          - two \uXXXX escapes (length 12) forming an UTF-16 surrogate pair
            are converted to 4 bytes
     */
-    t = jsonp_malloc(lex->saved_text.length + 1);
+    t = static_cast<char*>(jsonp_malloc(lex->saved_text.length + 1);
     if (!t) {
         /* this is not very nice, since TOKEN_INVALID is returned */
         goto out;

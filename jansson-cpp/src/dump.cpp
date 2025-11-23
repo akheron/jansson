@@ -9,7 +9,7 @@
 #define _GNU_SOURCE
 #endif
 
-#include "jansson_private.h"
+#include "jansson_private.hpp"
 
 #include <assert.h>
 #include <stdio.h>
@@ -19,9 +19,9 @@
 #include <unistd.h>
 #endif
 
-#include "jansson.h"
-#include "strbuffer.h"
-#include "utf.h"
+#include "jansson.hpp"
+#include "strbuffer.hpp"
+#include "utf.hpp"
 
 #define MAX_INTEGER_STR_LENGTH 25
 #define MAX_REAL_STR_LENGTH    25
@@ -201,8 +201,8 @@ struct key_len {
 };
 
 static int compare_keys(const void *key1, const void *key2) {
-    const struct key_len *k1 = key1;
-    const struct key_len *k2 = key2;
+    const struct key_len *k1 = static_cast<const struct key_len*>(key1);
+    const struct key_len *k2 = static_cast<const struct key_len*>(key2);
     const size_t min_size = k1->len < k2->len ? k1->len : k2->len;
     int res = memcmp(k1->key, k2->key, min_size);
 
@@ -337,7 +337,7 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
                 size_t size, i;
 
                 size = json_object_size(json);
-                keys = jsonp_malloc(size * sizeof(struct key_len));
+                keys = static_cast<char*>(jsonp_malloc(size * sizeof(struct key_len));
                 if (!keys)
                     return -1;
 
@@ -435,7 +435,7 @@ char *json_dumps(const json_t *json, size_t flags) {
         char *new_result;
         result = strbuffer_steal_value(&strbuff);
         // technically the resizing is not needed.
-        new_result = jsonp_realloc(result, strbuff.size, strbuff.length + 1);
+        new_result = static_cast<char*>(jsonp_realloc(result, strbuff.size, strbuff.length + 1);
         if (new_result) { // when realloc fails we just use the original pointer
             result = new_result;
         }

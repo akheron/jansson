@@ -1,4 +1,5 @@
 /*
+#define JSON_INLINE inline
  * Copyright (c) 2009-2016 Petri Lehtinen <petri@digip.org>
  *
  * Jansson is free software; you can redistribute it and/or modify
@@ -12,7 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h> /* for size_t */
 
-#include "jansson_config.h"
+#include "jansson_config.hpp"
 
 #ifdef __cplusplus
 extern "C" {
