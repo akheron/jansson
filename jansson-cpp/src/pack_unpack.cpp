@@ -6,9 +6,9 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#include "jansson.h"
-#include "jansson_private.h"
-#include "utf.h"
+#include "jansson.hpp"
+#include "jansson_private.hpp"
+#include "utf.hpp"
 #include <string.h>
 
 typedef struct {
@@ -565,7 +565,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap) {
 
         if (gotopt || json_object_size(root) != key_set.size) {
             json_object_keylen_foreach(root, key, key_len, value) {
-                if (!hashtable_get(&key_set, key, key_len)) {
+                if (!static_cast<json_t*>(hashtable_get(&key_set, key, key_len)) {
                     unpacked++;
 
                     /* Save unrecognized keys for the error message */

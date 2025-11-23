@@ -8,7 +8,7 @@
 #ifndef STRBUFFER_H
 #define STRBUFFER_H
 
-#include "jansson.h"
+#include "jansson.hpp"
 #include <stdlib.h>
 
 typedef struct {

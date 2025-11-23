@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "jansson.h"
-#include "jansson_private.h"
+#include "jansson.hpp"
+#include "jansson_private.hpp"
 
 /* C89 allows these to be macros */
 #undef malloc
@@ -22,7 +22,7 @@ static json_malloc_t do_malloc = malloc;
 static json_realloc_t do_realloc = realloc;
 static json_free_t do_free = free;
 
-void *jsonp_malloc(size_t size) {
+void *static_cast<char*>(jsonp_malloc(size_t size) {
     if (!size)
         return NULL;
 
@@ -36,7 +36,7 @@ void jsonp_free(void *ptr) {
     (*do_free)(ptr);
 }
 
-void *jsonp_realloc(void *ptr, size_t originalSize, size_t newSize) {
+void *static_cast<char*>(jsonp_realloc(void *ptr, size_t originalSize, size_t newSize) {
     void *newMemory;
 
     if (do_realloc)
@@ -64,7 +64,7 @@ void *jsonp_realloc(void *ptr, size_t originalSize, size_t newSize) {
 char *jsonp_strndup(const char *str, size_t len) {
     char *new_str;
 
-    new_str = jsonp_malloc(len + 1);
+    new_str = static_cast<char*>(jsonp_malloc(len + 1);
     if (!new_str)
         return NULL;
 

@@ -1,5 +1,5 @@
-#include "jansson_private.h"
-#include "strbuffer.h"
+#include "jansson_private.hpp"
+#include "strbuffer.hpp"
 #include <assert.h>
 #include <errno.h>
 #include <math.h>

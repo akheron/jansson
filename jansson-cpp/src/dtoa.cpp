@@ -63,7 +63,7 @@
  *		for 0 <= k <= 22).
  */
 
-#include "jansson_private.h"
+#include "jansson_private.hpp"
 
 #ifdef WORDS_BIGENDIAN
 #  define IEEE_MC68k 1

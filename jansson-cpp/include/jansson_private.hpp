@@ -1,4 +1,6 @@
 /*
+#define JSON_PARSER_MAX_DEPTH 2048
+#define JSON_INLINE inline
  * Copyright (c) 2009-2016 Petri Lehtinen <petri@digip.org>
  *
  * Jansson is free software; you can redistribute it and/or modify
@@ -8,10 +10,10 @@
 #ifndef JANSSON_PRIVATE_H
 #define JANSSON_PRIVATE_H
 
-#include "hashtable.h"
-#include "jansson.h"
-#include "jansson_private_config.h"
-#include "strbuffer.h"
+#include "hashtable.hpp"
+#include "jansson.hpp"
+#include "jansson_private_config.hpp"
+#include "strbuffer.hpp"
 #include <stddef.h>
 
 #define container_of(ptr_, type_, member_)                                               \
@@ -20,6 +22,11 @@
 /* On some platforms, max() may already be defined */
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
+
+#ifdef __cplusplus
+#include <algorithm>
+#undef max
+#endif
 #endif
 
 /* va_copy is a C99 feature. In C89 implementations, it's sometimes
