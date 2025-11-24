@@ -35,7 +35,7 @@ extern volatile uint32_t hashtable_seed;
 
 #define list_to_pair(list_)         container_of(list_, pair_t, list)
 #define ordered_list_to_pair(list_) container_of(list_, pair_t, ordered_list)
-#define hash_str(key, len)          ((size_t)hashlittle((key), len, hashtable_seed))
+#define hash_str(key, len)          ((size_t)lookup3::hashlittle((key), len, hashtable_seed))
 
 static JSON_INLINE void list_init(list_t *list) {
     list->next = list;
