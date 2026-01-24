@@ -30,6 +30,6 @@ endif
 libjansson_la_LDFLAGS = \
 	-no-undefined \
 	-export-symbols-regex '^json_|^jansson_' \
-	-version-info 18:1:14 \
+	-version-info 19:0:15 \
 	@JSON_SYMVER_LDFLAGS@ \
 	@JSON_BSYMBOLIC_LDFLAGS@

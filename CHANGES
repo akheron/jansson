@@ -1,3 +1,22 @@
+Version 2.15.0
+==============
+
+Released 2026-01-24
+
+* New features:
+
+  - Add support for realloc by adding `json_set_alloc_funcs2`, `json_get_alloc_funcs2`
+    (@WilhelmWiens in #717)
+
+* Fixes:
+
+  - Optimize serialization (@WilhelmWiens in #658 and #719)
+  - Fix docstrings in hashtable.h (@WilhelmWiens in #718)
+
+* Build
+
+  - Use target-based cmake settings (@Andrew-Au in #692)
+
 Version 2.14.1
 ==============
 
