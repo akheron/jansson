@@ -10,10 +10,10 @@ Released 2025-03-23
     Bruno Haible for the report and help with fixing.)
 
   - Use David M. Gay's `dtoa()` algorithm to avoid misprinting issues of real
-    numbers that are not exactly representable as a `double` (#680).
+    numbers that are not exactly representable as a ``double`` (#680).
 
-    If this is not desirable, use `./configure --disable-dtoa` or `cmake
-    -DUSE_DTOA=OFF .`
+    If this is not desirable, use ``./configure --disable-dtoa`` or ``cmake
+    -DUSE_DTOA=OFF``.
 
 * Build:
 

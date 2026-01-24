@@ -1088,7 +1088,7 @@ in which case no error information is returned to the caller.
 
    .. versionadded:: 2.11
 
-.. function:: enum json_error_code json_error_code(const json_error_t *error)
+.. c:function:: enum json_error_code json_error_code(const json_error_t *error)
 
    Returns the error code embedded in ``error->text``.
 

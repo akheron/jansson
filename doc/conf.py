@@ -70,6 +70,9 @@ exclude_patterns = ['_build']
 default_role = 'c:func'
 primary_domain = 'c'
 
+# Suppress warnings about enum and function having the same name (valid in C)
+suppress_warnings = ['duplicate_declaration.c']
+
 # If true, '()' will be appended to :func: etc. cross-reference text.
 #add_function_parentheses = True
 
