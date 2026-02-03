@@ -149,7 +149,7 @@ void *hashtable_iter_at(hashtable_t *hashtable, const char *key, size_t key_len)
  * @iter: The iterator
  *
  * Returns a new iterator pointing to the next element in the
- * hashtable or NULL if the whole hastable has been iterated over.
+ * hashtable or NULL if the whole hashtable has been iterated over.
  */
 void *hashtable_iter_next(hashtable_t *hashtable, void *iter);
 

@@ -175,19 +175,19 @@ static void test_binary_keys(void) {
         fail("cannot get integer key2");
 
     if (json_object_size(obj) != 2)
-        fail("binary object size missmatch");
+        fail("binary object size mismatch");
 
     if (json_object_deln(obj, (const char *)&key1, sizeof(key1)))
         fail("cannot del integer key1");
 
     if (json_object_size(obj) != 1)
-        fail("binary object size missmatch");
+        fail("binary object size mismatch");
 
     if (json_object_deln(obj, (const char *)&key2, sizeof(key2)))
         fail("cannot del integer key2");
 
     if (json_object_size(obj) != 0)
-        fail("binary object size missmatch");
+        fail("binary object size mismatch");
 
     json_decref(obj);
 }
