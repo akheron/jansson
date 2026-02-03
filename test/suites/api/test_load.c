@@ -6,7 +6,7 @@
  */
 
 #include "util.h"
-#include <jansson.h>
+#include "jansson.h"
 #include <string.h>
 
 static void file_not_found() {

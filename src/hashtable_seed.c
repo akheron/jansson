@@ -3,7 +3,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include <jansson_private_config.h>
+#include "jansson_private_config.h"
 #endif
 
 #include <stdio.h>
@@ -41,8 +41,6 @@
 /* For GetModuleHandle(), GetProcAddress() and GetCurrentProcessId() */
 #include <windows.h>
 #endif
-
-#include "jansson.h"
 
 static uint32_t buf_to_uint32(char *data) {
     size_t i;

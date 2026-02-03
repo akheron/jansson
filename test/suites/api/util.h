@@ -9,7 +9,7 @@
 #define UTIL_H
 
 #ifdef HAVE_CONFIG_H
-#include <jansson_private_config.h>
+#include "jansson_private_config.h"
 #endif
 
 #include <stdio.h>
@@ -18,7 +18,7 @@
 #include <locale.h>
 #endif
 
-#include <jansson.h>
+#include "jansson.h"
 
 #define failhdr fprintf(stderr, "%s:%d: ", __FILE__, __LINE__)
 

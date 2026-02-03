@@ -6,11 +6,11 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <jansson_private_config.h>
+#include "jansson_private_config.h"
 #endif
 
+#include "jansson.h"
 #include <ctype.h>
-#include <jansson.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
