@@ -370,6 +370,66 @@ static int json_object_equal(const json_t *object1, const json_t *object2) {
     return 1;
 }
 
+static int json_strnncmp(const char *s1, size_t s1_len, const char *s2, size_t s2_len)
+{
+    int result = strncmp(s1, s2, (s1_len > s2_len ? s2_len : s1_len));
+
+    if (result > 1)
+        result = 1;
+    else if (result < -1)
+        result = -1;
+
+    if (result == 0) {
+        if (s1_len < s2_len)
+            result = -1;
+        else if (s1_len > s2_len)
+            result = 1;
+    }
+
+    return result;
+}
+
+static void json_object_next_key(const json_t *object, const char **next_key, size_t *next_key_len, const char *prev_key, size_t prev_key_len) {
+    const char *key;
+    size_t key_len;
+    const json_t *value;
+
+    *next_key = NULL;
+
+    /* Linear search through the object to find the smallest key which is >prev_key */
+    json_object_keylen_foreach((json_t *)object, key, key_len, value) {
+        if ((*next_key == NULL || json_strnncmp(*next_key, *next_key_len, key, key_len) < 0)
+            && (prev_key == NULL || json_strnncmp(prev_key, prev_key_len, key, key_len) > 0)) {
+            *next_key = key;
+            *next_key_len = key_len;
+        }
+    }
+}
+
+static int json_object_compare(const json_t *object1, const json_t *object2) {
+    const char *key1 = NULL, *key2 = NULL;
+    size_t key1_len, key2_len;
+
+    json_object_next_key(object1, &key1, &key1_len, key1, key1_len);
+    json_object_next_key(object2, &key2, &key2_len, key2, key2_len);
+
+    while (key1 != NULL && key2 != NULL) {
+        int cmp = json_strnncmp(key1, key1_len, key2, key2_len);
+        if (cmp != 0)
+            return cmp;
+
+        json_object_next_key(object1, &key1, &key1_len, key1, key1_len);
+        json_object_next_key(object2, &key2, &key2_len, key2, key2_len);
+    }
+
+    if (key1 != NULL)
+        return 1;
+    else if(key2 != NULL)
+        return -1;
+    else
+        return 0;
+}
+
 static json_t *json_object_copy(json_t *object) {
     json_t *result;
 
@@ -658,6 +718,33 @@ static int json_array_equal(const json_t *array1, const json_t *array2) {
     return 1;
 }
 
+static int json_array_compare(const json_t *array1, const json_t *array2) {
+    size_t a1_size, a2_size, min_size, i;
+
+    a1_size = json_array_size(array1);
+    a2_size = json_array_size(array2);
+    min_size = a1_size > a2_size ? a2_size : a1_size;
+
+    for (i = 0; i < min_size; i++) {
+        json_t *value1, *value2;
+        int result;
+
+        value1 = json_array_get(array1, i);
+        value2 = json_array_get(array2, i);
+
+        result = json_compare(value1, value2);
+        if (result != 0)
+            return result;
+    }
+
+    if (a1_size < a2_size)
+        return 1;
+    else if (a1_size > a2_size)
+        return -1;
+
+    return 0;
+}
+
 static json_t *json_array_copy(json_t *array) {
     json_t *result;
     size_t i;
@@ -826,6 +913,15 @@ static int json_string_equal(const json_t *string1, const json_t *string2) {
     return s1->length == s2->length && !memcmp(s1->value, s2->value, s1->length);
 }
 
+static int json_string_compare(const json_t *string1, const json_t *string2) {
+    json_string_t *s1, *s2;
+
+    s1 = json_to_string(string1);
+    s2 = json_to_string(string2);
+
+    return json_strnncmp(s1->value, s1->length, s2->value, s2->length);
+}
+
 static json_t *json_string_copy(const json_t *string) {
     json_string_t *s;
 
@@ -910,6 +1006,15 @@ static int json_integer_equal(const json_t *integer1, const json_t *integer2) {
     return json_integer_value(integer1) == json_integer_value(integer2);
 }
 
+static int json_integer_compare(const json_t *integer1, const json_t *integer2) {
+    if (json_integer_value(integer1) < json_integer_value(integer2))
+        return -1;
+    else if (json_integer_value(integer1) > json_integer_value(integer2))
+        return 1;
+    else
+        return 0;
+}
+
 static json_t *json_integer_copy(const json_t *integer) {
     return json_integer(json_integer_value(integer));
 }
@@ -951,6 +1056,15 @@ static void json_delete_real(json_real_t *real) { jsonp_free(real); }
 
 static int json_real_equal(const json_t *real1, const json_t *real2) {
     return json_real_value(real1) == json_real_value(real2);
+}
+
+static int json_real_compare(const json_t *real1, const json_t *real2) {
+    if (json_real_value(real1) < json_real_value(real2))
+        return -1;
+    else if (json_real_value(real1) > json_real_value(real2))
+        return 1;
+    else
+        return 0;
 }
 
 static json_t *json_real_copy(const json_t *real) {
@@ -1038,6 +1152,43 @@ int json_equal(const json_t *json1, const json_t *json2) {
             return json_integer_equal(json1, json2);
         case JSON_REAL:
             return json_real_equal(json1, json2);
+        default:
+            return 0;
+    }
+}
+
+/*** comparison ***/
+
+int json_compare(const json_t *json1, const json_t *json2) {
+    if (!json1 && !json2)
+        return 0;
+
+    if (!json1)
+        return -1;
+
+    if (!json2)
+        return 1;
+
+    if (json_typeof(json1) < json_typeof(json2))
+        return -1;
+    else if (json_typeof(json1) > json_typeof(json2))
+        return 1;
+
+    /* this covers true, false and null as they are singletons */
+    if (json1 == json2)
+        return 0;
+
+    switch (json_typeof(json1)) {
+        case JSON_OBJECT:
+            return json_object_compare(json1, json2);
+        case JSON_ARRAY:
+            return json_array_compare(json1, json2);
+        case JSON_STRING:
+            return json_string_compare(json1, json2);
+        case JSON_INTEGER:
+            return json_integer_compare(json1, json2);
+        case JSON_REAL:
+            return json_real_compare(json1, json2);
         default:
             return 0;
     }

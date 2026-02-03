@@ -8,6 +8,7 @@ check_PROGRAMS = \
 	test_dump \
 	test_dump_callback \
 	test_equal \
+	test_compare \
 	test_fixed_size \
 	test_load \
 	test_load_callback \
