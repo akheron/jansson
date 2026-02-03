@@ -985,12 +985,42 @@ json_t *json_null(void) {
     return &the_null;
 }
 
+/*** refcounted simple values ***/
+
+json_t *jsonp_simple(json_t *json, size_t flags)
+{
+    json_simple_t *simple;
+
+    /* pointless if not recording object location */
+    if (!(flags & JSON_STORE_LOCATION))
+        return json;
+
+    simple = jsonp_malloc(sizeof(json_simple_t));
+    if (!simple)
+        return NULL;
+
+    simple->json.type = json->type;
+    simple->json.refcount = 1;
+
+    return &simple->json;
+}
+
+static void json_delete_simple(json_simple_t *simple)
+{
+    /* catch accidental calls for singletons */
+    if (simple && simple->json.refcount == 0)
+        jsonp_free(simple);
+}
+
 /*** deletion ***/
+
+static void delete_location(json_t *json);
 
 void json_delete(json_t *json) {
     if (!json)
         return;
 
+    delete_location(json);
     switch (json_typeof(json)) {
         case JSON_OBJECT:
             json_delete_object(json_to_object(json));
@@ -1007,11 +1037,14 @@ void json_delete(json_t *json) {
         case JSON_REAL:
             json_delete_real(json_to_real(json));
             break;
+        case JSON_TRUE:
+        case JSON_FALSE:
+        case JSON_NULL:
+            json_delete_simple(json_to_simple(json));
+            break;
         default:
             return;
     }
-
-    /* json_delete is not called for true, false or null */
 }
 
 /*** equality ***/
@@ -1105,4 +1138,100 @@ json_t *do_deep_copy(const json_t *json, hashtable_t *parents) {
         default:
             return NULL;
     }
+}
+
+/*** location information ***/
+
+typedef struct {
+    json_t json; /* just to integrate with hashtable */
+    int line;
+    int column;
+    int position;
+    int length;
+} json_location_t;
+
+static hashtable_t location_hash;
+static int location_hash_initialized;
+
+static void location_atexit(void)
+{
+    if (location_hash_initialized)
+        hashtable_close(&location_hash);
+}
+
+void jsonp_store_location(json_t *json, int line, int column,
+                          int position, int length)
+{
+    json_location_t *loc = NULL;
+
+    /* not possible to store location for the singleton primitives
+     * as one can't distinguish them by their memory location */
+    if (json->refcount == (size_t)-1)
+        return;
+
+    if (!location_hash_initialized) {
+        if (!hashtable_seed) {
+            /* Autoseed */
+            json_object_seed(0);
+        }
+        if (hashtable_init(&location_hash))
+            return;
+
+        atexit(location_atexit);
+        location_hash_initialized = 1;
+    } else {
+        loc = hashtable_get(&location_hash, (void *)&json, sizeof(json));
+    }
+    if (!loc) {
+        loc = jsonp_malloc(sizeof(*loc));
+        if (!loc)
+            return;
+
+        loc->json.refcount = (size_t)-1;
+
+        if (hashtable_set(&location_hash,
+                          (void *)&json, sizeof(json), (void *)loc))
+            return;
+    }
+
+    loc->line     = line;
+    loc->column   = column;
+    loc->position = position;
+    loc->length   = length;
+}
+
+int json_get_location(json_t *json, int *line, int *column,
+                      int *position, int *length)
+{
+    json_location_t *loc = NULL;
+
+    if (location_hash_initialized)
+        loc = hashtable_get(&location_hash, (void *)&json, sizeof(json));
+
+    if (!loc)
+        return -1;
+
+    if (line)
+        *line = loc->line;
+    if (column)
+        *column = loc->column;
+    if (position)
+        *position = loc->position;
+    if (length)
+        *length = loc->length;
+
+    return 0;
+}
+
+static void delete_location(json_t *json)
+{
+    struct json_location_t *loc;
+
+    if (!location_hash_initialized)
+        return;
+
+    loc = hashtable_get(&location_hash, (void *)&json, sizeof(json));
+    hashtable_del(&location_hash, (void *)&json, sizeof(json));
+    if (loc)
+        jsonp_free(loc);
 }
