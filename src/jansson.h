@@ -286,6 +286,12 @@ static JSON_INLINE int json_object_update_missing_new(json_t *object, json_t *ot
     return ret;
 }
 
+static JSON_INLINE int json_object_update_recursive_new(json_t *object, json_t *other) {
+    int ret = json_object_update_recursive(object, other);
+    json_decref(other);
+    return ret;
+}
+
 size_t json_array_size(const json_t *array);
 json_t *json_array_get(const json_t *array, size_t index)
     JANSSON_ATTRS((warn_unused_result));
