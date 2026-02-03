@@ -197,7 +197,7 @@ static int dump_string(const char *str, size_t len, json_dump_callback_t dump, v
 
 struct key_len {
     const char *key;
-    int len;
+    size_t len;
 };
 
 static int compare_keys(const void *key1, const void *key2) {
@@ -209,7 +209,9 @@ static int compare_keys(const void *key1, const void *key2) {
     if (res)
         return res;
 
-    return k1->len - k2->len;
+    if (k1->len == k2->len)
+        return 0;
+    return k1->len < k2->len ? -1 : 1;
 }
 
 static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *parents,
