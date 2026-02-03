@@ -312,7 +312,7 @@ if(JANSSON_BUILD_SHARED_LIBS)
       return 0;
    }
    "
-   DSYMVER_WORKS
+   SYMVER_WORKS
    )
    list(REMOVE_ITEM CMAKE_REQUIRED_LIBRARIES "-Wl,--default-symver")
 
