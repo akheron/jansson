@@ -55,7 +55,8 @@ typedef enum {
     JSON_REAL,
     JSON_TRUE,
     JSON_FALSE,
-    JSON_NULL
+    JSON_NULL,
+    JSON_UINTEGER
 } json_type;
 
 typedef struct json_t {
@@ -69,26 +70,29 @@ typedef struct json_t {
 #define JSON_INTEGER_FORMAT "I64d"
 #else
 #define JSON_INTEGER_FORMAT "lld"
+#define JSON_UINTEGER_FORMAT "llu"
 #endif
 typedef long long json_int_t;
+typedef unsigned long long json_uint_t;
 #else
 #define JSON_INTEGER_FORMAT "ld"
 typedef long json_int_t;
 #endif /* JSON_INTEGER_IS_LONG_LONG */
 #endif
 
-#define json_typeof(json)     ((json)->type)
-#define json_is_object(json)  ((json) && json_typeof(json) == JSON_OBJECT)
-#define json_is_array(json)   ((json) && json_typeof(json) == JSON_ARRAY)
-#define json_is_string(json)  ((json) && json_typeof(json) == JSON_STRING)
-#define json_is_integer(json) ((json) && json_typeof(json) == JSON_INTEGER)
-#define json_is_real(json)    ((json) && json_typeof(json) == JSON_REAL)
-#define json_is_number(json)  (json_is_integer(json) || json_is_real(json))
-#define json_is_true(json)    ((json) && json_typeof(json) == JSON_TRUE)
-#define json_is_false(json)   ((json) && json_typeof(json) == JSON_FALSE)
-#define json_boolean_value    json_is_true
-#define json_is_boolean(json) (json_is_true(json) || json_is_false(json))
-#define json_is_null(json)    ((json) && json_typeof(json) == JSON_NULL)
+#define json_typeof(json)      ((json)->type)
+#define json_is_object(json)   ((json) && json_typeof(json) == JSON_OBJECT)
+#define json_is_array(json)    ((json) && json_typeof(json) == JSON_ARRAY)
+#define json_is_string(json)   ((json) && json_typeof(json) == JSON_STRING)
+#define json_is_integer(json)  ((json) && json_typeof(json) == JSON_INTEGER)
+#define json_is_uinteger(json) ((json) && json_typeof(json) == JSON_UINTEGER)
+#define json_is_real(json)     ((json) && json_typeof(json) == JSON_REAL)
+#define json_is_number(json)   (json_is_integer(json) || json_is_real(json))
+#define json_is_true(json)     ((json) && json_typeof(json) == JSON_TRUE)
+#define json_is_false(json)    ((json) && json_typeof(json) == JSON_FALSE)
+#define json_boolean_value     json_is_true
+#define json_is_boolean(json)  (json_is_true(json) || json_is_false(json))
+#define json_is_null(json)     ((json) && json_typeof(json) == JSON_NULL)
 
 /* construction, destruction, reference counting */
 
@@ -99,6 +103,7 @@ json_t *json_stringn(const char *value, size_t len);
 json_t *json_string_nocheck(const char *value);
 json_t *json_stringn_nocheck(const char *value, size_t len);
 json_t *json_integer(json_int_t value);
+json_t *json_uinteger(json_uint_t value);
 json_t *json_real(double value);
 json_t *json_true(void);
 json_t *json_false(void);
@@ -311,6 +316,7 @@ static JSON_INLINE int json_array_insert(json_t *array, size_t ind, json_t *valu
 const char *json_string_value(const json_t *string);
 size_t json_string_length(const json_t *string);
 json_int_t json_integer_value(const json_t *integer);
+json_uint_t json_uinteger_value(const json_t *uinteger);
 double json_real_value(const json_t *real);
 double json_number_value(const json_t *json);
 
@@ -319,6 +325,7 @@ int json_string_setn(json_t *string, const char *value, size_t len);
 int json_string_set_nocheck(json_t *string, const char *value);
 int json_string_setn_nocheck(json_t *string, const char *value, size_t len);
 int json_integer_set(json_t *integer, json_int_t value);
+int json_uinteger_set(json_t *uinteger, json_uint_t value);
 int json_real_set(json_t *real, double value);
 
 /* pack, unpack */
