@@ -308,6 +308,12 @@ static JSON_INLINE int json_array_insert(json_t *array, size_t ind, json_t *valu
     return json_array_insert_new(array, ind, json_incref(value));
 }
 
+static JSON_INLINE int json_array_extend_new(json_t *array, json_t *other) {
+    int ret = json_array_extend(array, other);
+    json_decref(other);
+    return ret;
+}
+
 const char *json_string_value(const json_t *string);
 size_t json_string_length(const json_t *string);
 json_int_t json_integer_value(const json_t *integer);
