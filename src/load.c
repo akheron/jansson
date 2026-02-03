@@ -82,10 +82,11 @@ typedef struct {
 
 /*** error reporting ***/
 
+#define JSON_ERROR_CONTEXT_LENGTH 20
 static void error_set(json_error_t *error, const lex_t *lex, enum json_error_code code,
                       const char *msg, ...) {
     va_list ap;
-    char msg_text[JSON_ERROR_TEXT_LENGTH];
+    char msg_text[JSON_ERROR_TEXT_LENGTH-JSON_ERROR_CONTEXT_LENGTH];
     char msg_with_context[JSON_ERROR_TEXT_LENGTH];
 
     int line = -1, col = -1;
@@ -96,8 +97,8 @@ static void error_set(json_error_t *error, const lex_t *lex, enum json_error_cod
         return;
 
     va_start(ap, msg);
-    vsnprintf(msg_text, JSON_ERROR_TEXT_LENGTH, msg, ap);
-    msg_text[JSON_ERROR_TEXT_LENGTH - 1] = '\0';
+    vsnprintf(msg_text, JSON_ERROR_TEXT_LENGTH-JSON_ERROR_CONTEXT_LENGTH, msg, ap);
+    msg_text[JSON_ERROR_TEXT_LENGTH - (JSON_ERROR_CONTEXT_LENGTH+1)] = '\0';
     va_end(ap);
 
     if (lex) {
