@@ -491,6 +491,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap) {
         size_t key_len;
         json_t *value;
         int opt = 0;
+        int *presence = NULL;
 
         if (strict != 0) {
             set_error(s, "<format>", json_error_invalid_format,
@@ -529,6 +530,10 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap) {
         if (token(s) == '?') {
             opt = gotopt = 1;
             next_token(s);
+        } else if (token(s) == '*') {
+            opt = gotopt = 1;
+            next_token(s);
+            presence = va_arg(*ap, int *);
         }
 
         if (!root) {
@@ -536,6 +541,9 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap) {
             value = NULL;
         } else {
             value = json_object_getn(root, key, key_len);
+            if (presence) {
+                *presence = (value != NULL);
+            }
             if (!value && !opt) {
                 set_error(s, "<validation>", json_error_item_not_found,
                           "Object item not found: %s", key);

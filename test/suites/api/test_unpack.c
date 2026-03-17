@@ -385,12 +385,34 @@ static void run_tests() {
         fail("json_unpack unpacked an optional key");
     json_decref(j);
 
+    j = json_object();
+    i1 = 0;
+    i2 = -1;
+    if (json_unpack(j, "{s*i}", "foo", &i2, &i1))
+        fail("json_unpack failed for absent optional key");
+    if (i1 != 0)
+        fail("json_unpack unpacked an absent optional key");
+    if (i2 != 0)
+        fail("json_unpack misreported absence of optional key");
+    json_decref(j);
+
     i1 = 0;
     j = json_pack("{si}", "foo", 42);
     if (json_unpack(j, "{s?i}", "foo", &i1))
         fail("json_unpack failed for an optional value");
     if (i1 != 42)
         fail("json_unpack failed to unpack an optional value");
+    json_decref(j);
+
+    i1 = 0;
+    i2 = -1;
+    j = json_pack("{si}", "foo", 42);
+    if (json_unpack(j, "{s*i}", "foo", &i2, &i1))
+        fail("json_unpack failed for a present optional value");
+    if (i1 != 42)
+        fail("json_unpack failed to unpack a present optional value");
+    if (i2 != 1)
+        fail("json_unpack misreported presence of optional value");
     json_decref(j);
 
     j = json_object();
