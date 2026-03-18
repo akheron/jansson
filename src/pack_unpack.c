@@ -460,9 +460,10 @@ static json_t *pack(scanner_t *s, va_list *ap) {
     }
 }
 
-static int unpack(scanner_t *s, json_t *root, va_list *ap);
+static int unpack(scanner_t *s, json_t *root, va_list *ap, const char *key);
 
-static int unpack_object(scanner_t *s, json_t *root, va_list *ap) {
+static int unpack_object(scanner_t *s, json_t *root, va_list *ap,
+                         const char *parent_key) {
     int ret = -1;
     int strict = 0;
     int gotopt = 0;
@@ -480,8 +481,9 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap) {
     }
 
     if (root && !json_is_object(root)) {
-        set_error(s, "<validation>", json_error_wrong_type, "Expected object, got %s",
-                  type_name(root));
+        set_error(s, "<validation>", json_error_wrong_type, "Expected object, got %s%s%s",
+                  type_name(root), parent_key ? " for key " : "",
+                  parent_key ? parent_key : "");
         goto out;
     }
     next_token(s);
@@ -543,7 +545,7 @@ static int unpack_object(scanner_t *s, json_t *root, va_list *ap) {
             }
         }
 
-        if (unpack(s, value, ap))
+        if (unpack(s, value, ap, key))
             goto out;
 
         hashtable_set(&key_set, key, key_len, json_null());
@@ -597,13 +599,14 @@ out:
     return ret;
 }
 
-static int unpack_array(scanner_t *s, json_t *root, va_list *ap) {
+static int unpack_array(scanner_t *s, json_t *root, va_list *ap, const char *parent_key) {
     size_t i = 0;
     int strict = 0;
 
     if (root && !json_is_array(root)) {
-        set_error(s, "<validation>", json_error_wrong_type, "Expected array, got %s",
-                  type_name(root));
+        set_error(s, "<validation>", json_error_wrong_type, "Expected array, got %s%s%s",
+                  type_name(root), parent_key ? " for key " : "",
+                  parent_key ? parent_key : "");
         return -1;
     }
     next_token(s);
@@ -648,7 +651,7 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap) {
             }
         }
 
-        if (unpack(s, value, ap))
+        if (unpack(s, value, ap, NULL))
             return -1;
 
         next_token(s);
@@ -668,18 +671,19 @@ static int unpack_array(scanner_t *s, json_t *root, va_list *ap) {
     return 0;
 }
 
-static int unpack(scanner_t *s, json_t *root, va_list *ap) {
+static int unpack(scanner_t *s, json_t *root, va_list *ap, const char *key) {
     switch (token(s)) {
         case '{':
-            return unpack_object(s, root, ap);
+            return unpack_object(s, root, ap, key);
 
         case '[':
-            return unpack_array(s, root, ap);
+            return unpack_array(s, root, ap, key);
 
         case 's':
             if (root && !json_is_string(root)) {
                 set_error(s, "<validation>", json_error_wrong_type,
-                          "Expected string, got %s", type_name(root));
+                          "Expected string, got %s%s%s", type_name(root),
+                          key ? " for key " : "", key ? key : "");
                 return -1;
             }
 
@@ -716,7 +720,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap) {
         case 'i':
             if (root && !json_is_integer(root)) {
                 set_error(s, "<validation>", json_error_wrong_type,
-                          "Expected integer, got %s", type_name(root));
+                          "Expected integer, got %s%s%s", type_name(root),
+                          key ? " for key " : "", key ? key : "");
                 return -1;
             }
 
@@ -731,7 +736,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap) {
         case 'I':
             if (root && !json_is_integer(root)) {
                 set_error(s, "<validation>", json_error_wrong_type,
-                          "Expected integer, got %s", type_name(root));
+                          "Expected integer, got %s%s%s", type_name(root),
+                          key ? " for key " : "", key ? key : "");
                 return -1;
             }
 
@@ -746,7 +752,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap) {
         case 'b':
             if (root && !json_is_boolean(root)) {
                 set_error(s, "<validation>", json_error_wrong_type,
-                          "Expected true or false, got %s", type_name(root));
+                          "Expected true or false, got %s%s%s", type_name(root),
+                          key ? " for key " : "", key ? key : "");
                 return -1;
             }
 
@@ -761,7 +768,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap) {
         case 'f':
             if (root && !json_is_real(root)) {
                 set_error(s, "<validation>", json_error_wrong_type,
-                          "Expected real, got %s", type_name(root));
+                          "Expected real, got %s%s%s", type_name(root),
+                          key ? " for key " : "", key ? key : "");
                 return -1;
             }
 
@@ -776,7 +784,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap) {
         case 'F':
             if (root && !json_is_number(root)) {
                 set_error(s, "<validation>", json_error_wrong_type,
-                          "Expected real or integer, got %s", type_name(root));
+                          "Expected real or integer, got %s%s%s", type_name(root),
+                          key ? " for key " : "", key ? key : "");
                 return -1;
             }
 
@@ -806,7 +815,8 @@ static int unpack(scanner_t *s, json_t *root, va_list *ap) {
             /* Never assign, just validate */
             if (root && !json_is_null(root)) {
                 set_error(s, "<validation>", json_error_wrong_type,
-                          "Expected null, got %s", type_name(root));
+                          "Expected null, got %s%s%s", type_name(root),
+                          key ? " for key " : "", key ? key : "");
                 return -1;
             }
             return 0;
@@ -898,7 +908,7 @@ int json_vunpack_ex(json_t *root, json_error_t *error, size_t flags, const char 
     next_token(&s);
 
     va_copy(ap_copy, ap);
-    if (unpack(&s, root, &ap_copy)) {
+    if (unpack(&s, root, &ap_copy, NULL)) {
         va_end(ap_copy);
         return -1;
     }
