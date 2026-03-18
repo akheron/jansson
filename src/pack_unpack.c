@@ -936,3 +936,10 @@ int json_unpack(json_t *root, const char *fmt, ...) {
 
     return ret;
 }
+
+const char *json_type_name(json_type type) {
+    if (type < 0 || type >= sizeof(type_names) / sizeof(type_names[0]))
+        return "unknown";
+    else
+        return type_names[type];
+}
