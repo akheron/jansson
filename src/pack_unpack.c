@@ -34,10 +34,28 @@ typedef struct {
 
 #define token(scanner) ((scanner)->token.token)
 
-static const char *const type_names[] = {"object", "array", "string", "integer",
-                                         "real",   "true",  "false",  "null"};
-
-#define type_name(x) type_names[json_typeof(x)]
+static const char *type_name(const json_t *j) {
+    switch (json_typeof(j)) {
+        case JSON_OBJECT:
+            return "object";
+        case JSON_ARRAY:
+            return "array";
+        case JSON_STRING:
+            return "string";
+        case JSON_INTEGER:
+            return "integer";
+        case JSON_REAL:
+            return "real";
+        case JSON_TRUE:
+            return "true";
+        case JSON_FALSE:
+            return "false";
+        case JSON_NULL:
+            return "null";
+        default:
+            return "<unexpected type>";
+    }
+}
 
 static const char unpack_value_starters[] = "{[siIbfFOon";
 

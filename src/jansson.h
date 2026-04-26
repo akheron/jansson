@@ -48,14 +48,14 @@ extern "C" {
 /* types */
 
 typedef enum {
-    JSON_OBJECT,
-    JSON_ARRAY,
-    JSON_STRING,
-    JSON_INTEGER,
-    JSON_REAL,
-    JSON_TRUE,
-    JSON_FALSE,
-    JSON_NULL
+    JSON_OBJECT = 0x01,
+    JSON_ARRAY = 0x02,
+    JSON_STRING = 0x04,
+    JSON_INTEGER = 0x08,
+    JSON_REAL = 0x10,
+    JSON_TRUE = 0x20,
+    JSON_FALSE = 0x40,
+    JSON_NULL = 0x80
 } json_type;
 
 typedef struct json_t {
@@ -83,11 +83,11 @@ typedef long json_int_t;
 #define json_is_string(json)  ((json) && json_typeof(json) == JSON_STRING)
 #define json_is_integer(json) ((json) && json_typeof(json) == JSON_INTEGER)
 #define json_is_real(json)    ((json) && json_typeof(json) == JSON_REAL)
-#define json_is_number(json)  (json_is_integer(json) || json_is_real(json))
+#define json_is_number(json)  ((json) && (json_typeof(json) & (JSON_REAL | JSON_INTEGER)))
 #define json_is_true(json)    ((json) && json_typeof(json) == JSON_TRUE)
 #define json_is_false(json)   ((json) && json_typeof(json) == JSON_FALSE)
 #define json_boolean_value    json_is_true
-#define json_is_boolean(json) (json_is_true(json) || json_is_false(json))
+#define json_is_boolean(json) ((json) && (json_typeof(json) & (JSON_TRUE | JSON_FALSE)))
 #define json_is_null(json)    ((json) && json_typeof(json) == JSON_NULL)
 
 /* construction, destruction, reference counting */
