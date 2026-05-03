@@ -23,7 +23,7 @@
 */
 static char get_decimal_point() {
     char buf[3];
-    sprintf(buf, "%#.0f", 1.0); // "1." in the current locale
+    sprintf(buf, "%#.0f", 1.0); /* "1." in the current locale */
     return buf[1];
 }
 
@@ -78,7 +78,7 @@ int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
     char *p;
 
     if (dtoa_r(value, mode, precision, &decpt, &sign, &digits_end, digits, 25) == NULL) {
-        // digits is too short => should not happen
+        /* digits is too short => should not happen */
         return -1;
     }
 

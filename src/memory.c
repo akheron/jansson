@@ -42,7 +42,7 @@ void *jsonp_realloc(void *ptr, size_t originalSize, size_t newSize) {
     if (do_realloc)
         return (*do_realloc)(ptr, newSize);
 
-    // realloc emulation using malloc and free
+    /* realloc emulation using malloc and free */
     if (newSize == 0) {
         if (ptr != NULL)
             (*do_free)(ptr);
