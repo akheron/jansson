@@ -13,6 +13,12 @@ jobs:
       - uses: actions/checkout@v6
       - run: ./scripts/clang-format-check
 
+  reuse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: fsfe/reuse-action@v5
+
   autotools:
     strategy:
       matrix:
