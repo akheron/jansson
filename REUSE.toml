@@ -1,0 +1,15 @@
+version = 1
+
+[[annotations]]
+path = [
+  "**",
+]
+SPDX-FileCopyrightText = "2009-2024 Petri Lehtinen <petri@digip.org>"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [
+  "src/dtoa.c",
+]
+SPDX-FileCopyrightText = "1991, 2000, 2001 by Lucent Technologies"
+SPDX-License-Identifier = "dtoa"
