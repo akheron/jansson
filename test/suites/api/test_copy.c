@@ -364,6 +364,25 @@ static void test_deep_copy_circular_references(void) {
     json_decref(json);
 }
 
+static void test_deep_copy_max_depth(void) {
+    json_t *json;
+    json_t *copy;
+    int i;
+
+    json = json_array();
+    for (i = 1; i < JSON_PARSER_MAX_DEPTH + 100; i++) {
+        json_t *outer = json_array();
+        json_array_append_new(outer, json);
+        json = outer;
+    }
+
+    copy = json_deep_copy(json);
+    if (copy)
+        fail("json_deep_copy didn't fail for a too deeply nested structure!");
+
+    json_decref(json);
+}
+
 static void run_tests() {
     test_copy_simple();
     test_deep_copy_simple();
@@ -372,4 +391,5 @@ static void run_tests() {
     test_copy_object();
     test_deep_copy_object();
     test_deep_copy_circular_references();
+    test_deep_copy_max_depth();
 }

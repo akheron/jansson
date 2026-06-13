@@ -53,9 +53,9 @@ jobs:
       - uses: actions/checkout@v6
       - env:
           CC: ${{matrix.cc}}
-        run: cmake .
-      - run: cmake --build .
-      - run: ctest --output-on-failure
+        run: cmake -DCMAKE_BUILD_TYPE=Release .
+      - run: cmake --build . --config Release
+      - run: ctest --output-on-failure -C Release
 
   valgrind:
     runs-on: ubuntu-latest

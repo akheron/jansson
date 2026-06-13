@@ -221,6 +221,9 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
     if (!json)
         return -1;
 
+    if (depth >= JSON_PARSER_MAX_DEPTH)
+        return -1;
+
     switch (json_typeof(json)) {
         case JSON_NULL:
             return dump("null", 4, data);
