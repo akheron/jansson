@@ -173,7 +173,15 @@ static char *read_string(scanner_t *s, va_list *ap, const char *purpose, size_t 
         next_token(s);
 
         if (token(s) == '#') {
-            length = va_arg(*ap, int);
+            int len = va_arg(*ap, int);
+            if (len < 0) {
+                set_error(s, "<args>", json_error_invalid_argument,
+                          "Invalid length for %s: %d", purpose, len);
+                s->has_error = 1;
+                length = 0;
+            } else {
+                length = (size_t)len;
+            }
         } else if (token(s) == '%') {
             length = va_arg(*ap, size_t);
         } else {

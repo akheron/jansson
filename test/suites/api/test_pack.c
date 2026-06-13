@@ -167,6 +167,12 @@ static void run_tests() {
         fail("json_pack string and length (int) refcount failed");
     json_decref(value);
 
+    /* negative length (int) is rejected */
+    if (json_pack_ex(&error, 0, "s#", "test", -2))
+        fail("json_pack failed to catch negative length");
+    check_error(json_error_invalid_argument, "Invalid length for string: -2", "<args>", 1,
+                2, 2);
+
     /* string and length (size_t), non-NUL terminated string */
     value = json_pack("s%", buffer, (size_t)4);
     if (!json_is_string(value) || strcmp("test", json_string_value(value)))
