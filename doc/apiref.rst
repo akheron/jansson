@@ -1535,7 +1535,9 @@ arguments.
     .. versionadded:: 2.11
 
 ``s#`` (string) [const char \*, int]
-    Convert a UTF-8 buffer of a given length to a JSON string.
+    Convert a UTF-8 buffer of a given length to a JSON string. The
+    length must not be negative; a negative length results in a
+    ``json_error_invalid_argument`` error.
 
     .. versionadded:: 2.5
 
