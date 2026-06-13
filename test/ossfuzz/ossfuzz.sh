@@ -23,8 +23,9 @@ autoreconf -i
 ./configure --enable-ossfuzzers
 make
 
-# Copy the fuzzer to the output directory.
+# Copy the fuzzers to the output directory.
 cp -v test/ossfuzz/json_load_dump_fuzzer $OUT/
+cp -v test/ossfuzz/json_pack_unpack_fuzzer $OUT/
 
 # Zip up all input files to use as a test corpus
 find test/suites -name "input" -print | zip $OUT/json_load_dump_fuzzer_seed_corpus.zip -@
