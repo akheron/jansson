@@ -1,1 +1,3 @@
 json_load_dump_fuzzer
+json_pack_unpack_fuzzer
+json_equal_copy_fuzzer
