@@ -297,6 +297,39 @@ static void embed() {
     }
 }
 
+static json_t *build_nested_array(int depth) {
+    json_t *json = json_array();
+    int i;
+
+    for (i = 1; i < depth; i++) {
+        json_t *outer = json_array();
+        json_array_append_new(outer, json);
+        json = outer;
+    }
+
+    return json;
+}
+
+static void max_depth() {
+    json_t *json;
+    char *result;
+
+    /* A structure nested exactly to the limit must still serialize. */
+    json = build_nested_array(JSON_PARSER_MAX_DEPTH);
+    result = json_dumps(json, 0);
+    if (!result)
+        fail("json_dumps failed for a structure within the depth limit");
+    free(result);
+    json_decref(json);
+
+    /* A structure nested deeper than the limit must fail cleanly rather
+       than overflow the stack. */
+    json = build_nested_array(JSON_PARSER_MAX_DEPTH + 100);
+    if (json_dumps(json, 0) != NULL)
+        fail("json_dumps didn't fail for a too deeply nested structure");
+    json_decref(json);
+}
+
 static void run_tests() {
     encode_null();
     encode_twice();
@@ -308,4 +341,5 @@ static void run_tests() {
     dumpb();
     dumpfd();
     embed();
+    max_depth();
 }

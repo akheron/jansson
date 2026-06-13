@@ -194,9 +194,34 @@ static void test_equal_complex() {
     json_decref(value3);
 }
 
+static void test_equal_max_depth() {
+    json_t *value1, *value2;
+    int i;
+
+    value1 = json_array();
+    value2 = json_array();
+    for (i = 1; i < JSON_PARSER_MAX_DEPTH + 100; i++) {
+        json_t *outer1 = json_array();
+        json_t *outer2 = json_array();
+        json_array_append_new(outer1, value1);
+        json_array_append_new(outer2, value2);
+        value1 = outer1;
+        value2 = outer2;
+    }
+
+    /* The structures are structurally equal, but exceed the depth limit;
+       json_equal must bail out rather than overflow the stack. */
+    if (json_equal(value1, value2))
+        fail("json_equal didn't bail out for a too deeply nested structure");
+
+    json_decref(value1);
+    json_decref(value2);
+}
+
 static void run_tests() {
     test_equal_simple();
     test_equal_array();
     test_equal_object();
     test_equal_complex();
+    test_equal_max_depth();
 }

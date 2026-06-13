@@ -1865,12 +1865,14 @@ only if they are exactly the same value, but also if they have equal
   if their types are equal. (Because these values are singletons,
   their equality can actually be tested with ``==``.)
 
+* Values nested more deeply than ``JSON_PARSER_MAX_DEPTH`` are not
+  recursed into, and thus cosidered unequal, to avoid stack exhaustion.
+
 .. function:: int json_equal(json_t *value1, json_t *value2)
 
    Returns 1 if *value1* and *value2* are equal, as defined above.
    Returns 0 if they are unequal or one or both of the pointers are
    *NULL*.
-
 
 Copying
 =======
@@ -1899,7 +1901,9 @@ Copying objects preserves the insertion order of keys.
 
    .. refcounting:: new
 
-   Returns a deep copy of *value*, or *NULL* on error.
+   Returns a deep copy of *value*, or *NULL* on error. Copying fails if
+   *value* is nested more deeply than ``JSON_PARSER_MAX_DEPTH``, to avoid
+   stack exhaustion.
 
 
 .. _apiref-custom-memory-allocation:

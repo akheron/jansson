@@ -37,7 +37,8 @@ static JSON_INLINE int isnan(double x) { return x != x; }
 static JSON_INLINE int isinf(double x) { return !isnan(x) && isnan(x - x); }
 #endif
 
-json_t *do_deep_copy(const json_t *json, hashtable_t *parents);
+static int do_equal(const json_t *json1, const json_t *json2, int depth);
+json_t *do_deep_copy(const json_t *json, hashtable_t *parents, int depth);
 
 static JSON_INLINE void json_init(json_t *json, json_type type) {
     json->type = type;
@@ -352,7 +353,7 @@ void *json_object_key_to_iter(const char *key) {
     return hashtable_key_to_iter(key);
 }
 
-static int json_object_equal(const json_t *object1, const json_t *object2) {
+static int json_object_equal(const json_t *object1, const json_t *object2, int depth) {
     const char *key;
     size_t key_len;
     const json_t *value1, *value2;
@@ -363,7 +364,7 @@ static int json_object_equal(const json_t *object1, const json_t *object2) {
     json_object_keylen_foreach((json_t *)object1, key, key_len, value1) {
         value2 = json_object_getn(object2, key, key_len);
 
-        if (!json_equal(value1, value2))
+        if (!do_equal(value1, value2, depth + 1))
             return 0;
     }
 
@@ -387,7 +388,8 @@ static json_t *json_object_copy(json_t *object) {
     return result;
 }
 
-static json_t *json_object_deep_copy(const json_t *object, hashtable_t *parents) {
+static json_t *json_object_deep_copy(const json_t *object, hashtable_t *parents,
+                                     int depth) {
     json_t *result;
     void *iter;
     char loop_key[LOOP_KEY_LEN];
@@ -412,7 +414,7 @@ static json_t *json_object_deep_copy(const json_t *object, hashtable_t *parents)
         value = json_object_iter_value(iter);
 
         if (json_object_setn_new_nocheck(result, key, key_len,
-                                         do_deep_copy(value, parents))) {
+                                         do_deep_copy(value, parents, depth + 1))) {
             json_decref(result);
             result = NULL;
             break;
@@ -638,7 +640,7 @@ int json_array_extend(json_t *json, json_t *other_json) {
     return 0;
 }
 
-static int json_array_equal(const json_t *array1, const json_t *array2) {
+static int json_array_equal(const json_t *array1, const json_t *array2, int depth) {
     size_t i, size;
 
     size = json_array_size(array1);
@@ -651,7 +653,7 @@ static int json_array_equal(const json_t *array1, const json_t *array2) {
         value1 = json_array_get(array1, i);
         value2 = json_array_get(array2, i);
 
-        if (!json_equal(value1, value2))
+        if (!do_equal(value1, value2, depth + 1))
             return 0;
     }
 
@@ -672,7 +674,8 @@ static json_t *json_array_copy(json_t *array) {
     return result;
 }
 
-static json_t *json_array_deep_copy(const json_t *array, hashtable_t *parents) {
+static json_t *json_array_deep_copy(const json_t *array, hashtable_t *parents,
+                                    int depth) {
     json_t *result;
     size_t i;
     char loop_key[LOOP_KEY_LEN];
@@ -686,8 +689,8 @@ static json_t *json_array_deep_copy(const json_t *array, hashtable_t *parents) {
         goto out;
 
     for (i = 0; i < json_array_size(array); i++) {
-        if (json_array_append_new(result,
-                                  do_deep_copy(json_array_get(array, i), parents))) {
+        if (json_array_append_new(
+                result, do_deep_copy(json_array_get(array, i), parents, depth + 1))) {
             json_decref(result);
             result = NULL;
             break;
@@ -1017,6 +1020,10 @@ void json_delete(json_t *json) {
 /*** equality ***/
 
 int json_equal(const json_t *json1, const json_t *json2) {
+    return do_equal(json1, json2, 0);
+}
+
+static int do_equal(const json_t *json1, const json_t *json2, int depth) {
     if (!json1 || !json2)
         return 0;
 
@@ -1027,11 +1034,14 @@ int json_equal(const json_t *json1, const json_t *json2) {
     if (json1 == json2)
         return 1;
 
+    if (depth >= JSON_PARSER_MAX_DEPTH)
+        return 0;
+
     switch (json_typeof(json1)) {
         case JSON_OBJECT:
-            return json_object_equal(json1, json2);
+            return json_object_equal(json1, json2, depth);
         case JSON_ARRAY:
-            return json_array_equal(json1, json2);
+            return json_array_equal(json1, json2, depth);
         case JSON_STRING:
             return json_string_equal(json1, json2);
         case JSON_INTEGER:
@@ -1075,21 +1085,24 @@ json_t *json_deep_copy(const json_t *json) {
 
     if (hashtable_init(&parents_set))
         return NULL;
-    res = do_deep_copy(json, &parents_set);
+    res = do_deep_copy(json, &parents_set, 0);
     hashtable_close(&parents_set);
 
     return res;
 }
 
-json_t *do_deep_copy(const json_t *json, hashtable_t *parents) {
+json_t *do_deep_copy(const json_t *json, hashtable_t *parents, int depth) {
     if (!json)
+        return NULL;
+
+    if (depth >= JSON_PARSER_MAX_DEPTH)
         return NULL;
 
     switch (json_typeof(json)) {
         case JSON_OBJECT:
-            return json_object_deep_copy(json, parents);
+            return json_object_deep_copy(json, parents, depth);
         case JSON_ARRAY:
-            return json_array_deep_copy(json, parents);
+            return json_array_deep_copy(json, parents, depth);
             /* for the rest of the types, deep copying doesn't differ from
                shallow copying */
         case JSON_STRING:
