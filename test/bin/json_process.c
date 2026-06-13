@@ -19,6 +19,10 @@
 #include <locale.h>
 #endif
 
+#if defined(_MSC_VER) && (_MSC_VER < 1900) && !defined(snprintf)
+#define snprintf _snprintf
+#endif
+
 #if _WIN32
 #include <fcntl.h> /* for _O_BINARY */
 #include <io.h>    /* for _setmode() */
@@ -119,13 +123,14 @@ static int cmpfile(const char *str, const char *path, const char *fname) {
     int ret;
     FILE *file;
 
-    sprintf(filename, "%s%c%s", path, dir_sep, fname);
+    snprintf(filename, sizeof(filename), "%s%c%s", path, dir_sep, fname);
     file = fopen(filename, "rb");
     if (!file) {
+        size_t len = strlen(filename);
         if (conf.strip)
-            strcat(filename, ".strip");
+            strncat(filename, ".strip", sizeof(filename) - len - 1);
         else
-            strcat(filename, ".normal");
+            strncat(filename, ".normal", sizeof(filename) - len - 1);
         file = fopen(filename, "rb");
     }
     if (!file) {
@@ -159,13 +164,13 @@ int use_conf(char *test_path) {
     json_t *json;
     json_error_t error;
 
-    sprintf(filename, "%s%cinput", test_path, dir_sep);
+    snprintf(filename, sizeof(filename), "%s%cinput", test_path, dir_sep);
     if (!(infile = fopen(filename, "rb"))) {
         fprintf(stderr, "Could not open \"%s\"\n", filename);
         return 2;
     }
 
-    sprintf(filename, "%s%cenv", test_path, dir_sep);
+    snprintf(filename, sizeof(filename), "%s%cenv", test_path, dir_sep);
     conffile = fopen(filename, "rb");
     if (conffile) {
         read_conf(conffile);
@@ -215,8 +220,8 @@ int use_conf(char *test_path) {
     fclose(infile);
 
     if (!json) {
-        sprintf(errstr, "%d %d %d\n%s\n", error.line, error.column, error.position,
-                error.text);
+        snprintf(errstr, sizeof(errstr), "%d %d %d\n%s\n", error.line, error.column,
+                 error.position, error.text);
 
         ret = cmpfile(errstr, test_path, "error");
         return ret;
