@@ -601,6 +601,9 @@ endif()
 
 set(JANSSON_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
 
+set(DEF_INSTALL_PKGCONF_DIR lib/pkgconfig)
+set(JANSSON_INSTALL_PKGCONF_DIR ${DEF_INSTALL_PKGCONF_DIR} CACHE PATH "Installation directory for pkg-config files")
+
 # Create pkg-conf file.
 # (We use the same files as ./configure does, so we
 #  have to defined the same variables used there).
@@ -658,7 +661,7 @@ if (JANSSON_INSTALL)
   # Install the pkg-config.
   install(FILES
           ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc
-          DESTINATION lib/pkgconfig)
+          DESTINATION ${JANSSON_INSTALL_PKGCONF_DIR})
 
   # Install the configs.
   install(FILES
