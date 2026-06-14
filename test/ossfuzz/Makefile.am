@@ -19,7 +19,8 @@ noinst_LIBRARIES =
 if USE_OSSFUZZERS
 noinst_PROGRAMS += \
 	json_load_dump_fuzzer \
-	json_pack_unpack_fuzzer
+	json_pack_unpack_fuzzer \
+	json_equal_copy_fuzzer
 
 noinst_LIBRARIES += \
 	libstandaloneengine.a
@@ -32,6 +33,10 @@ json_load_dump_fuzzer_LDFLAGS = $(AM_LDFLAGS) -static
 json_pack_unpack_fuzzer_SOURCES = json_pack_unpack_fuzzer.cc testinput.h
 json_pack_unpack_fuzzer_CXXFLAGS = $(AM_CXXFLAGS) $(FUZZ_FLAG)
 json_pack_unpack_fuzzer_LDFLAGS = $(AM_LDFLAGS) -static
+
+json_equal_copy_fuzzer_SOURCES = json_equal_copy_fuzzer.cc testinput.h
+json_equal_copy_fuzzer_CXXFLAGS = $(AM_CXXFLAGS) $(FUZZ_FLAG)
+json_equal_copy_fuzzer_LDFLAGS = $(AM_LDFLAGS) -static
 
 libstandaloneengine_a_SOURCES = standaloneengine.cc
 libstandaloneengine_a_CXXFLAGS = $(AM_CXXFLAGS)
