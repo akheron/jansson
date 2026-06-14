@@ -55,6 +55,7 @@
 #define json_int_t @JSON_INT_T@
 #define json_strtoint @JSON_STRTOINT@
 #define JSON_INTEGER_FORMAT @JSON_INTEGER_FORMAT@
+#define JSON_LONG_LONG_FORMAT @JSON_LONG_LONG_FORMAT@
 
 
 /* If __atomic builtins are available they will be used to manage
