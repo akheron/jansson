@@ -11,6 +11,7 @@
 
 #include "strbuffer.h"
 #include "jansson_private.h"
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 

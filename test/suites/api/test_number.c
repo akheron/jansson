@@ -6,7 +6,7 @@
  */
 
 #include "util.h"
-#include <jansson.h>
+#include "jansson.h"
 #include <math.h>
 
 #ifdef INFINITY

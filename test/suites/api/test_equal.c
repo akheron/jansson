@@ -6,7 +6,7 @@
  */
 
 #include "util.h"
-#include <jansson.h>
+#include "jansson.h"
 
 static void test_equal_simple() {
     json_t *value1, *value2;
