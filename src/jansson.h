@@ -99,6 +99,7 @@ json_t *json_stringn(const char *value, size_t len);
 json_t *json_string_nocheck(const char *value);
 json_t *json_stringn_nocheck(const char *value, size_t len);
 json_t *json_integer(json_int_t value);
+json_t *json_real_with_precision(double value, int precision);
 json_t *json_real(double value);
 json_t *json_true(void);
 json_t *json_false(void);
@@ -308,10 +309,13 @@ static JSON_INLINE int json_array_insert(json_t *array, size_t ind, json_t *valu
     return json_array_insert_new(array, ind, json_incref(value));
 }
 
+#define DEFAULT_PRECISION_SYSTEM   -1
+
 const char *json_string_value(const json_t *string);
 size_t json_string_length(const json_t *string);
 json_int_t json_integer_value(const json_t *integer);
 double json_real_value(const json_t *real);
+int json_real_precision(const json_t *real);
 double json_number_value(const json_t *json);
 
 int json_string_set(json_t *string, const char *value);
@@ -319,7 +323,9 @@ int json_string_setn(json_t *string, const char *value, size_t len);
 int json_string_set_nocheck(json_t *string, const char *value);
 int json_string_setn_nocheck(json_t *string, const char *value, size_t len);
 int json_integer_set(json_t *integer, json_int_t value);
+int json_real_set_with_precision(json_t *real, double value, int precision);
 int json_real_set(json_t *real, double value);
+int json_real_set_precision(json_t *json, int precision);
 
 /* pack, unpack */
 
