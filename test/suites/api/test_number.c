@@ -17,7 +17,7 @@
 #pragma warning(push)
 #pragma warning(disable : 4756)
 #endif
-static void test_inifity() {
+static void test_infinity() {
     json_t *real = json_real(INFINITY);
     if (real != NULL)
         fail("could construct a real from Inf");
@@ -117,7 +117,7 @@ static void run_tests() {
 #endif
 
 #ifdef INFINITY
-    test_inifity();
+    test_infinity();
 #endif
     test_bad_args();
 }

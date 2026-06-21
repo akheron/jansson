@@ -1010,7 +1010,7 @@ in which case no error information is returned to the caller.
 
    ``json_error_unknown``
 
-       Unknown error.  This should only be returned for non-errorneous
+       Unknown error.  This should only be returned for non-erroneous
        :type:`json_error_t` structures.
 
    ``json_error_out_of_memory``

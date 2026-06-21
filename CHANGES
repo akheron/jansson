@@ -543,7 +543,7 @@ Released 2012-09-23
   - Add `json_load_callback()` that calls a callback function
     repeatedly to read the JSON input (#57).
 
-  - Add JSON_ESCAPE_SLASH encoding flag to escape all occurences of
+  - Add JSON_ESCAPE_SLASH encoding flag to escape all occurrences of
     ``/`` with ``\/``.
 
 * Bug fixes:
@@ -661,7 +661,7 @@ Released 2011-10-06
 
 * Documentation:
 
-  - Clarify the lifecycle of the result of the ``s`` fromat of
+  - Clarify the lifecycle of the result of the ``s`` format of
     `json_unpack()`. (#31)
 
   - Add some portability info. (#36)
@@ -707,7 +707,7 @@ Released 2011-06-10
     value. By default, only arrays and objects can be encoded. (#19)
 
   - Add ``JSON_REJECT_DUPLICATES`` decoding flag to issue a decoding
-    error if any JSON object in the input contins duplicate keys. (#3)
+    error if any JSON object in the input contains duplicate keys. (#3)
 
   - Add ``JSON_DISABLE_EOF_CHECK`` decoding flag to stop decoding after a
     valid JSON input. This allows other data after the JSON data.
@@ -770,7 +770,7 @@ details.
 
 * Backwards incompatible changes:
 
-  - Unify unsigned integer usage in the API: All occurences of
+  - Unify unsigned integer usage in the API: All occurrences of
     unsigned int and unsigned long have been replaced with size_t.
 
   - Change JSON integer's underlying type to the widest signed integer
@@ -839,7 +839,7 @@ Released 2010-06-13
 
 * Bug fixes:
 
-  - Fix an error that occured when an array or object was first
+  - Fix an error that occurred when an array or object was first
     encoded as empty, then populated with some data, and then
     re-encoded
 
