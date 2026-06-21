@@ -82,4 +82,5 @@ EXPORTS
     json_get_alloc_funcs2
     jansson_version_str
     jansson_version_cmp
+    json_get_location
 
