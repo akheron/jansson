@@ -66,6 +66,12 @@ if (MSVC)
       set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MT")
       set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd")
    endif()
+
+   # Embed PDBs to prevent annoying LNK4099 warning if building static lib
+   if (NOT JANSSON_BUILD_SHARED_LIBS)
+      set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} /Z7")
+      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Z7")
+   endif()
 endif()
 
 message("C compiler: ${CMAKE_C_COMPILER_ID}")
