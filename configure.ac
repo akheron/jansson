@@ -135,7 +135,16 @@ AC_SUBST(JSON_BSYMBOLIC_LDFLAGS)
 
 # Enable symbol versioning on GNU libc
 JSON_SYMVER_LDFLAGS=
-AC_CHECK_DECL([__GLIBC__], [JSON_SYMVER_LDFLAGS=-Wl,--default-symver])
+AC_CHECK_DECL([__GLIBC__], [
+    saved_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS -Wl,--default-symver"
+    AC_MSG_CHECKING([whether the linker accepts -Wl,--default-symver])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+        [AC_MSG_RESULT([yes])
+         JSON_SYMVER_LDFLAGS=-Wl,--default-symver],
+        [AC_MSG_RESULT([no])])
+    LDFLAGS="$saved_LDFLAGS"
+])
 AC_SUBST([JSON_SYMVER_LDFLAGS])
 
 AC_ARG_ENABLE([dtoa],
