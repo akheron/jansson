@@ -76,6 +76,7 @@ EXPORTS
     json_unpack
     json_unpack_ex
     json_vunpack_ex
+    json_type_name
     json_set_alloc_funcs
     json_set_alloc_funcs2
     json_get_alloc_funcs

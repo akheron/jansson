@@ -178,6 +178,14 @@ Type
 
    .. versionadded:: 2.7
 
+.. function:: const char *json_type_name(json_type type)
+
+   Returns a string describing a JSON type, for error messages or the
+   like. The returned pointer refers to a string literal and stays
+   valid forever.
+
+   .. versionadded:: 2.16
+
 
 .. _apiref-reference-count:
 

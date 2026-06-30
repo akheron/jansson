@@ -90,6 +90,8 @@ typedef long json_int_t;
 #define json_is_boolean(json) (json_is_true(json) || json_is_false(json))
 #define json_is_null(json)    ((json) && json_typeof(json) == JSON_NULL)
 
+const char *json_type_name(json_type type);
+
 /* construction, destruction, reference counting */
 
 json_t *json_object(void);

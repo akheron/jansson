@@ -283,5 +283,14 @@ static void run_tests() {
     json_decref(value);
 #endif
 
+    if (strcmp(json_type_name(JSON_OBJECT), "object"))
+        fail("unexpected type name for object");
+    if (strcmp(json_type_name(JSON_NULL), "null"))
+        fail("unexpected type name for null");
+    if (strcmp(json_type_name(-1), "unknown"))
+        fail("unexpected type name for invalid type");
+    if (strcmp(json_type_name(JSON_NULL + 1), "unknown"))
+        fail("unexpected type name for invalid type");
+
     test_bad_args();
 }
