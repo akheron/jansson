@@ -263,6 +263,57 @@ static void run_tests() {
     json_decref(j);
     json_decref(j2);
 
+    /* invalid types in objects */
+    j = json_pack("{si}", "bar", 42);
+    j2 = json_pack("{ss}", "bar", "foo");
+    if (!json_unpack_ex(j, &error, 0, "{ss}", "bar"))
+        fail("json_unpack failed to catch invalid type in object");
+    check_error(json_error_wrong_type, "Expected string, got integer for key bar",
+                "<validation>", 1, 3, 3);
+
+    if (!json_unpack_ex(j, &error, 0, "{sn}", "bar"))
+        fail("json_unpack failed to catch invalid type in object");
+    check_error(json_error_wrong_type, "Expected null, got integer for key bar",
+                "<validation>", 1, 3, 3);
+
+    if (!json_unpack_ex(j, &error, 0, "{sb}", "bar"))
+        fail("json_unpack failed to catch invalid type in object");
+    check_error(json_error_wrong_type, "Expected true or false, got integer for key bar",
+                "<validation>", 1, 3, 3);
+
+    if (!json_unpack_ex(j2, &error, 0, "{si}", "bar"))
+        fail("json_unpack failed to catch invalid type in object");
+    check_error(json_error_wrong_type, "Expected integer, got string for key bar",
+                "<validation>", 1, 3, 3);
+
+    if (!json_unpack_ex(j2, &error, 0, "{sI}", "bar"))
+        fail("json_unpack failed to catch invalid type in object");
+    check_error(json_error_wrong_type, "Expected integer, got string for key bar",
+                "<validation>", 1, 3, 3);
+
+    if (!json_unpack_ex(j, &error, 0, "{sf}", "bar"))
+        fail("json_unpack failed to catch invalid type in object");
+    check_error(json_error_wrong_type, "Expected real, got integer for key bar",
+                "<validation>", 1, 3, 3);
+
+    if (!json_unpack_ex(j2, &error, 0, "{sF}", "bar"))
+        fail("json_unpack failed to catch invalid type in object");
+    check_error(json_error_wrong_type, "Expected real or integer, got string for key bar",
+                "<validation>", 1, 3, 3);
+
+    if (!json_unpack_ex(j, &error, 0, "{s[i]}", "bar"))
+        fail("json_unpack failed to catch invalid type in object");
+    check_error(json_error_wrong_type, "Expected array, got integer for key bar",
+                "<validation>", 1, 3, 3);
+
+    if (!json_unpack_ex(j, &error, 0, "{s{si}}", "bar", "foo"))
+        fail("json_unpack failed to catch invalid type in object");
+    check_error(json_error_wrong_type, "Expected object, got integer for key bar",
+                "<validation>", 1, 3, 3);
+
+    json_decref(j);
+    json_decref(j2);
+
     /* Array index out of range */
     j = json_pack("[i]", 1);
     if (!json_unpack_ex(j, &error, 0, "[ii]", &i1, &i2))
