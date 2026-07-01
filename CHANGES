@@ -1,3 +1,27 @@
+Version 2.15.1
+==============
+
+Released 2026-06-30
+
+* Fixes:
+
+  - Include the object key or array index in unpack type mismatch error
+    messages (@cwalther in #731)
+  - Reject negative string length in the `json_pack` `s#` and `+#` formats
+    (@akheron in #740)
+  - Limit recursion depth in dump, equal and deep copy to prevent stack
+    overflow (@akheron in #741)
+
+* Build:
+
+  - Only export symbols starting with `json_` and `jansson_` from the CMake
+    build (@shyjun in #705)
+  - Include `jansson_private_config.h` only if `HAVE_CONFIG_H` is enabled
+    (@jaeyoonjung in #704)
+  - Add a configurable pkg-config install path to the CMake build
+    (@akallabeth in #721)
+  - Only use `--default-symver` when the linker supports it (@kraj in #744)
+
 Version 2.15.0
 ==============
 
