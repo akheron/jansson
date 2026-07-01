@@ -13,7 +13,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: ./scripts/clang-format-check
 
   autotools:
@@ -28,7 +28,7 @@ jobs:
     steps:
       - if: ${{runner.os == 'macOS'}}
         run: brew install autoconf automake libtool
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: autoreconf -fi
       - env:
           CC: ${{ matrix.cc }}
@@ -53,7 +53,7 @@ jobs:
     runs-on: ${{matrix.os}}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - env:
           CC: ${{matrix.cc}}
         run: cmake -DCMAKE_BUILD_TYPE=Release .
@@ -63,7 +63,7 @@ jobs:
   valgrind:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: sudo apt update && sudo apt install valgrind
       - run: cmake -DJANSSON_TEST_WITH_VALGRIND=ON .
       - run: cmake --build .
