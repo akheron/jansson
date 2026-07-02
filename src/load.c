@@ -68,6 +68,13 @@ typedef struct {
     size_t flags;
     size_t depth;
     int token;
+    /* Set when strbuffer_append_byte() fails inside lex_save(). The
+     * lexer continues forward (lex_save() is void-returning so the
+     * existing call sites cannot react), so we record the failure here
+     * and have the next lex_get_save() / lex_save_cached() turn it into
+     * a clean json_error_out_of_memory rather than a silently corrupt
+     * saved_text. */
+    int saved_text_oom;
     union {
         struct {
             char *val;
@@ -227,12 +234,26 @@ static int lex_get(lex_t *lex, json_error_t *error) {
     return stream_get(&lex->stream, error);
 }
 
-static void lex_save(lex_t *lex, int c) { strbuffer_append_byte(&lex->saved_text, c); }
+static void lex_save(lex_t *lex, int c) {
+    /* strbuffer_append_byte() returns -1 on allocation failure but
+     * lex_save() is void to keep the existing call sites simple. We
+     * record the failure on the lex_t so the next save-aware step
+     * (lex_get_save / lex_save_cached / lex_unget_unsave) can turn it
+     * into a clean json_error_out_of_memory instead of letting the
+     * lexer continue with a silently truncated saved_text. */
+    if (strbuffer_append_byte(&lex->saved_text, c))
+        lex->saved_text_oom = 1;
+}
 
 static int lex_get_save(lex_t *lex, json_error_t *error) {
     int c = stream_get(&lex->stream, error);
     if (c != STREAM_STATE_EOF && c != STREAM_STATE_ERROR)
         lex_save(lex, c);
+    if (lex->saved_text_oom) {
+        error_set(error, lex, json_error_out_of_memory,
+                  "out of memory while saving lexer token");
+        return STREAM_STATE_ERROR;
+    }
     return c;
 }
 
@@ -248,6 +269,15 @@ static void lex_unget_unsave(lex_t *lex, int c) {
         char d;
 #endif
         stream_unget(&lex->stream, c);
+        if (lex->saved_text_oom) {
+            /* saved_text was truncated by an earlier OOM, so the byte
+             * we would pop is no longer guaranteed to be at the buffer
+             * tail. Skip the pop to avoid silently corrupting
+             * saved_text. The OOM is already latched and the next
+             * lex_get_save() will turn it into a clean
+             * json_error_out_of_memory. */
+            return;
+        }
 #ifndef NDEBUG
         d =
 #endif
@@ -257,6 +287,12 @@ static void lex_unget_unsave(lex_t *lex, int c) {
 }
 
 static void lex_save_cached(lex_t *lex) {
+    /* Note: this is only called from the TOKEN_INVALID branch of
+     * lex_scan(), so a strbuffer_append_byte() failure here cannot
+     * change the outcome (the token is already invalid). lex_save()
+     * still records the failure on lex->saved_text_oom so that any
+     * caller inspecting saved_text downstream can turn it into a
+     * clean out-of-memory error if it cares. */
     while (lex->stream.buffer[lex->stream.buffer_pos] != '\0') {
         lex_save(lex, lex->stream.buffer[lex->stream.buffer_pos]);
         lex->stream.buffer_pos++;
@@ -584,6 +620,12 @@ static int lex_scan(lex_t *lex, json_error_t *error) {
     }
 
     lex_save(lex, c);
+    if (lex->saved_text_oom) {
+        error_set(error, lex, json_error_out_of_memory,
+                  "out of memory while saving lexer token");
+        lex->token = TOKEN_INVALID;
+        goto out;
+    }
 
     if (c == '{' || c == '}' || c == '[' || c == ']' || c == ':' || c == ',')
         lex->token = c;
@@ -646,6 +688,7 @@ static int lex_init(lex_t *lex, get_func get, size_t flags, void *data) {
 
     lex->flags = flags;
     lex->token = TOKEN_INVALID;
+    lex->saved_text_oom = 0;
     return 0;
 }
 
