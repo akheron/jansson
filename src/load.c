@@ -970,9 +970,11 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error) {
     const char *source;
     json_t *result;
 
-    if (input == stdin)
+#ifdef HAVE_UNISTD_H
+    if (input == STDIN_FILENO)
         source = "<stdin>";
     else
+#endif
         source = "<stream>";
 
     jsonp_error_init(error, source);
