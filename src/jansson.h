@@ -78,6 +78,10 @@ typedef long json_int_t;
 #endif
 
 #define json_typeof(json)     ((json)->type)
+static JSON_INLINE enum json_type json_type(const json_t *json) {
+   return (enum json_type)json->type;
+}
+
 #define json_is_object(json)  ((json) && json_typeof(json) == JSON_OBJECT)
 #define json_is_array(json)   ((json) && json_typeof(json) == JSON_ARRAY)
 #define json_is_string(json)  ((json) && json_typeof(json) == JSON_STRING)
