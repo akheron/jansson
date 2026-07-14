@@ -221,6 +221,12 @@ if (NOT DEFINED JSON_INT_T)
    endif ()
 endif ()
 
+if (WIN32) # matches both msvc and cygwin
+   set (JSON_LONG_LONG_FORMAT "\"I64d\"")
+else ()
+   set (JSON_LONG_LONG_FORMAT "\"lld\"")
+endif ()
+
 check_include_files (locale.h HAVE_LOCALE_H)
 check_function_exists(setlocale HAVE_SETLOCALE)
 

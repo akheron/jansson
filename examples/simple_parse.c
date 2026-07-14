@@ -26,6 +26,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef JANSSON_USING_CMAKE /* disabled if using cmake */
+#ifdef _WIN32
+#define JSON_LONG_LONG_FORMAT "I64d"
+#else
+#define JSON_LONG_LONG_FORMAT "lld"
+#endif
+#endif
+
 /* forward refs */
 void print_json(json_t *root);
 void print_json_aux(json_t *element, int indent);
@@ -90,7 +98,7 @@ void print_json_object(json_t *element, int indent) {
     print_json_indent(indent);
     size = json_object_size(element);
 
-    printf("JSON Object of %lld pair%s:\n", (long long)size, json_plural(size));
+    printf("JSON Object of %" JSON_LONG_LONG_FORMAT " pair%s:\n", (long long)size, json_plural(size));
     json_object_foreach(element, key, value) {
         print_json_indent(indent + 2);
         printf("JSON Key: \"%s\"\n", key);
@@ -103,7 +111,7 @@ void print_json_array(json_t *element, int indent) {
     size_t size = json_array_size(element);
     print_json_indent(indent);
 
-    printf("JSON Array of %lld element%s:\n", (long long)size, json_plural(size));
+    printf("JSON Array of %" JSON_LONG_LONG_FORMAT " element%s:\n", (long long)size, json_plural(size));
     for (i = 0; i < size; i++) {
         print_json_aux(json_array_get(element, i), indent + 2);
     }
