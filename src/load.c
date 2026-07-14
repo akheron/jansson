@@ -30,13 +30,14 @@
 #define STREAM_STATE_ERROR -2
 
 #define TOKEN_INVALID -1
-#define TOKEN_EOF     0
-#define TOKEN_STRING  256
-#define TOKEN_INTEGER 257
-#define TOKEN_REAL    258
-#define TOKEN_TRUE    259
-#define TOKEN_FALSE   260
-#define TOKEN_NULL    261
+#define TOKEN_EOF      0
+#define TOKEN_STRING   256
+#define TOKEN_INTEGER  257
+#define TOKEN_REAL     258
+#define TOKEN_TRUE     259
+#define TOKEN_FALSE    260
+#define TOKEN_NULL     261
+#define TOKEN_UINTEGER 262
 
 /* Locale independent versions of isxxx() functions */
 #define l_isupper(c) ('A' <= (c) && (c) <= 'Z')
@@ -73,7 +74,8 @@ typedef struct {
             char *val;
             size_t len;
         } string;
-        json_int_t integer;
+        json_int_t  integer;
+        json_uint_t uinteger;
         double real;
     } value;
 } lex_t;
@@ -462,6 +464,7 @@ out:
 #define json_strtoint _strtoi64
 #else
 #define json_strtoint strtoll
+#define json_strtouint strtoull
 #endif
 #else
 #define json_strtoint strtol
@@ -506,8 +509,20 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error) {
             if (intval < 0)
                 error_set(error, lex, json_error_numeric_overflow,
                           "too big negative integer");
-            else
-                error_set(error, lex, json_error_numeric_overflow, "too big integer");
+            else {
+                json_uint_t uintval;
+                errno = 0;
+                uintval = json_strtouint(saved_text, &end, 10);
+                if (errno == ERANGE)
+                    error_set(error, lex, json_error_numeric_overflow, "too big integer");
+                else {
+                    assert(end == saved_text + lex->saved_text.length);
+
+                    lex->token = TOKEN_UINTEGER;
+                    lex->value.uinteger = uintval;
+                    return 0;
+                }
+            }
             goto out;
         }
 
@@ -803,6 +818,11 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error) {
 
         case TOKEN_INTEGER: {
             json = json_integer(lex->value.integer);
+            break;
+        }
+
+        case TOKEN_UINTEGER: {
+            json = json_uinteger(lex->value.uinteger);
             break;
         }
 
