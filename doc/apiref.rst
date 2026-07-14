@@ -1750,6 +1750,12 @@ type whose address should be passed.
        make the key optional. If the key is not found, nothing is
        extracted. See below for an example.
 
+    .. versionadded:: 2.16
+       Any ``s`` representing a key may be suffixed with a ``*`` to
+       make the key optional. An additional :type:`int*` argument is
+       consumed and its value is set to 1 if the key is found and to
+       0 if the key is not found. See below for an example.
+
 ``!``
     This special format specifier is used to enable the check that
     all object and array items are accessed, on a per-value basis. It
@@ -1836,6 +1842,14 @@ Examples::
                 "foo", &myint1,
                 "bar", &myint2, &myint3);
     /* myint1, myint2 or myint3 is no touched as "foo" and "bar" don't exist */
+
+    /* root is the JSON object {"foo": 42} */
+    int myint = 0, myint2 = 0, myint3 = 0;
+    int have_foo, have_bar;
+    json_unpack(root, "{s*i, s*[ii]}",
+                "foo", &have_foo, &myint1,
+                "bar", &have_bar, &myint2, &myint3);
+    assert(have_foo == 1 && have_bar == 0 && myint1 == 42);
 
 
 Equality
