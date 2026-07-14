@@ -905,7 +905,7 @@ inserted to the object.
      /* obj is a JSON object */
      const char *key;
      json_t *value;
-  
+
      void *iter = json_object_iter(obj);
      while(iter)
      {
@@ -1360,6 +1360,17 @@ macros can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.6
 
+``JSON_DECODE_BIGINT_AS_REAL``
+   JSON defines only one number type. Jansson distinguishes between
+   ints and reals. For more information see :ref:`real-vs-integer`.
+   With this flag enabled the decoder interprets all numbers that do
+   not fit in the integer type ``json_int_t`` as real values. The
+   integers converted to real cannot have an exact double
+   representation and will silently result in a loss of precision.
+   Integers that cause a double overflow will cause an error.
+
+   .. versionadded:: 2.15
+
 Each function also takes an optional :type:`json_error_t` parameter
 that is filled with error information if decoding fails. It's also
 updated on success; the number of bytes of input read is written to
@@ -1435,9 +1446,9 @@ If no error or position information is needed, you can pass *NULL*.
    file descriptors (such as SOCK_STREAM). Using this function on a
    non-stream file descriptor will result in undefined behavior. For
    non-stream file descriptors, see instead :func:`json_loadb()`. In
-   addition, please note that this function cannot be used on non-blocking 
-   file descriptors (such as a non-blocking socket). Using this function 
-   on non-blocking file descriptors has a high risk of data loss because 
+   addition, please note that this function cannot be used on non-blocking
+   file descriptors (such as a non-blocking socket). Using this function
+   on non-blocking file descriptors has a high risk of data loss because
    it does not support resuming.
 
    This function requires POSIX and fails on all non-POSIX systems.

@@ -503,12 +503,23 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error) {
         errno = 0;
         intval = json_strtoint(saved_text, &end, 10);
         if (errno == ERANGE) {
-            if (intval < 0)
-                error_set(error, lex, json_error_numeric_overflow,
-                          "too big negative integer");
-            else
-                error_set(error, lex, json_error_numeric_overflow, "too big integer");
-            goto out;
+            if (lex->flags & JSON_DECODE_BIGINT_AS_REAL) {
+                if (jsonp_strtod(&lex->saved_text, &doubleval)) {
+                    error_set(error, lex, json_error_numeric_overflow, "real number overflow for big integer");
+                    goto out;
+                }
+
+                lex->token = TOKEN_REAL;
+                lex->value.real = doubleval;
+                return 0;
+            } else {
+                if (intval < 0)
+                    error_set(error, lex, json_error_numeric_overflow,
+                              "too big negative integer");
+                else
+                    error_set(error, lex, json_error_numeric_overflow, "too big integer");
+                goto out;
+            }
         }
 
         assert(end == saved_text + lex->saved_text.length);
