@@ -7,8 +7,12 @@
  */
 
 #include "jansson.h"
+#include "jansson_config.h"
 #include "jansson_private.h"
+#include "hashtable.h"
+#include "strbuffer.h"
 #include "utf.h"
+#include <stdarg.h>
 #include <string.h>
 
 typedef struct {

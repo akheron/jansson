@@ -19,7 +19,9 @@
 #include <unistd.h>
 #endif
 
+#include "hashtable.h"
 #include "jansson.h"
+#include "jansson_config.h"
 #include "strbuffer.h"
 #include "utf.h"
 

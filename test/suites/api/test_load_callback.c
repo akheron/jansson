@@ -6,7 +6,7 @@
  */
 
 #include "util.h"
-#include <jansson.h>
+#include "jansson.h"
 #include <stdlib.h>
 #include <string.h>
 

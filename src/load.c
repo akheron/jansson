@@ -9,13 +9,13 @@
 #define _GNU_SOURCE
 #endif
 
+#include "jansson_config.h"
 #include "jansson_private.h"
 
 #include <assert.h>
 #include <errno.h>
-#include <limits.h>
+#include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
