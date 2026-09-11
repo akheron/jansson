@@ -50,6 +50,7 @@ include (CheckFunctionExists)
 include (CheckFunctionKeywords)
 include (CheckIncludeFiles)
 include (CheckTypeSize)
+include (GNUInstallDirs)
 
 # suppress format-truncation warning
 include (CheckCCompilerFlag)
@@ -652,15 +653,14 @@ configure_package_config_file(
 option(JANSSON_INSTALL "Generate installation target" ON)
 if (JANSSON_INSTALL)
   install(TARGETS jansson
-          EXPORT janssonTargets
-          LIBRARY DESTINATION "lib"
-          ARCHIVE DESTINATION "lib"
-          RUNTIME DESTINATION "bin"
-          INCLUDES DESTINATION "include")
+      EXPORT janssonTargets
+      LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+      INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
   install(FILES ${JANSSON_HDR_PUBLIC}
-          DESTINATION "include")
-
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   # Install the pkg-config.
   install(FILES
           ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc
