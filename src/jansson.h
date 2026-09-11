@@ -381,6 +381,7 @@ json_t *json_load_callback(json_load_callback_t callback, void *data, size_t fla
 #define JSON_MAX_INDENT        0x1F
 #define JSON_INDENT(n)         ((n) & JSON_MAX_INDENT)
 #define JSON_COMPACT           0x20
+#define JSON_INDENT_TAB     0x40  /* Use tabs for indentation instead of spaces */
 #define JSON_ENSURE_ASCII      0x40
 #define JSON_SORT_KEYS         0x80
 #define JSON_PRESERVE_ORDER    0x100
