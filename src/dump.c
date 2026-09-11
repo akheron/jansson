@@ -221,6 +221,15 @@ static int do_dump(const json_t *json, size_t flags, int depth, hashtable_t *par
     if (!json)
         return -1;
 
+    if (depth == 0 && (flags & JSON_INDENT)) {
+        int i;
+        int indent = flags & JSON_INDENT_MASK;
+        for (i = 0; i < indent; i++) {
+            if (dump(" ", 1, data)) 
+                return -1;
+        }
+    }
+
     if (depth >= JSON_PARSER_MAX_DEPTH)
         return -1;
 
