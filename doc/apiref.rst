@@ -110,6 +110,17 @@ is either *NULL* or -1. Invalid arguments or invalid input are
 apparent sources for errors. Memory allocation and I/O operations may
 also cause errors.
 
+A *NULL* :type:`json_t` pointer does not represent the JSON null value.
+It represents the absence of a JSON value, for example after a failed
+allocation or a lookup that found no value. The JSON null value is
+represented by the non-*NULL* pointer returned by :func:`json_null()`.
+To store JSON null in an array or object, pass :func:`json_null()`, not
+*NULL*.
+
+Support for *NULL* arguments is documented for the individual APIs
+below. Do not assume that every function accepts *NULL*; for example,
+:func:`json_typeof()` requires a non-*NULL* argument.
+
 
 Type
 ----
@@ -201,7 +212,8 @@ value can be destroyed.
 
    Decrement the reference count of *json*. As soon as a call to
    :func:`json_decref()` drops the reference count to zero, the value
-   is destroyed and it can no longer be used.
+   is destroyed and it can no longer be used. If *json* is *NULL*,
+   this function does nothing.
 
 Functions creating new JSON values set the reference count to 1. These
 functions are said to return a **new reference**. Other functions
@@ -218,6 +230,7 @@ as needed. However, some functions **steal** the reference, i.e. they
 have the same result as if the user called :func:`json_decref()` on
 the argument right after calling the function. These functions are
 suffixed with ``_new`` or have ``_new_`` somewhere in their name.
+The reference is stolen even if the function returns an error.
 
 For example, the following code creates a new JSON array and appends
 an integer to it::
@@ -519,6 +532,12 @@ Array
 
 A JSON array is an ordered collection of other JSON values.
 
+The functions that modify an array return -1 if *array* is *NULL* or
+not a JSON array. The set, append and insert functions also return -1
+if *value* is *NULL*, including their ``_new`` variants.
+:func:`json_array_extend()` returns -1 if *other_array* is *NULL* or
+not a JSON array.
+
 .. function:: json_t *json_array(void)
 
    .. refcounting:: new
@@ -528,7 +547,7 @@ A JSON array is an ordered collection of other JSON values.
 
 .. function:: size_t json_array_size(const json_t *array)
 
-   Returns the number of elements in *array*, or 0 if *array* is NULL
+   Returns the number of elements in *array*, or 0 if *array* is *NULL*
    or not a JSON array.
 
 .. function:: json_t *json_array_get(const json_t *array, size_t index)
@@ -629,6 +648,12 @@ Unicode string and the value is any JSON value.
 Even though null bytes are allowed in string values, they are not
 allowed in object keys.
 
+The functions that modify an object return -1 if *object* is *NULL* or
+not a JSON object. The update functions also return -1 if *other* is
+*NULL* or not a JSON object. Passing *NULL* as *key* or *value* to
+:func:`json_object_set()` or any of its ``_new``, ``_nocheck`` or
+fixed-length key variants returns -1.
+
 .. function:: json_t *json_object(void)
 
    .. refcounting:: new
@@ -638,15 +663,17 @@ allowed in object keys.
 
 .. function:: size_t json_object_size(const json_t *object)
 
-   Returns the number of elements in *object*, or 0 if *object* is not
-   a JSON object.
+   Returns the number of elements in *object*, or 0 if *object* is
+   *NULL* or not a JSON object.
 
 .. function:: json_t *json_object_get(const json_t *object, const char *key)
 
    .. refcounting:: borrow
 
    Get a value corresponding to *key* from *object*. Returns *NULL* if
-   *key* is not found and on error.
+   *key* is not found, if *object* or *key* is *NULL*, if *object* is
+   not a JSON object, or on error. A key whose value is JSON null
+   returns a non-*NULL* pointer for which :func:`json_is_null()` is true.
 
 .. function:: json_t *json_object_getn(const json_t *object, const char *key, size_t key_len)
 
