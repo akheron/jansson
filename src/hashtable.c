@@ -198,6 +198,9 @@ void hashtable_close(hashtable_t *hashtable) {
 static pair_t *init_pair(json_t *value, const char *key, size_t key_len, size_t hash) {
     pair_t *pair;
 
+    if (!key)
+        return NULL;
+
     /* offsetof(...) returns the size of pair_t without the last,
    flexible member. This way, the correct amount is
    allocated. */
