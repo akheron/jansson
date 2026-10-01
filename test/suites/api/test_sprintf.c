@@ -24,6 +24,9 @@ static void test_sprintf() {
 
     if (json_sprintf("%s", "\xff\xff"))
         fail("json_sprintf unexpected success with invalid UTF");
+
+    if (json_sprintf(NULL) != NULL)
+        fail("json_sprintf didn't return NULL on NULL format");
 }
 
 static void run_tests() { test_sprintf(); }

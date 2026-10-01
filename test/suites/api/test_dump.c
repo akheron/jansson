@@ -40,10 +40,27 @@ static void encode_null() {
         fail("json_dumpfd didn't fail for NULL");
 #endif
 
-    /* Don't test json_dump_file to avoid creating a file */
-
     if (json_dump_callback(NULL, encode_null_callback, NULL, JSON_ENCODE_ANY) != -1)
         fail("json_dump_callback didn't fail for NULL");
+
+    json_t *val = json_object();
+
+    if (json_dump_callback(val, NULL, NULL, 0) != -1)
+        fail("json_dump_callback didn't fail for NULL callback");
+
+    if (json_dumpf(val, NULL, 0) != -1)
+        fail("json_dumpf didn't fail for NULL output");
+
+    if (json_dumpfd(val, -1, 0) != -1)
+        fail("json_dumpfd didn't fail for invalid fd");
+
+    if (json_dump_file(val, NULL, 0) != -1)
+        fail("json_dump_file didn't fail for NULL path");
+
+    if (json_dumpb(val, NULL, 10, 0) != 0)
+        fail("json_dumpb didn't fail for NULL buffer with positive size");
+
+    json_decref(val);
 }
 
 static void encode_twice() {

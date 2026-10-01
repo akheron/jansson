@@ -451,6 +451,9 @@ char *json_dumps(const json_t *json, size_t flags) {
 size_t json_dumpb(const json_t *json, char *buffer, size_t size, size_t flags) {
     struct buffer buf = {size, 0, buffer};
 
+    if (!buffer && size > 0)
+        return 0;
+
     if (json_dump_callback(json, dump_to_buffer, (void *)&buf, flags))
         return 0;
 
@@ -458,17 +461,27 @@ size_t json_dumpb(const json_t *json, char *buffer, size_t size, size_t flags) {
 }
 
 int json_dumpf(const json_t *json, FILE *output, size_t flags) {
+    if (!output)
+        return -1;
+
     return json_dump_callback(json, dump_to_file, (void *)output, flags);
 }
 
 int json_dumpfd(const json_t *json, int output, size_t flags) {
+    if (output < 0)
+        return -1;
+
     return json_dump_callback(json, dump_to_fd, (void *)&output, flags);
 }
 
 int json_dump_file(const json_t *json, const char *path, size_t flags) {
     int result;
+    FILE *output;
 
-    FILE *output = fopen(path, "w");
+    if (!path)
+        return -1;
+
+    output = fopen(path, "w");
     if (!output)
         return -1;
 
@@ -484,6 +497,9 @@ int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *
                        size_t flags) {
     int res;
     hashtable_t parents_set;
+
+    if (!json || !callback)
+        return -1;
 
     if (!(flags & JSON_ENCODE_ANY)) {
         if (!json_is_array(json) && !json_is_object(json))

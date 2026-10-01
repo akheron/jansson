@@ -277,6 +277,9 @@ int json_object_update_recursive(json_t *object, json_t *other) {
     int res;
     hashtable_t parents_set;
 
+    if (!json_is_object(object) || !json_is_object(other))
+        return -1;
+
     if (hashtable_init(&parents_set))
         return -1;
     res = do_object_update_recursive(object, other, &parents_set);
@@ -740,6 +743,9 @@ json_t *json_string_nocheck(const char *value) {
 }
 
 json_t *json_stringn_nocheck(const char *value, size_t len) {
+    if (!value)
+        return NULL;
+
     return string_create(value, len, 0);
 }
 
@@ -841,6 +847,10 @@ json_t *json_vsprintf(const char *fmt, va_list ap) {
     int length;
     char *buf;
     va_list aq;
+
+    if (!fmt)
+        return NULL;
+
     va_copy(aq, ap);
 
     length = vsnprintf(NULL, 0, fmt, ap);
