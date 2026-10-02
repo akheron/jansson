@@ -61,6 +61,7 @@ EXPORTS
     json_dumpfd
     json_dump_file
     json_dump_callback
+    json_set_dump_real_funcs
     json_loads
     json_loadb
     json_loadf

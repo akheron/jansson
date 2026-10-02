@@ -168,6 +168,44 @@ static void encode_other_than_array_or_object() {
     json_decref(json);
 }
 
+static int encode_using_Custom_dump_Function_callback(char *buffer, size_t size,
+                                                      double data, int precision) {
+    size_t intValue;
+    (void)buffer;
+    (void)size;
+    (void)data;
+    (void)precision;
+    intValue = (size_t)(data); // always round down to the nearest integer
+    return snprintf(buffer, size, "%zu.%d", intValue, precision);
+}
+
+static void encode_using_Custom_dump_Function() {
+    /* Encode real numbers using a custom dump function */
+
+    json_t *json;
+    char *result;
+
+    json = json_real(3.14159);
+    result = json_dumps(json, JSON_ENCODE_ANY | JSON_REAL_PRECISION(6));
+    if (!result || strcmp(result, "3.14159") != 0)
+        fail("json_dumps failed to encode a real number");
+
+    free(result);
+    json_decref(json);
+
+    json_set_dump_real_funcs(encode_using_Custom_dump_Function_callback);
+
+    json = json_real(36.14159);
+    result = json_dumps(json, JSON_ENCODE_ANY | JSON_REAL_PRECISION(6));
+    if (!result || strcmp(result, "36.6") != 0)
+        fail("json_dumps failed to encode a real number");
+
+    json_set_dump_real_funcs(NULL);
+
+    free(result);
+    json_decref(json);
+}
+
 static void escape_slashes() {
     /* Test dump escaping slashes */
 
@@ -335,6 +373,7 @@ static void run_tests() {
     encode_twice();
     circular_references();
     encode_other_than_array_or_object();
+    encode_using_Custom_dump_Function();
     escape_slashes();
     encode_nul_byte();
     dump_file();

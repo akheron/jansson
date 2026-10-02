@@ -1490,6 +1490,22 @@ If no error or position information is needed, you can pass *NULL*.
 
    .. versionadded:: 2.4
 
+.. type:: json_dump_real_t
+
+   A typedef for a function pointer to custom format real numbers during JSON encoding. The function is called by
+   :func:`json_dump_callback()` and :func:`json_dumpb()` to format real numbers. 
+   The function should write the formatted number to *buffer*, which has a size of *size*. It shut return the number of bytes written, or -1 on error. 
+   The *value* is the double to format, and *precision* is the number of digits after the decimal point.
+   To restore the default behavior, set the function pointer to *NULL*.
+   signature::
+
+       typedef int (*json_dump_real_t)(char *buffer, size_t size, double value, int precision);
+
+.. function:: void json_set_dump_real_funcs(json_dump_real_t dump_real_fn)
+
+   Use *dump_real_fn* instead of internal function to format real numbers during JSON encoding. Setting *dump_real_fn* to *NULL* restores the default behavior.
+
+   .. versionadded:: 2.6
 
 .. _apiref-pack:
 

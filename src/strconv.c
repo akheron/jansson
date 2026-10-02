@@ -66,7 +66,7 @@ int jsonp_strtod(strbuffer_t *strbuffer, double *out) {
 char *dtoa_r(double dd, int mode, int ndigits, int *decpt, int *sign, char **rve,
              char *buf, size_t blen);
 
-int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
+static int jsonp_dtostr_intern(char *buffer, size_t size, double value, int precision) {
     /* adapted from `format_float_short()` in
      * https://github.com/python/cpython/blob/2cf18a44303b6d84faa8ecffaecc427b53ae121e/Python/pystrtod.c#L969
      */
@@ -182,7 +182,7 @@ static void from_locale(char *buffer) {
         *pos = '.';
 }
 
-int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
+static int jsonp_dtostr_intern(char *buffer, size_t size, double value, int precision) {
     int ret;
     char *start, *end;
     size_t length;
@@ -235,3 +235,16 @@ int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
     return (int)length;
 }
 #endif
+
+static json_dump_real_t do_dump_real = jsonp_dtostr_intern;
+
+int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
+    if (do_dump_real)
+        return (*do_dump_real)(buffer, size, value, precision);
+    else
+        return jsonp_dtostr_intern(buffer, size, value, precision);
+}
+
+void json_set_dump_real_funcs(json_dump_real_t dump_real_fn) {
+    do_dump_real = dump_real_fn;
+}
