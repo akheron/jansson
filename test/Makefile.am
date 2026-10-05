@@ -1,5 +1,5 @@
 SUBDIRS = bin suites ossfuzz
-EXTRA_DIST = scripts run-suites
+EXTRA_DIST = scripts run-suites cmake/package_version.cmake
 
 TESTS = run-suites
 TESTS_ENVIRONMENT = \

@@ -469,6 +469,13 @@ if (NOT JANSSON_WITHOUT_TESTS)
 
    ENABLE_TESTING()
 
+   add_test(NAME test_package_version
+      COMMAND ${CMAKE_COMMAND}
+         "-DVERSION_FILE=${CMAKE_CURRENT_BINARY_DIR}/cmake/janssonConfigVersion.cmake"
+         "-DDISPLAY_VERSION=${JANSSON_DISPLAY_VERSION}"
+         "-DLIBRARY_VERSION=${JANSSON_VERSION}"
+         -P "${CMAKE_CURRENT_SOURCE_DIR}/test/cmake/package_version.cmake")
+
    if (JANSSON_TEST_WITH_VALGRIND)
       # TODO: Add FindValgrind.cmake instead of having a hardcoded path.
 
@@ -636,7 +643,7 @@ include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/cmake/janssonConfigVersion.cmake"
-  VERSION ${JANSSON_VERSION}
+  VERSION ${JANSSON_DISPLAY_VERSION}
   COMPATIBILITY ExactVersion
 )
 
