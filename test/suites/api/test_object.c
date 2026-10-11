@@ -168,6 +168,88 @@ static void test_set_many_keys() {
     json_decref(value);
 }
 
+static void test_key_storage() {
+    static const char empty_key[] = "";
+    static const char short_key[] = "a";
+    static const char long_key[] =
+        "a-long-object-key-that-spans-more-than-one-word-and-needs-extra-storage";
+    static const char embedded_nul_key[] = "nul\0key";
+    json_t *object, *value, *replacement;
+    char rehash_key[4];
+    const char *key;
+    size_t key_len, i;
+    json_t *iter_value;
+    int found_empty, found_short, found_long, found_embedded_nul;
+
+    object = json_object();
+    value = json_integer(1);
+    replacement = json_integer(2);
+    if (!object || !value || !replacement)
+        fail("unable to create key storage test values");
+
+    if (json_object_setn(object, empty_key, 0, value) ||
+        json_object_setn(object, short_key, sizeof(short_key) - 1, value) ||
+        json_object_setn(object, long_key, sizeof(long_key) - 1, value) ||
+        json_object_setn(object, embedded_nul_key, sizeof(embedded_nul_key) - 1,
+                         value))
+        fail("unable to set keys of different lengths");
+
+    if (json_object_getn(object, empty_key, 0) != value ||
+        json_object_getn(object, short_key, sizeof(short_key) - 1) != value ||
+        json_object_getn(object, long_key, sizeof(long_key) - 1) != value ||
+        json_object_getn(object, embedded_nul_key, sizeof(embedded_nul_key) - 1) !=
+            value)
+        fail("lookup failed for a key of a different length");
+
+    rehash_key[0] = 'r';
+    rehash_key[3] = '\0';
+    for (i = 0; i < 20; i++) {
+        rehash_key[1] = (char)('0' + i / 10);
+        rehash_key[2] = (char)('0' + i % 10);
+        if (json_object_set(object, rehash_key, value))
+            fail("unable to add keys to trigger rehash");
+    }
+
+    if (json_object_getn(object, empty_key, 0) != value ||
+        json_object_getn(object, short_key, sizeof(short_key) - 1) != value ||
+        json_object_getn(object, long_key, sizeof(long_key) - 1) != value ||
+        json_object_getn(object, embedded_nul_key, sizeof(embedded_nul_key) - 1) !=
+            value)
+        fail("lookup failed after rehash");
+
+    found_empty = found_short = found_long = found_embedded_nul = 0;
+    json_object_keylen_foreach(object, key, key_len, iter_value) {
+        if (key_len == 0)
+            found_empty = 1;
+        else if (key_len == sizeof(short_key) - 1 &&
+                 memcmp(key, short_key, key_len) == 0)
+            found_short = 1;
+        else if (key_len == sizeof(long_key) - 1 &&
+                 memcmp(key, long_key, key_len) == 0)
+            found_long = 1;
+        else if (key_len == sizeof(embedded_nul_key) - 1 &&
+                 memcmp(key, embedded_nul_key, key_len) == 0)
+            found_embedded_nul = 1;
+    }
+    if (!found_empty || !found_short || !found_long || !found_embedded_nul)
+        fail("iteration returned incorrect key storage");
+
+    if (json_object_setn(object, short_key, sizeof(short_key) - 1, replacement) ||
+        json_object_getn(object, short_key, sizeof(short_key) - 1) != replacement)
+        fail("updating a short key failed");
+
+    if (json_object_deln(object, empty_key, 0) ||
+        json_object_deln(object, embedded_nul_key, sizeof(embedded_nul_key) - 1))
+        fail("deleting an empty or embedded-NUL key failed");
+    if (json_object_getn(object, empty_key, 0) ||
+        json_object_getn(object, embedded_nul_key, sizeof(embedded_nul_key) - 1))
+        fail("deleted key is still present");
+
+    json_decref(object);
+    json_decref(value);
+    json_decref(replacement);
+}
+
 static void test_conditional_updates() {
     json_t *object, *other;
 
@@ -785,6 +867,7 @@ static void run_tests() {
     test_clear();
     test_update();
     test_set_many_keys();
+    test_key_storage();
     test_conditional_updates();
     test_recursive_updates();
     test_circular();
