@@ -215,8 +215,10 @@ int json_object_update_existing(json_t *object, json_t *other) {
         return -1;
 
     json_object_keylen_foreach(other, key, key_len, value) {
-        if (json_object_getn(object, key, key_len))
-            json_object_setn_nocheck(object, key, key_len, value);
+        if (json_object_getn(object, key, key_len)) {
+            if (json_object_setn_nocheck(object, key, key_len, value))
+                return -1;
+        }
     }
 
     return 0;
@@ -231,8 +233,10 @@ int json_object_update_missing(json_t *object, json_t *other) {
         return -1;
 
     json_object_keylen_foreach(other, key, key_len, value) {
-        if (!json_object_getn(object, key, key_len))
-            json_object_setn_nocheck(object, key, key_len, value);
+        if (!json_object_getn(object, key, key_len)) {
+            if (json_object_setn_nocheck(object, key, key_len, value))
+                return -1;
+        }
     }
 
     return 0;
