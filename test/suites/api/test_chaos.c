@@ -165,4 +165,126 @@ static void test_chaos() {
     json_decref(dumpobj);
 }
 
-static void run_tests() { test_chaos(); }
+/*
+ * Fail exactly one allocation at a time and let all later allocations
+ * succeed.  Unlike chaos_loop() above, where every allocation fails once
+ * the failing index is reached, a one-shot failure can leave the lexer
+ * with a partially saved token while the rest of the input is consumed
+ * normally.  json_loads() must then either fail or return the exact value
+ * of the input; it used to silently return a wrong value (a character
+ * that could not be saved went missing from the token text) or corrupt
+ * the heap (a JSON string whose closing quotation mark went missing made
+ * lex_scan_string() decode past the end of the token buffer).
+ */
+static int once_pos = 0;
+static int once_fail = -1;
+
+static void *once_malloc(size_t size) {
+    if (once_pos++ == once_fail)
+        return NULL;
+
+    return malloc(size);
+}
+
+static void once_free(void *obj) { free(obj); }
+
+#define ONCE_MAX_FAILURE 60
+
+static void once_loop_load(const char *text) {
+    json_t *expected = json_loads(text, 0, NULL);
+    json_malloc_t orig_malloc;
+    json_free_t orig_free;
+    int fail_index;
+
+    if (!expected) {
+        failhdr;
+        fprintf(stderr, "failed to parse the test input: %s\n", text);
+        exit(1);
+    }
+
+    json_get_alloc_funcs(&orig_malloc, &orig_free);
+
+    for (fail_index = 0; fail_index <= ONCE_MAX_FAILURE; fail_index++) {
+        json_t *json;
+
+        once_pos = 0;
+        once_fail = fail_index;
+        json_set_alloc_funcs(once_malloc, once_free);
+        json = json_loads(text, 0, NULL);
+        json_set_alloc_funcs(orig_malloc, orig_free);
+        once_fail = -1;
+
+        if (json) {
+            if (!json_equal(json, expected))
+                fail("json_loads() returned a wrong value with an allocation failing");
+            json_decref(json);
+        }
+    }
+
+    json_decref(expected);
+}
+
+static void test_load_alloc_failure() {
+    char text[128];
+    int len;
+
+    /* JSON strings of increasing length.  The token text buffer grows at
+     * 16, 32, ... bytes, so with some lengths the character being saved
+     * when the buffer grows is the closing quotation mark (body lengths
+     * 14 and 30 here), and with others it is a character in the middle of
+     * the string. */
+    for (len = 1; len <= 40; len++) {
+        text[0] = '[';
+        text[1] = '"';
+        memset(&text[2], 'a', len);
+        text[2 + len] = '"';
+        text[3 + len] = ']';
+        text[4 + len] = '\0';
+        once_loop_load(text);
+    }
+
+    /* The same with escape sequences and a surrogate pair in the middle,
+     * to exercise every branch of the string decoder. */
+    once_loop_load("[\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\"]");
+    once_loop_load("[\"\\uD83D\\uDE00xy\"]");
+    once_loop_load("[\"aaaaaaaaaaaa\\t\"]");
+
+    /* Integers of increasing length: the token text buffer grows inside
+     * the number at some lengths (16 and up here), and a dropped digit
+     * used to be accepted as a different number. */
+    for (len = 1; len <= 18; len++) {
+        text[0] = '[';
+        memset(&text[1], '1', len);
+        text[1 + len] = ']';
+        text[2 + len] = '\0';
+        once_loop_load(text);
+    }
+
+    /* Real numbers and exponents of increasing length. */
+    for (len = 1; len <= 15; len++) {
+        memcpy(text, "[1.", 3);
+        memset(&text[3], '1', len);
+        text[3 + len] = ']';
+        text[4 + len] = '\0';
+        once_loop_load(text);
+    }
+
+    for (len = 1; len <= 15; len++) {
+        memcpy(text, "[1", 2);
+        memset(&text[2], '1', len);
+        memcpy(&text[2 + len], ".1e+1]", 7);
+        once_loop_load(text);
+    }
+
+    for (len = 1; len <= 15; len++) {
+        memcpy(text, "[1.", 3);
+        memset(&text[3], '1', len);
+        memcpy(&text[3 + len], "E-1]", 5);
+        once_loop_load(text);
+    }
+}
+
+static void run_tests() {
+    test_chaos();
+    test_load_alloc_failure();
+}

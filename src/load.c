@@ -227,12 +227,21 @@ static int lex_get(lex_t *lex, json_error_t *error) {
     return stream_get(&lex->stream, error);
 }
 
-static void lex_save(lex_t *lex, int c) { strbuffer_append_byte(&lex->saved_text, c); }
+static int lex_save(lex_t *lex, int c) {
+    return strbuffer_append_byte(&lex->saved_text, c);
+}
 
 static int lex_get_save(lex_t *lex, json_error_t *error) {
     int c = stream_get(&lex->stream, error);
-    if (c != STREAM_STATE_EOF && c != STREAM_STATE_ERROR)
-        lex_save(lex, c);
+    if (c != STREAM_STATE_EOF && c != STREAM_STATE_ERROR) {
+        if (lex_save(lex, c)) {
+            /* Unable to save the character in the token text buffer.  Do not
+             * continue with a partially saved token: the caller would decode
+             * or parse text that does not match the actual input. */
+            error_set(error, lex, json_error_out_of_memory, "out of memory");
+            return STREAM_STATE_ERROR;
+        }
+    }
     return c;
 }
 
@@ -256,12 +265,14 @@ static void lex_unget_unsave(lex_t *lex, int c) {
     }
 }
 
-static void lex_save_cached(lex_t *lex) {
+static int lex_save_cached(lex_t *lex) {
     while (lex->stream.buffer[lex->stream.buffer_pos] != '\0') {
-        lex_save(lex, lex->stream.buffer[lex->stream.buffer_pos]);
+        if (lex_save(lex, lex->stream.buffer[lex->stream.buffer_pos]))
+            return -1;
         lex->stream.buffer_pos++;
         lex->stream.position++;
     }
+    return 0;
 }
 
 static void lex_free_string(lex_t *lex) {
@@ -357,7 +368,7 @@ static void lex_scan_string(lex_t *lex, json_error_t *error) {
     */
     t = jsonp_malloc(lex->saved_text.length + 1);
     if (!t) {
-        /* this is not very nice, since TOKEN_INVALID is returned */
+        error_set(error, lex, json_error_out_of_memory, "out of memory");
         goto out;
     }
     lex->value.string.val = t;
@@ -480,6 +491,8 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error) {
 
     if (c == '0') {
         c = lex_get_save(lex, error);
+        if (c == STREAM_STATE_ERROR)
+            goto out;
         if (l_isdigit(c)) {
             lex_unget_unsave(lex, c);
             goto out;
@@ -488,6 +501,8 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error) {
         do
             c = lex_get_save(lex, error);
         while (l_isdigit(c));
+        if (c == STREAM_STATE_ERROR)
+            goto out;
     } else {
         lex_unget_unsave(lex, c);
         goto out;
@@ -524,11 +539,16 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error) {
             lex_unget(lex, c);
             goto out;
         }
-        lex_save(lex, c);
+        if (lex_save(lex, c)) {
+            error_set(error, lex, json_error_out_of_memory, "out of memory");
+            goto out;
+        }
 
         do
             c = lex_get_save(lex, error);
         while (l_isdigit(c));
+        if (c == STREAM_STATE_ERROR)
+            goto out;
     }
 
     if (c == 'E' || c == 'e') {
@@ -544,6 +564,8 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error) {
         do
             c = lex_get_save(lex, error);
         while (l_isdigit(c));
+        if (c == STREAM_STATE_ERROR)
+            goto out;
     }
 
     lex_unget_unsave(lex, c);
@@ -583,7 +605,11 @@ static int lex_scan(lex_t *lex, json_error_t *error) {
         goto out;
     }
 
-    lex_save(lex, c);
+    if (lex_save(lex, c)) {
+        error_set(error, lex, json_error_out_of_memory, "out of memory");
+        lex->token = TOKEN_INVALID;
+        goto out;
+    }
 
     if (c == '{' || c == '}' || c == '[' || c == ']' || c == ':' || c == ',')
         lex->token = c;
@@ -620,7 +646,8 @@ static int lex_scan(lex_t *lex, json_error_t *error) {
     else {
         /* save the rest of the input UTF-8 sequence to get an error
            message of valid UTF-8 */
-        lex_save_cached(lex);
+        if (lex_save_cached(lex))
+            error_set(error, lex, json_error_out_of_memory, "out of memory");
         lex->token = TOKEN_INVALID;
     }
 
