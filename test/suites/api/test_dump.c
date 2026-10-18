@@ -168,6 +168,19 @@ static void encode_other_than_array_or_object() {
     json_decref(json);
 }
 
+static void encode_large_integer() {
+#if JSON_INTEGER_IS_LONG_LONG
+    json_t *json = json_integer(9007199254740993LL);
+    char *result = json_dumps(json, JSON_ENCODE_ANY);
+
+    if (!result || strcmp(result, "9007199254740993") != 0)
+        fail("json_dumps failed to encode a large integer exactly");
+
+    free(result);
+    json_decref(json);
+#endif
+}
+
 static void escape_slashes() {
     /* Test dump escaping slashes */
 
@@ -335,6 +348,7 @@ static void run_tests() {
     encode_twice();
     circular_references();
     encode_other_than_array_or_object();
+    encode_large_integer();
     escape_slashes();
     encode_nul_byte();
     dump_file();

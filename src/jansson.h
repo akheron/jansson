@@ -66,7 +66,11 @@ typedef struct json_t {
 #ifndef JANSSON_USING_CMAKE /* disabled if using cmake */
 #if JSON_INTEGER_IS_LONG_LONG
 #ifdef _WIN32
+#if defined(__MINGW32__) && defined(_UCRT)
+#define JSON_INTEGER_FORMAT "lld"
+#else
 #define JSON_INTEGER_FORMAT "I64d"
+#endif
 #else
 #define JSON_INTEGER_FORMAT "lld"
 #endif
