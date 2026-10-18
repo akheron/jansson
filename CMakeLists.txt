@@ -215,7 +215,18 @@ if (NOT DEFINED JSON_INT_T)
    # I am not sure what cygwin will want, so I will assume I64d
 
    if (WIN32) # matches both msvc and cygwin
-      set (JSON_INTEGER_FORMAT "\"I64d\"")
+      check_c_source_compiles("
+         #include <stdio.h>
+         #if !defined(__MINGW32__) || !defined(_UCRT)
+         #error Not MinGW-w64 with UCRT
+         #endif
+         int main(void) { return 0; }
+      " HAVE_MINGW_UCRT)
+      if (HAVE_MINGW_UCRT)
+         set (JSON_INTEGER_FORMAT "\"lld\"")
+      else ()
+         set (JSON_INTEGER_FORMAT "\"I64d\"")
+      endif ()
    else ()
       set (JSON_INTEGER_FORMAT "\"lld\"")
    endif ()
