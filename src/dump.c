@@ -24,7 +24,9 @@
 #include "utf.h"
 
 #define MAX_INTEGER_STR_LENGTH 25
-#define MAX_REAL_STR_LENGTH    25
+/* Room for JSON_REAL_PRECISION(31): sign, 4 leading zeros, 32 digits,
+   '.', "e-324" and the NUL */
+#define MAX_REAL_STR_LENGTH    48
 
 #define FLAGS_TO_INDENT(f)    ((f) & 0x1F)
 #define FLAGS_TO_PRECISION(f) (((f) >> 11) & 0x1F)
