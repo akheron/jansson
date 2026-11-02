@@ -54,6 +54,8 @@ typedef int (*get_func)(void *data);
 typedef struct {
     get_func get;
     void *data;
+    const char *mem_data; /* contiguous NUL-terminated source (json_loads), or NULL */
+    size_t *mem_pos;      /* pointer to the source's position counter */
     char buffer[5];
     size_t buffer_pos;
     int state;
@@ -139,6 +141,8 @@ static void error_set(json_error_t *error, const lex_t *lex, enum json_error_cod
 static void stream_init(stream_t *stream, get_func get, void *data) {
     stream->get = get;
     stream->data = data;
+    stream->mem_data = NULL;
+    stream->mem_pos = NULL;
     stream->buffer[0] = '\0';
     stream->buffer_pos = 0;
 
@@ -234,6 +238,53 @@ static int lex_get_save(lex_t *lex, json_error_t *error) {
     if (c != STREAM_STATE_EOF && c != STREAM_STATE_ERROR)
         lex_save(lex, c);
     return c;
+}
+
+/* Fast path: bulk-append a run of plain ASCII characters directly from a
+   contiguous NUL-terminated memory source (json_loads), bypassing the
+   per-byte stream_get + strbuffer_append_byte overhead.
+
+   Active only when:
+     - the source is a contiguous memory buffer (stream->mem_data != NULL), and
+     - the stream's internal buffer is empty (no pending UTF-8 continuation
+       bytes), which guarantees the source position counter is in sync and
+       that UTF-8 validation is still handled by stream_get afterwards.
+
+   The run only spans ASCII bytes in [0x20, 0x80) excluding '"' and '\\', i.e.
+   exactly the "plain character" case: no control chars (0x00-0x1F, which would
+   need error handling), no '"' (end of string), no '\\' (escape), no high
+   bytes (UTF-8, whose validation must stay in stream_get). Since no '\n'
+   occurs in the run, line is untouched and column advances by the run length,
+   identical to the per-char bookkeeping.
+
+   Returns the number of bytes bulk-appended (0 = no fast path taken; caller
+   must fall through to per-char lex_get_save). */
+static size_t lex_scan_plain_run(lex_t *lex) {
+    const char *src;
+    size_t start;
+    size_t i;
+    size_t run;
+
+    if (lex->stream.mem_data == NULL)
+        return 0;
+    if (lex->stream.buffer[lex->stream.buffer_pos] != '\0')
+        return 0;
+
+    start = *lex->stream.mem_pos;
+    src = lex->stream.mem_data;
+    i = start;
+    while (src[i] != '\0' && src[i] != '"' && src[i] != '\\' &&
+           (unsigned char)src[i] >= 0x20 && (unsigned char)src[i] < 0x80)
+        i++;
+    run = i - start;
+
+    if (run > 0) {
+        strbuffer_append_bytes(&lex->saved_text, src + start, run);
+        *lex->stream.mem_pos = i;
+        lex->stream.position += run;
+        lex->stream.column += run;
+    }
+    return run;
 }
 
 static void lex_unget(lex_t *lex, int c) { stream_unget(&lex->stream, c); }
@@ -344,8 +395,13 @@ static void lex_scan_string(lex_t *lex, json_error_t *error) {
                 error_set(error, lex, json_error_invalid_syntax, "invalid escape");
                 goto out;
             }
-        } else
+        } else {
+            /* Plain character: fast path bulk-appends a run of plain ASCII
+               chars directly from the memory source when available, then reads
+               the next character through the normal per-char path. */
+            lex_scan_plain_run(lex);
             c = lex_get_save(lex, error);
+        }
     }
 
     /* the actual value is at most of the same length as the source
@@ -916,6 +972,11 @@ json_t *json_loads(const char *string, size_t flags, json_error_t *error) {
 
     if (lex_init(&lex, string_get, flags, (void *)&stream_data))
         return NULL;
+
+    /* Enable the bulk plain-run fast path in lex_scan_string: the source is a
+       contiguous NUL-terminated string, so a run can be appended in one shot. */
+    lex.stream.mem_data = string;
+    lex.stream.mem_pos = &stream_data.pos;
 
     result = parse_json(&lex, flags, error);
 
