@@ -2,6 +2,7 @@
 #include "strbuffer.h"
 #include <assert.h>
 #include <errno.h>
+#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,41 +13,65 @@
 #endif
 
 /*
-  - This code assumes that the decimal separator is exactly one
-    character.
-
   - If setlocale() is called by another thread between the call to
     get_decimal_point() and the call to sprintf() or strtod(), the
     result may be wrong. setlocale() is not thread-safe and should
     not be used this way. Multi-threaded programs should use
     uselocale() instead.
 */
-static char get_decimal_point() {
-    char buf[3];
-    sprintf(buf, "%#.0f", 1.0); // "1." in the current locale
-    return buf[1];
+
+/* The decimal point is one character, which is more than one byte in some
+   locales (ps_AF.UTF-8: U+066B, 2 bytes). Writes it, NUL-terminated, to
+   point[POINT_MAX] and returns its length. One character is at most
+   MB_LEN_MAX bytes, so the "." fallback is only for a broken snprintf. */
+#define POINT_MAX (MB_LEN_MAX + 1)
+static size_t get_decimal_point(char *point) {
+    char buf[POINT_MAX + 2];
+    int len = snprintf(buf, sizeof(buf), "%#.0f", 1.0); /* "1." */
+
+    if (len < 2 || (size_t)len > POINT_MAX) {
+        strcpy(point, ".");
+        return 1;
+    }
+    memcpy(point, buf + 1, (size_t)len);
+    return (size_t)len - 1;
 }
 
-static void to_locale(strbuffer_t *strbuffer) {
-    char point;
+/* Returns -1 when the buffer cannot grow for a longer point. */
+static int to_locale(strbuffer_t *strbuffer) {
+    char point[POINT_MAX];
+    size_t point_len, tail;
     char *pos;
 
-    point = get_decimal_point();
-    if (point == '.') {
+    point_len = get_decimal_point(point);
+    if (point_len == 1 && point[0] == '.') {
         /* No conversion needed */
-        return;
+        return 0;
     }
 
     pos = strchr(strbuffer->value, '.');
-    if (pos)
-        *pos = point;
+    if (!pos)
+        return 0;
+
+    tail = strbuffer->length - (size_t)(pos + 1 - strbuffer->value);
+    if (point_len > 1) {
+        size_t offset = (size_t)(pos - strbuffer->value);
+        /* Grow by point_len - 1 bytes; the appended bytes are overwritten. */
+        if (strbuffer_append_bytes(strbuffer, point, point_len - 1))
+            return -1;
+        pos = strbuffer->value + offset;
+        memmove(pos + point_len, pos + 1, tail);
+    }
+    memcpy(pos, point, point_len);
+    return 0;
 }
 
 int jsonp_strtod(strbuffer_t *strbuffer, double *out) {
     double value;
     char *end;
 
-    to_locale(strbuffer);
+    if (to_locale(strbuffer))
+        return -2;
 
     errno = 0;
     value = strtod(strbuffer->value, &end);
@@ -167,19 +192,26 @@ int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
     return (int)(p - buffer);
 }
 #else /* DTOA_ENABLED == 0 */
-static void from_locale(char *buffer) {
-    char point;
+/* Returns the new length of buffer. */
+static size_t from_locale(char *buffer, size_t length) {
+    char point[POINT_MAX];
+    size_t point_len;
     char *pos;
 
-    point = get_decimal_point();
-    if (point == '.') {
+    point_len = get_decimal_point(point);
+    if (point_len == 1 && point[0] == '.') {
         /* No conversion needed */
-        return;
+        return length;
     }
 
-    pos = strchr(buffer, point);
-    if (pos)
+    pos = strstr(buffer, point);
+    if (pos) {
         *pos = '.';
+        memmove(pos + 1, pos + point_len,
+                length - (size_t)(pos + point_len - buffer) + 1);
+        length -= point_len - 1;
+    }
+    return length;
 }
 
 int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
@@ -198,7 +230,7 @@ int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
     if (length >= size)
         return -1;
 
-    from_locale(buffer);
+    length = from_locale(buffer, length);
 
     /* Make sure there's a dot or 'e' in the output. Otherwise
        a real is converted to an integer when decoding */

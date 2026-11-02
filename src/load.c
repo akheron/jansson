@@ -548,9 +548,15 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error) {
 
     lex_unget_unsave(lex, c);
 
-    if (jsonp_strtod(&lex->saved_text, &doubleval)) {
-        error_set(error, lex, json_error_numeric_overflow, "real number overflow");
-        goto out;
+    switch (jsonp_strtod(&lex->saved_text, &doubleval)) {
+        case 0:
+            break;
+        case -2:
+            error_set(error, lex, json_error_out_of_memory, "out of memory");
+            goto out;
+        default:
+            error_set(error, lex, json_error_numeric_overflow, "real number overflow");
+            goto out;
     }
 
     lex->token = TOKEN_REAL;
