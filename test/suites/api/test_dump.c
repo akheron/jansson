@@ -330,6 +330,66 @@ static void max_depth() {
     json_decref(json);
 }
 
+static void *small_malloc(size_t size) {
+    /* Refuse anything big enough to hold the long key below. */
+    if (size > 1024)
+        return NULL;
+    return malloc(size);
+}
+
+static void key_out_of_memory(size_t flags) {
+    char key[4096];
+    json_t *json;
+    char *result;
+
+    memset(key, 'k', sizeof(key) - 1);
+    key[sizeof(key) - 1] = '\0';
+
+    json = json_object();
+    json_object_set_new(json, key, json_integer(1));
+    json_object_set_new(json, "a", json_integer(2));
+
+    /* The buffer cannot grow for the key, but the ": " and values after it
+       would still fit: json_dumps must fail, not return {": 1, "a": 2}. */
+    json_set_alloc_funcs(small_malloc, free);
+    result = json_dumps(json, flags);
+    json_set_alloc_funcs(malloc, free);
+
+    if (result) {
+        free(result);
+        fail("json_dumps succeeded although an object key could not be written");
+    }
+    json_decref(json);
+}
+
+static void dump_key_out_of_memory() {
+    key_out_of_memory(0);
+    key_out_of_memory(JSON_SORT_KEYS);
+}
+
+static void dump_key_invalid_utf8() {
+    json_t *json = json_object();
+    char *result;
+
+    /* The _nocheck setters leave UTF-8 to the caller. A key dump_string
+       refuses fails the dump, as an invalid string value already does,
+       rather than printing {": 1, "x": 2}. */
+    json_object_set_new_nocheck(json, "ab\xff", json_integer(1));
+    json_object_set_new(json, "x", json_integer(2));
+
+    result = json_dumps(json, 0);
+    if (result) {
+        free(result);
+        fail("json_dumps succeeded with an invalid UTF-8 object key");
+    }
+    result = json_dumps(json, JSON_SORT_KEYS);
+    if (result) {
+        free(result);
+        fail("json_dumps succeeded with an invalid UTF-8 object key (sorted)");
+    }
+    json_decref(json);
+}
+
 static void run_tests() {
     encode_null();
     encode_twice();
@@ -342,4 +402,6 @@ static void run_tests() {
     dumpfd();
     embed();
     max_depth();
+    dump_key_out_of_memory();
+    dump_key_invalid_utf8();
 }
