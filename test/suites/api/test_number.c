@@ -8,6 +8,9 @@
 #include "util.h"
 #include <jansson.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef INFINITY
 // This test triggers "warning C4756: overflow in constant arithmetic"
@@ -70,6 +73,75 @@ static void test_bad_args(void) {
     json_decref(txt);
 }
 
+/* CMake builds of the tests have no config header; ISO C has setlocale(). */
+#if !defined(HAVE_CONFIG_H) || (HAVE_LOCALE_H && defined(HAVE_SETLOCALE))
+#include <locale.h>
+
+/* ps_AF.UTF-8 writes the decimal point as U+066B, 2 bytes in UTF-8. Jansson
+   swaps '.' for the locale's point before strtod and back after printing. */
+static int set_multibyte_point_locale(void) {
+    char buf[32];
+
+    if (!setlocale(LC_NUMERIC, "ps_AF.UTF-8") && !setlocale(LC_NUMERIC, "ps_AF.utf8"))
+        return 0;
+    /* sprintf: the API tests also build with MSVC before 2015, which has no snprintf. */
+    return sprintf(buf, "%#.0f", 1.0) > 2;
+}
+
+static void test_multibyte_decimal_point(void) {
+    static const char *const reals[] = {
+        "1.5", "-2.25e3", "0.125", "1e-7", "12345678901234.5",
+        "0.1234567890123456789012345678901234567890123",
+    };
+    double expected[sizeof(reals) / sizeof(reals[0])];
+    char saved[64], *current;
+    size_t i;
+
+    current = setlocale(LC_NUMERIC, NULL);
+    if (!current || strlen(current) >= sizeof(saved))
+        return;
+    strcpy(saved, current);
+
+    setlocale(LC_NUMERIC, "C");
+    for (i = 0; i < sizeof(reals) / sizeof(reals[0]); i++)
+        expected[i] = strtod(reals[i], NULL);
+
+    if (!set_multibyte_point_locale()) {
+        fprintf(stderr, "test_multibyte_decimal_point: skipped, no ps_AF.UTF-8 locale\n");
+        setlocale(LC_NUMERIC, saved);
+        return;
+    }
+
+    for (i = 0; i < sizeof(reals) / sizeof(reals[0]); i++) {
+        char doc[64], *dumped;
+        json_error_t error;
+        json_t *array, *value, *reloaded;
+
+        sprintf(doc, "[%s]", reals[i]); /* every real is under 60 bytes */
+        array = json_loads(doc, 0, &error);
+        value = json_array_get(array, 0);
+        if (!json_is_real(value) || json_real_value(value) != expected[i])
+            fail("a real did not load under a multibyte decimal point");
+
+        /* The dump must be plain JSON: '.' and no byte of the locale's point.
+           Reloading it in the C locale must give the same value back. */
+        dumped = json_dumps(array, JSON_COMPACT);
+        if (!dumped || strpbrk(dumped, "\xd9\xab"))
+            fail("a real dumped with the locale's decimal point");
+        setlocale(LC_NUMERIC, "C");
+        reloaded = json_loads(dumped, 0, &error);
+        if (json_real_value(json_array_get(reloaded, 0)) != expected[i])
+            fail("a real dumped under a multibyte decimal point did not reload");
+        set_multibyte_point_locale();
+
+        json_decref(reloaded);
+        free(dumped);
+        json_decref(array);
+    }
+    setlocale(LC_NUMERIC, saved);
+}
+#endif
+
 static void run_tests() {
     json_t *integer, *real;
     json_int_t i;
@@ -120,4 +192,7 @@ static void run_tests() {
     test_inifity();
 #endif
     test_bad_args();
+#if !defined(HAVE_CONFIG_H) || (HAVE_LOCALE_H && defined(HAVE_SETLOCALE))
+    test_multibyte_decimal_point();
+#endif
 }
