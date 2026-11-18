@@ -461,6 +461,20 @@ static void test_iterators() {
     if (json_object_get(object, "b") != baz)
         fail("json_object_get() fails after json_object_iter_set()");
 
+    if (!json_object_iter_set(object, iter, object))
+        fail("json_object_iter_set() accepted a self reference");
+    if (object->refcount != 1)
+        fail("json_object_iter_set() changed the reference count on failure");
+    if (json_object_iter_value(iter) != baz)
+        fail("json_object_iter_set() changed the value on failure");
+
+    if (!json_object_iter_set_new(object, iter, json_incref(object)))
+        fail("json_object_iter_set_new() accepted a self reference");
+    if (object->refcount != 1)
+        fail("json_object_iter_set_new() did not consume the reference on failure");
+    if (json_object_iter_value(iter) != baz)
+        fail("json_object_iter_set_new() changed the value on failure");
+
     json_decref(object);
     json_decref(foo);
     json_decref(bar);
