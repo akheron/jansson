@@ -7,6 +7,7 @@
 
 #include "util.h"
 #include <jansson.h>
+#include <limits.h>
 #include <string.h>
 
 static void test_version_str(void) {
@@ -52,6 +53,25 @@ static void test_version_cmp() {
     if (jansson_version_cmp(JANSSON_MAJOR_VERSION, JANSSON_MINOR_VERSION,
                             JANSSON_MICRO_VERSION + 1) >= 0) {
         fail("jansson_version_cmp greater than check failed");
+    }
+
+    if (jansson_version_cmp(INT_MIN, JANSSON_MINOR_VERSION, JANSSON_MICRO_VERSION) <= 0) {
+        fail("jansson_version_cmp INT_MIN major check failed");
+    }
+    if (jansson_version_cmp(INT_MAX, JANSSON_MINOR_VERSION, JANSSON_MICRO_VERSION) >= 0) {
+        fail("jansson_version_cmp INT_MAX major check failed");
+    }
+    if (jansson_version_cmp(JANSSON_MAJOR_VERSION, INT_MIN, JANSSON_MICRO_VERSION) <= 0) {
+        fail("jansson_version_cmp INT_MIN minor check failed");
+    }
+    if (jansson_version_cmp(JANSSON_MAJOR_VERSION, INT_MAX, JANSSON_MICRO_VERSION) >= 0) {
+        fail("jansson_version_cmp INT_MAX minor check failed");
+    }
+    if (jansson_version_cmp(JANSSON_MAJOR_VERSION, JANSSON_MINOR_VERSION, INT_MIN) <= 0) {
+        fail("jansson_version_cmp INT_MIN micro check failed");
+    }
+    if (jansson_version_cmp(JANSSON_MAJOR_VERSION, JANSSON_MINOR_VERSION, INT_MAX) >= 0) {
+        fail("jansson_version_cmp INT_MAX micro check failed");
     }
 }
 
