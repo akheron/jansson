@@ -14,15 +14,14 @@
 const char *jansson_version_str(void) { return JANSSON_VERSION; }
 
 int jansson_version_cmp(int major, int minor, int micro) {
-    int diff;
+    if (JANSSON_MAJOR_VERSION != major)
+        return JANSSON_MAJOR_VERSION < major ? -1 : 1;
 
-    if ((diff = JANSSON_MAJOR_VERSION - major)) {
-        return diff;
-    }
+    if (JANSSON_MINOR_VERSION != minor)
+        return JANSSON_MINOR_VERSION < minor ? -1 : 1;
 
-    if ((diff = JANSSON_MINOR_VERSION - minor)) {
-        return diff;
-    }
+    if (JANSSON_MICRO_VERSION != micro)
+        return JANSSON_MICRO_VERSION < micro ? -1 : 1;
 
-    return JANSSON_MICRO_VERSION - micro;
+    return 0;
 }

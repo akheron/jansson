@@ -991,8 +991,9 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error) {
     return result;
 }
 
-static int fd_get_func(int *fd) {
+static int fd_get_func(void *data) {
 #ifdef HAVE_UNISTD_H
+    int *fd = data;
     uint8_t c;
     if (read(*fd, &c, 1) == 1)
         return c;
@@ -1019,7 +1020,7 @@ json_t *json_loadfd(int input, size_t flags, json_error_t *error) {
         return NULL;
     }
 
-    if (lex_init(&lex, (get_func)fd_get_func, flags, &input))
+    if (lex_init(&lex, fd_get_func, flags, &input))
         return NULL;
 
     result = parse_json(&lex, flags, error);
