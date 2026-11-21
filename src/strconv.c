@@ -11,6 +11,8 @@
 #include <jansson_private_config.h>
 #endif
 
+static int jsonp_dtostr_intern(char *buffer, size_t size, double value, int precision);
+
 static json_dump_real_t do_dump_real = jsonp_dtostr_intern;
 
 /*
