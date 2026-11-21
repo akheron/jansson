@@ -170,13 +170,32 @@ static void encode_other_than_array_or_object() {
 
 static int encode_using_Custom_dump_Function_callback(char *buffer, size_t size,
                                                       double data, int precision) {
-    size_t intValue;
+    long intValue;
+
     (void)buffer;
     (void)size;
     (void)data;
     (void)precision;
-    intValue = (size_t)(data); // always round down to the nearest integer
-    return snprintf(buffer, size, "%zu.%d", intValue, precision);
+    intValue = (long)data; /* Always round down to the nearest integer. */
+    return sprintf(buffer, "%ld.%d", intValue, precision);
+}
+
+static int encode_using_negative_dump_result_callback(char *buffer, size_t size,
+                                                      double data, int precision) {
+    (void)buffer;
+    (void)size;
+    (void)data;
+    (void)precision;
+    return -1;
+}
+
+static int encode_using_oversized_dump_result_callback(char *buffer, size_t size,
+                                                       double data, int precision) {
+    (void)buffer;
+    (void)size;
+    (void)data;
+    (void)precision;
+    return 25;
 }
 
 static void encode_using_Custom_dump_Function() {
@@ -203,6 +222,28 @@ static void encode_using_Custom_dump_Function() {
     json_set_dump_real_funcs(NULL);
 
     free(result);
+    json_decref(json);
+
+    json = json_real(3.14159);
+    result = json_dumps(json, JSON_ENCODE_ANY | JSON_REAL_PRECISION(6));
+    if (!result || strcmp(result, "3.14159") != 0)
+        fail("json_set_dump_real_funcs(NULL) did not restore default formatting");
+
+    free(result);
+    json_decref(json);
+
+    json_set_dump_real_funcs(encode_using_negative_dump_result_callback);
+    json = json_real(36.14159);
+    if (json_dumps(json, JSON_ENCODE_ANY | JSON_REAL_PRECISION(6)) != NULL)
+        fail("json_dumps accepted a negative custom real formatting length");
+    json_set_dump_real_funcs(NULL);
+    json_decref(json);
+
+    json_set_dump_real_funcs(encode_using_oversized_dump_result_callback);
+    json = json_real(36.14159);
+    if (json_dumps(json, JSON_ENCODE_ANY | JSON_REAL_PRECISION(6)) != NULL)
+        fail("json_dumps accepted an oversized custom real formatting length");
+    json_set_dump_real_funcs(NULL);
     json_decref(json);
 }
 

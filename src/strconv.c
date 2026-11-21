@@ -11,6 +11,8 @@
 #include <jansson_private_config.h>
 #endif
 
+static json_dump_real_t do_dump_real = jsonp_dtostr_intern;
+
 /*
   - This code assumes that the decimal separator is exactly one
     character.
@@ -236,15 +238,13 @@ static int jsonp_dtostr_intern(char *buffer, size_t size, double value, int prec
 }
 #endif
 
-static json_dump_real_t do_dump_real = jsonp_dtostr_intern;
-
 int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
-    if (do_dump_real)
-        return (*do_dump_real)(buffer, size, value, precision);
-    else
-        return jsonp_dtostr_intern(buffer, size, value, precision);
+    return (*do_dump_real)(buffer, size, value, precision);
 }
 
 void json_set_dump_real_funcs(json_dump_real_t dump_real_fn) {
-    do_dump_real = dump_real_fn;
+    if (dump_real_fn == NULL)
+        do_dump_real = jsonp_dtostr_intern;
+    else
+        do_dump_real = dump_real_fn;
 }
