@@ -965,6 +965,8 @@ json_t *json_loadb(const char *buffer, size_t buflen, size_t flags, json_error_t
     return result;
 }
 
+static int file_get(void *data) { return fgetc(data); }
+
 json_t *json_loadf(FILE *input, size_t flags, json_error_t *error) {
     lex_t lex;
     const char *source;
@@ -982,7 +984,7 @@ json_t *json_loadf(FILE *input, size_t flags, json_error_t *error) {
         return NULL;
     }
 
-    if (lex_init(&lex, (get_func)fgetc, flags, input))
+    if (lex_init(&lex, file_get, flags, input))
         return NULL;
 
     result = parse_json(&lex, flags, error);
