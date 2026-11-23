@@ -54,7 +54,8 @@ typedef int (*get_func)(void *data);
 typedef struct {
     get_func get;
     void *data;
-    char buffer[5];
+    char buffer[4];
+    size_t buffer_len;
     size_t buffer_pos;
     int state;
     int line;
@@ -139,7 +140,7 @@ static void error_set(json_error_t *error, const lex_t *lex, enum json_error_cod
 static void stream_init(stream_t *stream, get_func get, void *data) {
     stream->get = get;
     stream->data = data;
-    stream->buffer[0] = '\0';
+    stream->buffer_len = 0;
     stream->buffer_pos = 0;
 
     stream->state = STREAM_STATE_OK;
@@ -154,7 +155,7 @@ static int stream_get(stream_t *stream, json_error_t *error) {
     if (stream->state != STREAM_STATE_OK)
         return stream->state;
 
-    if (!stream->buffer[stream->buffer_pos]) {
+    if (stream->buffer_pos == stream->buffer_len) {
         c = stream->get(stream->data);
         if (c == EOF) {
             stream->state = STREAM_STATE_EOF;
@@ -162,6 +163,7 @@ static int stream_get(stream_t *stream, json_error_t *error) {
         }
 
         stream->buffer[0] = c;
+        stream->buffer_len = 1;
         stream->buffer_pos = 0;
 
         if (0x80 <= c && c <= 0xFF) {
@@ -180,9 +182,8 @@ static int stream_get(stream_t *stream, json_error_t *error) {
             if (!utf8_check_full(stream->buffer, count, NULL))
                 goto out;
 
-            stream->buffer[count] = '\0';
-        } else
-            stream->buffer[1] = '\0';
+            stream->buffer_len = count;
+        }
     }
 
     c = stream->buffer[stream->buffer_pos++];
@@ -257,7 +258,7 @@ static void lex_unget_unsave(lex_t *lex, int c) {
 }
 
 static void lex_save_cached(lex_t *lex) {
-    while (lex->stream.buffer[lex->stream.buffer_pos] != '\0') {
+    while (lex->stream.buffer_pos < lex->stream.buffer_len) {
         lex_save(lex, lex->stream.buffer[lex->stream.buffer_pos]);
         lex->stream.buffer_pos++;
         lex->stream.position++;
