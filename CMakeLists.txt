@@ -508,7 +508,8 @@ if (NOT JANSSON_WITHOUT_TESTS)
          test_pack
          test_simple
          test_sprintf
-         test_unpack)
+         test_unpack
+         test_version)
 
    # Doing arithmetic on void pointers is not allowed by Microsofts compiler
    # such as secure_malloc and secure_free is doing, so exclude it for now.
