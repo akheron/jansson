@@ -70,14 +70,14 @@ int jsonp_dtostr(char *buffer, size_t size, double value, int precision) {
     /* adapted from `format_float_short()` in
      * https://github.com/python/cpython/blob/2cf18a44303b6d84faa8ecffaecc427b53ae121e/Python/pystrtod.c#L969
      */
-    char digits[25];
+    char digits[32]; /* up to JSON_REAL_PRECISION(31) digits and the NUL */
     char *digits_end;
     int mode = precision == 0 ? 0 : 2;
     int decpt, sign, exp_len, exp = 0, use_exp = 0;
     int digits_len, vdigits_start, vdigits_end;
     char *p;
 
-    if (dtoa_r(value, mode, precision, &decpt, &sign, &digits_end, digits, 25) == NULL) {
+    if (dtoa_r(value, mode, precision, &decpt, &sign, &digits_end, digits, sizeof(digits)) == NULL) {
         // digits is too short => should not happen
         return -1;
     }
