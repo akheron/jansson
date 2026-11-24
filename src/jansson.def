@@ -35,6 +35,7 @@ EXPORTS
     json_object_size
     json_object_get
     json_object_getn
+    json_object_get_path
     json_object_set_new
     json_object_setn_new
     json_object_set_new_nocheck
