@@ -165,4 +165,54 @@ static void test_chaos() {
     json_decref(dumpobj);
 }
 
-static void run_tests() { test_chaos(); }
+/* Persistent (latching) out-of-memory allocator: once oom_pos reaches
+   oom_after, every following allocation fails. This emulates a device
+   that stays out of memory, unlike chaos_malloc which fails a single
+   allocation. */
+static int oom_pos = 0;
+static int oom_after = -1;
+
+void *oom_malloc(size_t size) {
+    if (oom_after >= 0 && oom_pos >= oom_after)
+        return NULL;
+    oom_pos++;
+    return malloc(size);
+}
+
+/* Regression test for #362: an allocation failure while lexing must not
+   trigger an assert/abort or memory corruption. The tokens below are long
+   enough to force strbuffer reallocations mid-token, which is where a
+   dropped lex_save() used to leave lex->saved_text out of sync with the
+   stream. Parsing must fail cleanly (return NULL) instead of crashing. */
+static void test_load_oom() {
+    static const char *inputs[] = {
+        "[1234567890123456789, 1]", "[\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"]",
+        "{\"kkkkkkkkkkkkkkkkkkkkkkkk\": 1}", "[-1.2345678901234567e5]",
+        "[truxxxxxxxxxxxxxxxxxxxx]"};
+    json_malloc_t orig_malloc;
+    json_free_t orig_free;
+    size_t i;
+    int n;
+
+    json_get_alloc_funcs(&orig_malloc, &orig_free);
+    json_set_alloc_funcs(oom_malloc, chaos_free);
+
+    for (i = 0; i < sizeof(inputs) / sizeof(inputs[0]); i++) {
+        for (n = 0; n < 30; n++) {
+            json_t *json;
+            oom_pos = 0;
+            oom_after = n;
+            json = json_loads(inputs[i], 0, NULL);
+            if (json)
+                json_decref(json);
+        }
+    }
+
+    oom_after = -1;
+    json_set_alloc_funcs(orig_malloc, orig_free);
+}
+
+static void run_tests() {
+    test_chaos();
+    test_load_oom();
+}
