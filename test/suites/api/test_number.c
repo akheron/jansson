@@ -84,8 +84,10 @@ static int set_multibyte_point_locale(void) {
 
     if (!setlocale(LC_NUMERIC, "ps_AF.UTF-8") && !setlocale(LC_NUMERIC, "ps_AF.utf8"))
         return 0;
-    /* sprintf: the API tests also build with MSVC before 2015, which has no snprintf. */
-    return sprintf(buf, "%#.0f", 1.0) > 2;
+    /* sprintf: the API tests also build with MSVC before 2015, which has no snprintf.
+       strlen, not the return value: GCC at -O2 computes that as 2 in any locale. */
+    sprintf(buf, "%#.0f", 1.0);
+    return strlen(buf) > 2;
 }
 
 static void test_multibyte_decimal_point(void) {

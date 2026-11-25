@@ -27,14 +27,18 @@
 #define POINT_MAX (MB_LEN_MAX + 1)
 static size_t get_decimal_point(char *point) {
     char buf[POINT_MAX + 2];
-    int len = snprintf(buf, sizeof(buf), "%#.0f", 1.0); /* "1." */
+    size_t len;
 
-    if (len < 2 || (size_t)len > POINT_MAX) {
+    /* strlen, not snprintf's return value: GCC at -O2 inlines this call and
+       returns 2 whatever the locale's decimal point is. */
+    snprintf(buf, sizeof(buf), "%#.0f", 1.0); /* "1." */
+    len = strlen(buf);
+    if (len < 2 || len > POINT_MAX) {
         strcpy(point, ".");
         return 1;
     }
-    memcpy(point, buf + 1, (size_t)len);
-    return (size_t)len - 1;
+    memcpy(point, buf + 1, len);
+    return len - 1;
 }
 
 /* Returns -1 when the buffer cannot grow for a longer point. */
