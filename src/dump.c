@@ -12,6 +12,7 @@
 #include "jansson_private.h"
 
 #include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +25,8 @@
 #include "utf.h"
 
 #define MAX_INTEGER_STR_LENGTH 25
-#define MAX_REAL_STR_LENGTH    25
+/* MB_LEN_MAX for multi-byte decimal point */
+#define MAX_REAL_STR_LENGTH (25 + MB_LEN_MAX - 1)
 
 #define FLAGS_TO_INDENT(f)    ((f) & 0x1F)
 #define FLAGS_TO_PRECISION(f) (((f) >> 11) & 0x1F)

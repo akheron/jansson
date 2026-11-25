@@ -94,6 +94,8 @@ static void test_multibyte_decimal_point(void) {
     static const char *const reals[] = {
         "1.5", "-2.25e3", "0.125", "1e-7", "12345678901234.5",
         "0.1234567890123456789012345678901234567890123",
+        /* No output of "%.17g" is longer than this */
+        "-2.2250738585072014e-308",
     };
     double expected[sizeof(reals) / sizeof(reals[0])];
     char saved[64], *current;
@@ -128,7 +130,9 @@ static void test_multibyte_decimal_point(void) {
         /* The dump must be plain JSON: '.' and no byte of the locale's point.
            Reloading it in the C locale must give the same value back. */
         dumped = json_dumps(array, JSON_COMPACT);
-        if (!dumped || strpbrk(dumped, "\xd9\xab"))
+        if (!dumped)
+            fail("a real did not dump under a multibyte decimal point");
+        if (strpbrk(dumped, "\xd9\xab"))
             fail("a real dumped with the locale's decimal point");
         setlocale(LC_NUMERIC, "C");
         reloaded = json_loads(dumped, 0, &error);
