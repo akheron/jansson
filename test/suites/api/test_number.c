@@ -92,7 +92,11 @@ static int set_multibyte_point_locale(void) {
 
 static void test_multibyte_decimal_point(void) {
     static const char *const reals[] = {
-        "1.5", "-2.25e3", "0.125", "1e-7", "12345678901234.5",
+        "1.5",
+        "-2.25e3",
+        "0.125",
+        "1e-7",
+        "12345678901234.5",
         "0.1234567890123456789012345678901234567890123",
         /* No output of "%.17g" is longer than this */
         "-2.2250738585072014e-308",
