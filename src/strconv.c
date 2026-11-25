@@ -20,20 +20,23 @@
     uselocale() instead.
 */
 
-/* The decimal point is one character, which is more than one byte in some
-   locales (ps_AF.UTF-8: U+066B, 2 bytes). Writes it, NUL-terminated, to
-   point[POINT_MAX] and returns its length. One character is at most
-   MB_LEN_MAX bytes, so the "." fallback is only for a broken snprintf. */
+/* Copy the current locale's decimal point to point and return its length.
+   The decimal point is a single character, but it can be longer than one
+   byte. For example, ps_AF.UTF-8 uses U+066B, which is 2 bytes in UTF-8.
+   point must have room for POINT_MAX bytes, including the terminating NUL. */
 #define POINT_MAX (MB_LEN_MAX + 1)
 static size_t get_decimal_point(char *point) {
     char buf[POINT_MAX + 2];
     size_t len;
 
-    /* strlen, not snprintf's return value: GCC at -O2 inlines this call and
-       returns 2 whatever the locale's decimal point is. */
+    /* Using strlen() instead of snprintf()'s return value is intentional:
+       GCC at -O2 computes the return value at compile time and assumes
+       that the decimal point is one byte. */
     snprintf(buf, sizeof(buf), "%#.0f", 1.0); /* "1." */
     len = strlen(buf);
     if (len < 2 || len > POINT_MAX) {
+        /* A character is at most MB_LEN_MAX bytes, so we only get here if
+           snprintf() is broken. */
         strcpy(point, ".");
         return 1;
     }
@@ -41,7 +44,7 @@ static size_t get_decimal_point(char *point) {
     return len - 1;
 }
 
-/* Returns -1 when the buffer cannot grow for a longer point. */
+/* Returns -1 when out of memory. */
 static int to_locale(strbuffer_t *strbuffer) {
     char point[POINT_MAX];
     size_t point_len, tail;
