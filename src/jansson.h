@@ -399,6 +399,11 @@ int json_dump_file(const json_t *json, const char *path, size_t flags);
 int json_dump_callback(const json_t *json, json_dump_callback_t callback, void *data,
                        size_t flags);
 
+/* custom formatting */
+
+typedef int (*json_dump_real_t)(char *buffer, size_t size, double value, int precision);
+void json_set_dump_real_funcs(json_dump_real_t dump_real_fn);
+
 /* custom memory allocation */
 
 typedef void *(*json_malloc_t)(size_t);
