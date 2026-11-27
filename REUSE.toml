@@ -1,0 +1,42 @@
+version = 1
+
+[[annotations]]
+path = [
+  "**",
+]
+SPDX-FileCopyrightText = "2009-2024 Petri Lehtinen <petri@digip.org>"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [
+  "src/dtoa.c",
+]
+SPDX-License-Identifier = "dtoa"
+
+[[annotations]]
+path = [
+  "CleanSpec.mk",
+]
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+  "cmake/CodeCoverage.cmake",
+]
+SPDX-FileCopyrightText = ["Lars Bilke", "Joakim Söderberg"]
+SPDX-License-Identifier = "BSL-1.0"
+
+[[annotations]]
+path = [
+  "cmake/FindSphinx.cmake",
+]
+SPDX-FileCopyrightText = "Section of Biomedical Image Analysis, Department of Radiology at the Universiy of Pennsylvania"
+SPDX-License-Identifier = "LicenseRef-SBIA"
+
+[[annotations]]
+path = [
+  "doc/conf.py",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2009-2024 Petri Lehtinen <petri@digip.org>"
+SPDX-License-Identifier = "MIT"
