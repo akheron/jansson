@@ -25,7 +25,11 @@ struct hashtable_pair {
     size_t hash;
     json_t *value;
     size_t key_len;
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+    char key[];
+#else
     char key[1];
+#endif
 };
 
 struct hashtable_bucket {

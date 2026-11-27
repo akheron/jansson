@@ -197,10 +197,9 @@ void hashtable_close(hashtable_t *hashtable) {
 
 static pair_t *init_pair(json_t *value, const char *key, size_t key_len, size_t hash) {
     pair_t *pair;
+    char *key_storage;
 
-    /* offsetof(...) returns the size of pair_t without the last,
-   flexible member. This way, the correct amount is
-   allocated. */
+    /* Allocate the fixed pair data and the key, including its terminator. */
 
     if (key_len >= (size_t)-1 - offsetof(pair_t, key)) {
         /* Avoid an overflow if the key is very long */
@@ -213,8 +212,9 @@ static pair_t *init_pair(json_t *value, const char *key, size_t key_len, size_t 
         return NULL;
 
     pair->hash = hash;
-    memcpy(pair->key, key, key_len);
-    pair->key[key_len] = '\0';
+    key_storage = (char *)pair + offsetof(pair_t, key);
+    memcpy(key_storage, key, key_len);
+    key_storage[key_len] = '\0';
     pair->key_len = key_len;
     pair->value = value;
 
